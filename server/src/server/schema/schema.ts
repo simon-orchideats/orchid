@@ -1,23 +1,24 @@
+import { PlanQueryResolvers } from '../plans/planResolvers';
 import { TestQueryResolver } from './testResolver';
 import { merge } from 'lodash';
-import { makeExecutableSchema } from 'apollo-server';
+import { gql, makeExecutableSchema } from 'apollo-server';
+import { PlanQL } from '../plans/plansQL';
 
-const query = `
-  type Cart {
-    plan: [String!]!
-  }
+const query = gql`
   type Query {
     test: String!
+    availablePlans: [Plan!]!
   }
 `
 
-const gqlSchema = `
+const gqlSchema = gql`
   schema {
     query: Query
   }
 `
 
 const typeDefs = [
+  PlanQL,
   query,
   gqlSchema,
 ];
@@ -25,6 +26,7 @@ const typeDefs = [
 const resolvers = {
   Query: merge(
     TestQueryResolver,
+    PlanQueryResolvers,
   ),
 };
 

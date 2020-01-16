@@ -1,20 +1,7 @@
-import { ClientResolver } from './localState';
+import { ICart, Cart } from './cartModel';
+import { ClientResolver } from '../localState';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
-
-interface ICart {
-  readonly plan: string[];
-}
-
-export class Cart implements ICart {
-  readonly plan: string[];
-
-  constructor(cart: ICart) {
-    this.plan = cart.plan;
-  }
-
-  public get Plan() { return this.plan }
-}
 
 type cartQueryRes = {
   cart: ICart | null

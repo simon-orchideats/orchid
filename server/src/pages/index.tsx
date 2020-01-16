@@ -65,8 +65,9 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     height: '100%',
-    maxWidth: 500,
     opacity: 0.9,
+    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing(3),
   },
   lowWidth: {
     maxWidth: 150,  

@@ -16,7 +16,7 @@ import {
   clientTypeDefs,
   clientResolvers,
   clientInitialState
-} from '../state/localState'
+} from '../global/state/localState'
 import { isServer } from './isServer';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
@@ -172,7 +172,7 @@ function createIsomorphLink() {
   if (typeof window === 'undefined') {
     // not sure why i had to do import instead of require which the example...
     // const { SchemaLink } = require('./node_modules/apollo-link-schema')
-    const schema = require('../../../schema/schema').schema
+    const schema = require('../../server/schema/schema').schema
     return new SchemaLink({ schema })
   } else {
     // const { HttpLink } = require('./node_modules/apollo-link-http')
