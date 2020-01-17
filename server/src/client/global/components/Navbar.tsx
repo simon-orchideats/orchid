@@ -4,7 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Link from 'next/link'
 import { Container, Typography } from '@material-ui/core';
-import { howItWorksRoute } from '../../../pages/howItWorks';
+import { howItWorksRoute } from '../../../pages/how-it-works';
 import { plansRoute } from '../../../pages/plans';
 import { menuRoute } from '../../../pages/menu';
 import { indexRoute } from '../../../pages';
@@ -24,6 +24,11 @@ const useStyles = makeStyles(theme => ({
   logo: {
     width: 200,
     paddingRight: theme.spacing(5),
+    cursor: 'pointer',
+  },
+  spacer: {
+    height: theme.mixins.navbar.marginBottom,
+    backgroundColor: theme.palette.background.default,
   },
 }));
 
@@ -43,12 +48,14 @@ const Navbar: React.FC = () => {
             <Link href={menuRoute}>
               <Typography variant='button' className={classes.link}>Menu</Typography>
             </Link>
-            <Link href={howItWorksRoute} as='how-it-works'>
+            <Link href={howItWorksRoute}>
               <Typography variant='button' className={classes.link}>How it works</Typography>
             </Link>
           </Toolbar>
         </Container>
       </AppBar>
+      {/* empty child to satisfying children prop warning */}
+      <Container maxWidth='lg' className={classes.spacer}><></></Container>
     </>
   );
 }

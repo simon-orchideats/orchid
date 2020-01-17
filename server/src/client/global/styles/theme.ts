@@ -38,7 +38,7 @@ const theme: ThemeOptions = {
   direction: 'ltr',
   mixins: {
     navbar: {
-      marginBottom: 24,
+      marginBottom: 56,
     },
     drawer: {
       width: 180,

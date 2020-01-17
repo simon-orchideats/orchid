@@ -24,6 +24,7 @@ const useStyles = makeStyles(theme => ({
     backgroundPosition: '50% 75%',
     backgroundSize: 'cover',
     height: 500,
+    marginTop: -theme.mixins.navbar.marginBottom,
   },
   welcomeText: {
     maxWidth: 600 // chosen by inspection
@@ -88,7 +89,7 @@ const Welcome = () => {
           Chef-cooked healthy meals delivered from local restaurants to you
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Offering meals starting at $7.49
+          Offering meals starting at $8.99
         </Typography>
         <Button variant='contained' color='primary'>
           SEE PLANS
@@ -174,62 +175,93 @@ const Benefits = () => {
       </div>
     </div>
   );
+  const Explanation: React.FC<{
+    title: string,
+    description: string,
+    img: string,
+    imgLeft: boolean
+  }> = ({
+    title,
+    description,
+    img,
+    imgLeft,
+  }) => {
+    const classes = useStyles();
+    let left;
+    let right;
+    if (imgLeft) {
+      left = (
+        <Grid item xs={5} className={classes.verticalCenter}>
+          <img src={img} alt='logo' />
+        </Grid>
+      )
+      right = (
+        <Grid item xs={5}>
+          <div className={classes.row}>
+            <TextBlock
+              title={title}
+              description={description}
+            />
+          </div>
+        </Grid>
+      )
+    } else {
+      left = (
+        <Grid item xs={5}>
+          <div className={classes.row}>
+            <TextBlock
+              title={title}
+              description={description}
+            />
+          </div>
+        </Grid>
+      );
+      right = (
+        <Grid item xs={5} className={classes.verticalCenter}>
+          <img src={img} alt='logo' />
+        </Grid>
+      )
+    }
+    return (
+      <>
+        {left}
+        <Grid item xs={2}/>
+        {right}
+      </>
+    )
+  }
   return (
     <>
       <Hidden xsDown implementation='js'>
         <Container maxWidth='lg' className={`${classes.largeVerticalMargin} ${classes.reasons} ${classes.centered}`}>
           <Grid container>
-            <Grid item xs={5} className={classes.verticalCenter}>
-              <img src='/placeholder.jpg' alt='logo' />
-            </Grid>
-            <Grid item xs={2}/>
-            <Grid item xs={5}>
-              <div className={classes.row}>
-                <TextBlock
-                  title='Sustainable'
-                  description='yada yada, local. never frozen. not some warehouse accross the country. no more icepacks'
-                />
-              </div>
-            </Grid>
+            <Explanation 
+              title='Sustainable'
+              description='yada yada, local. never frozen. not some warehouse accross the country. no more icepacks'
+              img='/placeholder.jpg'
+              imgLeft={true}
+            />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Grid item xs={5}>
-              <div className={classes.row}>
-                <TextBlock
-                  title='Same day cooking'
-                  description='freshest. yada yada YADA yda yda yda yda yada YADA yda yda yda yda yada YADA yda yda yda'
-                />
-              </div>
-            </Grid>
-            <Grid item xs={2}/>
-            <Grid item xs={5} className={classes.verticalCenter}>
-              <img src='/placeholder.jpg' alt='logo' />
-            </Grid>
+            <Explanation 
+              title='Same day cooking'
+              description='freshest. yada yada YADA yda yda yda yda yada YADA yda yda yda yda yada YADA yda yda yda'
+              img='/placeholder.jpg'
+              imgLeft={false}
+            />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Grid item xs={5} className={classes.verticalCenter}>
-              <img src='/placeholder.jpg' alt='logo' />
-            </Grid>
-            <Grid item xs={2}/>
-            <Grid item xs={5}>
-              <div className={classes.row}>
-                <TextBlock
-                  title='Favorite restaurants'
-                  description='Support your local favorites. Change places and flavors every week for infinite variety.'
-                />
-              </div>
-            </Grid>
+            <Explanation 
+              title='Favorite restaurants'
+              description='Support your local favorites. Change places and flavors every week for infinite variety.'
+              img='/placeholder.jpg'
+              imgLeft={true}
+            />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Grid item xs={5}>
-              <div className={classes.row}>
-                <TextBlock
-                  title='Affordable'
-                  description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
-                />
-              </div>
-            </Grid>
-            <Grid item xs={2}/>
-            <Grid item xs={5} className={classes.verticalCenter}>
-              <img src='/placeholder.jpg' alt='logo' />
-            </Grid>
+            <Explanation 
+              title='Affordable'
+              description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
+              img='/placeholder.jpg'
+              imgLeft={false}
+            />
           </Grid>
           <Button
             variant='outlined'
