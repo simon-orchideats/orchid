@@ -50,7 +50,9 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(/cuttingBoard.jpeg)`,
     backgroundPosition: '70% 30%',
     backgroundSize: 'cover',
-    height: 400,
+    display: 'flex',
+    justifyContent: 'center',
+    minHeight: 400,
   },
   reasons: {
     background: 'none',
@@ -64,8 +66,8 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 500,
   },
   paper: {
-    height: '100%',
     opacity: 0.9,
+    textAlign: 'center',
     paddingRight: theme.spacing(3),
     paddingLeft: theme.spacing(3),
   },
@@ -131,7 +133,7 @@ const HowItWorks = () => {
 const Plans = () => {
   const classes = useStyles();
   return (
-    <div className={`${classes.plans} ${classes.centered}`}>
+    <div className={`${classes.plans}`}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
         <Typography variant='h3' className={classes.title}>
           Flexible plans
@@ -174,7 +176,7 @@ const Benefits = () => {
   );
   return (
     <>
-      <Hidden xsDown implementation='css'>
+      <Hidden xsDown implementation='js'>
         <Container maxWidth='lg' className={`${classes.largeVerticalMargin} ${classes.reasons} ${classes.centered}`}>
           <Grid container>
             <Grid item xs={5} className={classes.verticalCenter}>
@@ -238,7 +240,7 @@ const Benefits = () => {
           </Button>
         </Container>
       </Hidden>
-      <Hidden smUp implementation='css'>
+      <Hidden smUp implementation='js'>
         <Container maxWidth='xs' className={`${classes.centered} ${classes.reasons} ${classes.largeVerticalMargin}`}>
           <MobileBlock
             title='Sustainable'
