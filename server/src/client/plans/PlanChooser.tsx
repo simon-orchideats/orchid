@@ -33,7 +33,7 @@ const PlanChooser = () => {
   return (
     <Grid container>
       {plans.data.map(plan => (
-        <Grid item sm={12} md={4} className={classes.item}>
+        <Grid key={plan.Id}item sm={12} md={4} className={classes.item}>
           <Card key={plan.MealPrice} className={classes.card}>
             <CardContent>
               <Typography variant='h6'>

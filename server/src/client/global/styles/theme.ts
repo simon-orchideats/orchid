@@ -118,6 +118,7 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
+      tan: brandInfo,
       brandPrimaryOpacity,
     },
     type: 'light',
@@ -341,6 +342,7 @@ const theme: ThemeOptions = {
 declare module "@material-ui/core/colors/common" {
   interface CommonColors {
     brandPrimaryOpacity: (opacity: number) => string;
+    tan: string;
     loading: string;
   }
 }
