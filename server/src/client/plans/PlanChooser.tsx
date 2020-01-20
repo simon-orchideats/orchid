@@ -10,6 +10,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
   },
   card: {
+    textAlign: 'center',
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),
     marginTop: theme.spacing(1),
@@ -31,7 +32,7 @@ const PlanChooser = () => {
     return <div>loading</div>
   }
   return (
-    <Grid container>
+    <Grid container justify='center'>
       {plans.data.map(plan => (
         <Grid key={plan.Id}item sm={12} md={4} className={classes.item}>
           <Card key={plan.MealPrice} className={classes.card}>
@@ -40,10 +41,10 @@ const PlanChooser = () => {
                 {plan.MealCount} meals/week
               </Typography>
               <Typography variant='body2' color='textSecondary'>
-                ${plan.MealPrice}/meal
+                ${plan.MealPrice.toFixed(2)}/meal
               </Typography>
               <Typography variant='body2' color='textSecondary'>
-                ${plan.WeekPrice}/week
+                ${plan.WeekPrice.toFixed(2)}/week
               </Typography>
               <Button className={classes.button} variant='contained' color='primary'>CHOOSE</Button>
             </CardContent>

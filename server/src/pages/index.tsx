@@ -68,7 +68,6 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     opacity: 0.9,
-    textAlign: 'center',
     paddingRight: theme.spacing(3),
     paddingLeft: theme.spacing(3),
   },

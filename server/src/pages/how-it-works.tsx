@@ -1,5 +1,5 @@
-import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper } from '@material-ui/core';
+import Faq from '../client/explanations/Faq';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -9,9 +9,6 @@ const useStyles = makeStyles(theme => ({
   },
   explainations: {
     backgroundColor: theme.palette.background.default,
-  },
-  getStarted: {
-    background: theme.palette.common.tan,
   },
   centered: {
     textAlign: 'center',
@@ -41,8 +38,14 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
+  largeBottomPadding: {
+    paddingBottom: theme.spacing(8),
+  },
   largeBottomMargin: {
     marginBottom: theme.spacing(4),
+  },
+  footer: {
+    marginBottom: theme.spacing(8),
   },
   benefits: {
     [theme.breakpoints.down('xs')]: {
@@ -193,27 +196,6 @@ const Explanation: React.FC<{
   )
 }
 
-const Expander: React.FC<{
-  q: string,
-  a: string
-}> = ({
-  q,
-  a
-}) => {
-  return (
-    <ExpansionPanel>
-      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant='subtitle1'>{q}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
-        <Typography variant='body1'>
-          {a}
-        </Typography>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
-  )
-}
-
 const HowItWorks = () => {
   const classes = useStyles();
   return (
@@ -298,33 +280,8 @@ const HowItWorks = () => {
           <Grid item xs={2} />
         </Grid>
       </Container>
-      <Paper elevation={0} className={`${classes.verticalPadding}`}>
-        <Container maxWidth='lg'>
-          <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
-            FAQ
-          </Typography>
-          <Expander
-            q='Will I be locked into a contract?'
-            a='No, you can cancel your plan at any time. Any remaining meals this week will be delivered.'
-          />
-          <Expander
-            q='Can I skip a week of delivery?'
-            a='Yes. Just make sure you do it before the plan cutoff time to stop your next order.'
-          />
-          <Expander
-            q="What if I forget to choose next week's menu?"
-            a="No worries. We'll just repeat your previous restaurant menu"
-          />
-          <Expander
-            q='Can update my schedule?'
-            a='Yes. You can always update future weeks. You schedule your deliveries up to 6 weeks ahead of time.'
-          />
-          <Typography variant='body2' className={classes.mediumTopMargin}>
-            *The cutoff for any changes is 11:59 pm EST, 2 days before the start of your next week.
-          </Typography>
-        </Container>
-      </Paper>
-      <Paper elevation={0} className={`${classes.verticalPadding} ${classes.centered} ${classes.getStarted}`}>
+      <Faq />
+      <Paper elevation={0} className={`${classes.largeBottomPadding} ${classes.centered} ${classes.footer}`}>
         <Button variant='contained' color='primary'>GET STARTED</Button>
       </Paper>
     </>
