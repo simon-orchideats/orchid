@@ -52,7 +52,7 @@ const Detail: React.FC<{
   )
 }
 
-export default () => {
+const plans = () => {
   const classes = useStyles();
   return (
     <>
@@ -84,5 +84,7 @@ export default () => {
     </>
   )
 }
+
+export default plans;
 
 export const plansRoute = 'plans';

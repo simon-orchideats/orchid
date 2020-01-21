@@ -25,8 +25,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const PlanChooser = () => {
-  if (isServer()) return null;
+  // very important that useStyles() is called first so that server + client mui classNames match
   const classes = useStyles();
+  if (isServer()) return null;
   const plans = useGetAvailablePlans();
   if (!plans.data) {
     return <div>loading</div>

@@ -2,12 +2,13 @@ import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPane
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const useStyles = makeStyles(theme => ({
-  centered: {
+  title: {
     textAlign: 'center',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    marginBottom: theme.spacing(4),
   },
   mediumTopMargin: {
     marginTop: theme.spacing(2),
@@ -15,9 +16,6 @@ const useStyles = makeStyles(theme => ({
   verticalPadding: {
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
-  },
-  largeBottomMargin: {
-    marginBottom: theme.spacing(4),
   },
 }))
 
@@ -45,9 +43,9 @@ const Expander: React.FC<{
 const Faq = () => {
   const classes = useStyles();
   return (
-    <Paper elevation={0} className={`${classes.verticalPadding}`}>
+    <Paper elevation={0} className={classes.verticalPadding}>
       <Container maxWidth='lg'>
-        <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+        <Typography variant='h2' className={classes.title}>
           FAQ
         </Typography>
         <Expander

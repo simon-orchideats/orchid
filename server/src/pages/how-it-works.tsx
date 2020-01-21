@@ -27,16 +27,9 @@ const useStyles = makeStyles(theme => ({
   smallBottomMargin: {
     marginBottom: theme.spacing(1),
   },
-  mediumTopMargin: {
-    marginTop: theme.spacing(2),
-  },
   largeVerticalMargin: {
     marginTop: theme.spacing(8),
     marginBottom: theme.spacing(8),
-  },
-  verticalPadding: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8),
   },
   largeBottomPadding: {
     paddingBottom: theme.spacing(8),
