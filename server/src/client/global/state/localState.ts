@@ -4,7 +4,7 @@ import {
   cartTypeDefs,
   cartMutationResolvers,
   cartInitialState,
-} from './cart/cart';
+} from './cart/cartState';
 
 type Cache = { cache: ApolloCache<any> };
 

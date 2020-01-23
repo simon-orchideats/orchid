@@ -9,7 +9,7 @@ const white = "#ffffff";
 const powerRed = '#f44336'
 
 const brandBase = white;
-const brandPrimary = leafGreen; // used to be scarlet
+const brandPrimary = leafGreen;
 const brandPrimaryOpacity = (opacity: number) => `rgba(83, 106, 79, ${opacity})` 
 const brandInfo = floralWhite;
 const brandInfoLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
@@ -121,7 +121,6 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
-      tan: brandInfo,
       brandPrimaryOpacity,
     },
     type: 'light',
@@ -345,7 +344,6 @@ const theme: ThemeOptions = {
 declare module "@material-ui/core/colors/common" {
   interface CommonColors {
     brandPrimaryOpacity: (opacity: number) => string;
-    tan: string;
     loading: string;
   }
 }

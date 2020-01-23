@@ -1,7 +1,11 @@
-import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, TextField, Button, Container } from "@material-ui/core";
+import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
+import { useState } from "react";
+import { useAddMealToCart, useGetCart } from "../client/global/state/cart/cartState";
+import { Meal, IMeal } from "../meal/mealModel";
+import withApollo from "../client/utils/withPageApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -15,9 +19,19 @@ const useStyles = makeStyles(theme => ({
       height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`
     }
   },
+  minusButton: {
+    backgroundColor: `${theme.palette.grey[600]}`,
+    '&:hover': {
+      backgroundColor: theme.palette.grey[800],
+    },
+    '&:disabled': {
+      backgroundColor: theme.palette.grey[300],
+    },
+  },
   button: {
+    flex: 0.15,
     boxShadow: 'none',
-    color: theme.palette.common.white,
+    color: `${theme.palette.common.white} !important`,
     minWidth: theme.spacing(4),
   },
   scaler: {
@@ -51,7 +65,7 @@ const useStyles = makeStyles(theme => ({
   cart: {
     backgroundColor: theme.palette.background.paper,
     paddingTop: theme.spacing(3),
-    padddingRight: theme.spacing(1),
+    paddingRight: theme.spacing(1),
     paddingLeft: theme.spacing(1),
   },
   menu: {
@@ -59,22 +73,34 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     overflowY: 'scroll',
   },
-  input: {
-    height: '2em',
-    paddingTop: 0,
-    paddingBottom: 0,
-    fontSize: '1.2em'
+  chip: {
+    flex: 1,
+    fontSize: '1.2rem',
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: theme.palette.primary.main,
+  },
+  disabledChip: {
+    color: theme.palette.text.disabled,
   }
 }))
 
-const MenuItem: React.FC<{
-  img: string,
-  name: string
-}> = ({
+const MenuItem: React.FC<IMeal> = ({
+  _id,
   img,
   name,
 }) => {
   const classes = useStyles();
+  const [count, updateCount] = useState(0);
+  const addMealToCart = useAddMealToCart();
+  const onAddMeal = () => {
+    updateCount(count + 1);
+    addMealToCart(new Meal({
+      _id,
+      img,
+      name,
+    }));
+  }
   return (
     <Grid item xs={6} sm={4} md={3}>
       <Card elevation={0} className={classes.card}>
@@ -90,16 +116,19 @@ const MenuItem: React.FC<{
             <Button
               size='small'
               variant='contained'
-              className={classes.button}
+              disabled={!count}
+              className={`${classes.button} ${classes.minusButton}`}
+              onClick={() => updateCount(count - 1)}
             >
               <RemoveIcon />
             </Button>
-            <TextField
-              size='small'
-              type='number'
-              variant='filled'
-              inputProps={{
-                className: classes.input
+            <Chip
+              className={classes.chip}
+              disabled={!count}
+              label={count}
+              variant='outlined'
+              classes={{
+                disabled: classes.disabledChip
               }}
             />
             <Button
@@ -107,6 +136,7 @@ const MenuItem: React.FC<{
               variant='contained'
               color='primary'
               className={classes.button}
+              onClick={() => onAddMeal()}
             >
               <AddIcon />
             </Button>
@@ -124,30 +154,37 @@ const PlanMenu: React.FC = () => {
   return (
     <Grid container>
       <MenuItem
+        _id='1'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='2'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='3'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='4'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='5'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='6'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
       <MenuItem
+        _id='7'
         img='placeholderMeal.jpg'
         name='Rice Bowl'
       />
@@ -173,6 +210,7 @@ const RestMenu: React.FC<{
 
 const menu = () => {
   const classes = useStyles();
+  const cart = useGetCart();
   return (
     <Container maxWidth='lg' disableGutters className={classes.container}>
       <Grid container alignItems='stretch' className={classes.gridContainer}>
@@ -182,15 +220,20 @@ const menu = () => {
           <RestMenu name='Kingstons' />
         </Grid>
         <Grid item xs={3} className={classes.cart}>
-          <Typography variant='h4'>
+          <Typography variant='h6'>
             Your meals
           </Typography>
+          {cart && cart.Meals.map((meal, index) => (
+            <Typography key={index}>
+              {meal.Name}
+            </Typography>
+          ))}
         </Grid>
       </Grid>
     </Container>
   )  
 }
 
-export default menu;
+export default withApollo(menu);
 
 export const menuRoute = 'menu';
