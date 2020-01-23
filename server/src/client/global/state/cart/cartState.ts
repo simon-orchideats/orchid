@@ -1,5 +1,6 @@
+import { ApolloCache } from 'apollo-cache';
 import { Meal } from './../../../../meal/mealModel';
-import { ICart, Cart } from '../../../../cart/cartModel';
+import { Cart } from '../../../../cart/cartModel';
 import { ClientResolver } from '../localState';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -41,45 +42,65 @@ export const useGetCart = () => {
 }
 
 export const useAddMealToCart = (): (meal: Meal) => void => {
-  type res = { addToCart: ICart }
   type vars = { meal: Meal };
-  const [mutate] = useMutation<res, vars>(gql`
+  const [mutate] = useMutation<any, vars>(gql`
     mutation addMealToCart($meal: Meal!) {
       addMealToCart(meal: $meal) @client
     }
   `);
-  const addMealToCart = (meal: Meal) => {
+  return (meal: Meal) => {
     mutate({ variables: { meal } })
   }
-  return addMealToCart
+}
+
+export const useRemoveMealFromCart = (): (mealId: string) => void => {
+  type vars = { mealId: string };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation removeMealFromCart($mealId: String!) {
+      removeMealFromCart(mealId: $mealId) @client
+    }
+  `);
+  return (mealId: string) => {
+    mutate({ variables: { mealId } })
+  }
 }
 
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal }, Cart | null>
+  removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
 }
 
+const updateCartCache = (cache: ApolloCache<any>, cart: Cart) => {
+  const data = {
+    cart
+  }
+  cache.writeQuery({
+    query: CART_QUERY,
+    data,
+  });
+  return cart;
+}
+
+const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
+  query: CART_QUERY
+});
+
+
+
 export const cartMutationResolvers: cartMutationResolvers = {
-  addMealToCart: (_, args, { cache }) => {
-    const updateCache = (cart: Cart) => {
-      const data = {
-        cart
-      }
-      cache.writeQuery({
-        query: CART_QUERY,
-        data,
-      });
-      return cart;
-    }
-    const res = cache.readQuery<cartQueryRes>({ 
-      query: CART_QUERY
-    });
-    if (res && res.cart) {
-      return updateCache(res.cart.addMeal(args.meal));
-    }
-    return updateCache(new Cart({
-      meals: [args.meal],
+  addMealToCart: (_, { meal }, { cache }) => {
+    const res = getCart(cache);
+    if (res && res.cart) updateCartCache(cache, res.cart.addMeal(meal));
+    return updateCartCache(cache, new Cart({
+      meals: [meal],
       restId: null,
       planId: null,
     }));
+  },
+
+  removeMealFromCart: (_, { mealId }, { cache }) => {
+    const res = getCart(cache);
+    if (res && res.cart) updateCartCache(cache, res.cart.removeMeal(mealId));
+    throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
   },
 }

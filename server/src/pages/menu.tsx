@@ -3,7 +3,7 @@ import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
 import { useState } from "react";
-import { useAddMealToCart, useGetCart } from "../client/global/state/cart/cartState";
+import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
 import { Meal, IMeal } from "../meal/mealModel";
 import withApollo from "../client/utils/withPageApollo";
 
@@ -93,6 +93,7 @@ const MenuItem: React.FC<IMeal> = ({
   const classes = useStyles();
   const [count, updateCount] = useState(0);
   const addMealToCart = useAddMealToCart();
+  const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
     updateCount(count + 1);
     addMealToCart(new Meal({
@@ -100,6 +101,10 @@ const MenuItem: React.FC<IMeal> = ({
       img,
       name,
     }));
+  }
+  const onRemoveMeal = () => {
+    updateCount(count - 1);
+    removeMealFromCart(_id);
   }
   return (
     <Grid item xs={6} sm={4} md={3}>
@@ -118,7 +123,7 @@ const MenuItem: React.FC<IMeal> = ({
               variant='contained'
               disabled={!count}
               className={`${classes.button} ${classes.minusButton}`}
-              onClick={() => updateCount(count - 1)}
+              onClick={() => onRemoveMeal()}
             >
               <RemoveIcon />
             </Button>
@@ -156,37 +161,37 @@ const PlanMenu: React.FC = () => {
       <MenuItem
         _id='1'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl1'
       />
       <MenuItem
         _id='2'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl2'
       />
       <MenuItem
         _id='3'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl3'
       />
       <MenuItem
         _id='4'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl4'
       />
       <MenuItem
         _id='5'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl5'
       />
       <MenuItem
         _id='6'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl6'
       />
       <MenuItem
         _id='7'
         img='placeholderMeal.jpg'
-        name='Rice Bowl'
+        name='Rice Bowl7'
       />
     </Grid>
   )
