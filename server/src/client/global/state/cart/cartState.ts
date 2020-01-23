@@ -71,12 +71,9 @@ type cartMutationResolvers = {
 }
 
 const updateCartCache = (cache: ApolloCache<any>, cart: Cart) => {
-  const data = {
-    cart
-  }
   cache.writeQuery({
     query: CART_QUERY,
-    data,
+    data: { cart }
   });
   return cart;
 }
@@ -85,12 +82,10 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
   query: CART_QUERY
 });
 
-
-
 export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal }, { cache }) => {
     const res = getCart(cache);
-    if (res && res.cart) updateCartCache(cache, res.cart.addMeal(meal));
+    if (res && res.cart) return updateCartCache(cache, res.cart.addMeal(meal));
     return updateCartCache(cache, new Cart({
       meals: [meal],
       restId: null,
@@ -100,7 +95,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   removeMealFromCart: (_, { mealId }, { cache }) => {
     const res = getCart(cache);
-    if (res && res.cart) updateCartCache(cache, res.cart.removeMeal(mealId));
+    if (res && res.cart) return updateCartCache(cache, res.cart.removeMeal(mealId));
     throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
   },
 }
