@@ -1,0 +1,30 @@
+{
+  "rests": {
+    "mappings": {
+      "rest": {
+        "dynamic": "false",
+        "properties": {
+          "meals": {
+            "properties": {
+              "_id": {
+                "type": "keyword"
+              },
+              "image": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "keyword"
+              }
+            },
+            "restId": {
+              "type": "keyword"
+            },
+            "planId": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}
