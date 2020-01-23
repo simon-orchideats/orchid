@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
     padding: 0, 
   },
   logo: {
-    width: 200,
+    width: 180,
     paddingRight: theme.spacing(5),
     cursor: 'pointer',
   },

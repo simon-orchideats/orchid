@@ -17,6 +17,8 @@ const brandInfoDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})
 const brandText = charcoal;
 const brandCanvas = lightGray;
 const brandError = powerRed;
+const toolbarLandscapeQuery = '@media (min-width:0px) and (orientation: landscape)';
+const toolbarWidthQuery = '@media (min-width:600px)'
 
 const theme: ThemeOptions = {
   breakpoints: {
@@ -40,16 +42,17 @@ const theme: ThemeOptions = {
     navbar: {
       marginBottom: 56,
     },
-    drawer: {
-      width: 180,
+    customToolbar: {
+      toolbarLandscapeQuery,
+      toolbarWidthQuery,
     },
     toolbar: {
-      minHeight: 56,
-      '@media (min-width:0px) and (orientation: landscape)': {
-        minHeight: 48
+      height: 56,
+      [toolbarLandscapeQuery]: {
+        height: 48
       },
-      '@media (min-width:600px)': {
-        minHeight: 64
+      [toolbarWidthQuery]: {
+        height: 64
       },
     }
   },
@@ -347,14 +350,18 @@ declare module "@material-ui/core/colors/common" {
   }
 }
 
+// const toolbarLandscapeQuery = '@media (min-width:0px) and (orientation: landscape)';
+// const toolbarWidthQuery = '@media (min-width:600px)'
+
 declare module "@material-ui/core/styles/createMixins" {
   interface Mixins {
     navbar: {
       marginBottom: number
     };
-    drawer: {
-      width: number
-    }
+    customToolbar: {
+      toolbarLandscapeQuery: string
+      toolbarWidthQuery: string
+    };
   }
 }
 

@@ -1,10 +1,19 @@
 import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, TextField, Button, Container } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
+import { CSSProperties } from "@material-ui/styles";
 
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
+    marginTop: -theme.mixins.navbar.marginBottom,
+    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`
+    }
   },
   button: {
     boxShadow: 'none',
@@ -29,11 +38,26 @@ const useStyles = makeStyles(theme => ({
   restTitle: {
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
+    paddingLeft: theme.spacing(1),
   },
   img: {
     position: 'absolute',
     width: '100%',
     height: '100%',
+  },
+  gridContainer: {
+    height: '100%'
+  },
+  cart: {
+    backgroundColor: theme.palette.background.paper,
+    paddingTop: theme.spacing(3),
+    padddingRight: theme.spacing(1),
+    paddingLeft: theme.spacing(1),
+  },
+  menu: {
+    paddingLeft: theme.spacing(1),
+    height: '100%',
+    overflowY: 'scroll',
   },
   input: {
     height: '2em',
@@ -150,10 +174,19 @@ const RestMenu: React.FC<{
 const menu = () => {
   const classes = useStyles();
   return (
-    <Container maxWidth='lg' className={classes.container}>
-      <RestMenu name='Domo' />
-      <RestMenu name='Bar and grille' />
-      <RestMenu name='Kingstons' />
+    <Container maxWidth='lg' disableGutters className={classes.container}>
+      <Grid container alignItems='stretch' className={classes.gridContainer}>
+        <Grid item xs={9} className={classes.menu}>
+          <RestMenu name='Domo' />
+          <RestMenu name='Bar and grille' />
+          <RestMenu name='Kingstons' />
+        </Grid>
+        <Grid item xs={3} className={classes.cart}>
+          <Typography variant='h4'>
+            Your meals
+          </Typography>
+        </Grid>
+      </Grid>
     </Container>
   )  
 }
