@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
 import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
-import { Cart } from "../cart/cartModel";
 import { useGetNearbyRests, useGetRest } from "../rest/restService";
 import { Rest } from "../rest/restModel";
 
@@ -195,12 +194,9 @@ const useSideCartStyles = makeStyles(theme => ({
   },
 }));
 
-const SideCart: React.FC<{
-  cart: Cart | null
-}> = ({
-  cart
-}) => {
+const SideCart: React.FC = () => {
   const classes = useSideCartStyles();
+  const cart = useGetCart();
   const rest = useGetRest(cart ? cart.RestId : null);
   type mealGroup = {
     count: number,
@@ -278,7 +274,6 @@ const useMenuStyles = makeStyles(theme => ({
 
 const menu = () => {
   const classes = useMenuStyles();
-  const cart = useGetCart();
   const rests = useGetNearbyRests('12345');
   return (
     <Container
@@ -293,11 +288,7 @@ const menu = () => {
           className={classes.menu}
         >
           {rests.data && rests.data.map(rest => 
-            <RestMenu
-              key={rest.Id}
-              cart={cart}
-              rest={rest}
-            />
+            <RestMenu key={rest.Id} rest={rest} />
           )}
         </Grid>
         <Grid
@@ -305,7 +296,7 @@ const menu = () => {
           xs={3}
           className={classes.cart}
         >
-          <SideCart cart={cart} />
+          <SideCart />
         </Grid>
       </Grid>
     </Container>
