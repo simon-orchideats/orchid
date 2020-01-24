@@ -1,8 +1,9 @@
-import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip } from "@material-ui/core";
+import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/add';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
-import { useState } from "react";
+import { useState, ChangeEvent, useRef } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
 import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
@@ -130,36 +131,69 @@ const MenuItem: React.FC<{
 const useRestMenuStyles = makeStyles(theme => ({
   restTitle: {
     marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3),
     paddingLeft: theme.spacing(1),
   },
 }))
 
 const RestMenu: React.FC<{
   rest: Rest
+  cart: Cart | null,
 }> = ({
   rest,
+  cart,
 }) => {
   const classes = useRestMenuStyles();
+  const expansionBeforeOutsideClosed = useRef(true);
+  const lastChangeWasManual = useRef(false);
+  const wasOutsideClosed = useRef(false); 
+  const wasOutsideOpened = useRef(false); 
+  const [expanded, setExpanded] = useState(true);
+  const [isForcedOpen, setForcedOpen] = useState(false);
+
+  if (cart && cart.RestId && cart.RestId !== rest.Id && !wasOutsideClosed.current && !isForcedOpen) {
+    expansionBeforeOutsideClosed.current = expanded;
+    lastChangeWasManual.current = false;
+    wasOutsideClosed.current = true;
+    wasOutsideOpened.current = false;
+    setExpanded(false);
+  }
+
+  if (cart && !cart.RestId) {
+    wasOutsideClosed.current = false;
+    if (!wasOutsideOpened.current && !lastChangeWasManual.current) {
+      setExpanded(expansionBeforeOutsideClosed.current);
+      wasOutsideOpened.current = true;
+    }
+    if (isForcedOpen) setForcedOpen(false);
+  }
+
+  const forceToggle = (_e: ChangeEvent<{}>, newExpansion: boolean) => {
+    lastChangeWasManual.current = true;
+    setExpanded(newExpansion);
+  }
   return (
-    <>
-      <Typography variant='h4' className={classes.restTitle}>
-        {rest.Profile.Name}
-      </Typography>
-      <Grid container>
-        {rest.Menu.map(meal => (
-          <Grid
-            item
-            key={meal.Id}
-            xs={6}
-            sm={4}
-            md={3}
-          >
-            <MenuItem restId={rest.Id} meal={meal} />
-          </Grid>
-        ))}
-      </Grid>
-    </>
+    <ExpansionPanel expanded={expanded} onChange={forceToggle}>
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant='h4' className={classes.restTitle}>
+          {rest.Profile.Name}
+        </Typography>
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails>
+        <Grid container>
+          {rest.Menu.map(meal => (
+            <Grid
+              item
+              key={meal.Id}
+              xs={6}
+              sm={4}
+              md={3}
+            >
+              <MenuItem restId={rest.Id} meal={meal} />
+            </Grid>
+          ))}
+        </Grid>
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
   )
 }
 
@@ -170,13 +204,22 @@ const useSideCartStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
   },
   img: {
-    width: 50,
+    width: 55,
     marginRight: theme.spacing(1),
     marginLeft: theme.spacing(1),
   },
   title: {
     paddingBottom: theme.spacing(1)
-  }
+  },
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%'
+  },
+  button: {
+    marginTop: 'auto',
+    marginBottom: theme.spacing(4),
+  },
 }));
 
 const SideCart: React.FC<{
@@ -203,9 +246,9 @@ const SideCart: React.FC<{
     return groupings;
   }, []);
   return (
-    <>
+    <div className={classes.container}>
       <Typography
-        variant='h6'
+        variant='h4'
         color='primary'
         className={classes.title}
       >
@@ -221,12 +264,15 @@ const SideCart: React.FC<{
             alt={mealGroup.meal.Img}
             className={classes.img}
           />
-          <Typography variant='subtitle1'>
+          <Typography variant='h6'>
             {mealGroup.meal.Name.toUpperCase()}
           </Typography>
         </div>
       ))}
-    </>
+      <Button variant='contained' className={classes.button} color='primary'>
+        Next
+      </Button>
+    </div>
   )
 }
 
@@ -262,7 +308,6 @@ const menu = () => {
   const classes = useMenuStyles();
   const cart = useGetCart();
   const rests = useGetNearbyRests('12345');
-  const selectedRest = useGetRest(cart ? cart.RestId : null);
   return (
     <Container
       maxWidth='lg'
@@ -279,13 +324,13 @@ const menu = () => {
           xs={9}
           className={classes.menu}
         >
-          {
-            !selectedRest || !selectedRest.data
-            && rests
-            && rests.data
-            && rests.data.map(rest => <RestMenu key={rest.Id} rest={rest} />)
-          }
-          {selectedRest && selectedRest.data && <RestMenu rest={selectedRest.data} />}
+          {rests.data && rests.data.map(rest => 
+            <RestMenu
+              key={rest.Id}
+              cart={cart}
+              rest={rest}
+            />
+          )}
         </Grid>
         <Grid
           item

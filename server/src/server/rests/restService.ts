@@ -23,27 +23,27 @@ export class RestService {
         menu: [
           new Meal({
             _id: 'meal1',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
           }),
           new Meal({
             _id: 'meal2',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 2'
           }),
           new Meal({
             _id: 'meal3',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 3'
           }),
           new Meal({
             _id: 'meal4',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 4'
           }),
           new Meal({
             _id: 'meal5',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
           }),
         ],
@@ -66,27 +66,27 @@ export class RestService {
         menu: [
           new Meal({
             _id: 'meal21',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
           }),
           new Meal({
             _id: 'meal22',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 2'
           }),
           new Meal({
             _id: 'meal23',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 3'
           }),
           new Meal({
             _id: 'meal24',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 4'
           }),
           new Meal({
             _id: 'meal25',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
           }),
         ],
@@ -109,27 +109,27 @@ export class RestService {
         menu: [
           new Meal({
             _id: 'meal31',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
           }),
           new Meal({
             _id: 'meal32',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 2'
           }),
           new Meal({
             _id: 'meal33',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 3'
           }),
           new Meal({
             _id: 'meal34',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 4'
           }),
           new Meal({
             _id: 'meal35',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
           }),
         ],
@@ -152,27 +152,27 @@ export class RestService {
         menu: [
           new Meal({
             _id: 'meal41',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
           }),
           new Meal({
             _id: 'meal42',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 2'
           }),
           new Meal({
             _id: 'meal43',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 3'
           }),
           new Meal({
             _id: 'meal44',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 4'
           }),
           new Meal({
             _id: 'meal45',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
           }),
         ],
@@ -195,27 +195,27 @@ export class RestService {
         menu: [
           new Meal({
             _id: 'meal51',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
           }),
           new Meal({
             _id: 'meal52',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 2'
           }),
           new Meal({
             _id: 'meal53',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 3'
           }),
           new Meal({
             _id: 'meal54',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 4'
           }),
           new Meal({
             _id: 'meal55',
-            img: 'placeholderMeal.jpg',
+            img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
           }),
         ],
@@ -242,7 +242,7 @@ export class RestService {
       menu: [
         new Meal({
           _id: 'meal00',
-          img: 'placeholderMeal.jpg',
+          img: 'placeholderMeal2.jpg',
           name: 'Ricebowl 1'
         }),
       ],
