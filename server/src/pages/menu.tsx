@@ -4,20 +4,32 @@ import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
 import { useState } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
-import { Meal, IMeal } from "../meal/mealModel";
+import { Meal, IMeal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
+import { Cart } from "../cart/cartModel";
+import { useGetNearbyRests } from "../rest/restService";
+import { Rest } from "../rest/restModel";
 
-const useStyles = makeStyles(theme => ({
-  container: {
+const useMenuItemStyles = makeStyles(theme => ({
+  card: {
+    maxWidth: 225,
     background: 'none',
-    marginTop: -theme.mixins.navbar.marginBottom,
-    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
-    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`
-    },
-    [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`
-    }
+    textAlign: 'center',
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+  },
+  scaler: {
+    width: '100%',
+    paddingBottom: '100%',
+    position: 'relative',
+  },
+  img: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  actionBar: {
+    display: 'flex',
   },
   minusButton: {
     backgroundColor: `${theme.palette.grey[600]}`,
@@ -34,45 +46,6 @@ const useStyles = makeStyles(theme => ({
     color: `${theme.palette.common.white} !important`,
     minWidth: theme.spacing(4),
   },
-  scaler: {
-    width: '100%',
-    paddingBottom: '100%',
-    position: 'relative',
-  },
-  card: {
-    maxWidth: 225,
-    background: 'none',
-    textAlign: 'center',
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-  },
-  actionBar: {
-    display: 'flex',
-  },
-  restTitle: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3),
-    paddingLeft: theme.spacing(1),
-  },
-  img: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  gridContainer: {
-    height: '100%'
-  },
-  cart: {
-    backgroundColor: theme.palette.background.paper,
-    paddingTop: theme.spacing(3),
-    paddingRight: theme.spacing(1),
-    paddingLeft: theme.spacing(1),
-  },
-  menu: {
-    paddingLeft: theme.spacing(1),
-    height: '100%',
-    overflowY: 'scroll',
-  },
   chip: {
     flex: 1,
     fontSize: '1.2rem',
@@ -83,14 +56,14 @@ const useStyles = makeStyles(theme => ({
   disabledChip: {
     color: theme.palette.text.disabled,
   }
-}))
+}));
 
 const MenuItem: React.FC<IMeal> = ({
   _id,
   img,
   name,
 }) => {
-  const classes = useStyles();
+  const classes = useMenuItemStyles();
   const [count, updateCount] = useState(0);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
@@ -107,132 +80,214 @@ const MenuItem: React.FC<IMeal> = ({
     removeMealFromCart(_id);
   }
   return (
-    <Grid item xs={6} sm={4} md={3}>
-      <Card elevation={0} className={classes.card}>
-        <div className={classes.scaler}>
-          <CardMedia
-            className={classes.img}
-            image={img}
-            title={img}
+    <Card elevation={0} className={classes.card}>
+      <div className={classes.scaler}>
+        <CardMedia
+          className={classes.img}
+          image={img}
+          title={img}
+        />
+      </div>
+      <CardContent>
+        <div className={classes.actionBar}>
+          <Button
+            size='small'
+            variant='contained'
+            disabled={!count}
+            className={`${classes.button} ${classes.minusButton}`}
+            onClick={() => onRemoveMeal()}
+          >
+            <RemoveIcon />
+          </Button>
+          <Chip
+            className={classes.chip}
+            disabled={!count}
+            label={count}
+            variant='outlined'
+            classes={{
+              disabled: classes.disabledChip
+            }}
           />
+          <Button
+            size='small'
+            variant='contained'
+            color='primary'
+            className={classes.button}
+            onClick={() => onAddMeal()}
+          >
+            <AddIcon />
+          </Button>
         </div>
-        <CardContent>
-          <div className={classes.actionBar}>
-            <Button
-              size='small'
-              variant='contained'
-              disabled={!count}
-              className={`${classes.button} ${classes.minusButton}`}
-              onClick={() => onRemoveMeal()}
-            >
-              <RemoveIcon />
-            </Button>
-            <Chip
-              className={classes.chip}
-              disabled={!count}
-              label={count}
-              variant='outlined'
-              classes={{
-                disabled: classes.disabledChip
-              }}
-            />
-            <Button
-              size='small'
-              variant='contained'
-              color='primary'
-              className={classes.button}
-              onClick={() => onAddMeal()}
-            >
-              <AddIcon />
-            </Button>
-          </div>
-          <Typography gutterBottom variant='subtitle1'>
-            {name.toUpperCase()}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Grid>
+        <Typography gutterBottom variant='subtitle1'>
+          {name.toUpperCase()}
+        </Typography>
+      </CardContent>
+    </Card>
   )
 }
 
-const PlanMenu: React.FC = () => {
-  return (
-    <Grid container>
-      <MenuItem
-        _id='1'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl1'
-      />
-      <MenuItem
-        _id='2'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl2'
-      />
-      <MenuItem
-        _id='3'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl3'
-      />
-      <MenuItem
-        _id='4'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl4'
-      />
-      <MenuItem
-        _id='5'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl5'
-      />
-      <MenuItem
-        _id='6'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl6'
-      />
-      <MenuItem
-        _id='7'
-        img='placeholderMeal.jpg'
-        name='Rice Bowl7'
-      />
-    </Grid>
-  )
-}
+const useRestMenuStyles = makeStyles(theme => ({
+  restTitle: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
+    paddingLeft: theme.spacing(1),
+  },
+}))
 
 const RestMenu: React.FC<{
-  name: string,
+  rest: Rest
 }> = ({
-  name
+  rest,
 }) => {
-  const classes = useStyles();
+  const classes = useRestMenuStyles();
   return (
     <>
       <Typography variant='h4' className={classes.restTitle}>
-        {name}
+        {rest.Profile.Name}
       </Typography>
-      <PlanMenu />
+      <Grid container>
+        {rest.Menu.map(meal => (
+          <Grid
+            item
+            key={meal.Id}
+            xs={6}
+            sm={4}
+            md={3}
+          >
+            <MenuItem
+              _id={meal.Id}
+              img={meal.Img}
+              name={meal.Name}
+            />
+          </Grid>
+        ))}
+      </Grid>
     </>
   )
 }
 
-const menu = () => {
-  const classes = useStyles();
-  const cart = useGetCart();
+const useSideCartStyles = makeStyles(theme => ({
+  group: {
+    display: 'flex',
+    alignItems: 'center',
+    paddingBottom: theme.spacing(2),
+  },
+  img: {
+    width: 50,
+    marginRight: theme.spacing(1),
+    marginLeft: theme.spacing(1),
+  },
+  title: {
+    paddingBottom: theme.spacing(1)
+  }
+}));
+
+const SideCart: React.FC<{
+  cart: Cart | null
+}> = ({
+  cart
+}) => {
+  const classes = useSideCartStyles();
+  type mealGroup = {
+    count: number,
+    meal: Meal,
+  }
+  const groupedMeals = cart && cart.Meals.reduce<mealGroup[]>((groupings, meal) => {
+    const groupIndex = groupings.findIndex(group => group.meal.Id === meal.Id);
+    if (groupIndex === -1) {
+      groupings.push({
+        count: 1,
+        meal,
+      })
+    } else {
+      groupings[groupIndex].count++;
+    }
+    return groupings;
+  }, []);
   return (
-    <Container maxWidth='lg' disableGutters className={classes.container}>
-      <Grid container alignItems='stretch' className={classes.gridContainer}>
-        <Grid item xs={9} className={classes.menu}>
-          <RestMenu name='Domo' />
-          <RestMenu name='Bar and grille' />
-          <RestMenu name='Kingstons' />
-        </Grid>
-        <Grid item xs={3} className={classes.cart}>
-          <Typography variant='h6'>
-            Your meals
+    <>
+      <Typography
+        variant='h6'
+        color='primary'
+        className={classes.title}
+      >
+        Your meals
+      </Typography>
+      {groupedMeals && groupedMeals.map(mealGroup => (
+        <div key={mealGroup.meal.Id} className={classes.group}>
+          <Typography variant='body1'>
+            {mealGroup.count}
           </Typography>
-          {cart && cart.Meals.map((meal, index) => (
-            <Typography key={index}>
-              {meal.Name}
-            </Typography>
-          ))}
+          <img
+            src={mealGroup.meal.Img}
+            alt={mealGroup.meal.Img}
+            className={classes.img}
+          />
+          <Typography variant='subtitle1'>
+            {mealGroup.meal.Name.toUpperCase()}
+          </Typography>
+        </div>
+      ))}
+    </>
+  )
+}
+
+const useMenuStyles = makeStyles(theme => ({
+  container: {
+    background: 'none',
+    marginTop: -theme.mixins.navbar.marginBottom,
+    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`
+    }
+  },
+  gridContainer: {
+    height: '100%'
+  },
+  menu: {
+    paddingLeft: theme.spacing(1),
+    height: '100%',
+    overflowY: 'scroll',
+  },
+  cart: {
+    backgroundColor: theme.palette.background.paper,
+    paddingTop: theme.spacing(3),
+    paddingRight: theme.spacing(1),
+    paddingLeft: theme.spacing(1),
+  },
+}));
+
+const menu = () => {
+  const classes = useMenuStyles();
+  const cart = useGetCart();
+  const rests = useGetNearbyRests('12345');
+  return (
+    <Container
+      maxWidth='lg'
+      disableGutters
+      className={classes.container}
+    >
+      <Grid
+        container
+        alignItems='stretch'
+        className={classes.gridContainer}
+      >
+        <Grid
+          item
+          xs={9}
+          className={classes.menu}
+        >
+          {rests && rests.data && rests.data.map(rest => <RestMenu key={rest.Id} rest={rest} />)}
+        </Grid>
+        <Grid
+          item
+          xs={3}
+          className={classes.cart}
+        >
+          <SideCart cart={cart} />
         </Grid>
       </Grid>
     </Container>

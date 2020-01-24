@@ -1,5 +1,5 @@
 import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden } from '@material-ui/core';
-import PlanChooser from '../client/plans/PlanChooser';
+import PlanChooser from '../client/plan/PlanChooser';
 
 const useStyles = makeStyles(theme => ({
   centered: {

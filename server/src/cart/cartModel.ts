@@ -1,4 +1,4 @@
-import { IMeal, Meal } from './../meal/mealModel';
+import { IMeal, Meal } from '../rest/mealModel';
 
 export interface ICart {
   readonly meals: IMeal[];

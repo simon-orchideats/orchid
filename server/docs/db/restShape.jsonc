@@ -93,7 +93,7 @@
                   }
                 }
               },
-              "image": {
+              "img": {
                 "type": "keyword"
               },
               "name": {

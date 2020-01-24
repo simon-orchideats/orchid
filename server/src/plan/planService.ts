@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { IPlan, Plan } from '../../../plans/planModel';
+import { IPlan, Plan } from './planModel';
 import { useQuery } from '@apollo/react-hooks';
 
 const useGetAvailablePlans = () => {

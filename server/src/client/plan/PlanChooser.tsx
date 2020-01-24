@@ -1,6 +1,6 @@
 import { makeStyles, Button, Grid } from '@material-ui/core';
 import { isServer } from '../utils/isServer';
-import { useGetAvailablePlans } from '../global/plans/planService';
+import { useGetAvailablePlans } from '../../plan/planService';
 import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
 

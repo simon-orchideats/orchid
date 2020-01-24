@@ -1,5 +1,3 @@
-import { Context } from './server/schema/utilModels';
-import { getPlanService } from './server/plans/planService';
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
  * endpoints in /pages/api. For an apollo example of this, see
@@ -44,14 +42,11 @@ const start = async () => {
     });
   }
 
-  const context: Context = {
-    PlanService: getPlanService(),
-  }
+
   const apolloServer = new ApolloServer({
     schema,
     context: () => ({
       signedInUser: 'testUser',
-      ...context
     }),
   });
 

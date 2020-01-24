@@ -1,6 +1,6 @@
-import { Plan } from "../../plans/planModel";
+import { Plan } from "../../plan/planModel";
 
-export class PlanService {
+class PlanService {
   constructor() {}
 
   getAvailablePlans() {
