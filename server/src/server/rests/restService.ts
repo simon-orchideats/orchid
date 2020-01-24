@@ -22,6 +22,16 @@ export class RestService {
         }),
         menu: [
           new Meal({
+            _id: 'meal01',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 01'
+          }),
+          new Meal({
+            _id: 'meal02',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 02'
+          }),
+          new Meal({
             _id: 'meal1',
             img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 1'
@@ -64,6 +74,16 @@ export class RestService {
           timezone: 'America/New_York'
         }),
         menu: [
+          new Meal({
+            _id: 'meal201',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 01'
+          }),
+          new Meal({
+            _id: 'meal202',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 02'
+          }),
           new Meal({
             _id: 'meal21',
             img: 'placeholderMeal2.jpg',
@@ -131,6 +151,16 @@ export class RestService {
             _id: 'meal35',
             img: 'placeholderMeal2.jpg',
             name: 'Ricebowl 5'
+          }),
+          new Meal({
+            _id: 'meal36',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 6'
+          }),
+          new Meal({
+            _id: 'meal37',
+            img: 'placeholderMeal.jpg',
+            name: 'Ricebowl 7'
           }),
         ],
         profile: new Profile({

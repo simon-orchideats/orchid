@@ -34,6 +34,10 @@ const useStyles = makeStyles(theme => ({
   largeBottomPadding: {
     paddingBottom: theme.spacing(8),
   },
+  verticalPadding: {
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
   largeBottomMargin: {
     marginBottom: theme.spacing(4),
   },
@@ -44,6 +48,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
     },
+    backgroundColor: theme.palette.secondary.main,    
   },
   potatoes: {
     [theme.breakpoints.down('lg')]: {
@@ -243,36 +248,36 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
         </Grid>
-        <Grid container className={`${classes.largeBottomMargin} ${classes.benefits}`}>
-          <Grid item xs={12}>
-            <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
-              Benefits
-            </Typography>
-          </Grid>
-          <Grid item xs={2} />
-          <BenefitTextBox
-            title='Sustainable'
-            description='yadayda. support local business. locally sourced food. take it a step further and combine your delivery times.'
-          />
-          <Grid item xs={2} />
-          <BenefitTextBox
-            title='Affordable'
-            description='Bulk and save. cheaper than eating out all the time.'
-          />
-          <Grid item xs={2} />
-          <Grid item xs={2} />
-          <BenefitTextBox
-            title='Convenient'
-            description='No microwave. No oven. Just eat. Send meals to your office, home or both. Customize your delivery schedule to suit you.'
-          />
-          <Grid item xs={2} />
-          <BenefitTextBox
-            title='Variety'
-            description='Ultimate variety from a endless array of restaurants.'
-          />
-          <Grid item xs={2} />
-        </Grid>
       </Container>
+      <Grid container className={`${classes.verticalPadding} ${classes.benefits}`}>
+        <Grid item xs={12}>
+          <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+            Benefits
+          </Typography>
+        </Grid>
+        <Grid item xs={2} />
+        <BenefitTextBox
+          title='Sustainable'
+          description='yadayda. support local business. locally sourced food. take it a step further and combine your delivery times.'
+        />
+        <Grid item xs={2} />
+        <BenefitTextBox
+          title='Affordable'
+          description='Bulk and save. cheaper than eating out all the time.'
+        />
+        <Grid item xs={2} />
+        <Grid item xs={2} />
+        <BenefitTextBox
+          title='Convenient'
+          description='No microwave. No oven. Just eat. Send meals to your office, home or both. Customize your delivery schedule to suit you.'
+        />
+        <Grid item xs={2} />
+        <BenefitTextBox
+          title='Variety'
+          description='Ultimate variety from a endless array of restaurants.'
+        />
+        <Grid item xs={2} />
+      </Grid>
       <Faq />
       <Paper elevation={0} className={`${classes.largeBottomPadding} ${classes.centered} ${classes.footer}`}>
         <Button variant='contained' color='primary'>GET STARTED</Button>

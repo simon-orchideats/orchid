@@ -214,11 +214,15 @@ const useSideCartStyles = makeStyles(theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100%'
+    height: '100%',
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(4),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper,
   },
   button: {
     marginTop: 'auto',
-    marginBottom: theme.spacing(4),
   },
 }));
 
@@ -280,27 +284,26 @@ const useMenuStyles = makeStyles(theme => ({
   container: {
     background: 'none',
     marginTop: -theme.mixins.navbar.marginBottom,
-    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
-    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`
-    },
-    [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`
-    }
-  },
-  gridContainer: {
-    height: '100%'
   },
   menu: {
-    paddingLeft: theme.spacing(1),
-    height: '100%',
-    overflowY: 'scroll',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingRight: theme.spacing(2),
   },
   cart: {
-    backgroundColor: theme.palette.background.paper,
-    paddingTop: theme.spacing(3),
-    paddingRight: theme.spacing(1),
-    paddingLeft: theme.spacing(1),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    position: 'sticky',
+    top: theme.mixins.toolbar.height,
+    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`,
+      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`,
+      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height
+    },
   },
 }));
 
@@ -314,11 +317,7 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
-      <Grid
-        container
-        alignItems='stretch'
-        className={classes.gridContainer}
-      >
+      <Grid container alignItems='stretch'>
         <Grid
           item
           xs={9}
