@@ -66,7 +66,10 @@ const MenuItem: React.FC<{
   restId
 }) => {
   const classes = useMenuItemStyles();
-  const [count, updateCount] = useState(0);
+  const cart = useGetCart();
+  const cartMeal = cart && cart.Meals.filter(m => m.Id === meal.Id);
+  const defaultCount = cartMeal ? cartMeal.length : 0;
+  const [count, updateCount] = useState(defaultCount);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
@@ -259,6 +262,7 @@ const menu = () => {
   const classes = useMenuStyles();
   const cart = useGetCart();
   const rests = useGetNearbyRests('12345');
+  const selectedRest = useGetRest(cart ? cart.RestId : null);
   return (
     <Container
       maxWidth='lg'
@@ -275,7 +279,13 @@ const menu = () => {
           xs={9}
           className={classes.menu}
         >
-          {rests && rests.data && rests.data.map(rest => <RestMenu key={rest.Id} rest={rest} />)}
+          {
+            !selectedRest || !selectedRest.data
+            && rests
+            && rests.data
+            && rests.data.map(rest => <RestMenu key={rest.Id} rest={rest} />)
+          }
+          {selectedRest && selectedRest.data && <RestMenu rest={selectedRest.data} />}
         </Grid>
         <Grid
           item
