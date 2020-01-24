@@ -153,7 +153,13 @@ export function initApolloClient(initialState?: any) {
  */
 function createApolloClient(initialState = {}) {
   const ssrMode = isServer();
-  const cache = new InMemoryCache().restore(initialState);
+  const cache = new InMemoryCache({
+    cacheRedirects: {
+      Query: {
+        rest: (_root, { restId }, { getCacheKey }) => getCacheKey({ __typename: 'Rest', _id: restId })
+      }
+    }
+  }).restore(initialState);
   cache.writeData({
     data: clientInitialState
   });

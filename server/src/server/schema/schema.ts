@@ -11,6 +11,7 @@ const query = gql`
     test: String!
     availablePlans: [Plan!]!
     nearbyRests(zip: String): [Rest!]!
+    rest(restId: ID!): Rest!
   }
 `
 

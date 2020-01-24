@@ -1,6 +1,7 @@
 import { IRest, Rest } from './restModel';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import { restFragment } from './restFragment';
 
 const useGetNearbyRests = (zip: string) => {
   type res = {
@@ -10,27 +11,10 @@ const useGetNearbyRests = (zip: string) => {
     gql`
       query nearbyRests($zip: String) {
         nearbyRests(zip: $zip) {
-          _id
-          location {
-            address {
-              address1
-              address2
-              city
-              state
-              zip
-            }
-          }
-          menu {
-            _id
-            img
-            name
-          }
-          profile {
-            name
-            phone
-          }
+          ...restFragment
         }
       }
+      ${restFragment}
     `, 
     {
       variables: { zip },
@@ -43,6 +27,32 @@ const useGetNearbyRests = (zip: string) => {
   }
 }
 
+const useGetRest = (restId: string | null) => {
+  type res = {
+    rest: IRest
+  }
+  const res = useQuery<res>(
+    gql`
+      query rest($restId: ID!) {
+        rest(restId: $restId) {
+          ...restFragment
+        }
+      }
+      ${restFragment}
+    `, 
+    {
+      skip: !restId,
+      variables: { restId },
+    }
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: res.data ? new Rest(res.data.rest) : res.data
+  }
+}
+
 export {
   useGetNearbyRests,
+  useGetRest
 }

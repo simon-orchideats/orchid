@@ -226,6 +226,32 @@ export class RestService {
       }),
     ];
   }
+
+  getRest(restId: string) {
+    return new Rest({
+      _id: restId,
+      location: new Location({
+        address: new Address({
+          address1: '100 greene st',
+          city: 'Jersey City',
+          state: 'NJ',
+          zip: '12345'
+        }),
+        timezone: 'America/New_York'
+      }),
+      menu: [
+        new Meal({
+          _id: 'meal00',
+          img: 'placeholderMeal.jpg',
+          name: 'Ricebowl 1'
+        }),
+      ],
+      profile: new Profile({
+        name: 'Domo6',
+        phone: '609-513-8166',
+      })
+    });
+  }
 }
 
 let restService: RestService;

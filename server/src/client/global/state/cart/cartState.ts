@@ -41,15 +41,15 @@ export const useGetCart = () => {
   return queryRes.data ? queryRes.data.cart : null
 }
 
-export const useAddMealToCart = (): (meal: Meal) => void => {
-  type vars = { meal: Meal };
+export const useAddMealToCart = (): (meal: Meal, restId: string) => void => {
+  type vars = { meal: Meal, restId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation addMealToCart($meal: Meal!) {
-      addMealToCart(meal: $meal) @client
+    mutation addMealToCart($meal: Meal!, $restId: ID!) {
+      addMealToCart(meal: $meal, restId: $restId) @client
     }
   `);
-  return (meal: Meal) => {
-    mutate({ variables: { meal } })
+  return (meal: Meal, restId: string) => {
+    mutate({ variables: { meal, restId } })
   }
 }
 
@@ -66,7 +66,7 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
 }
 
 type cartMutationResolvers = {
-  addMealToCart: ClientResolver<{ meal: Meal }, Cart | null>
+  addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
 }
 
@@ -83,19 +83,37 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 });
 
 export const cartMutationResolvers: cartMutationResolvers = {
-  addMealToCart: (_, { meal }, { cache }) => {
+  addMealToCart: (_, { meal, restId }, { cache }) => {
     const res = getCart(cache);
-    if (res && res.cart) return updateCartCache(cache, res.cart.addMeal(meal));
+    if (!res || !res.cart) {
+      return updateCartCache(cache, new Cart({
+        meals: [meal],
+        restId,
+        planId: null,
+      }));
+    }
+    if (res.cart.restId && res.cart.restId !== restId) {
+      throw new Error(`Cannot add meals from new restId ${restId} since cart already holds items from ${res.cart.restId}`);
+    }
+    const newCart = res.cart.addMeal(meal);
     return updateCartCache(cache, new Cart({
-      meals: [meal],
-      restId: null,
-      planId: null,
+      meals: newCart.Meals,
+      restId,
+      planId: newCart.PlanId
     }));
   },
 
   removeMealFromCart: (_, { mealId }, { cache }) => {
     const res = getCart(cache);
-    if (res && res.cart) return updateCartCache(cache, res.cart.removeMeal(mealId));
-    throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
+    if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
+    let newCart = res.cart.removeMeal(mealId);
+    if (newCart.Meals.length === 0) {
+      newCart = new Cart({
+        meals: [],
+        restId: null,
+        planId: newCart.PlanId,
+      });
+    }
+    return updateCartCache(cache, newCart);
   },
 }

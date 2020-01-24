@@ -4,10 +4,10 @@ import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
 import { useState } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
-import { Meal, IMeal } from "../rest/mealModel";
+import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
 import { Cart } from "../cart/cartModel";
-import { useGetNearbyRests } from "../rest/restService";
+import { useGetNearbyRests, useGetRest } from "../rest/restService";
 import { Rest } from "../rest/restModel";
 
 const useMenuItemStyles = makeStyles(theme => ({
@@ -58,10 +58,12 @@ const useMenuItemStyles = makeStyles(theme => ({
   }
 }));
 
-const MenuItem: React.FC<IMeal> = ({
-  _id,
-  img,
-  name,
+const MenuItem: React.FC<{
+  meal: Meal,
+  restId: string,
+}> = ({
+  meal,
+  restId
 }) => {
   const classes = useMenuItemStyles();
   const [count, updateCount] = useState(0);
@@ -69,23 +71,19 @@ const MenuItem: React.FC<IMeal> = ({
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
     updateCount(count + 1);
-    addMealToCart(new Meal({
-      _id,
-      img,
-      name,
-    }));
+    addMealToCart(new Meal(meal), restId);
   }
   const onRemoveMeal = () => {
     updateCount(count - 1);
-    removeMealFromCart(_id);
+    removeMealFromCart(meal.Id);
   }
   return (
     <Card elevation={0} className={classes.card}>
       <div className={classes.scaler}>
         <CardMedia
           className={classes.img}
-          image={img}
-          title={img}
+          image={meal.Img}
+          title={meal.Img}
         />
       </div>
       <CardContent>
@@ -119,7 +117,7 @@ const MenuItem: React.FC<IMeal> = ({
           </Button>
         </div>
         <Typography gutterBottom variant='subtitle1'>
-          {name.toUpperCase()}
+          {meal.Name.toUpperCase()}
         </Typography>
       </CardContent>
     </Card>
@@ -154,11 +152,7 @@ const RestMenu: React.FC<{
             sm={4}
             md={3}
           >
-            <MenuItem
-              _id={meal.Id}
-              img={meal.Img}
-              name={meal.Name}
-            />
+            <MenuItem restId={rest.Id} meal={meal} />
           </Grid>
         ))}
       </Grid>
@@ -188,6 +182,7 @@ const SideCart: React.FC<{
   cart
 }) => {
   const classes = useSideCartStyles();
+  const rest = useGetRest(cart ? cart.RestId : null);
   type mealGroup = {
     count: number,
     meal: Meal,
@@ -211,7 +206,7 @@ const SideCart: React.FC<{
         color='primary'
         className={classes.title}
       >
-        Your meals
+        {rest.data ? `Meals from ${rest.data.Profile.Name}` : 'Your meals'}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
         <div key={mealGroup.meal.Id} className={classes.group}>
