@@ -1,8 +1,9 @@
-import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip, Paper } from "@material-ui/core";
+import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { CSSProperties } from "@material-ui/styles";
-import { useState } from "react";
+import { useState, ChangeEvent, useRef } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cartState";
 import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
@@ -132,36 +133,66 @@ const useRestMenuStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
     paddingLeft: theme.spacing(1),
   },
-  paper: {
-    marginBottom: theme.spacing(2),
-  }
 }))
 
 const RestMenu: React.FC<{
   rest: Rest
 }> = ({
-  rest,
+  rest
 }) => {
   const classes = useRestMenuStyles();
+  const cart = useGetCart();
+  const expansionBeforeOutsideClosed = useRef(true);
+  const lastChangeWasManual = useRef(false);
+  const wasOutsideClosed = useRef(false); 
+  const wasOutsideOpened = useRef(false); 
+  const [expanded, setExpanded] = useState(true);
+  const [isForcedOpen, setForcedOpen] = useState(false);
+
+  if (cart && cart.RestId && cart.RestId !== rest.Id && !wasOutsideClosed.current && !isForcedOpen) {
+    expansionBeforeOutsideClosed.current = expanded;
+    lastChangeWasManual.current = false;
+    wasOutsideClosed.current = true;
+    wasOutsideOpened.current = false;
+    setExpanded(false);
+  }
+
+  if (cart && !cart.RestId) {
+    wasOutsideClosed.current = false;
+    if (!wasOutsideOpened.current && !lastChangeWasManual.current) {
+      setExpanded(expansionBeforeOutsideClosed.current);
+      wasOutsideOpened.current = true;
+    }
+    if (isForcedOpen) setForcedOpen(false);
+  }
+
+  const forceToggle = (_e: ChangeEvent<{}>, newExpansion: boolean) => {
+    lastChangeWasManual.current = true;
+    setExpanded(newExpansion);
+  }
   return (
-    <Paper className={classes.paper}>
-      <Typography variant='h4' className={classes.restTitle}>
-        {rest.Profile.Name}
-      </Typography>
-      <Grid container>
-        {rest.Menu.map(meal => (
-          <Grid
-            item
-            key={meal.Id}
-            xs={6}
-            sm={4}
-            md={3}
-          >
-            <MenuItem restId={rest.Id} meal={meal} />
-          </Grid>
-        ))}
-      </Grid>
-    </Paper>
+    <ExpansionPanel expanded={expanded} onChange={forceToggle}>
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant='h4' className={classes.restTitle}>
+          {rest.Profile.Name}
+        </Typography>
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails>
+        <Grid container>
+          {rest.Menu.map(meal => (
+            <Grid
+              item
+              key={meal.Id}
+              xs={6}
+              sm={4}
+              md={3}
+            >
+              <MenuItem restId={rest.Id} meal={meal} />
+            </Grid>
+          ))}
+        </Grid>
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
   )
 }
 
