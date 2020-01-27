@@ -3,7 +3,7 @@ import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
 import { CSSProperties } from "@material-ui/styles";
 import { useState } from "react";
-import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cart/cartState";
+import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cartState";
 import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetRest } from "../rest/restService";

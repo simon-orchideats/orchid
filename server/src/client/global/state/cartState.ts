@@ -1,7 +1,7 @@
 import { ApolloCache } from 'apollo-cache';
-import { Meal } from '../../../../rest/mealModel';
-import { Cart } from '../../../../cart/cartModel';
-import { ClientResolver } from '../localState';
+import { Meal } from '../../../rest/mealModel';
+import { Cart } from '../../../cart/cartModel';
+import { ClientResolver } from './localState';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
@@ -9,7 +9,7 @@ type cartQueryRes = {
   cart: Cart | null
 };
 
-export const cartTypeDefs = gql`
+export const cartQL = gql`
   type Meal {
     _id: ID!
     img: String!

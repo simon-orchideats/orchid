@@ -1,10 +1,11 @@
 import { Resolvers } from 'apollo-client';
 import { ApolloCache } from 'apollo-cache';
 import {
-  cartTypeDefs,
+  cartQL,
   cartMutationResolvers,
   cartInitialState,
-} from './cart/cartState';
+} from './cartState';
+import { notificationMutationResolvers, notificationQL, notificationInitialState } from './notificationState';
 
 type Cache = { cache: ApolloCache<any> };
 
@@ -24,16 +25,19 @@ interface ClientResolvers extends Resolvers {
 
 const clientResolvers: ClientResolvers = {
   Mutation: {
-    ...cartMutationResolvers
+    ...cartMutationResolvers,
+    ...notificationMutationResolvers,
   },
 };
 
 const clientInitialState = {
-  cart: cartInitialState
+  cart: cartInitialState,
+  notification: notificationInitialState,
 }
 
 const clientTypeDefs = [
-  cartTypeDefs,
+  cartQL,
+  notificationQL
 ]
 
 export {

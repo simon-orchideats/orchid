@@ -1,3 +1,4 @@
+import { NotificationType } from '../../notification/notificationModel';
 import { createMuiTheme, Theme } from "@material-ui/core";
 import { ThemeOptions } from "@material-ui/core/styles/createMuiTheme";
 
@@ -6,16 +7,19 @@ const lightGray = '#f9f9f9';
 const charcoal = '#3c3c3c';
 const leafGreen = '#28590C';
 const white = "#ffffff";
+const powerGreen = '#3d9241';
+const powerOrange = '#ffa000';
 const powerRed = '#f44336'
 
 const brandBase = white;
 const brandPrimary = leafGreen;
-const brandPrimaryOpacity = (opacity: number) => `rgba(83, 106, 79, ${opacity})` 
 const brandInfo = floralWhite;
 const brandInfoLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
 const brandInfoDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})`
 const brandText = charcoal;
 const brandCanvas = lightGray;
+const brandSuccess = powerGreen;
+const brandWarning = powerOrange;
 const brandError = powerRed;
 const toolbarLandscapeQuery = '@media (min-width:0px) and (orientation: landscape)';
 const toolbarWidthQuery = '@media (min-width:600px)'
@@ -121,7 +125,9 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
-      brandPrimaryOpacity,
+      success: brandSuccess,
+      warning: brandWarning,
+      error: brandError,
     },
     type: 'light',
     primary: {
@@ -343,8 +349,9 @@ const theme: ThemeOptions = {
 
 declare module "@material-ui/core/colors/common" {
   interface CommonColors {
-    brandPrimaryOpacity: (opacity: number) => string;
-    loading: string;
+    [NotificationType.success]: string;
+    [NotificationType.warning]: string;
+    [NotificationType.error]: string;
   }
 }
 
