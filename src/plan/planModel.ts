@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 export interface IPlan {
   readonly _id: string;
   readonly mealCount: number;
@@ -22,4 +24,9 @@ export class Plan implements IPlan {
   public get MealCount() { return this.mealCount }
   public get MealPrice() { return this.mealPrice }
   public get WeekPrice() { return this.weekPrice }
+  public static getPlanCounts(plans?: Plan[]) {
+    return useMemo(() => {
+      return plans && plans.reduce<number[]>(((acc, plan) => [...acc, plan.mealCount]), [])
+    }, [plans])
+  }
 }

@@ -1,9 +1,10 @@
-import { makeStyles, Typography, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button, Grid } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import { Meal } from "../../rest/mealModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
+import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
@@ -28,6 +29,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
   },
   container: {
+    overflowY: 'scroll',
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
@@ -42,26 +44,11 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const getSuggestion = (currCount: number, plans?: Plan[]) => {
-  if (!plans) return '';
-  for (let i = 0; i < plans.length; i++) {
-    const mealCount = plans[i].MealCount;
-    if (currCount < mealCount) return `Add ${mealCount - currCount} more for ${plans[i].MealPrice.toFixed(2)} per meal`;
-    if (currCount === mealCount && i === plans.length - 1) return '';
-    if (currCount > mealCount && i === plans.length - 1) return `Remove ${currCount - mealCount}`;
-  }
-}
-
 const SideCart: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const plans = useGetAvailablePlans();
-  const sortedPlans = plans.data && plans.data.sort((p1, p2) => {
-    if (p1.MealCount === p2.MealCount) return 0;
-    if (p1.MealCount > p2.MealCount) return 1;
-    return -1;
-  })
-  const planCounts = plans.data && plans.data.reduce<number[]>(((acc, plan) => [...acc, plan.mealCount]), [])
+  const sortedPlans = useGetAvailablePlans();
+  const planCounts = Plan.getPlanCounts(sortedPlans.data);
   const rest = useGetRest(cart ? cart.RestId : null);
   const mealCount = cart ? cart.Meals.length : 0;
   const disabled = mealCount === 0 || (planCounts && !planCounts.includes(mealCount));
@@ -89,24 +76,30 @@ const SideCart: React.FC = () => {
       >
         {rest.data ? `Meals from ${rest.data.Profile.Name}` : 'Your meals'}
       </Typography>
-      {groupedMeals && groupedMeals.map(mealGroup => (
-        <div key={mealGroup.meal.Id} className={classes.group}>
-          <Typography variant='body1'>
-            {mealGroup.count}
-          </Typography>
-          <img
-            src={mealGroup.meal.Img}
-            alt={mealGroup.meal.Img}
-            className={classes.img}
-          />
-          <Typography variant='h6'>
-            {mealGroup.meal.Name.toUpperCase()}
-          </Typography>
-        </div>
-      ))}
+        {groupedMeals && groupedMeals.map(mealGroup => (
+          <Grid container key={mealGroup.meal.Id} className={classes.group}>
+            <Grid item sm={1}>
+              <Typography variant='body1'>
+                {mealGroup.count}
+              </Typography>
+            </Grid>
+            <Grid item sm={4}>
+              <img
+                src={mealGroup.meal.Img}
+                alt={mealGroup.meal.Img}
+                className={classes.img}
+              />
+            </Grid>
+            <Grid item sm={7}>
+              <Typography variant='h6'>
+                {mealGroup.meal.Name.toUpperCase()}
+              </Typography>
+            </Grid>
+          </Grid>
+        ))}
       <div className={classes.bottom}>
         <Typography variant='body1' className={classes.suggestion}>
-          {getSuggestion(mealCount, sortedPlans)}
+          {getSuggestion(mealCount, sortedPlans.data)}
         </Typography>
         <Button
           disabled={disabled}
@@ -115,7 +108,7 @@ const SideCart: React.FC = () => {
           className={classes.button}
           fullWidth
         >
-          {disabled ? 'Continue' : `Continue w/ ${mealCount} meal plan`}
+          {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
         </Button>
       </div>
     </div>

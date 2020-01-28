@@ -63,7 +63,7 @@ const RestMenu: React.FC<{
               key={meal.Id}
               xs={6}
               sm={4}
-              md={3}
+              lg={3}
             >
               <MenuMeal restId={rest.Id} meal={meal} />
             </Grid>

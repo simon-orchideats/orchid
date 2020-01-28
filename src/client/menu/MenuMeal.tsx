@@ -13,6 +13,10 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
   },
+  content: {
+    paddingRight: 0,
+    paddingLeft: 0,
+  },
   scaler: {
     width: '100%',
     paddingBottom: '100%',
@@ -84,7 +88,7 @@ const MenuMeal: React.FC<{
           title={meal.Img}
         />
       </div>
-      <CardContent>
+      <CardContent className={classes.content}>
         <div className={classes.actionBar}>
           <Button
             size='small'

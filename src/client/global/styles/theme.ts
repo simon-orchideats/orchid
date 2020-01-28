@@ -39,8 +39,8 @@ const theme: ThemeOptions = {
       xs: 0,
       sm: 450,
       md: 768,
-      lg: 1280,
-      xl: 1920
+      lg: 960,
+      xl: 1280
     }
   },
   direction: 'ltr',
