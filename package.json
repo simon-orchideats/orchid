@@ -10,7 +10,6 @@
     "dev": "nodemon",
     "build": "next build && tsc --project tsconfig.server.json",
     "prod": "cross-env NODE_ENV=production node build/server.js",
-    "heroku-postbuild": "npm run build",
     "heroku-logs": "heroku logs --tail -a saute"
   },
   "dependencies": {
@@ -33,7 +32,8 @@
     "lodash": "^4.17.15",
     "next": "latest",
     "react": "^16.12.0",
-    "react-dom": "^16.12.0"
+    "react-dom": "^16.12.0",
+    "typescript": "^3.7.4"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.149",
@@ -41,7 +41,6 @@
     "@types/react": "^16.9.17",
     "apollo-server-micro": "^2.9.16",
     "nodemon": "^2.0.2",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.7.4"
+    "ts-node": "^8.6.2"
   }
 }
