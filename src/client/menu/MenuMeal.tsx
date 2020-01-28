@@ -1,8 +1,8 @@
 import { Meal } from "../../rest/mealModel";
 import { useGetCart, useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Button, Chip, Typography } from "@material-ui/core";
-import AddIcon from '@material-ui/icons/add';
-import RemoveIcon from '@material-ui/icons/remove';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 import { useState } from "react";
 
 const useStyles = makeStyles(theme => ({
