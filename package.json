@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "nodemon",
-    "build": "next build && tsc --project tsconfig.server.json",
+    "build": "tsc -v && next build && tsc --project tsconfig.server.json",
     "prod": "cross-env NODE_ENV=production node build/server.js",
     "heroku-logs": "heroku logs --tail -a saute"
   },
