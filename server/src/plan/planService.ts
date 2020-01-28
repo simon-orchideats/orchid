@@ -1,12 +1,19 @@
+import { isServer } from './../client/utils/isServer';
 import gql from 'graphql-tag';
 import { IPlan, Plan } from './planModel';
 import { useQuery } from '@apollo/react-hooks';
 
 const useGetAvailablePlans = () => {
-  type res = {
-    availablePlans: IPlan[]
+  if (isServer()) {
+    return {
+      loading: true,
+      error: false,
+      data: undefined,
+    }
   }
-  const res = useQuery<res>(gql`
+  const res = useQuery<{
+    availablePlans: IPlan[]
+  }>(gql`
     query availablePlans {
       availablePlans {
         _id

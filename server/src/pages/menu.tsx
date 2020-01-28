@@ -9,9 +9,10 @@ import { useState, ChangeEvent, useRef } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cartState";
 import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
-import { useGetNearbyRests, useGetRest } from "../rest/restService";
+import { useGetNearbyRests } from "../rest/restService";
 import { Rest } from "../rest/restModel";
-import ZipModal from "../client/components/menu/ZipModal";
+import ZipModal from "../client/menu/ZipModal";
+import SideCart from "../client/menu/SideCart";
 
 const useMenuItemStyles = makeStyles(theme => ({
   card: {
@@ -197,86 +198,6 @@ const RestMenu: React.FC<{
         </Grid>
       </ExpansionPanelDetails>
     </ExpansionPanel>
-  )
-}
-
-const useSideCartStyles = makeStyles(theme => ({
-  group: {
-    display: 'flex',
-    alignItems: 'center',
-    paddingBottom: theme.spacing(2),
-  },
-  img: {
-    width: 55,
-    marginRight: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-  },
-  title: {
-    paddingBottom: theme.spacing(1)
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(4),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-  },
-  button: {
-    marginTop: 'auto',
-  },
-}));
-
-const SideCart: React.FC = () => {
-  const classes = useSideCartStyles();
-  const cart = useGetCart();
-  const rest = useGetRest(cart ? cart.RestId : null);
-  type mealGroup = {
-    count: number,
-    meal: Meal,
-  }
-  const groupedMeals = cart && cart.Meals.reduce<mealGroup[]>((groupings, meal) => {
-    const groupIndex = groupings.findIndex(group => group.meal.Id === meal.Id);
-    if (groupIndex === -1) {
-      groupings.push({
-        count: 1,
-        meal,
-      })
-    } else {
-      groupings[groupIndex].count++;
-    }
-    return groupings;
-  }, []);
-  return (
-    <div className={classes.container}>
-      <Typography
-        variant='h4'
-        color='primary'
-        className={classes.title}
-      >
-        {rest.data ? `Meals from ${rest.data.Profile.Name}` : 'Your meals'}
-      </Typography>
-      {groupedMeals && groupedMeals.map(mealGroup => (
-        <div key={mealGroup.meal.Id} className={classes.group}>
-          <Typography variant='body1'>
-            {mealGroup.count}
-          </Typography>
-          <img
-            src={mealGroup.meal.Img}
-            alt={mealGroup.meal.Img}
-            className={classes.img}
-          />
-          <Typography variant='h6'>
-            {mealGroup.meal.Name.toUpperCase()}
-          </Typography>
-        </div>
-      ))}
-      <Button variant='contained' className={classes.button} color='primary'>
-        Next
-      </Button>
-    </div>
   )
 }
 

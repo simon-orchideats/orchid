@@ -1,5 +1,4 @@
 import { makeStyles, Button, Grid } from '@material-ui/core';
-import { isServer } from '../utils/isServer';
 import { useGetAvailablePlans } from '../../plan/planService';
 import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
@@ -25,9 +24,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const PlanChooser = () => {
-  // very important that useStyles() is called first so that server + client mui classNames match
   const classes = useStyles();
-  if (isServer()) return null;
   const plans = useGetAvailablePlans();
   if (!plans.data) {
     return <div>loading</div>

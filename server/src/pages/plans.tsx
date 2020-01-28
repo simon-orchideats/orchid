@@ -1,6 +1,6 @@
 import { Container, makeStyles, Typography, Divider, Hidden } from "@material-ui/core";
 import PlanChooser from "../client/plan/PlanChooser";
-import Faq from "../client/components/Faq";
+import Faq from "../client/reused/Faq";
 
 const useStyles = makeStyles(theme => ({
   container: {

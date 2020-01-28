@@ -14,10 +14,10 @@ const powerRed = '#f44336'
 
 const brandBase = white;
 const brandPrimary = leafGreen;
-const brandInfo = floralWhite;
+const brandSecondary = floralWhite;
 const brandLink = blue;
-const brandInfoLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
-const brandInfoDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})`
+const brandSecondaryLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
+const brandSecondaryDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})`
 const brandText = charcoal;
 const brandCanvas = lightGray;
 const brandSuccess = powerGreen;
@@ -104,18 +104,18 @@ const theme: ThemeOptions = {
     MuiToggleButton: {
       root: {
         flex: 1,
-        color: brandInfo,
+        color: brandSecondary,
         backgroundColor: white,
         '&:hover': {
-          color: brandInfo,
-          backgroundColor: brandInfoLightOpacity(0.87),
+          color: brandSecondary,
+          backgroundColor: brandSecondaryLightOpacity(0.87),
         },
         '&.Mui-selected:hover': {
-          backgroundColor: `${brandInfoDarkOpacity(0.87)} !important`,
+          backgroundColor: `${brandSecondaryDarkOpacity(0.87)} !important`,
         },
         '&.Mui-selected': {
           color: white,
-          backgroundColor: brandInfo,
+          backgroundColor: brandSecondary,
         },
         '&:not(:first-child)': {
           borderLeft: undefined,
@@ -142,7 +142,7 @@ const theme: ThemeOptions = {
     },
     secondary: {
       // light: '#ff4081',
-      main: brandInfo,
+      main: brandSecondary,
       // dark: '#c51162',
       contrastText: '#fff'
     },
@@ -150,6 +150,18 @@ const theme: ThemeOptions = {
       light: '#e57373',
       main: brandError,
       dark: '#d32f2f',
+      contrastText: '#fff'
+    },
+    warning: {
+      light: '#ffb74d',
+      main: '#ff9800',
+      dark: '#f57c00',
+      contrastText: 'rgba(0, 0, 0, 0.87)'
+    },
+    info: {
+      light: '#64b5f6',
+      main: '#2196f3',
+      dark: '#1976d2',
       contrastText: '#fff'
     },
     grey: {

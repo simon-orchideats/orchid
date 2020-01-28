@@ -4,10 +4,10 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Link from 'next/link'
 import { Container, Typography } from '@material-ui/core';
-import { howItWorksRoute } from '../../../pages/how-it-works';
-import { plansRoute } from '../../../pages/plans';
-import { menuRoute } from '../../../pages/menu';
-import { indexRoute } from '../../../pages';
+import { howItWorksRoute } from '../../pages/how-it-works';
+import { plansRoute } from '../../pages/plans';
+import { menuRoute } from '../../pages/menu';
+import { indexRoute } from '../../pages';
 
 const useStyles = makeStyles(theme => ({
   link: {
