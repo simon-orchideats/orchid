@@ -3,18 +3,39 @@ const env = process.env.NODE_ENV;
 type config = {
   app: {
     port: number
-  }
+  },
+  elastic: {
+    node: string,
+    auth: {
+      username: string | undefined,
+      password: string | undefined,
+    }
+  },
 }
 
 const development: config = {
   app: {
     port: 8443,
   },
+  elastic: {
+    node: 'localhost:9200',
+    auth: {
+      username: undefined,
+      password: undefined,
+    }
+  },
 };
 
 const production: config = {
   app: {
     port: parseInt(process.env.PORT || '8443', 10)
+  },
+  elastic: {
+    node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',
+    auth: {
+      username: 'elastic',
+      password: process.env.ELASTIC_PASS,
+    }
   },
 };
 

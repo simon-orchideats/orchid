@@ -1,36 +1,39 @@
 import { Plan } from "../../plan/planModel";
-
+import { callElasticWithErrorHandler } from '../utils';
+interface elastic {
+  search: any
+}
 class PlanService {
-  constructor() {}
+  elastic: elastic
+  constructor(elastic: elastic) {
+    this.elastic = elastic;
+  }
 
-  getAvailablePlans() {
-    return [
-      new Plan({
-        _id: 'plan1',
-        mealCount: 4,
-        mealPrice: 12.50,
-        weekPrice: 49.99
-      }),
-      new Plan({
-        _id: 'plan2',
-        mealCount: 8,
-        mealPrice: 9.99,
-        weekPrice: 79.99
-      }),
-      new Plan({
-        _id: 'plan3',
-        mealCount: 12,
-        mealPrice: 8.99,
-        weekPrice: 107.99
-      }),
-    ];
+  async getAvailablePlans() {
+    const res = await callElasticWithErrorHandler((options: any) => this.elastic.search(options), {
+      index: 'plans',
+      size: 1000,
+    });
+
+    const planDB = res.hits.hits;
+    let plans: Plan[] = [];
+
+    for (let i = 0; i < planDB.length; i++) {
+      plans.push(new Plan({
+        _id: planDB[i]['_id'],
+        mealCount: planDB[i]['_source'].mealCount,
+        mealPrice: planDB[i]['_source'].mealPrice,
+        weekPrice: planDB[i]['_source'].weekPrice
+      }))
+    }
+    return plans;
   }
 }
 
 let planService: PlanService;
 
-export const getPlanService = () => {
+export const getPlanService = (elastic: elastic) => {
   if (planService) return planService;
-  planService = new PlanService();
+  planService = new PlanService(elastic);
   return planService;
 };

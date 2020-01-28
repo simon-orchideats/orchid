@@ -17,6 +17,8 @@
 
 import express from 'express';
 import next from 'next';
+import { getElastic } from '../docs/db/elasticConnector';
+import { getPlanService } from '../src/server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
@@ -42,11 +44,15 @@ const start = async () => {
     });
   }
 
-
+  const elastic = await getElastic();
+  const context = {
+    PlanService: getPlanService(elastic),
+  }
   const apolloServer = new ApolloServer({
     schema,
     context: () => ({
       signedInUser: 'testUser',
+      ...context
     }),
   });
 
