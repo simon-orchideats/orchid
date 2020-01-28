@@ -26,6 +26,11 @@ const useStyles = makeStyles(theme => ({
     height: 500,
     marginTop: -theme.mixins.navbar.marginBottom,
   },
+  welcomeTitle: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '2.175rem'
+    },
+  },
   welcomeText: {
     maxWidth: 600 // chosen by inspection
   },
@@ -68,11 +73,17 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     opacity: 0.9,
-    paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(3),
+    padding: theme.spacing(3),
+    width: '100%',
+    backgroundColor: theme.palette.secondary.main
   },
   lowWidth: {
     maxWidth: 150,  
+  },
+  shrinker: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '2.25rem',
+    },
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -84,7 +95,7 @@ const Welcome = () => {
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
-        <Typography variant='h2'>
+        <Typography variant='h2' className={classes.welcomeTitle}>
           Chef-cooked healthy meals delivered from local restaurants to you
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
@@ -116,7 +127,7 @@ const HowItWorks = () => {
   )
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
-      <Typography variant='h3' className={classes.title}>
+      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         How it works
       </Typography>
       <Grid container className={classes.verticalMargin}>
@@ -135,7 +146,7 @@ const Plans = () => {
   return (
     <div className={`${classes.plans}`}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
-        <Typography variant='h3' className={classes.title}>
+        <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
           Flexible plans
         </Typography>
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
@@ -154,7 +165,7 @@ const Benefits = () => {
       <Typography
         variant='h3'
         color='primary'
-        className={classes.verticalMargin}
+        className={`${classes.verticalMargin} ${classes.shrinker}`}
       >
         {title}
       </Typography>

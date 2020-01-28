@@ -4,7 +4,8 @@ import Faq from '../client/reused/Faq';
 const useStyles = makeStyles(theme => ({
   img: {
     zIndex: 1,
-    width: 400,
+    width: '100%',
+    maxWidth: 400,
     position: 'relative',
   },
   explainations: {
@@ -55,8 +56,13 @@ const useStyles = makeStyles(theme => ({
       width: 525,
     },
     [theme.breakpoints.down('md')]: {
-      width: 420,
+      width: 400,
+      paddingBottom: 150,
     },
+    [theme.breakpoints.down('sm')]: {
+      width: 300,
+    },
+    paddingBottom: 75,
     width: 700,
     left: -20,
     position: 'absolute',
@@ -68,6 +74,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('md')]: {
       width: 300,
     },
+    paddingBottom: 50,
     width: 500,
     right: 50,
     position: 'absolute',
@@ -89,6 +96,9 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down('md')]: {
       width: 300,
+    },
+    [theme.breakpoints.down('sm')]: {
+      width: 280,
     },
     width: 500,
     left: 0,

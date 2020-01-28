@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
 import { Container, Typography } from '@material-ui/core';
 import { howItWorksRoute } from '../../pages/how-it-works';
@@ -11,19 +12,34 @@ import { indexRoute } from '../../pages';
 
 const useStyles = makeStyles(theme => ({
   link: {
-    paddingLeft: theme.spacing(5),
-    paddingRight: theme.spacing(5),
+    maxWidth: 110,
+    flex: 1,
     cursor: 'pointer',
+  },
+  account: {
+    marginLeft: 'auto',
+    marginRight: theme.spacing(1)
+  },
+  how: {
+    marginRight: theme.spacing(1),
   },
   container: {
     padding: 0,
   },
   toolbar: {
+    display: 'flex',
     padding: 0, 
   },
   logo: {
-    width: 180,
-    paddingRight: theme.spacing(5),
+    [theme.breakpoints.down('xs')]: {
+      width: 100,
+      marginRight: theme.spacing(2)
+    },
+    width: 150,
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: theme.spacing(1),
+    marginRight: theme.spacing(5),
     cursor: 'pointer',
   },
   spacer: {
@@ -49,7 +65,10 @@ const Navbar: React.FC = () => {
               <Typography variant='button' className={classes.link}>Menu</Typography>
             </Link>
             <Link href={howItWorksRoute}>
-              <Typography variant='button' className={classes.link}>How it works</Typography>
+              <Typography variant='button' className={`${classes.link} ${classes.how}`}>How it works</Typography>
+            </Link>
+            <Link href={howItWorksRoute}>
+              <AccountCircleIcon className={classes.account} />
             </Link>
           </Toolbar>
         </Container>
