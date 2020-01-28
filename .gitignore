@@ -1,2 +1,8 @@
-/node_modules
-/build
+# Dependency directories
+node_modules/
+
+# next.js build output
+.next
+
+# production server output
+build
