@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { getTheme } from '../client/global/styles/theme';
-import Navbar from '../client/global/components/Navbar';
+import Navbar from '../client/components/_app/Navbar';
 
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 

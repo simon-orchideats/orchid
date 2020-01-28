@@ -6,6 +6,7 @@ const floralWhite = '#FBFCEB';
 const lightGray = '#f9f9f9';
 const charcoal = '#3c3c3c';
 const leafGreen = '#28590C';
+const blue = '#0070eb';
 const white = "#ffffff";
 const powerGreen = '#3d9241';
 const powerOrange = '#ffa000';
@@ -14,6 +15,7 @@ const powerRed = '#f44336'
 const brandBase = white;
 const brandPrimary = leafGreen;
 const brandInfo = floralWhite;
+const brandLink = blue;
 const brandInfoLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
 const brandInfoDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})`
 const brandText = charcoal;
@@ -125,6 +127,7 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
+      link: brandLink,
       success: brandSuccess,
       warning: brandWarning,
       error: brandError,
@@ -349,6 +352,7 @@ const theme: ThemeOptions = {
 
 declare module "@material-ui/core/colors/common" {
   interface CommonColors {
+    link: string;
     [NotificationType.success]: string;
     [NotificationType.warning]: string;
     [NotificationType.error]: string;

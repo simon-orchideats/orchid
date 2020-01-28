@@ -1,7 +1,9 @@
-import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from "@material-ui/core";
+import { Card, CardMedia, CardContent, Typography, makeStyles, Grid, Button, Container, Chip, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Link } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/add';
 import RemoveIcon from '@material-ui/icons/remove';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { CSSProperties } from "@material-ui/styles";
 import { useState, ChangeEvent, useRef } from "react";
 import { useAddMealToCart, useGetCart, useRemoveMealFromCart } from "../client/global/state/cartState";
@@ -9,6 +11,7 @@ import { Meal } from "../rest/mealModel";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetRest } from "../rest/restService";
 import { Rest } from "../rest/restModel";
+import ZipModal from "../client/components/menu/ZipModal";
 
 const useMenuItemStyles = makeStyles(theme => ({
   card: {
@@ -113,6 +116,7 @@ const MenuItem: React.FC<{
             size='small'
             variant='contained'
             color='primary'
+            disabled={cart && cart.RestId ? cart.RestId !== restId : false}
             className={classes.button}
             onClick={() => onAddMeal()}
           >
@@ -301,23 +305,52 @@ const useMenuStyles = makeStyles(theme => ({
       top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height
     },
   },
+  link: {
+    color: theme.palette.common.link,
+    cursor: 'pointer',
+    display: 'flex',
+  },
+  filters: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  }
 }));
 
 const menu = () => {
   const classes = useMenuStyles();
-  const rests = useGetNearbyRests('12345');
+  const [open, setOpen] = useState(true);
+  const [zip, setZip] = useState('');
+  const rests = useGetNearbyRests(zip);
+  const onClickZip = () => {
+    setOpen(true);
+  }
   return (
     <Container
       maxWidth='lg'
       disableGutters
       className={classes.container}
     >
+      <ZipModal
+        open={open}
+        defaultZip={zip}
+        onClose={zip => {
+          setZip(zip);
+          setOpen(false);
+        }}
+      />
       <Grid container alignItems='stretch'>
         <Grid
           item
           xs={9}
           className={classes.menu}
         >
+          <div className={classes.filters}>
+            <Link className={classes.link} color='inherit' onClick={onClickZip}>
+              <LocationOnIcon />
+              <Typography>{zip ? zip : 'Zip'}</Typography>
+              <ArrowDropDownIcon />
+            </Link>
+          </div>
           {rests.data && rests.data.map(rest => 
             <RestMenu key={rest.Id} rest={rest} />
           )}
