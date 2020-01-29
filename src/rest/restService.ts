@@ -2,6 +2,7 @@ import { IRest, Rest } from './restModel';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import { restFragment } from './restFragment';
+import { useMemo } from 'react';
 
 const useGetNearbyRests = (zip: string) => {
   type res = {
@@ -20,10 +21,15 @@ const useGetNearbyRests = (zip: string) => {
       variables: { zip },
     }
   );
+
+  const rests = useMemo<Rest[] | undefined>(() => (
+    res.data ? res.data.nearbyRests.map(rest => new Rest(rest)) : res.data
+  ), [res.data]);
+
   return {
     loading: res.loading,
     error: res.error,
-    data: res.data ? res.data.nearbyRests.map(rest => new Rest(rest)) : res.data
+    data: rests
   }
 }
 

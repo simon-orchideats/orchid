@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meal } from "../../rest/mealModel";
-import { useGetCart, useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
+import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Button, Chip, Typography } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
@@ -58,17 +59,16 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
+  disabled: boolean,
   meal: Meal,
   restId: string,
 }> = ({
+  disabled,
   meal,
   restId
 }) => {
   const classes = useStyles();
-  const cart = useGetCart();
-  const cartMeal = cart && cart.Meals.filter(m => m.Id === meal.Id);
-  const defaultCount = cartMeal ? cartMeal.length : 0;
-  const [count, updateCount] = useState(defaultCount);
+  const [count, updateCount] = useState(0);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
@@ -112,7 +112,7 @@ const MenuMeal: React.FC<{
             size='small'
             variant='contained'
             color='primary'
-            disabled={cart && cart.RestId ? cart.RestId !== restId : false}
+            disabled={disabled}
             className={classes.button}
             onClick={() => onAddMeal()}
           >
@@ -127,4 +127,4 @@ const MenuMeal: React.FC<{
   )
 }
 
-export default MenuMeal;
+export default React.memo(MenuMeal);

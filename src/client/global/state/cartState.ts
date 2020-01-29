@@ -2,7 +2,7 @@ import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
 import { Cart } from '../../../cart/cartModel';
 import { ClientResolver } from './localState';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 type cartQueryRes = {

@@ -2,15 +2,16 @@ import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } f
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { CSSProperties, useTheme } from "@material-ui/styles";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
 import SideCart from "../client/menu/SideCart";
 import RestMenu from "../client/menu/RestMenu";
 import MiniCart from "../client/menu/MiniCart";
+import { useGetCart } from "../client/global/state/cartState";
 
-const useMenuStyles = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
     marginTop: -theme.mixins.navbar.marginBottom,
@@ -63,10 +64,21 @@ const useMenuStyles = makeStyles(theme => ({
 }));
 
 const menu = () => {
-  const classes = useMenuStyles();
+  const classes = useStyles();
+  const cart = useGetCart();
+  const cartRestId = cart ? cart.RestId : null;
   const [open, setOpen] = useState(true);
   const [zip, setZip] = useState('');
   const rests = useGetNearbyRests(zip);
+  const RestMenus = useMemo(() => ( 
+    rests.data && rests.data.map(rest => 
+      <RestMenu
+        key={rest.Id}
+        rest={rest}
+        cartRestId={cartRestId}
+      />
+    )
+  ), [rests.data, cartRestId]);
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const onClickZip = () => {
@@ -106,9 +118,7 @@ const menu = () => {
               </div>
             }
           </div>
-          {rests.data && rests.data.map(rest => 
-            <RestMenu key={rest.Id} rest={rest} />
-          )}
+          {RestMenus}
         </Grid>
         {
           isMdAndUp &&
@@ -121,16 +131,6 @@ const menu = () => {
               <SideCart />
             </Grid>
         }
-        {/* <Hidden smDown>
-          <Grid
-            item
-            md={4}
-            lg={3}
-            className={classes.cart}
-          >
-            <SideCart />
-          </Grid>
-        </Hidden> */}
       </Grid>
     </Container>
   )  
