@@ -1,39 +1,33 @@
-import { Plan } from "../../plan/planModel";
-import { callElasticWithErrorHandler } from '../utils';
-interface elastic {
-  search: any
-}
+import { Client } from "elasticsearch";
+import { EPlan } from "../../plan/planModel";
+
 class PlanService {
-  elastic: elastic
-  constructor(elastic: elastic) {
+  static PlanService: PlanService;
+  private readonly elastic: Client
+  public constructor(elastic: Client) {
     this.elastic = elastic;
   }
 
   async getAvailablePlans() {
-    const res = await callElasticWithErrorHandler((options: any) => this.elastic.search(options), {
+    const res = await this.elastic.search<EPlan>({
       index: 'plans',
       size: 1000,
     });
-
-    const planDB = res.hits.hits;
-    let plans: Plan[] = [];
-
-    for (let i = 0; i < planDB.length; i++) {
-      plans.push(new Plan({
-        _id: planDB[i]['_id'],
-        mealCount: planDB[i]['_source'].mealCount,
-        mealPrice: planDB[i]['_source'].mealPrice,
-        weekPrice: planDB[i]['_source'].weekPrice
-      }))
-    }
-    return plans;
+    return res.hits.hits.map(({ _id, _source }) => ({
+      ..._source,
+      _id
+    }))
   }
 }
 
 let planService: PlanService;
 
-export const getPlanService = (elastic: elastic) => {
-  if (planService) return planService;
+export const initPlanService = (elastic: Client) => {
+  if (planService) throw new Error('[PlanService] Plan service already initialized.');
   planService = new PlanService(elastic);
-  return planService;
 };
+
+export const getPlanService = () => {
+  if (!planService) throw new Error('[PlanService] Plan service not initialized.');
+  return planService;
+}
