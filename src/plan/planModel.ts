@@ -1,10 +1,12 @@
 import { useMemo } from "react";
-
-export interface IPlan {
-  readonly _id: string;
+export interface EPlan {
   readonly mealCount: number;
   readonly mealPrice: number;
   readonly weekPrice: number;
+}
+
+export interface IPlan extends EPlan {
+  readonly _id: string;
 }
 
 export class Plan implements IPlan {

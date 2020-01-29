@@ -1,7 +1,7 @@
 import { getPlanService } from './planService';
 
 export const PlanQueryResolvers = {
-  availablePlans: () => {
-    return getPlanService().getAvailablePlans();
+  availablePlans: async () => {
+    return await getPlanService().getAvailablePlans();
   }
 }
