@@ -1,7 +1,7 @@
 import elasticsearch, { Client } from 'elasticsearch';
-import { activeConfig } from '../../src/config';
+import { activeConfig } from '../config';
 
-let elastic;
+let elastic: Client;
 
 export const initElastic = () => {
 	if (elastic) return elastic;

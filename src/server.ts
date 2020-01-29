@@ -17,8 +17,8 @@
 
 import express from 'express';
 import next from 'next';
-import { initElastic } from '../docs/db/elasticConnector';
-import { initPlanService } from '../src/server/plans/planService';
+import { initElastic } from './server/elasticConnector';
+import { initPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
