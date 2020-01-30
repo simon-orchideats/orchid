@@ -1,0 +1,17 @@
+{
+  "plans": {
+    "mappings": {
+      "properties": {
+        "mealCount": {
+          "type": "integer"
+        },
+        "mealPrice": {
+          "type": "float"
+        },
+        "weekPrice": {
+          "type": "float"
+        }
+      }
+    }
+  }
+}
