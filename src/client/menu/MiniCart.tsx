@@ -4,6 +4,8 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
+import Link from 'next/link'
+import { deliveryRoute } from "../../pages/delivery";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -33,14 +35,16 @@ const MiniCart: React.FC = () => {
       <Typography variant='body1' className={classes.suggestion}>
         {getSuggestion(mealCount, sortedPlans.data)}
       </Typography>
-      <Button
-        disabled={disabled}
-        variant='contained'
-        color='primary'
-        className={classes.button}
-      >
-        {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
-      </Button>
+      <Link href={deliveryRoute}>
+        <Button
+          disabled={disabled}
+          variant='contained'
+          color='primary'
+          className={classes.button}
+        >
+          {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
+        </Button>
+      </Link>
     </div>
   )
 }

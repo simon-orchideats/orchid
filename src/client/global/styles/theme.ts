@@ -16,8 +16,8 @@ const brandBase = white;
 const brandPrimary = leafGreen;
 const brandSecondary = floralWhite;
 const brandLink = blue;
-const brandSecondaryLightOpacity = (opacity: number) => `rgba(235, 220, 221, ${opacity})`
-const brandSecondaryDarkOpacity = (opacity: number) => `rgba(109, 58, 61, ${opacity})`
+const brandSecondaryLightOpacity = (opacity: number) => `rgba(28, 62, 8, ${opacity})`
+const brandSecondaryDarkOpacity = (opacity: number) => `rgba(20, 45, 6, ${opacity})`
 const brandText = charcoal;
 const brandCanvas = lightGray;
 const brandSuccess = powerGreen;
@@ -101,10 +101,18 @@ const theme: ThemeOptions = {
       }
     },
     //@ts-ignore
+    MuiToggleButtonGroup: {
+      grouped: {
+        '&:not(:first-child)': {
+          borderLeft: `1px solid rgba(0, 0, 0, 0.12)`,
+        }, 
+      }
+    },
+    //@ts-ignore
     MuiToggleButton: {
       root: {
         flex: 1,
-        color: brandSecondary,
+        color: brandText,
         backgroundColor: white,
         '&:hover': {
           color: brandSecondary,
@@ -115,12 +123,9 @@ const theme: ThemeOptions = {
         },
         '&.Mui-selected': {
           color: white,
-          backgroundColor: brandSecondary,
+          backgroundColor: brandPrimary,
         },
-        '&:not(:first-child)': {
-          borderLeft: undefined,
-        },
-      }
+      },
     },
   },
   palette: {
