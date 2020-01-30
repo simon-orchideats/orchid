@@ -1,22 +1,27 @@
+import { deliveryDay } from './../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 
 export interface ICart {
   readonly meals: IMeal[];
   readonly restId: string | null;
   readonly planId: string | null;
+  readonly deliveryDay: deliveryDay | null;
 }
 
 export class Cart implements ICart {
   readonly meals: Meal[];
   readonly restId: string | null
   readonly planId: string | null
+  readonly deliveryDay: deliveryDay | null
 
   constructor(cart: ICart) {
     this.meals = cart.meals.map(meal => new Meal(meal));
     this.restId = cart.restId;
     this.planId = cart.planId;
+    this.deliveryDay = cart.deliveryDay;
   }
 
+  public get DeliveryDay() { return this.deliveryDay }
   public get Meals() { return this.meals }
   public get PlanId() { return this.planId }
   public get RestId() { return this.restId }

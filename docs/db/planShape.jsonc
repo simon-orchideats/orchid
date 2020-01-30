@@ -1,6 +1,7 @@
 {
   "plans": {
     "mappings": {
+      "dynamic": "false",
       "properties": {
         "mealCount": {
           "type": "integer"

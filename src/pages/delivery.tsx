@@ -3,6 +3,9 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import Faq from "../client/reused/Faq";
 import { useState, useRef, useEffect } from "react";
+import { useUpdateDeliveryDay } from "../client/global/state/cartState";
+import { deliveryDay } from "../consumer/consumerModel";
+import withClientApollo from "../client/utils/withClientApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -35,9 +38,10 @@ const useStyles = makeStyles(theme => ({
 
 const delivery = () => {
   const classes = useStyles();
-  const [day, setDay] = useState<number>(0);
+  const [day, setDay] = useState<deliveryDay>(0);
   const inputLabel = useRef<HTMLLabelElement>(null);
   const [labelWidth, setLabelWidth] = useState(0);
+  const updateDeliveryDay = useUpdateDeliveryDay();
   useEffect(() => {
     setLabelWidth(inputLabel.current!.offsetWidth);
   }, []);
@@ -55,7 +59,7 @@ const delivery = () => {
           className={classes.toggleButtonGroup}
           exclusive
           value={day}
-          onChange={(_, d: number) => {
+          onChange={(_, d: deliveryDay) => {
             // d === null when selecting same day
             if (d === null) return;
             setDay(d)
@@ -78,7 +82,7 @@ const delivery = () => {
           <Select
             labelWidth={labelWidth}
             value={day === 0 || day === 3 || day === 5 ? '' : day}
-            onChange={e => setDay(e.target.value as number)}
+            onChange={e => setDay(e.target.value as deliveryDay)}
           >
             <MenuItem value={1}>Mon</MenuItem>
             <MenuItem value={2}>Tue</MenuItem>
@@ -98,6 +102,7 @@ const delivery = () => {
           variant='contained'
           color='primary'
           fullWidth
+          onClick={() => updateDeliveryDay(day)}
         >
           Next
         </Button>
@@ -107,6 +112,6 @@ const delivery = () => {
   )
 }
 
-export default delivery;
+export default withClientApollo(delivery);
 
 export const deliveryRoute = 'delivery';

@@ -26,6 +26,15 @@ export class Plan implements IPlan {
   public get MealCount() { return this.mealCount }
   public get MealPrice() { return this.mealPrice }
   public get WeekPrice() { return this.weekPrice }
+
+  public static getPlanId(mealCount: number, plans?: IPlan[]) {
+    if (!plans) return undefined;
+    for (let i = 0; i < plans.length; i++) {
+      if (plans[i].mealCount === mealCount) return plans[i]._id;
+    }
+    return undefined;
+  }
+
   public static getPlanCounts(plans?: Plan[]) {
     return useMemo(() => {
       return plans && plans.reduce<number[]>(((acc, plan) => [...acc, plan.mealCount]), [])

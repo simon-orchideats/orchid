@@ -1,7 +1,7 @@
-import { Location } from './../../rest/locationModel';
-import { Profile } from './../../rest/profileModel';
+import { Location } from '../../location/locationModel';
+import { RestProfile } from '../../rest/restProfileModel';
 import { Meal } from './../../rest/mealModel';
-import { Address } from './../../rest/addressModel';
+import { Address } from '../../location/addressModel';
 import { Rest } from './../../rest/restModel';
 
 export class RestService {
@@ -57,7 +57,7 @@ export class RestService {
             name: 'Ricebowl 5'
           }),
         ],
-        profile: new Profile({
+        profile: new RestProfile({
           name: 'Domo',
           phone: '609-513-8166',
         })
@@ -110,7 +110,7 @@ export class RestService {
             name: 'Ricebowl 5'
           }),
         ],
-        profile: new Profile({
+        profile: new RestProfile({
           name: 'Domo2',
           phone: '609-513-8166',
         })
@@ -163,7 +163,7 @@ export class RestService {
             name: 'Ricebowl 7'
           }),
         ],
-        profile: new Profile({
+        profile: new RestProfile({
           name: 'Domo3',
           phone: '609-513-8166',
         })
@@ -206,7 +206,7 @@ export class RestService {
             name: 'Ricebowl 5'
           }),
         ],
-        profile: new Profile({
+        profile: new RestProfile({
           name: 'Domo4',
           phone: '609-513-8166',
         })
@@ -249,7 +249,7 @@ export class RestService {
             name: 'Ricebowl 5'
           }),
         ],
-        profile: new Profile({
+        profile: new RestProfile({
           name: 'Domo5',
           phone: '609-513-8166',
         })
@@ -276,7 +276,7 @@ export class RestService {
           name: 'Ricebowl 1'
         }),
       ],
-      profile: new Profile({
+      profile: new RestProfile({
         name: 'Domo6',
         phone: '609-513-8166',
       })
