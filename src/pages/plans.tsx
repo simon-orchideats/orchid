@@ -1,6 +1,8 @@
-import { Container, makeStyles, Typography, Divider, Hidden } from "@material-ui/core";
-import PlanChooser from "../client/plan/PlanChooser";
+import { Container, makeStyles, Typography, Divider, Hidden, Button } from "@material-ui/core";
+import PlanCards from "../client/plan/PlanCards";
 import Faq from "../client/reused/Faq";
+import Link from "next/link";
+import { menuRoute } from "./menu";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -17,6 +19,9 @@ const useStyles = makeStyles(theme => ({
     width: 200,
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3), 
+  },
+  button: {
+    marginTop: theme.spacing(4),
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -78,7 +83,16 @@ const plans = () => {
             />
           </div>
         </Hidden>
-        <PlanChooser />
+        <PlanCards />
+        <Link href={menuRoute}>
+          <Button
+            variant='contained'
+            color='primary'
+            className={classes.button}
+          >
+            SEE MENU
+          </Button>
+        </Link>
       </Container>
       <Faq />
     </>
