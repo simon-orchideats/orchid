@@ -93,18 +93,43 @@ export class ConsumerProfile implements IConsumerProfile {
   public get Destination() { return this.destination }
 }
 
-enum CuisineType {
-  American,
-  BBQ,
-  Chinese,
-  Indian,
-  Italian,
-  Japanese,
-  Mediterranean,
-  Mexican,
-  Thai,
-  Vegan,
-  Vegetarian,
+export type CuisineType =
+  'American'
+  | 'Bbq'
+  | 'Chinese'
+  | 'Indian'
+  | 'Italian'
+  | 'Japanese'
+  | 'Mediterranean'
+  | 'Mexican'
+  | 'Thai'
+  | 'Vegan'
+  | 'Vegetarian'
+
+export const CuisineTypes: {
+  American: 'American',
+  Bbq: 'Bbq',
+  Chinese: 'Chinese',
+  Indian: 'Indian',
+  Italian: 'Italian',
+  Japanese: 'Japanese',
+  Mediterranean: 'Mediterranean',
+  Mexican: 'Mexican',
+  Thai: 'Thai',
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
+} = {
+  American: 'American',
+  Bbq: 'Bbq',
+  Chinese: 'Chinese',
+  Indian: 'Indian',
+  Italian: 'Italian',
+  Japanese: 'Japanese',
+  Mediterranean: 'Mediterranean',
+  Mexican: 'Mexican',
+  Thai: 'Thai',
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
 }
 
 export type RenewalType = 'Skip' | 'Auto';

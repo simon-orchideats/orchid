@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, MenuItem, useMediaQuery, Theme } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, MenuItem, useMediaQuery, Theme, Button } from "@material-ui/core";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { useGetCart } from "../client/global/state/cartState";
@@ -12,7 +12,7 @@ import { state, States } from "../location/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements } from "react-stripe-elements";
-import { RenewalTypes, RenewalType } from "../consumer/consumerModel";
+import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -44,7 +44,8 @@ const checkout = () => {
   const cart = useGetCart();
   const [state, setState] = useState<state>();
   const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Auto)
-  const [oneName, setOneName] = useState(true);
+  const [oneName, setOneName] = useState<boolean>(true);
+  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   if (!cart && !isServer()) Router.replace(`/${menuRoute}`);
@@ -237,24 +238,48 @@ const checkout = () => {
             renewal === RenewalTypes.Auto &&
             <Grid container>
               <Grid item xs={12}>
-                <ToggleButtonGroup
-                  className={classes.toggleButtonGroup}
-                  size='small'
-                  // exclusive
-                  // value={renewal}
-                  // onChange={(_, rt: RenewalType) => {
-                  //   // rt === null when selecting button
-                  //   if (rt === null) return;
-                  //   setRenewal(rt)
-                  // }}
+                <Typography
+                  variant='h6'
+                  color='primary'
+                  className={classes.title}
                 >
-                  <ToggleButton value={RenewalTypes.Auto}>
-                    Pick for me
-                  </ToggleButton>
-                  <ToggleButton value={RenewalTypes.Skip}>
-                    Skip them
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                  What foods would you like in your meal plan?
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant='subtitle2' className={classes.subtitle}>
+                  We only pick 1 restaurant per week
+                </Typography>
+              </Grid>
+              <Grid container spacing={2}>
+                {Object.values<CuisineType>(CuisineTypes).map(cuisine => {
+                  const withoutCuisine = cuisines.filter(c => cuisine !== c);
+                  const isSelected = withoutCuisine.length !== cuisines.length;
+                  return (
+                    <Grid
+                      key={cuisine}
+                      item
+                      xs={6}
+                      sm={4}
+                      lg={3}
+                    >
+                      <Button
+                        fullWidth
+                        color='primary'
+                        variant={isSelected ? 'contained' : 'outlined'}
+                        onClick={() => {
+                          if (isSelected) {
+                            setCuisines(withoutCuisine);
+                            return;
+                          }
+                          setCuisines([...cuisines, cuisine]);
+                        }}
+                      >
+                        {cuisine}
+                      </Button>
+                    </Grid>
+                  )
+                })}
               </Grid>
             </Grid>
           }
