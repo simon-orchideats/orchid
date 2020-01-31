@@ -23,18 +23,64 @@ import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './server/schema/schema';
+// import session from 'express-session';
+import passport from 'passport';
+import { Strategy } from 'passport-auth0';
+import authRoutes from './server/auth-routes';
+
+// Configure Passport to use Auth0 settings
+const strategy = new Strategy({
+  clientID: process.env.AUTH0_CLIENT_ID || '',
+  clientSecret:process.env.AUTH0_CLIENT_SECRET || '',
+  callbackURL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:8443/callback',
+  domain: 'foodflick.auth0.com' || '',
+},(_accessToken, _refreshToken, _extraParams, profile, done) => {
+  // accessToken is the token to call Auth0 API (not needed in the most cases)
+  // extraParams.id_token has the JSON Web Token
+  // profile has all the information from the user
+  return done(null, profile);
+
+});
+passport.use(strategy);
+
+// You can use this section to keep a smaller payload
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
 
 const start = async () => {
   const ssr = next({
     dev: !isProd
   })
+
+  // config express-session
+  let sess = {
+    secret: 'CHANGE THIS TO A RANDOM SECRET',
+    cookie: {
+      secure: false
+    },
+    resave: false,
+    saveUninitialized: true
+  };
+
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();
 
   const app = express();
+  
 
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
+    // Use secure cookies in production (requires SSL/TLS)
+    sess.cookie.secure = true;
+    //if your application is behind a proxy (like on Heroku)
+    // or if you're encountering the error message:
+    // "Unable to verify authorization request state"
+    app.set('trust proxy', 1);
     app.use((req, res, next) => {
       if (req.header('x-forwarded-proto') !== 'https') {
         res.redirect('https://' + req.header('host') + req.url);
@@ -44,6 +90,21 @@ const start = async () => {
     });
   }
 
+  // adding Passport and authentication routes
+  // app.use(session(sess));
+  app.use(passport.initialize());
+  app.use(passport.session());
+  app.use(authRoutes);
+
+   // you are restricting access to some routes
+   const restrictAccess = (req:any, res:any, next:any) => {
+    if (!req.isAuthenticated()) return res.redirect("https://foodflick.auth0.com/authorize?response_type=token&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&connection=CONNECTION&redirect_uri=http://localhost:8443/callback&state=STATE");
+    console.log("bam");
+    next();
+    console.log("test");
+  };
+  // handles requests to /account and calls middleware
+  app.use("/account", restrictAccess);
   const elastic = await initElastic();
   initPlanService(elastic);
 
