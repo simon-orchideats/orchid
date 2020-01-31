@@ -30,23 +30,12 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-  container: {
-    overflowY: 'scroll',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(4),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-  },
   bottom: {
     marginTop: 'auto',
   },
 }));
 
-const SideCart: React.FC = () => {
+const MenuCart: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
@@ -70,7 +59,7 @@ const SideCart: React.FC = () => {
     return groupings;
   }, []);
   return (
-    <div className={classes.container}>
+    <>
       <Typography
         variant='h4'
         color='primary'
@@ -115,8 +104,8 @@ const SideCart: React.FC = () => {
           </Button>
         </Link>
       </div>
-    </div>
+    </>
   )
 }
 
-export default withClientApollo(SideCart);
+export default withClientApollo(MenuCart);

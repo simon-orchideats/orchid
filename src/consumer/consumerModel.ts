@@ -107,9 +107,14 @@ enum CuisineType {
   Vegetarian,
 }
 
-enum RenewalType {
-  Skip,
-  Auto,
+export type RenewalType = 'Skip' | 'Auto';
+
+export const RenewalTypes: {
+  Skip: 'Skip',
+  Auto: 'Auto'
+} = {
+  Skip: 'Skip',
+  Auto: 'Auto',
 }
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;

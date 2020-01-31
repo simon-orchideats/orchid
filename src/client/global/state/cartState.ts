@@ -1,3 +1,4 @@
+import { isServer } from './../../utils/isServer';
 import { deliveryDay } from './../../../consumer/consumerModel';
 import { Plan } from './../../../plan/planModel';
 import { getAvailablePlans } from './../../../plan/planService';
@@ -43,6 +44,7 @@ const CART_QUERY = gql`
 `
 
 export const useGetCart = () => {
+  if (isServer()) return null;
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   return queryRes.data ? queryRes.data.cart : null
 }
@@ -72,6 +74,7 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
 }
 
 export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
+  if (isServer()) return (_) => {}
   type vars = { day: deliveryDay };
   const [mutate] = useMutation<any, vars>(gql`
     mutation updateDeliveryDay($day: Integer!) {

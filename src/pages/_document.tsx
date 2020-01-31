@@ -10,6 +10,7 @@ export default class MyDocument extends Document {
     return (
       <html lang="en">
         <Head>
+          <script src="https://js.stripe.com/v3/"></script>
           {/* PWA primary color */}
           <meta name="theme-color" content={getTheme().palette.primary.main} />
           <link

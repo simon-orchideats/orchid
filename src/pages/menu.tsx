@@ -6,10 +6,11 @@ import { useState, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
-import SideCart from "../client/menu/SideCart";
+import SideCart from "../client/menu/MenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MiniCart from "../client/menu/MiniCart";
 import { useGetCart } from "../client/global/state/cartState";
+import StickyDrawer from "../client/reused/StickyDrawer";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -19,22 +20,6 @@ const useStyles = makeStyles(theme => ({
   menu: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-  },
-  cart: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-    position: 'sticky',
-    top: theme.mixins.toolbar.height,
-    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
-    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
-    },
-    [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height
-    },
   },
   link: {
     color: theme.palette.common.link,
@@ -122,14 +107,15 @@ const menu = () => {
         </Grid>
         {
           isMdAndUp &&
-            <Grid
-              item
-              md={4}
-              lg={3}
-              className={classes.cart}
-            >
+          <Grid
+            item
+            md={4}
+            lg={3}
+          >
+            <StickyDrawer>
               <SideCart />
-            </Grid>
+            </StickyDrawer>
+          </Grid>
         }
       </Grid>
     </Container>

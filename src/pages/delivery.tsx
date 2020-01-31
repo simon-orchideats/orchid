@@ -3,9 +3,14 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import Faq from "../client/reused/Faq";
 import { useState, useRef, useEffect } from "react";
-import { useUpdateDeliveryDay } from "../client/global/state/cartState";
+import { useUpdateDeliveryDay, useGetCart } from "../client/global/state/cartState";
 import { deliveryDay } from "../consumer/consumerModel";
 import withClientApollo from "../client/utils/withClientApollo";
+import Link from "next/link";
+import { checkoutRoute } from "./checkout";
+import Router from 'next/router'
+import { menuRoute } from "./menu";
+import { isServer } from "../client/utils/isServer";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -45,6 +50,8 @@ const delivery = () => {
   useEffect(() => {
     setLabelWidth(inputLabel.current!.offsetWidth);
   }, []);
+  const cart = useGetCart();
+  if (!cart && !isServer()) Router.replace(`/${menuRoute}`);
   return (
     <>
       <Container className={classes.container}>
@@ -98,14 +105,16 @@ const delivery = () => {
             12/12/12, 6pm - 9pm
           </Typography>
         </div>
-        <Button
-          variant='contained'
-          color='primary'
-          fullWidth
-          onClick={() => updateDeliveryDay(day)}
-        >
-          Next
-        </Button>
+        <Link href={checkoutRoute}>
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            onClick={() => updateDeliveryDay(day)}
+          >
+            Next
+          </Button>
+        </Link>
       </Container>
       <Faq />
     </>
