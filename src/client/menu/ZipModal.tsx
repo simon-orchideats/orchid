@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import Close from '@material-ui/icons/Close';
 import { TextField, Paper, Typography, Grid, Button } from '@material-ui/core';
+import { useUpdateZip } from '../global/state/cartState';
 
 const useStyles = makeStyles(theme => ({
   close: {
@@ -61,7 +62,7 @@ const useStyles = makeStyles(theme => ({
 
 const ZipModal: React.FC<{
   open: boolean,
-  onClose: (zip: string) => void,
+  onClose: () => void,
   defaultZip: string
 }> = ({
   open,
@@ -69,22 +70,21 @@ const ZipModal: React.FC<{
   defaultZip,
 }) => {
   const classes = useStyles();
-  const zipRef = useRef<string>('');
+  const [zip, setZip] = useState<string>('');
+  const updateCartZip = useUpdateZip()
   const findFood = () => {
-    onClose(zipRef.current);
-  }
-  const justLook = () => {
-    onClose('');
+    updateCartZip(zip);
+    onClose();
   }
   return (
     <Modal
       open={open}
-      onClose={justLook}
+      onClose={onClose}
       BackdropComponent={() => null}
     >
       <Slide in={open} direction='down'>
         <Paper className={classes.paper}>
-          <Close onClick={justLook} className={classes.close} />
+          <Close onClick={onClose} className={classes.close} />
           <Grid container className={classes.gridContainer}>
             <Grid item xs={12} sm={5} md={7} className={classes.img} />
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
@@ -99,9 +99,7 @@ const ZipModal: React.FC<{
                       fullWidth
                       variant='outlined'
                       defaultValue={defaultZip}
-                      onChange={e => {
-                        zipRef.current = e.target.value
-                      }}
+                      onChange={e => setZip(e.target.value)}
                       margin='none'
                       placeholder='Zip'
                     />
@@ -121,7 +119,7 @@ const ZipModal: React.FC<{
                       variant='outlined'
                       color='primary'
                       className={classes.button}
-                      onClick={justLook}
+                      onClick={onClose}
                     >
                       Just look
                     </Button>

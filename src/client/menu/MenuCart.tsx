@@ -60,6 +60,9 @@ const MenuCart: React.FC = () => {
         <Typography variant='body1' className={classes.suggestion}>
           {getSuggestion(mealCount, sortedPlans.data)}
         </Typography>
+        <Typography variant='body1' className={classes.suggestion}>
+          {cart && cart.Zip ? null : 'Enter zip to continue'}
+        </Typography>
         <Link href={deliveryRoute}>
           <Button
             disabled={disabled}

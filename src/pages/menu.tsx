@@ -52,8 +52,8 @@ const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const cartRestId = cart ? cart.RestId : null;
-  const [open, setOpen] = useState(true);
-  const [zip, setZip] = useState('');
+  const zip = cart && cart.Zip ? cart.Zip : '';
+  const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
   const RestMenus = useMemo(() => ( 
     rests.data && rests.data.map(rest => 
@@ -78,8 +78,7 @@ const menu = () => {
       <ZipModal
         open={open}
         defaultZip={zip}
-        onClose={zip => {
-          setZip(zip);
+        onClose={() => {
           setOpen(false);
         }}
       />

@@ -32,6 +32,7 @@ export const cartQL = gql`
     addMealToCart(meal: Meal!, restId: ID!): Cart!
     removeMealFromCart(mealId: ID!): Cart!
     updateDeliveryDay(day: Integer!): Cart!
+    updateZip(zip: String!): Cart!
   }
 `
 
@@ -86,10 +87,24 @@ export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   }
 }
 
+export const useUpdateZip = (): (zip: string) => void => {
+  if (isServer()) return (_) => {}
+  type vars = { zip: string };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation updateZip($zip: Integer!) {
+      updateZip(zip: $zip) @client
+    }
+  `);
+  return (zip: string) => {
+    mutate({ variables: { zip } })
+  }
+}
+
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
+  updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
 
 const updateCartCache = (cache: ApolloCache<any>, cart: Cart) => {
@@ -114,10 +129,20 @@ export const cartMutationResolvers: cartMutationResolvers = {
         restId,
         planId: null,
         deliveryDay: null,
+        zip: null,
       }));
     }
     if (res.cart.restId && res.cart.restId !== restId) {
       throw new Error(`Cannot add meals from new restId ${restId} since cart already holds items from ${res.cart.restId}`);
+    }
+    if (res.cart.Meals.length === 0) {
+      return updateCartCache(cache, new Cart({
+        meals: [meal],
+        restId,
+        planId: res.cart.PlanId,
+        deliveryDay: res.cart.DeliveryDay,
+        zip: res.cart.Zip,
+      }));
     }
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     const newCart = res.cart.addMeal(meal);
@@ -127,6 +152,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restId,
       planId: planId ? planId : null,
       deliveryDay: newCart.DeliveryDay,
+      zip: newCart.Zip,
     }));
   },
 
@@ -143,6 +169,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         restId: null,
         planId: planId ? planId : null,
         deliveryDay: newCart.DeliveryDay,
+        zip: newCart.Zip,
       });
     }
     return updateCartCache(cache, new Cart({
@@ -150,6 +177,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restId: newCart.RestId,
       planId: planId ? planId : null,
       deliveryDay: newCart.DeliveryDay,
+      zip: newCart.Zip,
     }));
   },
 
@@ -161,6 +189,27 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restId: res.cart.RestId,
       planId: res.cart.PlanId,
       deliveryDay: day,
+      zip: res.cart.Zip,
     }));
-  },  
+  },
+
+  updateZip: (_, { zip }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      return updateCartCache(cache, new Cart({
+        meals: [],
+        restId: null,
+        planId: null,
+        deliveryDay: null,
+        zip,
+      }));
+    }
+    return updateCartCache(cache, new Cart({
+      meals: res.cart.Meals,
+      restId: res.cart.RestId,
+      planId: res.cart.PlanId,
+      deliveryDay: res.cart.DeliveryDay,
+      zip,
+    }));
+  },
 }

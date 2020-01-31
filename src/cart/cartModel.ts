@@ -6,25 +6,29 @@ export interface ICart {
   readonly restId: string | null;
   readonly planId: string | null;
   readonly deliveryDay: deliveryDay | null;
+  readonly zip: string | null;
 }
 
 export class Cart implements ICart {
-  readonly meals: Meal[];
+  readonly meals: Meal[]
   readonly restId: string | null
   readonly planId: string | null
   readonly deliveryDay: deliveryDay | null
+  readonly zip: string | null;
 
   constructor(cart: ICart) {
     this.meals = cart.meals.map(meal => new Meal(meal));
     this.restId = cart.restId;
     this.planId = cart.planId;
     this.deliveryDay = cart.deliveryDay;
+    this.zip = cart.zip;
   }
 
   public get DeliveryDay() { return this.deliveryDay }
   public get Meals() { return this.meals }
   public get PlanId() { return this.planId }
   public get RestId() { return this.restId }
+  public get Zip() { return this.zip }
 
   public getGroupedMeals() {
     return this.meals.reduce<{
@@ -46,7 +50,7 @@ export class Cart implements ICart {
 
   public addMeal(meal: Meal) {
     const newCart = new Cart(this);
-    newCart.meals.push(meal);
+    newCart.meals!.push(meal);
     return newCart;
   }
 
