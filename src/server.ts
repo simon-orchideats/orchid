@@ -65,7 +65,7 @@ const start = async () => {
 
   const webServer = createServer(app);
 
-  const port = activeConfig.app.port;
+  const port = activeConfig.server.app.port;
   webServer.listen(port, () => {
     console.log(`API Server is now running at https://localhost:${port}${apolloServer.graphqlPath}`);
   });
