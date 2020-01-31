@@ -2,11 +2,14 @@ import { RestProfile } from './restProfileModel';
 import { IMeal, Meal } from './mealModel';
 import { ILocation, Location } from '../location/locationModel';
 
-export interface IRest {
-  readonly _id: string;
+export interface ERest {
   readonly location: ILocation;
   readonly menu: IMeal[];
   readonly profile: RestProfile;
+}
+
+export interface IRest extends ERest {
+  readonly _id: string;
 }
 
 export class Rest implements IRest {

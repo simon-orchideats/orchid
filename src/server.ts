@@ -1,3 +1,13 @@
+import express from 'express';
+import next from 'next';
+import { initElastic } from './server/elasticConnector';
+import { initPlanService } from './server/plans/planService';
+import { createServer } from 'http';
+import { ApolloServer } from 'apollo-server-express';
+import { activeConfig, isProd } from './config';
+import { schema } from './server/schema/schema';
+import { initRestService } from './server/rests/restService';
+
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
  * endpoints in /pages/api. For an apollo example of this, see
@@ -14,15 +24,6 @@
  * hurt us very much and since we need to check for `req.header('x-forwarded-proto') !== 'https'` for heroku,
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
-
-import express from 'express';
-import next from 'next';
-import { initElastic } from './server/elasticConnector';
-import { initPlanService } from './server/plans/planService';
-import { createServer } from 'http';
-import { ApolloServer } from 'apollo-server-express';
-import { activeConfig, isProd } from './config';
-import { schema } from './server/schema/schema';
 
 const start = async () => {
   const ssr = next({
@@ -46,6 +47,7 @@ const start = async () => {
 
   const elastic = await initElastic();
   initPlanService(elastic);
+  initRestService(elastic);
 
   const apolloServer = new ApolloServer({
     schema,

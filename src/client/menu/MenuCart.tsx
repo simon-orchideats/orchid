@@ -42,7 +42,7 @@ const MenuCart: React.FC = () => {
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
   const rest = useGetRest(cart ? cart.RestId : null);
   const mealCount = cart ? cart.Meals.length : 0;
-  const disabled = mealCount === 0 || (planCounts && !planCounts.includes(mealCount));
+  const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   const groupedMeals = cart && cart.getGroupedMeals();
   return (
     <>

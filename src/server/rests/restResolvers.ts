@@ -1,8 +1,8 @@
 import { getRestService } from './restService';
 
 export const RestQueryResolvers = {
-  nearbyRests: (_root: any, { zip }: { zip: string }) => {
-    return getRestService().getNearbyRests(zip);
+  nearbyRests: async (_root: any, { zip }: { zip: string }) => {
+    return await getRestService().getNearbyRests(zip);
   },
 
   rest: (_root: any, { restId }: { restId: string }) => {

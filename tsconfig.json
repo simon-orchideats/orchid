@@ -27,7 +27,8 @@
     "build",
     ".next",
     "out",
-    "next.config.js"
+    "next.config.js",
+    "docs"
   ],
   "include": [
     "next-env.d.ts",
