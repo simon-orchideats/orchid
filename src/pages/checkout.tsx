@@ -13,6 +13,7 @@ import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements } from "react-stripe-elements";
 import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../consumer/consumerModel";
+import CheckoutCart from "../client/checkout/CheckoutCart";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -292,7 +293,7 @@ const checkout = () => {
             lg={3}
           >
             <StickyDrawer>
-              <div>yoyo</div>
+              <CheckoutCart />
             </StickyDrawer>
           </Grid>
         }

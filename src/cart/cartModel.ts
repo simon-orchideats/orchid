@@ -26,6 +26,24 @@ export class Cart implements ICart {
   public get PlanId() { return this.planId }
   public get RestId() { return this.restId }
 
+  public getGroupedMeals() {
+    return this.meals.reduce<{
+      count: number,
+      meal: Meal,
+    }[]>((groupings, meal) => {
+      const groupIndex = groupings.findIndex(group => group.meal.Id === meal.Id);
+      if (groupIndex === -1) {
+        groupings.push({
+          count: 1,
+          meal,
+        })
+      } else {
+        groupings[groupIndex].count++;
+      }
+      return groupings;
+    }, []);
+  }
+
   public addMeal(meal: Meal) {
     const newCart = new Cart(this);
     newCart.meals.push(meal);
