@@ -9,7 +9,6 @@ import { howItWorksRoute } from '../../pages/how-it-works';
 import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
 import { indexRoute } from '../../pages';
-import withClientApollo from '../utils/withClientApollo';
 import { useRouter } from 'next/router';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { checkoutRoute } from '../../pages/checkout';
@@ -42,6 +41,9 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
+    [theme.breakpoints.down(550)]: {
+      display: 'none',
+    },
   },
   horzMargin: {
     marginLeft: theme.spacing(2),
@@ -154,4 +156,4 @@ const Navbar: React.FC = () => {
   );
 }
 
-export default withClientApollo(Navbar);
+export default Navbar;

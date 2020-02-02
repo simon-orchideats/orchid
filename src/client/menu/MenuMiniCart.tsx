@@ -23,17 +23,17 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MiniCart: React.FC = () => {
+const MenuMiniCart: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
   const mealCount = cart ? cart.Meals.length : 0;
-  const disabled = mealCount === 0 || (planCounts && !planCounts.includes(mealCount));
+  const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   return (
     <div className={classes.container}>
       <Typography variant='body1' className={classes.suggestion}>
-        {getSuggestion(mealCount, sortedPlans.data)}
+        {cart && cart.Zip ? getSuggestion(mealCount, sortedPlans.data) : 'Enter zip to continue'}
       </Typography>
       <Link href={deliveryRoute}>
         <Button
@@ -49,4 +49,4 @@ const MiniCart: React.FC = () => {
   )
 }
 
-export default withClientApollo(MiniCart);
+export default withClientApollo(MenuMiniCart);

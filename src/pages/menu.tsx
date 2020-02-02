@@ -1,14 +1,14 @@
 import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { CSSProperties, useTheme } from "@material-ui/styles";
+import { useTheme } from "@material-ui/styles";
 import { useState, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
-import SideCart from "../client/menu/MenuCart";
+import MenuCart from "../client/menu/MenuCart";
 import RestMenu from "../client/menu/RestMenu";
-import MiniCart from "../client/menu/MiniCart";
+import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/reused/StickyDrawer";
 
@@ -38,12 +38,12 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.background.paper,
     zIndex: theme.zIndex.appBar - 1,
     top: theme.mixins.toolbar.height,
-    height: theme.spacing(8),
+    minHeight: theme.spacing(8),
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height,
     },
   }
 }));
@@ -98,7 +98,7 @@ const menu = () => {
             </Link>
             {!isMdAndUp &&
               <div className={classes.mini}>
-                <MiniCart />
+                <MenuMiniCart />
               </div>
             }
           </div>
@@ -112,7 +112,7 @@ const menu = () => {
             lg={3}
           >
             <StickyDrawer>
-              <SideCart />
+              <MenuCart />
             </StickyDrawer>
           </Grid>
         }

@@ -1,5 +1,4 @@
 import { makeStyles } from "@material-ui/core";
-import { CSSProperties } from "@material-ui/styles";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -21,12 +20,12 @@ const useStyles = makeStyles(theme => ({
     top: theme.mixins.toolbar.height,
     height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
+      height: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px)`,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height
+      height: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px)`,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height
     },
   },
 }));

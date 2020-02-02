@@ -54,10 +54,10 @@ const theme: ThemeOptions = {
     },
     toolbar: {
       height: 56,
-      [toolbarLandscapeQuery]: {
+      [toolbarLandscapeQuery as string]: {
         height: 48
       },
-      [toolbarWidthQuery]: {
+      [toolbarWidthQuery as string]: {
         height: 64
       },
     }
@@ -376,9 +376,6 @@ declare module "@material-ui/core/colors/common" {
   }
 }
 
-// const toolbarLandscapeQuery = '@media (min-width:0px) and (orientation: landscape)';
-// const toolbarWidthQuery = '@media (min-width:600px)'
-
 declare module "@material-ui/core/styles/createMixins" {
   interface Mixins {
     navbar: {
@@ -387,7 +384,7 @@ declare module "@material-ui/core/styles/createMixins" {
     customToolbar: {
       toolbarLandscapeQuery: string
       toolbarWidthQuery: string
-    };
+    }
   }
 }
 

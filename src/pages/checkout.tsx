@@ -1,7 +1,8 @@
-import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, MenuItem, useMediaQuery, Theme, Button } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme, Button } from "@material-ui/core";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { useGetCart } from "../client/global/state/cartState";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -11,9 +12,12 @@ import { useState } from "react";
 import { state, States } from "../location/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
-import { StripeProvider, Elements } from "react-stripe-elements";
+import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
+import { activeConfig } from "../config";
+import { useNotify } from "../client/global/state/notificationState";
+import { NotificationType } from "../client/notification/notificationModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -40,15 +44,41 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const checkout = () => {
+const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
+  stripe
+}) => {
   const classes = useStyles();
   const cart = useGetCart();
-  const [state, setState] = useState<state>();
+  const notify = useNotify();
+  const [deliveryName, setDeliveryName] = useState<string>('')
+  const [addr1, setAddr1] = useState<string>('')
+  const [addr2, setAddr2] = useState<string>('')
+  const [city, setCity] = useState<string>('')
+  const [zip, setZip] = useState<string>(cart && cart.Zip ? cart.Zip : '');
+  const [phone, setPhone] = useState<string>('');
+  const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
+  const [state, setState] = useState<state | ''>();
   const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Auto)
   const [oneName, setOneName] = useState<boolean>(true);
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
+  const [accountName, setAccountName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const onPlaceOrder = async () => {
+    if (!stripe) throw new Error('Stripe not initialized');
+    const res = await stripe.createToken({ name: accountName });
+    if (res.error) {
+      const msg = `Could not process card. '${res.error.message}'`;
+      notify(msg, NotificationType.error, false);
+      return;
+      // todo: add a logrocket exception instead of throwing error
+      // throw new Error(msg);
+    };
+    const cardTok = res.token!.id;
+    console.log(cardTok);
+  }
   if (!cart && !isServer()) Router.replace(`/${menuRoute}`);
   return (
     <Container
@@ -77,6 +107,11 @@ const checkout = () => {
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={deliveryName}
+                onChange={e => {
+                  if (oneName) setAccountName(e.target.value);
+                  setDeliveryName(e.target.value)
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -91,69 +126,108 @@ const checkout = () => {
                 label='Delivery name is same as account name'
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+            >
               <TextField
                 label='Address'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={addr1}
+                onChange={e => setAddr1(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+            >
               <TextField
                 label='Apt, suite, floor'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={addr2}
+                onChange={e => setAddr2(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+            >
               <TextField
                 label='City'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={city}
+                onChange={e => setCity(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
-              <TextField
-                select
-                label='State'
-                fullWidth
-                size='small'
-                value={state || ''}
-                onChange={e => setState(e.target.value as state)}
-                variant='outlined'
-              >
-                {Object.values<state>(States).map(state => (
-                  <MenuItem key={state} value={state}>
-                    {state}
-                  </MenuItem>
-                ))}
-              </TextField>
+            <Grid
+              item
+              xs={12}
+              md={3}
+            >
+              <Autocomplete
+                options={Object.values<state>(States)}
+                value={state || '' as state}
+                onChange={(_e: any, value: state | null) => setState(value ? value : '')}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    size='small'
+                    label='State'
+                    variant='outlined'
+                    fullWidth
+                  />
+                )}
+              />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+              item
+              xs={12}
+              md={3}
+            >
               <TextField
                 label='Zip'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={zip}
+                onChange={e => setZip(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+            >
               <TextField
                 label='Phone'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+            >
               <TextField
                 label='Delivery instructions'
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={deliveryInstructions}
+                onChange={e => setDliveryInstructions(e.target.value)}
               />
             </Grid>
           </Grid>
@@ -171,6 +245,11 @@ const checkout = () => {
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={accountName}
+                onChange={e => {
+                  if (oneName) setDeliveryName(e.target.value);
+                  setAccountName(e.target.value)
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -179,6 +258,8 @@ const checkout = () => {
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={email}
+                onChange={e => setEmail(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -188,6 +269,8 @@ const checkout = () => {
                 variant='outlined'
                 size='small'
                 fullWidth
+                value={password}
+                onChange={e => setPassword(e.target.value)}
               />
             </Grid>
           </Grid>
@@ -293,7 +376,7 @@ const checkout = () => {
             lg={3}
           >
             <StickyDrawer>
-              <CheckoutCart />
+              <CheckoutCart onPlaceOrder={onPlaceOrder} />
             </StickyDrawer>
           </Grid>
         }
@@ -302,12 +385,12 @@ const checkout = () => {
   )
 }
 
-const CheckoutContainer = withClientApollo(checkout);
+const CheckoutContainer = withClientApollo(injectStripe(checkout));
 
 export default () => {
-  let stripe = null
+  let stripe = null;
   if (!isServer()) {
-    stripe = window.Stripe('pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h')
+    stripe = window.Stripe(activeConfig.client.stripe.key)
   }
   return (
     <StripeProvider stripe={stripe}>

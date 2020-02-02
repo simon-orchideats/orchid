@@ -61,11 +61,13 @@ export class RestService {
 let restService: RestService;
 
 export const initRestService = (elastic: Client) => {
+  console.log('initting rest service');
   if (restService) throw new Error('[RestService] already initialized.');
   restService = new RestService(elastic);
 };
 
 export const getRestService = () => {
+  console.log('getting rest service');
   if (!restService) throw new Error('[RestService] not initialized.');
   return restService;
 }

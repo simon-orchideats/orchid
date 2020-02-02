@@ -1,20 +1,19 @@
 import React from 'react'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { initApolloClient } from './withPageApollo';
-import { isServer } from './isServer';
+// import { isServer } from './isServer';
 
 /**
  * Creates and provides the apolloContext
  * to a component. Use it by wrapping
  * your component via HOC pattern.
  */
-export default function withClientApollo(Component: React.ComponentType) {
-  const WithClientApollo = ({ ...pageProps }: any) => {
-    if (isServer()) return <Component {...pageProps} />
+export default function withClientApollo<T>(Component: React.ComponentType<T>) {
+  const WithClientApollo = (props: T) => {
     const client = initApolloClient()
     return (
       <ApolloProvider client={client}>
-        <Component {...pageProps} />
+        <Component {...props} />
       </ApolloProvider>
     )
   }

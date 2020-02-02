@@ -26,14 +26,24 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MenuCart: React.FC = () => {
+type props = {
+  onPlaceOrder: () => void
+}
+
+const CheckoutCart: React.FC<props> = ({
+  onPlaceOrder,
+}) => {
   const classes = useStyles();
   const cart = useGetCart();
   const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.getGroupedMeals();
   return (
     <>
-      <Button variant='contained' color='primary'>
+      <Button
+        variant='contained'
+        color='primary'
+        onClick={onPlaceOrder}
+      >
         Place order
       </Button>
       <Typography
@@ -89,4 +99,4 @@ const MenuCart: React.FC = () => {
   )
 }
 
-export default withClientApollo(MenuCart);
+export default withClientApollo<props>(CheckoutCart);
