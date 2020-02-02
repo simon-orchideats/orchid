@@ -45,7 +45,7 @@ const start = async () => {
     });
   }
 
-  const elastic = await initElastic();
+  const elastic = initElastic();
   initPlanService(elastic);
   initRestService(elastic);
 
