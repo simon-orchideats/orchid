@@ -6,6 +6,7 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
 import { Container, Typography } from '@material-ui/core';
 import { howItWorksRoute } from '../../pages/how-it-works';
+import { accountRoute } from '../../pages/account';
 import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
 import { indexRoute } from '../../pages';
@@ -67,7 +68,7 @@ const Navbar: React.FC = () => {
             <Link href={howItWorksRoute}>
               <Typography variant='button' className={`${classes.link} ${classes.how}`}>How it works</Typography>
             </Link>
-            <Link href={howItWorksRoute}>
+            <Link href={accountRoute}>
               <AccountCircleIcon className={classes.account} />
             </Link>
           </Toolbar>

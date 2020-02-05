@@ -9,3 +9,6 @@ export default () => (
     page.
   </div>
 )
+
+
+export const accountRoute = 'account';
