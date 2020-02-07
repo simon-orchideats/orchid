@@ -1,41 +1,62 @@
 const env = process.env.NODE_ENV;
 
 type config = {
-  app: {
-    port: number
+  client: {
+    stripe: {
+      key: string,
+    },
   },
-  elastic: {
-    node: string,
-    auth: {
-      username?: string,
-      password?: string,
-    }
-  },
+  server: {
+    app: {
+      port: number
+    },
+    elastic: {
+      node: string,
+      auth: {
+        username?: string,
+        password?: string,
+      }
+    },
+  }
 }
 
 const development: config = {
-  app: {
-    port: 8443,
+  client: {
+    stripe: {
+      key: 'pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h',
+    },
   },
-  elastic: {
-    node: 'localhost:9200',
-    auth: {
-      username: undefined,
-      password: undefined,
-    }
-  },
+  server: {
+    app: {
+      port: 8443,
+    },
+    elastic: {
+      node: 'localhost:9200',
+      auth: {
+        username: undefined,
+        password: undefined,
+      }
+    },
+  }
 };
 
 const production: config = {
-  app: {
-    port: parseInt(process.env.PORT || '8443', 10)
+  client: {
+    stripe: {
+      key: 'pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h',
+    },
   },
-  elastic: {
-    node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',
-    auth: {
-      username: 'elastic',
-      password: process.env.ELASTIC_PASS,
-    }
+  server: {
+    app: {
+      port: parseInt(process.env.PORT || '8443', 10)
+    },
+    elastic: {
+      node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',
+      auth: {
+        username: 'elastic',
+        password: process.env.ELASTIC_PASS,
+      }
+    },
   },
 };
 

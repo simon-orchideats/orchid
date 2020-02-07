@@ -4,6 +4,8 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
+import Link from 'next/link'
+import { deliveryRoute } from "../../pages/delivery";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -21,28 +23,30 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MiniCart: React.FC = () => {
+const MenuMiniCart: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
   const mealCount = cart ? cart.Meals.length : 0;
-  const disabled = mealCount === 0 || (planCounts && !planCounts.includes(mealCount));
+  const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   return (
     <div className={classes.container}>
       <Typography variant='body1' className={classes.suggestion}>
-        {getSuggestion(mealCount, sortedPlans.data)}
+        {cart && cart.Zip ? getSuggestion(mealCount, sortedPlans.data) : 'Enter zip to continue'}
       </Typography>
-      <Button
-        disabled={disabled}
-        variant='contained'
-        color='primary'
-        className={classes.button}
-      >
-        {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
-      </Button>
+      <Link href={deliveryRoute}>
+        <Button
+          disabled={disabled}
+          variant='contained'
+          color='primary'
+          className={classes.button}
+        >
+          {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
+        </Button>
+      </Link>
     </div>
   )
 }
 
-export default withClientApollo(MiniCart);
+export default withClientApollo(MenuMiniCart);

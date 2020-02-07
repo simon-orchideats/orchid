@@ -5,9 +5,9 @@ let elastic: Client;
 
 export const initElastic = () => {
 	if (elastic) return elastic;
-	const { username, password } = activeConfig.elastic.auth;
+	const { username, password } = activeConfig.server.elastic.auth;
 	return new elasticsearch.Client({
-		host: activeConfig.elastic.node,
+		host: activeConfig.server.elastic.node,
 		log: 'warning',
 		httpAuth: username ? `${username}:${password}` : undefined,
 	});

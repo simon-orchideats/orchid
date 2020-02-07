@@ -1,13 +1,13 @@
-export interface IProfile {
+export interface IRestProfile {
   readonly name: string;
   readonly phone: string;
 }
 
-export class Profile implements IProfile {
+export class RestProfile implements IRestProfile {
   readonly name: string;
   readonly phone: string;
 
-  constructor(profile: IProfile) {
+  constructor(profile: IRestProfile) {
     this.name = profile.name
     this.phone = profile.phone
   }

@@ -10,6 +10,10 @@ import { accountRoute } from '../../pages/account';
 import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
 import { indexRoute } from '../../pages';
+import { useRouter } from 'next/router';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import { checkoutRoute } from '../../pages/checkout';
+import { deliveryRoute } from '../../pages/delivery';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -27,9 +31,28 @@ const useStyles = makeStyles(theme => ({
   container: {
     padding: 0,
   },
+  disabled: {
+    color: theme.palette.action.disabled,
+  },
   toolbar: {
     display: 'flex',
     padding: 0, 
+  },
+  center: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    [theme.breakpoints.down(550)]: {
+      display: 'none',
+    },
+  },
+  horzMargin: {
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+  },
+  vertCenter: {
+    display: 'flex',
+    alignItems: 'center',
   },
   logo: {
     [theme.breakpoints.down('xs')]: {
@@ -51,6 +74,68 @@ const useStyles = makeStyles(theme => ({
 
 const Navbar: React.FC = () => {
   const classes = useStyles();
+  const currRoute = useRouter().pathname;
+  const menuStep = (
+    <Link href={menuRoute}>
+      <Typography
+        variant='button'
+        color='primary'
+        className={classes.link}
+      >
+        Menu
+      </Typography>
+    </Link>
+  );
+  let bar;
+  if (currRoute === `/${deliveryRoute}`) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          {menuStep}
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button'>
+            Delivery
+          </Typography>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' className={classes.disabled}>
+            Checkout
+          </Typography>
+        </div>
+      </div>
+    )
+  } else if (currRoute === `/${checkoutRoute}`) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          {menuStep}
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Link href={deliveryRoute}>
+            <Typography variant='button' color='primary' className={classes.link}>
+              Delivery
+            </Typography>
+          </Link>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button'>
+            Checkout
+          </Typography>
+        </div>
+      </div>
+    )
+  } else {
+    bar = (
+      <>
+        <Link href={plansRoute}>
+          <Typography variant='button' className={classes.link}>Plans</Typography>
+        </Link>
+        <Link href={menuRoute}>
+          <Typography variant='button' className={classes.link}>Menu</Typography>
+        </Link>
+        <Link href={howItWorksRoute}>
+          <Typography variant='button' className={`${classes.link} ${classes.how}`}>How it works</Typography>
+        </Link>
+      </>
+    )
+  }
   return (
     <>
       <AppBar position='sticky' color='default'>
@@ -59,15 +144,7 @@ const Navbar: React.FC = () => {
             <Link href={indexRoute}>
               <img src='/logo.png' alt='logo' className={classes.logo} />
             </Link>
-            <Link href={plansRoute}>
-              <Typography variant='button' className={classes.link}>Plans</Typography>
-            </Link>
-            <Link href={menuRoute}>
-              <Typography variant='button' className={classes.link}>Menu</Typography>
-            </Link>
-            <Link href={howItWorksRoute}>
-              <Typography variant='button' className={`${classes.link} ${classes.how}`}>How it works</Typography>
-            </Link>
+            {bar}
             <Link href={accountRoute}>
               <AccountCircleIcon className={classes.account} />
             </Link>

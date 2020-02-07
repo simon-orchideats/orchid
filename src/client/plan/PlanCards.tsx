@@ -1,4 +1,4 @@
-import { makeStyles, Button, Grid } from '@material-ui/core';
+import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
@@ -18,12 +18,9 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(2),
     width: 250,
   },
-  button: {
-    marginTop: theme.spacing(2),
-  },
 }));
 
-const PlanChooser = () => {
+const PlanCards = () => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   if (!plans.data) {
@@ -44,7 +41,6 @@ const PlanChooser = () => {
               <Typography variant='body2' color='textSecondary'>
                 ${plan.WeekPrice.toFixed(2)}/week
               </Typography>
-              <Button className={classes.button} variant='contained' color='primary'>CHOOSE</Button>
             </CardContent>
           </Card>
         </Grid>
@@ -53,4 +49,4 @@ const PlanChooser = () => {
   );
 }
 
-export default withClientApollo(PlanChooser)
+export default withClientApollo(PlanCards)

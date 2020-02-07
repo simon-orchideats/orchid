@@ -1,3 +1,4 @@
+import { LocationQL } from './../location/locationQL';
 import { RestQueryResolvers } from './../rests/restResolvers';
 import { RestQL } from './../rests/restQL';
 import { PlanQueryResolvers } from '../plans/planResolvers';
@@ -22,6 +23,7 @@ const gqlSchema = gql`
 `
 
 const typeDefs = [
+  LocationQL,
   PlanQL,
   RestQL,
   query,

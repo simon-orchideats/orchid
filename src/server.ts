@@ -1,3 +1,13 @@
+import express from 'express';
+import next from 'next';
+import { initElastic } from './server/elasticConnector';
+import { initPlanService } from './server/plans/planService';
+import { createServer } from 'http';
+import { ApolloServer } from 'apollo-server-express';
+import { activeConfig, isProd } from './config';
+import { schema } from './server/schema/schema';
+import { initRestService } from './server/rests/restService';
+
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
  * endpoints in /pages/api. For an apollo example of this, see
@@ -15,6 +25,7 @@
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
+<<<<<<< HEAD
 import express from 'express';
 import next from 'next';
 import { initElastic } from './server/elasticConnector';
@@ -52,6 +63,8 @@ import authRoutes from './server/auth-routes';
 //   done(null, user);
 // });
 
+=======
+>>>>>>> 6854d021b70f0fa9099726184aae49535830e809
 const start = async () => {
   const ssr = next({
     dev: !isProd
@@ -114,8 +127,9 @@ return (_req:any, res:any, _next:any,) => {
 }
   // handles requests to /account and calls middleware
   app.use("/account", restrictAccess('/account'));
-  const elastic = await initElastic();
+  const elastic = initElastic();
   initPlanService(elastic);
+  initRestService(elastic);
 
   const apolloServer = new ApolloServer({
     schema,
@@ -133,7 +147,7 @@ return (_req:any, res:any, _next:any,) => {
 
   const webServer = createServer(app);
 
-  const port = activeConfig.app.port;
+  const port = activeConfig.server.app.port;
   webServer.listen(port, () => {
     console.log(`API Server is now running at https://localhost:${port}${apolloServer.graphqlPath}`);
   });

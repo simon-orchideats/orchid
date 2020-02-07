@@ -174,7 +174,7 @@ function createApolloClient(initialState = {}) {
 }
 
 function createIsomorphLink() {
-  // can't do is server here, not sure why
+  // can't do isServer() here, not sure why
   if (typeof window === 'undefined') {
     // not sure why i had to do import instead of require which the example...
     // const { SchemaLink } = require('./node_modules/apollo-link-schema')

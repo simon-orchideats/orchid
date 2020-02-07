@@ -1,5 +1,8 @@
 import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden } from '@material-ui/core';
-import PlanChooser from '../client/plan/PlanChooser';
+import PlanCards from '../client/plan/PlanCards';
+import Link from 'next/link';
+import { plansRoute } from './plans';
+import { menuRoute } from './menu';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -101,9 +104,11 @@ const Welcome = () => {
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
           Offering meals starting at $8.99
         </Typography>
-        <Button variant='contained' color='primary'>
-          SEE PLANS
-        </Button>
+        <Link href={plansRoute}>
+          <Button variant='contained' color='primary'>
+            SEE PLANS
+          </Button>
+        </Link>
       </div>
     </div>
   );
@@ -136,7 +141,9 @@ const HowItWorks = () => {
         <Content description='Local restaurants cook, we deliver' />
         <Content description='Enjoy immediately' />
       </Grid>
-      <Button variant='outlined' color='primary'>GET STARTED</Button>
+      <Link href={menuRoute}>
+        <Button variant='outlined' color='primary'>GET STARTED</Button>
+      </Link>
     </div>
   );
 };
@@ -152,7 +159,16 @@ const Plans = () => {
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
           Each Sauté delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
-        <PlanChooser />
+        <PlanCards />
+        <Link href={menuRoute}>
+          <Button
+            variant='outlined'
+            color='primary'
+            className={classes.largeVerticalMargin}
+          >
+            SEE MENU
+          </Button>
+        </Link>
       </Paper>
     </div>
   )
@@ -273,13 +289,15 @@ const Benefits = () => {
               imgLeft={false}
             />
           </Grid>
-          <Button
-            variant='outlined'
-            color='primary'
-            className={classes.largeVerticalMargin}
-          >
-            SEE MENU
-          </Button>
+          <Link href={menuRoute}>
+            <Button
+              variant='outlined'
+              color='primary'
+              className={classes.largeVerticalMargin}
+            >
+              SEE MENU
+            </Button>
+          </Link>
         </Container>
       </Hidden>
       <Hidden smUp implementation='js'>
@@ -300,9 +318,15 @@ const Benefits = () => {
             title='Affordable'
             description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
           />
-          <Button variant='outlined' color='primary' className={classes.largeBottomMargin}>
-            SEE MENU
-          </Button>
+          <Link href={menuRoute}>
+            <Button
+              variant='outlined'
+              color='primary'
+              className={classes.largeBottomMargin}
+            >
+              SEE MENU
+            </Button>
+          </Link>
         </Container>
       </Hidden>
     </>

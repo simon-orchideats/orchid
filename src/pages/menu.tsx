@@ -1,15 +1,16 @@
 import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { CSSProperties, useTheme } from "@material-ui/styles";
+import { useTheme } from "@material-ui/styles";
 import { useState, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
-import SideCart from "../client/menu/SideCart";
+import MenuCart from "../client/menu/MenuCart";
 import RestMenu from "../client/menu/RestMenu";
-import MiniCart from "../client/menu/MiniCart";
+import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
+import StickyDrawer from "../client/reused/StickyDrawer";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -19,22 +20,6 @@ const useStyles = makeStyles(theme => ({
   menu: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-  },
-  cart: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-    position: 'sticky',
-    top: theme.mixins.toolbar.height,
-    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
-    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
-    },
-    [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height}px)`,
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height
-    },
   },
   link: {
     color: theme.palette.common.link,
@@ -53,12 +38,12 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.background.paper,
     zIndex: theme.zIndex.appBar - 1,
     top: theme.mixins.toolbar.height,
-    height: theme.spacing(8),
+    minHeight: theme.spacing(8),
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarLandscapeQuery]! as CSSProperties).height,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      top: (theme.mixins.toolbar[theme.mixins.customToolbar.toolbarWidthQuery]! as CSSProperties).height,
+      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height,
     },
   }
 }));
@@ -67,8 +52,8 @@ const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const cartRestId = cart ? cart.RestId : null;
-  const [open, setOpen] = useState(true);
-  const [zip, setZip] = useState('');
+  const zip = cart && cart.Zip ? cart.Zip : '';
+  const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
   const RestMenus = useMemo(() => ( 
     rests.data && rests.data.map(rest => 
@@ -93,8 +78,7 @@ const menu = () => {
       <ZipModal
         open={open}
         defaultZip={zip}
-        onClose={zip => {
-          setZip(zip);
+        onClose={() => {
           setOpen(false);
         }}
       />
@@ -114,7 +98,7 @@ const menu = () => {
             </Link>
             {!isMdAndUp &&
               <div className={classes.mini}>
-                <MiniCart />
+                <MenuMiniCart />
               </div>
             }
           </div>
@@ -122,14 +106,15 @@ const menu = () => {
         </Grid>
         {
           isMdAndUp &&
-            <Grid
-              item
-              md={4}
-              lg={3}
-              className={classes.cart}
-            >
-              <SideCart />
-            </Grid>
+          <Grid
+            item
+            md={4}
+            lg={3}
+          >
+            <StickyDrawer>
+              <MenuCart />
+            </StickyDrawer>
+          </Grid>
         }
       </Grid>
     </Container>
