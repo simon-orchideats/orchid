@@ -7,6 +7,10 @@ import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './server/schema/schema';
 import { initRestService } from './server/rests/restService';
+// import session from 'express-session';
+//import passport from 'passport';
+// import { Strategy } from 'passport-auth0';
+import authRoutes from './server/auth-routes';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -25,19 +29,7 @@ import { initRestService } from './server/rests/restService';
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-<<<<<<< HEAD
-import express from 'express';
-import next from 'next';
-import { initElastic } from './server/elasticConnector';
-import { initPlanService } from './server/plans/planService';
-import { createServer } from 'http';
-import { ApolloServer } from 'apollo-server-express';
-import { activeConfig, isProd } from './config';
-import { schema } from './server/schema/schema';
-// import session from 'express-session';
-//import passport from 'passport';
-// import { Strategy } from 'passport-auth0';
-import authRoutes from './server/auth-routes';
+
 
 // // Configure Passport to use Auth0 settings
 // const strategy = new Strategy({
@@ -63,8 +55,6 @@ import authRoutes from './server/auth-routes';
 //   done(null, user);
 // });
 
-=======
->>>>>>> 6854d021b70f0fa9099726184aae49535830e809
 const start = async () => {
   const ssr = next({
     dev: !isProd
