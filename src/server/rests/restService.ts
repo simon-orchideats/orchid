@@ -1,9 +1,9 @@
 import { initElastic } from './../elasticConnector';
 import { Client } from 'elasticsearch';
-import { Location } from '../../location/locationModel';
+import { Location } from '../../place/locationModel';
 import { RestProfile } from '../../rest/restProfileModel';
 import { Meal } from './../../rest/mealModel';
-import { Address } from '../../location/addressModel';
+import { Address } from '../../place/addressModel';
 import { Rest, ERest } from './../../rest/restModel';
 
 const REST_INDEX = 'rests';

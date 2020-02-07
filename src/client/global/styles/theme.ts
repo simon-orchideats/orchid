@@ -1,7 +1,6 @@
 import { NotificationType } from '../../notification/notificationModel';
 import { createMuiTheme, Theme } from "@material-ui/core";
 import { ThemeOptions } from "@material-ui/core/styles/createMuiTheme";
-
 const floralWhite = '#FBFCEB';
 const lightGray = '#f9f9f9';
 const charcoal = '#3c3c3c';

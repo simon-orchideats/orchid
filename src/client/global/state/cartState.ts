@@ -22,7 +22,7 @@ export const cartQL = gql`
     meals: [Meal!]
     restId: ID
     planId: ID
-    deliveryDay: Integer!
+    deliveryDay: Int!
   }
   extend type Query {
     cart: [Meal!]!
@@ -30,7 +30,7 @@ export const cartQL = gql`
   extend type Mutation {
     addMealToCart(meal: Meal!, restId: ID!): Cart!
     removeMealFromCart(mealId: ID!): Cart!
-    updateDeliveryDay(day: Integer!): Cart!
+    updateDeliveryDay(day: Int!): Cart!
     updateZip(zip: String!): Cart!
   }
 `
@@ -75,7 +75,7 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
 export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   type vars = { day: deliveryDay };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updateDeliveryDay($day: Integer!) {
+    mutation updateDeliveryDay($day: Int!) {
       updateDeliveryDay(day: $day) @client
     }
   `);
@@ -87,7 +87,7 @@ export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
 export const useUpdateZip = (): (zip: string) => void => {
   type vars = { zip: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updateZip($zip: Integer!) {
+    mutation updateZip($zip: Int!) {
       updateZip(zip: $zip) @client
     }
   `);

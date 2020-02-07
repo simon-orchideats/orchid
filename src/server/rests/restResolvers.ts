@@ -1,7 +1,11 @@
+import { ServerResolovers } from './../schema/utilModels';
 import { getRestService } from './restService';
 
-export const RestQueryResolvers = {
-  nearbyRests: async (_root: any, { zip }: { zip: string }) => {
+export const RestQueryResolvers: ServerResolovers = {
+  nearbyRests: async (
+    _root: any,
+    { zip }: { zip: string }
+  ) => {
     return await getRestService().getNearbyRests(zip);
   },
 

@@ -7,7 +7,7 @@ import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
 import Link from 'next/link'
 import { deliveryRoute } from "../../pages/delivery";
-import CartMealGroup from "../reused/CartMealGroup";
+import CartMealGroup from "../order/CartMealGroup";
 
 const useStyles = makeStyles(theme => ({
   group: {

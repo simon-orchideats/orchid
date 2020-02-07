@@ -1,5 +1,5 @@
 import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper } from '@material-ui/core';
-import Faq from '../client/reused/Faq';
+import Faq from '../client/general/Faq';
 
 const useStyles = makeStyles(theme => ({
   img: {

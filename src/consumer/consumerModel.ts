@@ -1,70 +1,8 @@
-import { ILocation, Location } from './../location/locationModel';
+import { IDestination, Destination } from './../place/destinationModel';
+import { ICard, Card } from './../card/cardModel';
 
-interface IName {
-  readonly firstName: string
-  readonly lastName: string
-}
-
-export class Name implements IName {
-  readonly firstName: string
-  readonly lastName: string
-
-  constructor(name: IName) {
-    this.firstName = name.firstName;
-    this.lastName = name.lastName;
-  }
-
-  public get FirstName() { return this.firstName }
-  public get LastName() { return this.lastName }
-}
-
-interface ICard {
-  readonly _id: string
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
-}
-
-export class Card implements ICard {
-  readonly _id: string
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
-
-  constructor(card: ICard) {
-    this._id = card._id;
-    this.last4 = card.last4;
-    this.expMonth = card.expMonth;
-    this.expYear = card.expYear;
-  }
-
-  public get Id() { return this._id };
-  public get HiddenNumber() { return `**** ${this.Last4}`}
-  public get Last4() { return this.last4 };
-  public get ExpMonth() { return this.expMonth };
-  public get ExpYear() { return this.expYear };
-}
-
-interface IDestination {
-  readonly location: ILocation
-  readonly instructions: string
-}
-
-export class Destination implements IDestination {
-  readonly location: Location
-  readonly instructions: string
-
-  constructor(destination: IDestination) {
-    this.location = new Location(destination.location);
-    this.instructions = destination.instructions;
-  }
-
-  public get Location() { return this.location }
-  public get Instructions() { return this.instructions }
-}
-
-interface IConsumerProfile {
-  readonly name: IName
+export interface IConsumerProfile {
+  readonly name: string
   readonly email: string
   readonly phone: string
   readonly card: ICard
@@ -72,14 +10,14 @@ interface IConsumerProfile {
 }
 
 export class ConsumerProfile implements IConsumerProfile {
-  readonly name: Name
+  readonly name: string
   readonly email: string
   readonly phone: string
   readonly card: Card
   readonly destination: Destination
 
   constructor(consumerProfile: IConsumerProfile) {
-    this.name = new Name(consumerProfile.name);
+    this.name = consumerProfile.name;
     this.email = consumerProfile.email;
     this.phone = consumerProfile.phone;
     this.card = new Card(consumerProfile.card);
@@ -144,7 +82,7 @@ export const RenewalTypes: {
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-interface IConsumerPlan {
+export interface IConsumerPlan {
   readonly planId: string
   readonly deliveryDay: deliveryDay
   readonly renewal: RenewalType
@@ -170,7 +108,7 @@ export class ConsumerPlan implements IConsumerPlan {
   public get Cuisines() { return this.cuisines }
 }
 
-interface IConsumer {
+export interface IConsumer {
   readonly profile?: IConsumerProfile
   readonly plan: IConsumerPlan
 }

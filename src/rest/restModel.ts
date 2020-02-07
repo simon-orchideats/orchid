@@ -1,6 +1,6 @@
 import { RestProfile } from './restProfileModel';
 import { IMeal, Meal } from './mealModel';
-import { ILocation, Location } from '../location/locationModel';
+import { ILocation, Location } from '../place/locationModel';
 
 export interface ERest {
   readonly location: ILocation;

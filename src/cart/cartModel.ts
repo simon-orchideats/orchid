@@ -1,5 +1,8 @@
-import { deliveryDay } from './../consumer/consumerModel';
+import { ICard } from './../card/cardModel';
+import { IDestination } from './../place/destinationModel';
+import { deliveryDay, IConsumerPlan, RenewalType, CuisineType } from './../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
+import { state } from '../place/addressModel';
 
 export interface ICart {
   readonly meals: IMeal[];
@@ -8,6 +11,15 @@ export interface ICart {
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
 }
+
+export interface ICartInput {
+  readonly restId: string
+  readonly card: ICard
+  readonly consumerPlan: IConsumerPlan
+  readonly meals: IMeal[],
+  readonly destination: IDestination
+  readonly deliveryDate: number
+};
 
 export class Cart implements ICart {
   readonly meals: Meal[]
@@ -62,6 +74,48 @@ export class Cart implements ICart {
     }
     newCart.Meals.splice(index, 1);
     return newCart;
+  }
+
+  public getCartInput(
+    deliveryName: string,
+    address1: string,
+    address2: string,
+    city: string,
+    state: state,
+    zip: string,
+    phone: string,
+    card: ICard,
+    instructions: string,
+    renewal: RenewalType,
+    cuisines: CuisineType[],
+  ) {
+    if (!this.RestId || !this.PlanId || this.DeliveryDay === null) {
+      throw new Error(`Cart is missing property '${JSON.stringify(this)}' `)
+    }
+    return {
+      restId: this.RestId,
+      card,
+      consumerPlan: {
+        planId: this.PlanId,
+        deliveryDay: this.DeliveryDay,
+        renewal,
+        cuisines
+      },
+      deliveryDate: 123,
+      destination: {
+        name: deliveryName,
+        address: {
+          address1,
+          address2,
+          city,
+          state,
+          zip,
+        },
+        phone,
+        instructions,
+      },
+      meals: this.Meals,
+    }
   }
 
 }

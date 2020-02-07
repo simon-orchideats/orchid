@@ -2,7 +2,7 @@ import { makeStyles, Typography, Divider, Button } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import withClientApollo from "../utils/withClientApollo";
-import CartMealGroup from "../reused/CartMealGroup";
+import CartMealGroup from "../order/CartMealGroup";
 
 const useStyles = makeStyles(theme => ({
   title: {
