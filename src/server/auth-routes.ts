@@ -1,21 +1,33 @@
 import express from 'express';
-import passport from 'passport';
+import request from 'request';
 
 const authRoutes = express.Router();
 
-authRoutes.get("/login", passport.authenticate("auth0", {
-  scope: "openid email profile"
-}), (_req, res) => res.redirect("/"));
+// authRoutes.get("/login", passport.authenticate("auth0", {
+//   scope: "openid email profile"
+// }), (_req, res) => res.redirect("/"));
 
-authRoutes.get("/callback", (req, res, next) => {
-  passport.authenticate("auth0",  (err, user) => {
-    if (err) return next(err);
-    if (!user) return res.redirect("/login");
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      res.redirect("/account");
-    });
-  })(req, res, next);
+authRoutes.get("/callback", (_req, _res, _next) => {
+  let options = {
+    method: 'POST',
+    url: 'https://foodflick.auth0.com/oauth/token',
+    headers: {'content-type': 'application/x-www-form-urlencoded'},
+    form: {
+      grant_type: 'authorization_code',
+      client_id: process.env.AUTH0_CLIENT_ID,
+      client_secret: process.env.AUTH0_CLIENT_SECRET,
+      code: _res.req?.query.code,
+      redirect_uri: 'http://localhost:8443/callback'
+    }
+  };
+  request(options, function (_error:any, _response:any, _body:string) {
+    if (_error) throw new Error(_error);
+  
+    _res.setHeader('Set-Cookie',['access_token='+_body]);
+    _res.redirect('/');
+  
+  });
+  
 });
 
 authRoutes.get("/logout", (req, res) => {

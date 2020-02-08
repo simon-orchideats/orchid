@@ -9,12 +9,15 @@ import Navbar from '../client/_app/Navbar';
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 
 export default class MyApp extends App {
+  
   componentDidMount() {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
       jssStyles.parentElement!.removeChild(jssStyles);
     }
+    console.log(document.cookie);
+    
   }
 
   render() {

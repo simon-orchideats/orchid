@@ -7,10 +7,13 @@ import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './server/schema/schema';
 import { initRestService } from './server/rests/restService';
+import cookieParser from 'cookie-parser'; 
 // import session from 'express-session';
 //import passport from 'passport';
 // import { Strategy } from 'passport-auth0';
 import authRoutes from './server/auth-routes';
+import jwt from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -54,6 +57,21 @@ import authRoutes from './server/auth-routes';
 // passport.deserializeUser(function (user, done) {
 //   done(null, user);
 // });
+// Create middleware for checking the JWT
+const checkJwt = jwt({
+  // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://foodflick.auth0.com/.well-known/jwks.json`
+  }),
+
+  // Validate the audience and the issuer.
+  audience: 'https://saute.com',
+  issuer: `https://foodflick.auth0.com/`,
+  algorithms: ['RS256']
+});
 
 const start = async () => {
   const ssr = next({
@@ -74,7 +92,7 @@ const start = async () => {
   await ssr.prepare();
 
   const app = express();
-  
+  app.use(cookieParser());
 
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
@@ -102,19 +120,18 @@ const start = async () => {
    // you are restricting access to some routes
    
 const restrictAccess = (_val:string) => {
-return (_req:any, res:any, _next:any,) => {
-     var url_string = window.location.href
-     console.log(url_string);
-    var url = new URL(url_string);
-    var c = url.searchParams.get("c");
-    console.log(c);
-     res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443${_val}&scope=SCOPE&audience=https://saute.com&state=${_val}`);
-    // if (!req.isAuthenticated()) return res.redirect("https://foodflick.auth0.com/authorize?response_type=token&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&connection=CONNECTION&redirect_uri=http://localhost:8443/callback&state=STATE");
-    // console.log("bam");
-    // next();
-    // console.log("test");
+return (_req:any, res:any, _next:any) => {
+    
+  if(_req.cookies['access_token']){
+    console.log("AYEEEE")
+   app.use(_val,checkJwt);
+  } else{
+     res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_val}`);
+  }_next();
   };
+  
 }
+
   // handles requests to /account and calls middleware
   app.use("/account", restrictAccess('/account'));
   const elastic = initElastic();
