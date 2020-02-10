@@ -26,14 +26,14 @@ const RenewalTypeQL = gql`
 const _ConsumerPlanQL = gql`
   type ConsumerPlan {
     planId: ID!
-    deliveryDay: Float
+    deliveryDay: Int!
     renewal: RenewalType
     cuisines: [CuisineType!]
   }
 
   input ConsumerPlanInput {
     planId: ID!
-    deliveryDay: Float
+    deliveryDay: Int!
     renewal: RenewalType
     cuisines: [CuisineType!]
   }

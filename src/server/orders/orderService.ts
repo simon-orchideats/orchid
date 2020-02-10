@@ -1,4 +1,5 @@
-import { ICartInput } from './../../cart/cartModel';
+import { getNextDeliveryDate } from './../../order/utils';
+import { ICartInput } from '../../order/cartModel';
 import { initElastic } from './../elasticConnector';
 import { Client } from 'elasticsearch';
 
@@ -13,6 +14,10 @@ export class OrderService {
 
   placeOrder(cart: ICartInput) {
     console.log(this.elastic, ORDER_INDEX, cart);
+    const expectedDeliveryDate = getNextDeliveryDate(cart.consumerPlan.deliveryDay).valueOf();
+    if (cart.deliveryDate !== expectedDeliveryDate) {
+      throw new Error(`Invalid delivery date '${cart.deliveryDate}', exepected ${expectedDeliveryDate}`)
+    }
     return true;
   }
 

@@ -1,4 +1,4 @@
-import { ICartInput } from './../../cart/cartModel';
+import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';

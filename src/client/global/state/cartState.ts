@@ -3,7 +3,7 @@ import { Plan } from './../../../plan/planModel';
 import { getAvailablePlans } from './../../../plan/planService';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
-import { Cart } from '../../../cart/cartModel';
+import { Cart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';

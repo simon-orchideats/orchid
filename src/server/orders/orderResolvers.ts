@@ -1,4 +1,4 @@
-import { ICartInput } from './../../cart/cartModel';
+import { ICartInput } from '../../order/cartModel';
 import { ServerResolovers } from './../schema/utilModels';
 import { getOrderService } from './orderService';
 

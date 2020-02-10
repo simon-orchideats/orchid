@@ -3,6 +3,8 @@ import { useGetCart } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
+import { getNextDeliveryDate } from "../../order/utils";
+import { Consumer } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -35,6 +37,7 @@ const CheckoutCart: React.FC<props> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
+  if (!cart) return null;
   const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.getGroupedMeals();
   return (
@@ -63,10 +66,10 @@ const CheckoutCart: React.FC<props> = ({
         <CartMealGroup key={mealGroup.meal.Id} mealGroup={mealGroup} />
       ))}
       <Typography variant='body1'>
-        Deliver on 12/12/20, 4pm - 9pm
+        Deliver on {getNextDeliveryDate(cart.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
       </Typography>
       <Typography variant='body1'>
-        Deliver again on Sundays
+        Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}
       </Typography>
       <Divider className={classes.divider} />
       <div className={classes.summary}>

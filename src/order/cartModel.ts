@@ -1,6 +1,7 @@
-import { ICard } from './../card/cardModel';
-import { IDestination } from './../place/destinationModel';
-import { deliveryDay, IConsumerPlan, RenewalType, CuisineType } from './../consumer/consumerModel';
+import { getNextDeliveryDate } from './utils';
+import { ICard } from '../card/cardModel';
+import { IDestination } from '../place/destinationModel';
+import { deliveryDay, IConsumerPlan, RenewalType, CuisineType } from '../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 
@@ -88,7 +89,7 @@ export class Cart implements ICart {
     instructions: string,
     renewal: RenewalType,
     cuisines: CuisineType[],
-  ) {
+  ): ICartInput {
     if (!this.RestId || !this.PlanId || this.DeliveryDay === null) {
       throw new Error(`Cart is missing property '${JSON.stringify(this)}' `)
     }
@@ -101,12 +102,12 @@ export class Cart implements ICart {
         renewal,
         cuisines
       },
-      deliveryDate: 123,
+      deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),
       destination: {
         name: deliveryName,
         address: {
           address1,
-          address2,
+          address2: address2 ? address2 : undefined,
           city,
           state,
           zip,

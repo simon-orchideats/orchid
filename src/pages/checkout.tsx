@@ -19,6 +19,7 @@ import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
+import { Card } from "../card/cardModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -141,8 +142,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (res.error || !isValid) {
       return;
     };
-    const card = res.token!.card!;
-    const cartInput = cart.getCartInput(
+    placeOrder(cart.getCartInput(
       deliveryName,
       addr1,
       addr2,
@@ -150,17 +150,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       state as state,
       zip,
       phone,
-      {
-        _id: card.id,
-        last4: card.last4,
-        expMonth: card.exp_month,
-        expYear: card.exp_year,
-      },
+      Card.getCardFromStripe(res.token!.card),
       deliveryInstructions,
       renewal,
       cuisines,
-    )
-    placeOrder(cartInput);
+    ));
   }
   return (
     <Container
