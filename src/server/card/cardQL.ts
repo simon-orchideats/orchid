@@ -2,14 +2,14 @@ import gql from 'graphql-tag';
 
 const _CardQL = gql`
   type Card {
-    _id: ID!
+    stripeCardId: ID!
     last4: String!
     expMonth: Int!
     expYear: Int!
   }
 
   input CardInput {
-    _id: ID!
+    stripeCardId: ID!
     last4: String!
     expMonth: Int!
     expYear: Int!

@@ -13,17 +13,24 @@ export interface ICart {
   readonly zip: string | null;
 }
 
+export type ICartMealInput = {
+  readonly mealId: string
+  readonly name: string
+  readonly quantity: number
+}
+
 export interface ICartInput {
   readonly restId: string
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
-  readonly meals: IMeal[],
+  readonly meals: ICartMealInput[]
+  readonly phone: string
   readonly destination: IDestination
   readonly deliveryDate: number
 };
 
 export class Cart implements ICart {
-  readonly meals: Meal[]
+  readonly meals: Meal[] // todo: change this to ICartMealInput
   readonly restId: string | null
   readonly planId: string | null
   readonly deliveryDay: deliveryDay | null
@@ -45,17 +52,17 @@ export class Cart implements ICart {
 
   public getGroupedMeals() {
     return this.meals.reduce<{
-      count: number,
+      quantity: number,
       meal: Meal,
     }[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.meal.Id === meal.Id);
       if (groupIndex === -1) {
         groupings.push({
-          count: 1,
+          quantity: 1,
           meal,
         })
       } else {
-        groupings[groupIndex].count++;
+        groupings[groupIndex].quantity++;
       }
       return groupings;
     }, []);
@@ -96,6 +103,7 @@ export class Cart implements ICart {
     return {
       restId: this.RestId,
       card,
+      phone,
       consumerPlan: {
         planId: this.PlanId,
         deliveryDay: this.DeliveryDay,
@@ -112,10 +120,24 @@ export class Cart implements ICart {
           state,
           zip,
         },
-        phone,
         instructions,
       },
-      meals: this.Meals,
+      meals: this.Meals.reduce<ICartMealInput[]>((groupings, meal) => {
+        const groupIndex = groupings.findIndex(group => group.mealId === meal.Id);
+        if (groupIndex === -1) {
+          groupings.push({
+            quantity: 1,
+            mealId: meal.Id,
+            name: meal.Name
+          })
+        } else {
+          groupings[groupIndex] = {
+            ...groupings[groupIndex],
+            quantity: groupings[groupIndex].quantity + 1
+          }
+        }
+        return groupings;
+      }, [])
     }
   }
 

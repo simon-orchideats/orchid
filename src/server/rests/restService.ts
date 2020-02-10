@@ -1,5 +1,5 @@
-import { initElastic } from './../elasticConnector';
-import { Client } from 'elasticsearch';
+import { initElastic, SearchResponse } from './../elasticConnector';
+import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { Location } from '../../place/locationModel';
 import { RestProfile } from '../../rest/restProfileModel';
 import { Meal } from './../../rest/mealModel';
@@ -17,11 +17,11 @@ export class RestService {
 
   async getNearbyRests(zip: string) {
     try {
-      const res = await this.elastic.search<ERest>({
+      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
         size: 1000,
       });
-      return res.hits.hits.map(({ _id, _source }) => ({
+      return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
         _id
       }))

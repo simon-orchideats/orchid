@@ -31,7 +31,7 @@ const development: config = {
       port: 8443,
     },
     elastic: {
-      node: 'localhost:9200',
+      node: 'http://localhost:9200',
       auth: {
         username: undefined,
         password: undefined,

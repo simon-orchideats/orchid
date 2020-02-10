@@ -1,5 +1,6 @@
-import { Client } from "elasticsearch";
+import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { EPlan } from "../../plan/planModel";
+import { SearchResponse } from '../elasticConnector';
 
 const PLAN_INDEX = 'plans';
 
@@ -12,11 +13,11 @@ class PlanService {
 
   async getAvailablePlans() {
     try {
-      const res = await this.elastic.search<EPlan>({
+      const res: ApiResponse<SearchResponse<EPlan>> = await this.elastic.search({
         index: PLAN_INDEX,
         size: 1000,
       });
-      return res.hits.hits.map(({ _id, _source }) => ({
+      return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
         _id
       }))

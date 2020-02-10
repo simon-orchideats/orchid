@@ -109,19 +109,23 @@ export class ConsumerPlan implements IConsumerPlan {
 }
 
 export interface IConsumer {
-  readonly profile?: IConsumerProfile
+  readonly userId: string
+  readonly profile: IConsumerProfile
   readonly plan: IConsumerPlan
 }
 
 export class Consumer implements IConsumer {
-  readonly profile?: ConsumerProfile
+  readonly userId: string
+  readonly profile: ConsumerProfile
   readonly plan: ConsumerPlan
 
   constructor(consumer: IConsumer) {
+    this.userId = consumer.userId
     this.profile = consumer.profile && new ConsumerProfile(consumer.profile);
     this.plan = new ConsumerPlan(consumer.plan)
   }
 
+  public get UserId() { return this.userId }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
 

@@ -5,6 +5,7 @@ const _ConsumerQL = gql`
     userId: ID!
     plan: ConsumerPlan!
     card: Card!
+    phone: String!
     destination: Destination!
   }
 `

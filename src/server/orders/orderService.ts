@@ -1,7 +1,8 @@
-import { getNextDeliveryDate } from './../../order/utils';
+import { isDateAfter2Days } from './../../order/utils';
 import { ICartInput } from '../../order/cartModel';
-import { initElastic } from './../elasticConnector';
-import { Client } from 'elasticsearch';
+import { initElastic, IndexResponse } from './../elasticConnector';
+import { Client, ApiResponse } from '@elastic/elasticsearch';
+import { Order } from '../../order/orderModel';
 
 const ORDER_INDEX = 'orders';
 
@@ -12,13 +13,25 @@ export class OrderService {
     this.elastic = elastic;
   }
 
-  placeOrder(cart: ICartInput) {
-    console.log(this.elastic, ORDER_INDEX, cart);
-    const expectedDeliveryDate = getNextDeliveryDate(cart.consumerPlan.deliveryDay).valueOf();
-    if (cart.deliveryDate !== expectedDeliveryDate) {
-      throw new Error(`Invalid delivery date '${cart.deliveryDate}', exepected ${expectedDeliveryDate}`)
+  async placeOrder(cart: ICartInput) {
+    if (isDateAfter2Days(cart.deliveryDate)) {
+      const msg = `Delivery date '${cart.deliveryDate}' is not 2 days in advance`;
+      console.error(`[OrderService] ${msg}`)
+      throw new Error(msg);
     }
-    return true;
+
+    const order = Order.getOrderFromCartInput(cart);
+    try {
+      const res: ApiResponse<IndexResponse> = await this.elastic.index({
+        index: ORDER_INDEX,
+        body: order
+      });
+      console.log(res.body);
+      return order;
+    } catch (e) {
+      console.error(`[OrderService] could not place order. '${e.stack}'`);
+      throw e;
+    }
   }
 
 }
