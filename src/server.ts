@@ -8,9 +8,6 @@ import { activeConfig, isProd } from './config';
 import { schema } from './server/schema/schema';
 import { initRestService } from './server/rests/restService';
 import cookieParser from 'cookie-parser'; 
-// import session from 'express-session';
-//import passport from 'passport';
-// import { Strategy } from 'passport-auth0';
 import authRoutes from './server/auth-routes';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
@@ -32,31 +29,6 @@ import jwksRsa from 'jwks-rsa';
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-
-
-// // Configure Passport to use Auth0 settings
-// const strategy = new Strategy({
-//   clientID: process.env.AUTH0_CLIENT_ID || '',
-//   clientSecret:process.env.AUTH0_CLIENT_SECRET || '',
-//   callbackURL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:8443/callback',
-//   domain: 'foodflick.auth0.com' || '',
-// },(_accessToken, _refreshToken, _extraParams, profile, done) => {
-//   // accessToken is the token to call Auth0 API (not needed in the most cases)
-//   // extraParams.id_token has the JSON Web Token
-//   // profile has all the information from the user
-//   return done(null, profile);
-
-// });
-// passport.use(strategy);
-
-// // You can use this section to keep a smaller payload
-// passport.serializeUser(function (user, done) {
-//   done(null, user);
-// });
-
-// passport.deserializeUser(function (user, done) {
-//   done(null, user);
-// });
 // Create middleware for checking the JWT
 const checkJwt = jwt({
   // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
@@ -78,15 +50,7 @@ const start = async () => {
     dev: !isProd
   })
 
-  // config express-session
-  let sess = {
-    secret: 'CHANGE THIS TO A RANDOM SECRET',
-    cookie: {
-      secure: false
-    },
-    resave: false,
-    saveUninitialized: true
-  };
+
 
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();
@@ -96,8 +60,6 @@ const start = async () => {
 
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
-    // Use secure cookies in production (requires SSL/TLS)
-    sess.cookie.secure = true;
     //if your application is behind a proxy (like on Heroku)
     // or if you're encountering the error message:
     // "Unable to verify authorization request state"
@@ -111,24 +73,20 @@ const start = async () => {
     });
   }
 
-  // adding Passport and authentication routes
-  // app.use(session(sess));
-  //app.use(passport.initialize());
-  //app.use(passport.session());
   app.use(authRoutes);
 
    // you are restricting access to some routes
    
 const restrictAccess = (_val:string) => {
-return (_req:any, res:any, _next:any) => {
-    
-  if(_req.cookies['access_token']){
-    console.log("AYEEEE")
-   app.use(_val,checkJwt);
-  } else{
-     res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_val}`);
-  }_next();
-  };
+  return (_req:any, res:any, _next:any) => {
+      
+    if(_req.cookies['access_token']){
+      app.use(_val,checkJwt);
+    } else{
+      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_val}`);
+    }
+    _next();
+    };
   
 }
 

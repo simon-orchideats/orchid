@@ -24,7 +24,7 @@ authRoutes.get("/callback", (_req, _res, _next) => {
     if (_error) throw new Error(_error);
   
     _res.setHeader('Set-Cookie',['access_token='+_body]);
-    _res.redirect('/');
+    _res.redirect('/'+_res.req?.query.state);
   
   });
   

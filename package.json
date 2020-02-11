@@ -20,6 +20,7 @@
     "@material-ui/core": "^4.9.0",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "^4.0.0-alpha.40",
+    "@types/cookie": "^0.3.3",
     "@types/cookie-parser": "^1.4.2",
     "@types/elasticsearch": "^5.0.36",
     "@types/express-session": "^1.15.16",
