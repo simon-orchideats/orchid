@@ -1,3 +1,4 @@
+import { MutationBoolRes } from './../utils/mutationResModel';
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
@@ -8,14 +9,17 @@ export const usePlaceOrder = (): [
   (cart: ICartInput) => void,
   {
     error?: ApolloError 
-    data?: boolean
+    data?: MutationBoolRes
   }
 ] => {
-  type res = { placeOrder: boolean };
+  type res = { placeOrder: MutationBoolRes };
   type vars = { cart: ICartInput }
   const [mutate, mutation] = useMutation<res,vars>(gql`
     mutation placeOrder($cart: CartInput!) {
-      placeOrder(cart: $cart)
+      placeOrder(cart: $cart) {
+        res
+        error
+      }
     }
   `);
   const placeOrder = (cart: ICartInput) => {

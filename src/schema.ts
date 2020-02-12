@@ -22,8 +22,12 @@ const query = gql`
 `
 
 const mutation = gql`
+  type BoolRes {
+    res: Boolean!
+    error: String
+  }
   type Mutation {
-    placeOrder(cart: CartInput!): Boolean!
+    placeOrder(cart: CartInput!): BoolRes!
   }
 `
 

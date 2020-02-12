@@ -80,8 +80,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   useEffect(() => {
-    if (placeOrderRes.error || (placeOrderRes.data !== undefined && !placeOrderRes.data)) {
+    if (placeOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
+    } else if (placeOrderRes.data !== undefined && placeOrderRes.data.error) {
+      notify(placeOrderRes.data.error, NotificationType.error, false);
     }
   }, [placeOrderRes])
   const theme = useTheme<Theme>();

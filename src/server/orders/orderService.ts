@@ -1,3 +1,4 @@
+import { getGeoService } from './../place/geoService';
 import { getRestService } from './../rests/restService';
 import { getCannotBeEmptyError } from './../utils/error';
 import { isDate2DaysLater } from './../../order/utils';
@@ -22,26 +23,65 @@ export class OrderService {
 
   async placeOrder(cart: ICartInput) {
     try {
-      // left off here. check destination, meals is valid
       if (!cart.phone) {
-        throw new Error(getCannotBeEmptyError(`Phone number`));
+        const msg = getCannotBeEmptyError('Phone number');
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg
+        }
       }
       if (!Consumer.isDeliveryDayValid(cart.consumerPlan.deliveryDay)) {
-        throw new Error(`Delivery day '${cart.consumerPlan.deliveryDay}' must be 0, 1, 2, 3, 4, 5, 6`);
+        const msg = `Delivery day '${cart.consumerPlan.deliveryDay}' must be 0, 1, 2, 3, 4, 5, 6`;
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg
+        }
       }
       if (!isDate2DaysLater(cart.deliveryDate)) {
-        throw new Error(`Delivery date '${cart.deliveryDate}' is not 2 days in advance`);
+        const msg = `Delivery date '${cart.deliveryDate}' is not 2 days in advance`;
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg,
+        }
       }
       const rest = await getRestService().getRest(cart.restId, ['menu']);
       if (!rest) {
-        throw new Error(`Can't find rest '${cart.restId}'`);
+        const msg = `Can't find rest '${cart.restId}'`
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg
+        }
       }
       for (let i = 0; i < cart.meals.length; i++) {
         if (!rest.menu.find(meal => meal._id === cart.meals[i].mealId)) {
-          throw new Error(`Can't find mealId '${cart.meals[i].mealId}'`);
+          const msg = `Can't find mealId '${cart.meals[i].mealId}'`
+          console.warn('[OrderService]', msg);
+          return {
+            res: false,
+            error: msg
+          }
         }
       }
-
+      const {
+        address1,
+        city,
+        state,
+        zip,
+      } = cart.destination.address;
+      try {
+        await getGeoService().getGeocode(address1, city, state, zip);
+      } catch (e) {
+        const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg,
+        }
+      }
       // todo: check if stripe customer exists first, if not then do this otherwise skip
       const signedInUser = {
         userId: '123',
@@ -76,12 +116,14 @@ export class OrderService {
       const order = Order.getNewOrderFromCartInput(signedInUser, cart, subscription.id,);
 
       try {
-        const res: ApiResponse<IndexResponse> = await this.elastic.index({
+        await this.elastic.index({
           index: ORDER_INDEX,
           body: order
         });
-        console.log(res.body);
-        return true;
+        return {
+          res: true,
+          error: null
+        };
       } catch (e) {
         throw new Error(`Couldn't index order '${e.stack}'`);
       }
