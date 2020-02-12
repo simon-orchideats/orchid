@@ -1,15 +1,11 @@
+######### MANAGE ###########
+
+GET /_cat/indices
+
+############################
+
+
 ######### MAPPING ##########
-PUT /plans/
-{
-  "mappings": {
-    "dynamic": false,
-    "properties": {
-      "mealCount":  { "type": "integer"  },
-      "mealPrice":  { "type": "float"  },
-      "weekPrice":  { "type": "float" }
-    }
-  }
-}
 
 PUT /rests/
 {
@@ -242,6 +238,132 @@ PUT /rests/
   }
 }
 
+PUT /orders/
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "rest": {
+        "properties": {
+          "restId": {
+            "type": "keyword"
+          },
+          "meals": {
+            "properties": {
+              "mealId": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "keyword"
+              },
+              "quantity": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "consumer": {
+        "properties": {
+          "userId": {
+            "type": "keyword"
+          },
+          "profile": {
+            "properties": {
+              "name": {
+                "type": "keyword"
+              },
+              "email": {
+                "type": "keyword"
+              },
+              "phone": {
+                "type": "keyword"
+              },
+              "card": {
+                "properties": {
+                  "last4": {
+                    "type": "keyword"
+                  },
+                  "expMonth": {
+                    "type": "integer"
+                  },
+                  "expYear": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "destination": {
+                "properties": {
+                  "name": {
+                    "type": "keyword"
+                  },
+                  "address": {
+                    "properties": {
+                      "address1": {
+                        "type": "keyword"
+                      },
+                      "address2": {
+                        "type": "keyword"
+                      },
+                      "city": {
+                        "type": "keyword"
+                      },
+                      "state": {
+                        "type": "keyword"
+                      },
+                      "zip": {
+                        "type": "keyword"
+                      }
+                    }
+                  },
+                  "instructions": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "stripeSubscriptionId": {
+        "type": "keyword"
+      },
+      "cartUpdatedDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "createdDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "costs": {
+        "properties": {
+          "tax": {
+            "type": "float"
+          },
+          "tip": {
+            "type": "float"
+          },
+          "mealTotal": {
+            "type": "float"
+          },
+          "percentFee": {
+            "type": "float"
+          },
+          "flatRateFee": {
+            "type": "float"
+          }
+        }
+      },
+      "deliveryDate": {
+        "type": "float"
+      }
+    }
+  }
+}
 
 ############################
 
@@ -249,13 +371,6 @@ PUT /rests/
 
 
 ######### INSERTS ##########
-
-POST plans/_doc/
-{
-  "mealCount" : 3,
-  "mealPrice" : 10,
-  "weekPrice" : 29.99
-}
 
 POST rests/_doc/
 {
@@ -553,4 +668,30 @@ POST rests/_doc/
   }
 }
 
+
+
 ############################
+
+
+
+########### READ ###########
+
+
+GET /orders/_search?
+{
+    "query" : {
+        "match_all" : {}
+    }
+}
+
+############################
+
+
+######### DELETE ###########
+
+DELETE orders
+
+############################
+
+
+
