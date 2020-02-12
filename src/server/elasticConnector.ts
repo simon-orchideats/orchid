@@ -18,7 +18,7 @@ export const initElastic = () => {
 	});
 };
 
-// TEMPORARY types until @elastic/elasticsearch adds them
+// todo TEMPORARY types until @elastic/elasticsearch adds them
 // Complete definition of the Search response
 interface ShardsResponse {
   total: number;

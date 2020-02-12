@@ -1,28 +1,28 @@
-import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { EPlan } from "../../plan/planModel";
-import { SearchResponse } from '../elasticConnector';
-
-const PLAN_INDEX = 'plans';
+import { IPlan } from './../../plan/planModel';
+import Stripe from 'stripe';
+import { activeConfig } from '../../config';
 
 class PlanService {
-  private readonly elastic: Client
+  private readonly stripe: Stripe
 
-  public constructor(elastic: Client) {
-    this.elastic = elastic;
+  public constructor(stripe: Stripe) {
+    this.stripe = stripe;
   }
 
-  async getAvailablePlans() {
+  async getAvailablePlans(): Promise<IPlan[]> {
     try {
-      const res: ApiResponse<SearchResponse<EPlan>> = await this.elastic.search({
-        index: PLAN_INDEX,
-        size: 1000,
+      const plans = await this.stripe.plans.list({
+        limit: 100,
+        active: true,
       });
-      return res.body.hits.hits.map(({ _id, _source }) => ({
-        ..._source,
-        _id
+      return plans.data.map(plan => ({
+        stripeId: plan.id,
+        mealCount: parseFloat(plan.metadata.mealCount),
+        mealPrice: parseFloat(plan.metadata.mealPrice),
+        weekPrice: plan.amount! / 100,
       }))
     } catch (e) {
-      console.error(`[PlanService] couldn't get available plans. '${e.stack}'`);
+      console.error(`[Plan service] could not get plans. '${e.message}'`);
       throw e;
     }
   }
@@ -30,12 +30,15 @@ class PlanService {
 
 let planService: PlanService;
 
-export const initPlanService = (elastic: Client) => {
+export const initPlanService = (stripe: Stripe) => {
   if (planService) throw new Error('[PlanService] already initialized.');
-  planService = new PlanService(elastic);
+  planService = new PlanService(stripe);
 };
 
 export const getPlanService = () => {
-  if (!planService) throw new Error('[PlanService] not initialized.');
+  if (planService) return planService;
+  initPlanService(new Stripe(activeConfig.server.stripe.key, {
+    apiVersion: '2019-12-03',
+  }));
   return planService;
 }

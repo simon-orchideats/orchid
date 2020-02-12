@@ -1,5 +1,5 @@
 import { ICartInput } from '../../order/cartModel';
-import { ServerResolovers } from './../schema/utilModels';
+import { ServerResolovers } from '../utils/models';
 import { getOrderService } from './orderService';
 
 export const OrderMutationResolvers: ServerResolovers = {

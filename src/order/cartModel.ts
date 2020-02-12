@@ -8,7 +8,7 @@ import { state } from '../place/addressModel';
 export interface ICart {
   readonly meals: IMeal[];
   readonly restId: string | null;
-  readonly planId: string | null;
+  readonly stripePlanId: string | null;
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
 }
@@ -21,6 +21,7 @@ export type ICartMealInput = {
 
 export interface ICartInput {
   readonly restId: string
+  readonly paymentMethodId: string
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
   readonly meals: ICartMealInput[]
@@ -32,21 +33,21 @@ export interface ICartInput {
 export class Cart implements ICart {
   readonly meals: Meal[] // todo: change this to ICartMealInput
   readonly restId: string | null
-  readonly planId: string | null
+  readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
 
   constructor(cart: ICart) {
     this.meals = cart.meals.map(meal => new Meal(meal));
     this.restId = cart.restId;
-    this.planId = cart.planId;
+    this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
     this.zip = cart.zip;
   }
 
   public get DeliveryDay() { return this.deliveryDay }
   public get Meals() { return this.meals }
-  public get PlanId() { return this.planId }
+  public get StripePlanId() { return this.stripePlanId }
   public get RestId() { return this.restId }
   public get Zip() { return this.zip }
 
@@ -93,19 +94,21 @@ export class Cart implements ICart {
     zip: string,
     phone: string,
     card: ICard,
+    paymentMethodId: string,
     instructions: string,
     renewal: RenewalType,
     cuisines: CuisineType[],
   ): ICartInput {
-    if (!this.RestId || !this.PlanId || this.DeliveryDay === null) {
+    if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
       throw new Error(`Cart is missing property '${JSON.stringify(this)}' `)
     }
     return {
       restId: this.RestId,
+      paymentMethodId,
       card,
       phone,
       consumerPlan: {
-        planId: this.PlanId,
+        stripePlanId: this.StripePlanId,
         deliveryDay: this.DeliveryDay,
         renewal,
         cuisines

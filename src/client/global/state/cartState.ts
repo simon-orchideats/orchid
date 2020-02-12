@@ -21,7 +21,7 @@ export const cartQL = gql`
   type Cart {
     meals: [Meal!]
     restId: ID
-    planId: ID
+    stripePlanId: ID
     deliveryDay: Int!
   }
   extend type Query {
@@ -123,7 +123,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [meal],
         restId,
-        planId: null,
+        stripePlanId: null,
         deliveryDay: null,
         zip: null,
       }));
@@ -135,18 +135,18 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [meal],
         restId,
-        planId: res.cart.PlanId,
+        stripePlanId: res.cart.stripePlanId,
         deliveryDay: res.cart.DeliveryDay,
         zip: res.cart.Zip,
       }));
     }
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     const newCart = res.cart.addMeal(meal);
-    const planId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
+    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId,
-      planId: planId ? planId : null,
+      stripePlanId: stripePlanId ? stripePlanId : null,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
     }));
@@ -158,12 +158,12 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     let newCart = res.cart.removeMeal(mealId);
-    const planId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
+    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
     if (newCart.Meals.length === 0) {
       newCart = new Cart({
         meals: [],
         restId: null,
-        planId: planId ? planId : null,
+        stripePlanId: stripePlanId ? stripePlanId : null,
         deliveryDay: newCart.DeliveryDay,
         zip: newCart.Zip,
       });
@@ -171,7 +171,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId: newCart.RestId,
-      planId: planId ? planId : null,
+      stripePlanId: stripePlanId ? stripePlanId : null,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
     }));
@@ -183,7 +183,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: res.cart.Meals,
       restId: res.cart.RestId,
-      planId: res.cart.PlanId,
+      stripePlanId: res.cart.stripePlanId,
       deliveryDay: day,
       zip: res.cart.Zip,
     }));
@@ -195,7 +195,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [],
         restId: null,
-        planId: null,
+        stripePlanId: null,
         deliveryDay: null,
         zip,
       }));
@@ -203,7 +203,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: res.cart.Meals,
       restId: res.cart.RestId,
-      planId: res.cart.PlanId,
+      stripePlanId: res.cart.stripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip,
     }));

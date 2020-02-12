@@ -3,21 +3,20 @@ import { ICost } from './costModel';
 import { ICartInput, ICartMealInput } from './cartModel';
 
 export interface EOrder {
+  readonly cartUpdatedDate: number
+  readonly consumer: {
+    readonly userId: string
+    readonly profile: IConsumerProfile
+  },
+  readonly costs: ICost
+  readonly createdDate: number
+  readonly deliveryDate: number
   readonly rest: {
     readonly restId: string
     readonly meals: ICartMealInput[]
   }
   readonly status: 'Complete' | 'Pending' | 'Returned'
-  readonly consumer: {
-    readonly userId: string
-    readonly profile: IConsumerProfile
-  },
-  readonly stripeChargeId: string
-  readonly cartUpdatedDate: number
-  readonly createdDate: number
-  readonly costs: ICost
-  readonly deliveryDate: number
-  readonly planId: string
+  readonly stripeSubscriptionId: string
 }
 
 export interface IOrder extends EOrder {
@@ -25,7 +24,8 @@ export interface IOrder extends EOrder {
 }
 
 export class Order {
-  static getOrderFromCartInput(cart: ICartInput): EOrder {
+  static getNewOrderFromCartInput(signedInUser: any, cart: ICartInput, subscriptionId: string): EOrder {
+    const now = Date.now();
     return {
       rest: {
         restId: cart.restId,
@@ -33,19 +33,18 @@ export class Order {
       },
       status: 'Pending',
       consumer: {
-        userId: 'signedInUserId',
+        userId: signedInUser.userId,
         profile: {
-          name: 'signedInUserName',
-          email: 'signedInUserEmail',
+          name: signedInUser.name,
+          email: signedInUser.email,
           phone: cart.phone,
           card: cart.card,
           destination: cart.destination,
         }
       },
-      stripeChargeId: '123',
-      planId: cart.consumerPlan.planId,
-      cartUpdatedDate: Date.now(),
-      createdDate: Date.now(),
+      stripeSubscriptionId: subscriptionId,
+      cartUpdatedDate: now,
+      createdDate: now,
       costs: {
         tax: 0,
         tip: 0,

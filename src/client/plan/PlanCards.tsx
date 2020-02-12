@@ -29,7 +29,7 @@ const PlanCards = () => {
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid key={plan.Id}item sm={12} md={4} className={classes.item}>
+        <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
           <Card key={plan.MealPrice} className={classes.card}>
             <CardContent>
               <Typography variant='h6'>

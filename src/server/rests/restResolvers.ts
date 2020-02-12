@@ -1,4 +1,4 @@
-import { ServerResolovers } from './../schema/utilModels';
+import { ServerResolovers } from '../utils/models';
 import { getRestService } from './restService';
 
 export const RestQueryResolvers: ServerResolovers = {

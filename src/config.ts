@@ -17,13 +17,19 @@ type config = {
         password?: string,
       }
     },
+    stripe: {
+      key: string
+    },
+    geo: {
+      key: string
+    }
   }
 }
 
 const development: config = {
   client: {
     stripe: {
-      key: 'pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h',
+      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
   },
   server: {
@@ -37,13 +43,19 @@ const development: config = {
         password: undefined,
       }
     },
+    stripe: {
+      key: process.env.STRIPE_KEY!
+    },
+    geo: {
+      key: process.env.GEO_KEY!
+    }
   }
 };
 
 const production: config = {
   client: {
     stripe: {
-      key: 'pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h',
+      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
   },
   server: {
@@ -57,6 +69,12 @@ const production: config = {
         password: process.env.ELASTIC_PASS,
       }
     },
+    stripe: {
+      key: process.env.STRIPE_KEY!
+    },
+    geo: {
+      key: process.env.GEO_KEY!
+    }
   },
 };
 

@@ -83,26 +83,26 @@ export const RenewalTypes: {
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface IConsumerPlan {
-  readonly planId: string
+  readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
   readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
-  readonly planId: string
+  readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
   readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 
   constructor(consumerPlan: IConsumerPlan) {
-    this.planId = consumerPlan.planId
+    this.stripePlanId = consumerPlan.stripePlanId
     this.deliveryDay = consumerPlan.deliveryDay;
     this.renewal = consumerPlan.renewal;
     this.cuisines = consumerPlan.cuisines;
   }
 
-  public get PlanId() { return this.planId }
+  public get StripePlanId() { return this.stripePlanId }
   public get DeliveryDay() { return this.deliveryDay }
   public get Renewal() { return this.renewal }
   public get Cuisines() { return this.cuisines }
@@ -128,6 +128,30 @@ export class Consumer implements IConsumer {
   public get UserId() { return this.userId }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
+
+  static areCuisinesValid(cuisines: string[]) {
+    for (let i = 0; i < cuisines.length; i++) {
+      if (!Object.values<string>(CuisineTypes).includes(cuisines[i])) return false;
+    }
+    return true;
+  }
+
+  static isDeliveryDayValid(d: number) {
+    if (
+      d === 0
+      || d === 1
+      || d === 2
+      || d === 3
+      || d === 4
+      || d === 5
+      || d === 6
+    ) return true;
+    return false;
+  }
+
+  static isRenewalTypeValid(type: string) {
+    return !!Object.values<string>(RenewalTypes).includes(type);
+  }
 
   static getWeekday(d: deliveryDay | null) {
     switch (d) {

@@ -131,9 +131,6 @@ PUT /rests/
                 ]
               }
             }
-          },
-          "planId": {
-            "type": "keyword"
           }
         }
       },

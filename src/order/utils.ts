@@ -9,7 +9,7 @@ export const getNextDeliveryDate = (day: deliveryDay | null) => {
   return (date.day(day + 7));
 }
 
-export const isDateAfter2Days = (date: number) => {
+export const isDate2DaysLater = (date: number) => {
   const twoDaysAfterToday = moment().add(2, 'd');
-  return moment(date).isBefore(twoDaysAfterToday) ? true : false;
+  return moment(date).isAfter(twoDaysAfterToday) ? true : false;
 }

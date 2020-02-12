@@ -1,10 +1,6 @@
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { Location } from '../../place/locationModel';
-import { RestProfile } from '../../rest/restProfileModel';
-import { Meal } from './../../rest/mealModel';
-import { Address } from '../../place/addressModel';
-import { Rest, ERest } from './../../rest/restModel';
+import { ERest } from './../../rest/restModel';
 
 const REST_INDEX = 'rests';
 
@@ -29,33 +25,23 @@ export class RestService {
       console.error(`[RestService] could not get nearby rests for '${zip}'. '${e.stack}'`);
       throw e;
     }
-
   }
 
-  getRest(restId: string) {
-    return new Rest({
-      _id: restId,
-      location: new Location({
-        address: new Address({
-          address1: '100 greene st',
-          city: 'Jersey City',
-          state: 'NJ',
-          zip: '12345'
-        }),
-        timezone: 'America/New_York'
-      }),
-      menu: [
-        new Meal({
-          _id: 'meal00',
-          img: 'placeholderMeal2.jpg',
-          name: 'Ricebowl 1'
-        }),
-      ],
-      profile: new RestProfile({
-        name: 'Domo6',
-        phone: '609-513-8166',
-      })
-    });
+  async getRest(restId: string, fields?: string[]) {
+    const options: any = {
+      index: REST_INDEX,
+      id: restId,
+    };
+    if (fields) options._source = fields;
+    try {
+      const res: ApiResponse<ERest> = await this.elastic.getSource(options);
+      const rest: any = res.body;
+      rest._id = restId;
+      return rest;
+    } catch (e) {
+      console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
+      throw e;
+    }
   }
 }
 

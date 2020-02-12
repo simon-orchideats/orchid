@@ -12,6 +12,7 @@ const _CartInputQL = gql`
   input CartInput {
     restId: ID!
     consumerPlan: ConsumerPlanInput!
+    paymentMethodId: String!
     card: CardInput!
     meals: [CartMealInput!]!
     phone: String!

@@ -15,7 +15,7 @@ import { Consumer } from '../../../consumer/consumerModel';
 export const consumerQL = gql`
   extend type Mutation {
     updateDeliveryDay(day: Number!): Consumer!
-    updatePlan(planId: ID!): Consumer!
+    updatePlan(stripePlanId: ID!): Consumer!
     updateRewneal(renewal: RenewalType!): Boolean!
     addCuisine(cuisne: CusineType!): Boolean!
     removeCuisine(cuisine: CusineType!): Boolean!
@@ -50,15 +50,15 @@ export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   }
 }
 
-export const useUpdatePlan = (): (planId: string) => void => {
-  type vars = { planId: string };
+export const useUpdatePlan = (): (stripePlanId: string) => void => {
+  type vars = { stripePlanId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updatePlan($planId: ID!) {
-      updatePlan(planId: $planId) @client
+    mutation updatePlan($stripePlanId: ID!) {
+      updatePlan(stripePlanId: $stripePlanId) @client
     }
   `);
-  return (planId: string) => {
-    mutate({ variables: { planId } })
+  return (stripePlanId: string) => {
+    mutate({ variables: { stripePlanId } })
   }
 }
 

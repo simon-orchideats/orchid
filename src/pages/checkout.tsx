@@ -20,6 +20,7 @@ import { usePlaceOrder } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
+import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -47,7 +48,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
-  stripe
+  stripe,
+  elements
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
@@ -78,7 +80,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   useEffect(() => {
-    if (placeOrderRes.error || placeOrderRes.data !== undefined && !placeOrderRes.data) {
+    if (placeOrderRes.error || (placeOrderRes.data !== undefined && !placeOrderRes.data)) {
       notify('Sorry, something went wrong', NotificationType.error, false);
     }
   }, [placeOrderRes])
@@ -137,11 +139,15 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onClickPlaceOrder = async () => {
     if (!stripe) throw new Error('Stripe not initialized');
     if (!cart) throw new Error('Cart is null');
-    const isValid = validate();
-    const res = await stripe.createToken({ name: accountName });
-    if (res.error || !isValid) {
-      return;
-    };
+    if (!elements) throw new Error('No elements');
+    const cardElement = elements.getElement('cardNumber');
+    if (!cardElement) throw new Error('No card element');
+    const pm = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+      billing_details: { name: accountName },
+    });
+    if (!validate() || pm.error) return;
     placeOrder(cart.getCartInput(
       deliveryName,
       addr1,
@@ -150,7 +156,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       state as state,
       zip,
       phone,
-      Card.getCardFromStripe(res.token!.card),
+      Card.getCardFromStripe(pm.paymentMethod!.card),
+      pm.paymentMethod!.id,
       deliveryInstructions,
       renewal,
       cuisines,
@@ -161,6 +168,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       maxWidth='xl'
       className={classes.container}
     >
+      <Notifier />
       <Grid container alignItems='stretch'>
         <Grid
           item
