@@ -8,7 +8,11 @@ const authRoutes = express.Router();
 // }), (_req, res) => res.redirect("/"));
 
 authRoutes.get("/callback", (_req, _res, _next) => {
-  let options = {
+  console.log(_req.cookies);
+  //console.log(_res.req?.query);
+  let options;
+  if(!_req.cookies['refresh_token']){
+   options = {
     method: 'POST',
     url: 'https://foodflick.auth0.com/oauth/token',
     headers: {'content-type': 'application/x-www-form-urlencoded'},
@@ -19,12 +23,43 @@ authRoutes.get("/callback", (_req, _res, _next) => {
       code: _res.req?.query.code,
       redirect_uri: 'http://localhost:8443/callback'
     }
-  };
-  request(options, function (_error:any, _response:any, _body:string) {
-    if (_error) throw new Error(_error);
+   }
+  } else {
+    console.log("THIS ONE");
+    options = {
+      method: 'POST',
+      url: 'https://foodflick.auth0.com/oauth/token',
+      headers: {'content-type': 'application/x-www-form-urlencoded'},
+      form: {
+        grant_type: 'refresh_token',
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
+        refresh_token: _req.cookies['refresh_token'],
+        
+      }
+    };
+  }
   
-    _res.setHeader('Set-Cookie',['access_token='+_body]);
-    _res.redirect('/'+_res.req?.query.state);
+
+  request(options, function (_error:any, _response:any, _body:string) {
+    if (_error) 
+    {
+      console.log(_error);
+    }
+    console.log(_body);
+    let parsedBody = JSON.parse(_body);
+    let accessToken, refreshToken;
+    if(parsedBody['refresh_token']) {
+      accessToken = JSON.parse(_body)['access_token'];
+      refreshToken = JSON.parse(_body)['refresh_token'];
+      _res.setHeader('Set-Cookie',['access_token='+accessToken,'refresh_token='+refreshToken]);
+      _res.setHeader('Authorization','Bearer '+accessToken);
+    } else if(!parsedBody['refresh_token']) {
+        accessToken = JSON.parse(_body)['access_token'];
+        _res.setHeader('Set-Cookie',['access_token='+accessToken]);
+    }
+    
+    _res.redirect('http://localhost:8443'+_res.req?.query.state);
   
   });
   
