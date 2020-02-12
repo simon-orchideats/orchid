@@ -32,9 +32,14 @@ export class OrderService {
       if (!isDate2DaysLater(cart.deliveryDate)) {
         throw new Error(`Delivery date '${cart.deliveryDate}' is not 2 days in advance`);
       }
-      const rest = await getRestService().getRest(cart.restId);
+      const rest = await getRestService().getRest(cart.restId, ['menu']);
       if (!rest) {
         throw new Error(`Can't find rest '${cart.restId}'`);
+      }
+      for (let i = 0; i < cart.meals.length; i++) {
+        if (!rest.menu.find(meal => meal._id === cart.meals[i].mealId)) {
+          throw new Error(`Can't find mealId '${cart.meals[i].mealId}'`);
+        }
       }
 
       // todo: check if stripe customer exists first, if not then do this otherwise skip

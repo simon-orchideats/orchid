@@ -1,6 +1,6 @@
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { ERest } from './../../rest/restModel';
+import { ERest, IRest } from './../../rest/restModel';
 
 const REST_INDEX = 'rests';
 
@@ -37,7 +37,7 @@ export class RestService {
       const res: ApiResponse<ERest> = await this.elastic.getSource(options);
       const rest: any = res.body;
       rest._id = restId;
-      return rest;
+      return rest as IRest;
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
       throw e;
