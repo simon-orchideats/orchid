@@ -15,7 +15,7 @@ export interface EOrder {
     readonly restId: string
     readonly meals: ICartMealInput[]
   }
-  readonly status: 'Complete' | 'Pending' | 'Returned'
+  readonly status: 'Complete' | 'Confirmed' | 'Pending' | 'Returned'
   readonly stripeSubscriptionId: string
 }
 

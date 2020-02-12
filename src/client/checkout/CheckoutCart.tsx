@@ -28,6 +28,10 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
+  hint: {
+    color: theme.palette.text.hint,
+    paddingTop: theme.spacing(1),
+  },
 }));
 
 type props = {
@@ -101,6 +105,10 @@ const CheckoutCart: React.FC<props> = ({
             {price}
           </Typography>
         </div>
+        <Typography variant='body2' className={classes.hint}>
+          Your plan will automatically renew every week at {price} unless you update or cancel your account
+          before the cutoff (11:59 pm EST, 2 days before delivery of next meal).
+        </Typography>
       </div>
     </>
   )
