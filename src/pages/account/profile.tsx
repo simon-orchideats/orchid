@@ -4,8 +4,8 @@ import PhoneInput from '../../client/general/inputs/PhoneInput'
 
 const useStyles = makeStyles(theme => ({
   container: {
-    marginTop: -theme.mixins.navbar.marginBottom,
-    paddingTop: theme.spacing(3)
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4)
   },
   buttons: {
     display: 'flex',
@@ -63,19 +63,19 @@ const profile = () => {
           Profile
         </Typography>
         <List>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             <Labels
               primary='Name'
               secondary='Simon Vuong'
             />
           </ListItem>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             <Labels
               primary='Email'
               secondary='simon.vuong@yahoo.com'
             />
           </ListItem>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             <Labels
               primary='Password'
               secondary='*************'
@@ -125,7 +125,7 @@ const profile = () => {
               </>
             }
           </ListItem>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             <Labels
               primary='Payment'
               secondary='**** 10/24 123'
@@ -136,7 +136,7 @@ const profile = () => {
               </Button>
             </ListItemSecondaryAction>
           </ListItem>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             <Labels
               primary='Address'
               secondary='19 Middle st boston ma 02127'
