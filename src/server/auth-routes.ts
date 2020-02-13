@@ -21,10 +21,15 @@ authRoutes.get("/callback", (_req, _res, _next) => {
     }
   };
   request(options, function (_error:any, _response:any, _body:string) {
-    if (_error) throw new Error(_error);
-  
+    if (_error){ 
+      console.log("hah");
+      _res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_res.req?.query.state}`);
+      throw new Error(_error);
+    }
+    else {
     _res.setHeader('Set-Cookie',['access_token='+_body]);
-    _res.redirect('/'+_res.req?.query.state);
+    _res.redirect('http://localhost:8443'+_res.req?.query.state);
+    }
   
   });
   

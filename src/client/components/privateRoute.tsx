@@ -13,9 +13,9 @@ export function privateRoute(WrappedComponent: any) {
       auth: new AuthToken(this.props.token)
     };
 
-    static async getInitialProps(ctx: NextPageContext) {
-      console.log(ctx);
-      const cookies = document.cookie;
+    static async getInitialProps(_ctx: NextPageContext) {
+      
+      const cookies = 'test';
       const auth = new AuthToken(cookies);
       const initialProps = { auth };
       if (WrappedComponent.getInitialProps) {

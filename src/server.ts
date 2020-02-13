@@ -79,12 +79,15 @@ const start = async () => {
    
 const restrictAccess = (_val:string) => {
   return (_req:any, res:any, _next:any) => {
-      
+      console.log("Test")
+      console.log(_req.cookies['access_token'])
     if(_req.cookies['access_token']){
+      console.log("boom")
       app.use(_val,checkJwt);
     } else{
       res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_val}`);
     }
+    console.log("yeee")
     _next();
     };
   
