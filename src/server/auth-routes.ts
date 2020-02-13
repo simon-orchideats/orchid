@@ -8,7 +8,9 @@ const authRoutes = express.Router();
 // }), (_req, res) => res.redirect("/"));
 
 authRoutes.get("/callback", (_req, _res, _next) => {
-  let options = {
+  let options;
+  if(!_req.cookies['refresh_token']){
+   options = {
     method: 'POST',
     url: 'https://foodflick.auth0.com/oauth/token',
     headers: {'content-type': 'application/x-www-form-urlencoded'},
@@ -19,21 +21,51 @@ authRoutes.get("/callback", (_req, _res, _next) => {
       code: _res.req?.query.code,
       redirect_uri: 'http://localhost:8443/callback'
     }
-  };
+   }
+  } else {
+    console.log("Refresh token found");
+    options = {
+      method: 'POST',
+      url: 'https://foodflick.auth0.com/oauth/token',
+      headers: {'content-type': 'application/x-www-form-urlencoded'},
+      form: {
+        grant_type: 'refresh_token',
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
+        refresh_token: _req.cookies['refresh_token'],
+        
+      }
+    };
+  }
+  
+
   request(options, function (_error:any, _response:any, _body:string) {
-    if (_error){ 
-      console.log("hah");
-      _res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_res.req?.query.state}`);
-      throw new Error(_error);
+    if (_error) 
+    {
+      console.log(_error);
     }
-    else {
-    _res.setHeader('Set-Cookie',['access_token='+_body]);
-    _res.redirect('http://localhost:8443'+_res.req?.query.state);
+    
+    let parsedBody = JSON.parse(_body);
+    let accessToken, refreshToken;
+    if(parsedBody['refresh_token']) {
+    
+
+      accessToken = JSON.parse(_body)['access_token'];
+      refreshToken = JSON.parse(_body)['refresh_token'];
+      // todo must delete header in order to refresh actual values, investigate behavior on why
+      _res.setHeader('Set-Cookie',['access_token='+accessToken,'refresh_token='+refreshToken]);
+      _res.setHeader('Authorization','Bearer '+accessToken);
+    } else if(!parsedBody['refresh_token']) {
+        accessToken = JSON.parse(_body)['access_token'];
+        _res.setHeader('Set-Cookie',['access_token='+accessToken]);
     }
+    
+    _res.redirect('http://localhost:8443/account');
   
   });
   
 });
+
 
 authRoutes.get("/logout", (req, res) => {
   req.logout();

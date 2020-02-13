@@ -16,7 +16,7 @@ export default class MyApp extends App {
     if (jssStyles) {
       jssStyles.parentElement!.removeChild(jssStyles);
     }
-    console.log(document.cookie);
+    //console.log(document.cookie);
     
   }
 

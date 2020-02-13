@@ -29,21 +29,7 @@ import jwksRsa from 'jwks-rsa';
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-// Create middleware for checking the JWT
-const checkJwt = jwt({
-  // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
-  secret: jwksRsa.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: `https://foodflick.auth0.com/.well-known/jwks.json`
-  }),
 
-  // Validate the audience and the issuer.
-  audience: 'https://saute.com',
-  issuer: `https://foodflick.auth0.com/`,
-  algorithms: ['RS256']
-});
 
 const start = async () => {
   const ssr = next({
@@ -57,7 +43,7 @@ const start = async () => {
 
   const app = express();
   app.use(cookieParser());
-
+  
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
     //if your application is behind a proxy (like on Heroku)
@@ -78,23 +64,51 @@ const start = async () => {
    // you are restricting access to some routes
    
 const restrictAccess = (_val:string) => {
+  console.log("restricting access")
   return (_req:any, res:any, _next:any) => {
-      console.log("Test")
-      console.log(_req.cookies['access_token'])
-    if(_req.cookies['access_token']){
-      console.log("boom")
-      app.use(_val,checkJwt);
+    console.log("BOOOM")
+    console.log(_req.cookies['access_token']);
+    if(_req.cookies['access_token'])
+      { 
+        console.log("??")
+        // Create middleware for checking the JWT
+        const checkJwt = jwt({
+          secret: jwksRsa.expressJwtSecret({
+            cache: true,
+            rateLimit: true,
+            jwksRequestsPerMinute: 5,
+            jwksUri: `https://foodflick.auth0.com/.well-known/jwks.json`
+          }),
+
+          // Validate the audience and the issuer.
+          audience: 'https://saute.com',
+          issuer: `https://foodflick.auth0.com/`,
+          algorithms: ['RS256'],
+
+          // Gets token from cookie
+          getToken:  () => {
+            let token =JSON.parse(_req.cookies['access_token']);
+           return token; 
+          }
+        });
+
+      app.use(_val,checkJwt,function (err:any, _req:any, res:any, _next:any) {
+        if (err.name === 'UnauthorizedError') {
+          res.status(401).send('invalid token...');
+        }
+      });
+      _next();
     } else{
-      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=SCOPE&audience=https://saute.com&state=${_val}`);
+      console.log("ye");
+      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=offline_access&audience=https://saute.com&state=${_val}`);
     }
     console.log("yeee")
     _next();
-    };
-  
+  };
 }
-
   // handles requests to /account and calls middleware
   app.use("/account", restrictAccess('/account'));
+
   const elastic = initElastic();
   initPlanService(elastic);
   initRestService(elastic);
