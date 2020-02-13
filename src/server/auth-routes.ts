@@ -8,8 +8,6 @@ const authRoutes = express.Router();
 // }), (_req, res) => res.redirect("/"));
 
 authRoutes.get("/callback", (_req, _res, _next) => {
-  console.log(_req.cookies);
-  //console.log(_res.req?.query);
   let options;
   if(!_req.cookies['refresh_token']){
    options = {
@@ -25,7 +23,7 @@ authRoutes.get("/callback", (_req, _res, _next) => {
     }
    }
   } else {
-    console.log("THIS ONE");
+    console.log("Refresh token found");
     options = {
       method: 'POST',
       url: 'https://foodflick.auth0.com/oauth/token',
@@ -46,12 +44,15 @@ authRoutes.get("/callback", (_req, _res, _next) => {
     {
       console.log(_error);
     }
-    console.log(_body);
+    
     let parsedBody = JSON.parse(_body);
     let accessToken, refreshToken;
     if(parsedBody['refresh_token']) {
+    
+
       accessToken = JSON.parse(_body)['access_token'];
       refreshToken = JSON.parse(_body)['refresh_token'];
+      // todo must delete header in order to refresh actual values, investigate behavior on why
       _res.setHeader('Set-Cookie',['access_token='+accessToken,'refresh_token='+refreshToken]);
       _res.setHeader('Authorization','Bearer '+accessToken);
     } else if(!parsedBody['refresh_token']) {
@@ -59,11 +60,12 @@ authRoutes.get("/callback", (_req, _res, _next) => {
         _res.setHeader('Set-Cookie',['access_token='+accessToken]);
     }
     
-    _res.redirect('http://localhost:8443'+_res.req?.query.state);
+    _res.redirect('http://localhost:8443/account');
   
   });
   
 });
+
 
 authRoutes.get("/logout", (req, res) => {
   req.logout();

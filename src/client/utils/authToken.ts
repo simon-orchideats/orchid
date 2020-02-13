@@ -1,10 +1,8 @@
-//import jwtDecode from "jwt-decode";
-
 
 export class AuthToken {
   readonly decodedToken:string;
 
-  constructor(readonly token?: any) {
+  constructor(readonly token?: string) {
     // we are going to default to an expired decodedToken
     this.decodedToken = "";
 

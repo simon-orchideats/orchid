@@ -64,9 +64,13 @@ const start = async () => {
    // you are restricting access to some routes
    
 const restrictAccess = (_val:string) => {
+  console.log("restricting access")
   return (_req:any, res:any, _next:any) => {
+    console.log("BOOOM")
+    console.log(_req.cookies['access_token']);
     if(_req.cookies['access_token'])
       { 
+        console.log("??")
         // Create middleware for checking the JWT
         const checkJwt = jwt({
           secret: jwksRsa.expressJwtSecret({
@@ -95,19 +99,15 @@ const restrictAccess = (_val:string) => {
       });
       _next();
     } else{
-      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=offline_access&audience=https://saute.com&state=${_val}&grant_type=refresh_token`);
+      console.log("ye");
+      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=offline_access&audience=https://saute.com&state=${_val}`);
     }
     _next();
   };
 }
-
-  app.get('/authToken', function (_req, _res){
-    
-  })
-
   // handles requests to /account and calls middleware
   app.use("/account", restrictAccess('/account'));
-  
+
   const elastic = initElastic();
   initPlanService(elastic);
   initRestService(elastic);

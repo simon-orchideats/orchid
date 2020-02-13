@@ -2,9 +2,10 @@ import Link from 'next/link'
 import { AuthProps, privateRoute } from "../client/components/privateRoute";
 
 type Props = AuthProps;
-function Account ({auth}:Props){
+function Account ({auth, refreshToken}:Props){
   console.log("2");
-  console.log({auth});
+  console.log(auth);
+  console.log(refreshToken)
   return(
   <div>
     This is a static page goto{' '}
@@ -16,9 +17,9 @@ function Account ({auth}:Props){
 }
 
 Account.getInitialProps = async ({ auth }: AuthProps): Promise<Props> => {
-  let token:string;
-  token = 'test';
-  return  {token,auth};
+  let refreshToken:string;
+  refreshToken = 'test';
+  return  {refreshToken,auth};
 }
 
 export default privateRoute(Account);
