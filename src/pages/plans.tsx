@@ -101,4 +101,4 @@ const plans = () => {
 
 export default plans;
 
-export const plansRoute = 'plans';
+export const plansRoute = '/plans';

@@ -123,4 +123,4 @@ const menu = () => {
 
 export default withApollo(menu);
 
-export const menuRoute = 'menu';
+export const menuRoute = '/menu';

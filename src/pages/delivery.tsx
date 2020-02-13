@@ -124,4 +124,4 @@ const delivery = () => {
 
 export default withClientApollo(delivery);
 
-export const deliveryRoute = 'delivery';
+export const deliveryRoute = '/delivery';

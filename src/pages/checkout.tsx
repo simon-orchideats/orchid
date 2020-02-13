@@ -8,7 +8,7 @@ import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, createRef } from "react";
 import { state, States } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
@@ -21,6 +21,7 @@ import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
+import PhoneInput from "../client/general/inputs/PhoneInput";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -65,8 +66,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [stateError,setStateError] = useState<string>('');
   const [zip, setZip] = useState<string>(cart && cart.Zip ? cart.Zip : '02127');
   const [zipError, setZipError] = useState<string>('');
-  const [phone, setPhone] = useState<string>('6095138166');
-  const [phoneError, setPhoneError] = useState<string>('');
+  const validatePhoneRef = useRef<() => boolean>();
+  const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
   const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
@@ -112,8 +113,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setZipError('Your zip is incomplete');
       isValid = false;
     }
-    if (!phone) {
-      setPhoneError('Your phone is incomplete');
+    if (!validatePhoneRef.current!()) {
       isValid = false;
     }
     if (!state) {
@@ -157,7 +157,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       city,
       state as state,
       zip,
-      phone,
+      phoneInputRef.current!.value,
       Card.getCardFromStripe(pm.paymentMethod!.card),
       pm.paymentMethod!.id,
       deliveryInstructions,
@@ -319,17 +319,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               xs={12}
               md={6}
             >
-              <TextField
-                label='Phone'
-                variant='outlined'
-                size='small'
-                error={!!phoneError}
-                helperText={phoneError}
-                fullWidth
-                value={phone}
-                onChange={e => {
-                  setPhone(e.target.value);
-                  if (phoneError) setPhoneError('');
+              <PhoneInput
+                inputRef={phoneInputRef}
+                defaultValue={'6095138166'}
+                setValidator={(validator: () => boolean) => {
+                  validatePhoneRef.current = validator;
                 }}
               />
             </Grid>
