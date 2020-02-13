@@ -1,5 +1,8 @@
+//@ts-nocheck
+
 import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper } from '@material-ui/core';
 import Faq from '../client/reused/Faq';
+import { isServer } from '../client/utils/isServer';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -204,7 +207,114 @@ const Explanation: React.FC<{
   )
 }
 
+
+
+
+
+
+
+
+
+
+/**
+ * Generates a cryptographically secure random string
+ * of variable length.
+ *
+ * The returned string is also url-safe.
+ *
+ * @param {Number} length the length of the random string.
+ * @returns {String}
+ */
+function randomString(length) {
+  const validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let array = new Uint8Array(length);
+  window.crypto.getRandomValues(array);
+  array = array.map(x => validChars.charCodeAt(x % validChars.length));
+  return String.fromCharCode(...array);
+}
+
+/**
+ * Takes a base64 encoded string and returns a url encoded string
+ * by replacing the characters + and / with -, _ respectively,
+ * and removing the = (fill) character.
+ *
+ * @param {String} input base64 encoded string.
+ * @returns {String}
+ */
+function urlEncodeB64(input) {
+  const b64Chars = {'+': '-', '/': '_', '=': ''};
+  return input.replace(/[\+\/=]/g, m => b64Chars[m]);;
+}
+
+/**
+ * Takes an ArrayBuffer and convert it to Base64 url encoded string.
+ * @param {ArrayBuffer} input
+ * @returns {String}
+ */
+function bufferToBase64UrlEncoded(input) {
+  var bytes = new Uint8Array(input);
+  return urlEncodeB64(window.btoa(String.fromCharCode(...bytes)));
+}
+
+/**
+ * Returns the sha256 digst of a given message.
+ * This function is async.
+ *
+ * @param {String} message
+ * @returns {Promise<ArrayBuffer>}
+ */
+function sha256(message) {
+  let encoder = new TextEncoder();
+  let data = encoder.encode(message);
+  return window.crypto.subtle.digest('SHA-256', data);
+}
+
+/**
+ * fetch the openid configuration for the issuer
+ * @returns {Promise<any>}
+ */
+async function getConfig() {
+  const response = await fetch(`https://${AUTH0_DOMAIN}/.well-known/openid-configuration`);
+  return response.json();
+}
+
+if (!isServer()) {
+  fetch('https://foodflick.auth0.com/oauth/token', {
+    method: 'POST',
+    mode:'cors',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      grant_type: 'authorization_code',
+      client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+      redirect_uri: 'http://localhost:8443',
+      code_verifier: ''
+      code: 'SGi5Qv_MdkE4t9ki',
+      redirect_uri: 'http://localhost:8443/callback'
+    }),
+  }).then(res => {
+    console.log(res);
+  });
+}
+
 const HowItWorks = () => {
+  
+  //@ts-ignore
+//1T_gsnzIhPMUAJVF
+    
+  if (!isServer()) {
+    // const codeVerifier = randomString(32);
+    console.log(codeV)
+    // sha256(codeVerifier).then(bufferToBase64UrlEncoded).then(res => {
+    //   console.log(res);
+    // });
+    const codeChallenge = 'Yp38lBOM_Z3yZBLMoNbX1kPBtkVZzs6k2f3OoFKuadI';
+    window.location = `https://foodflick.auth0.com/authorize?response_type=code&code_chalenge=${codeChallenge}&code_challenge_method=S256&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443&scope=offline_access&audience=https://saute.com&state=alvin'`
+  }
+  // res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=offline_access&audience=https://saute.com&state=${_val}`);
+
   const classes = useStyles();
   return (
     <>
