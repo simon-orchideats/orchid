@@ -1,8 +1,8 @@
+import { ICartInput } from './../../order/cartModel';
 import { getGeoService } from './../place/geoService';
 import { getRestService } from './../rests/restService';
 import { getCannotBeEmptyError } from './../utils/error';
 import { isDate2DaysLater } from './../../order/utils';
-import { ICartInput } from '../../order/cartModel';
 import { initElastic } from './../elasticConnector';
 import { Client } from '@elastic/elasticsearch';
 import { Order } from '../../order/orderModel';
@@ -47,41 +47,59 @@ export class OrderService {
           error: msg,
         }
       }
-      const rest = await getRestService().getRest(cart.restId, ['menu']);
-      if (!rest) {
-        const msg = `Can't find rest '${cart.restId}'`
-        console.warn('[OrderService]', msg);
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      for (let i = 0; i < cart.meals.length; i++) {
-        if (!rest.menu.find(meal => meal._id === cart.meals[i].mealId)) {
-          const msg = `Can't find mealId '${cart.meals[i].mealId}'`
+
+      const p1 = getRestService().getRest(cart.restId, ['menu']).then(rest => {
+        if (!rest) {
+          const msg = `Can't find rest '${cart.restId}'`
           console.warn('[OrderService]', msg);
-          return {
-            res: false,
-            error: msg
+          return msg;
+        }
+        for (let i = 0; i < cart.meals.length; i++) {
+          if (!rest.menu.find(meal => meal._id === cart.meals[i].mealId)) {
+            const msg = `Can't find mealId '${cart.meals[i].mealId}'`
+            console.warn('[OrderService]', msg);
+            return msg;
           }
         }
-      }
+        return '';
+      }).catch(e => {
+        const msg = `Couldn't find rest '${cart.restId}'`
+        console.warn('[OrderService]', msg, e.stack);
+        return msg;
+      });
+      
       const {
         address1,
         city,
         state,
         zip,
       } = cart.destination.address;
+      const p2 = getGeoService().getGeocode(address1, city, state, zip)
+        .then(() => '')  
+        .catch(e => {
+          const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+          console.warn('[OrderService]', msg, e.stack);
+          return msg;
+        })
+
       try {
-        await getGeoService().getGeocode(address1, city, state, zip);
-      } catch (e) {
-        const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
-        console.warn('[OrderService]', msg);
-        return {
-          res: false,
-          error: msg,
+        const messages = await Promise.all([p1, p2]);
+        if (messages[0]) {
+          return {
+            res: false,
+            error: messages[0]
+          }
         }
+        if (messages[1]) {
+          return {
+            res: false,
+            error: messages[1]
+          }
+        }
+      } catch (e) {
+        throw new Error(`Couldn't validate'${e.stack}'`);
       }
+      
       // todo: check if stripe customer exists first, if not then do this otherwise skip
       const signedInUser = {
         userId: '123',

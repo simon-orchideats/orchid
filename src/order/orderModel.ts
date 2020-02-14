@@ -15,7 +15,7 @@ export interface EOrder {
     readonly restId: string
     readonly meals: ICartMealInput[]
   }
-  readonly status: 'Complete' | 'Confirmed' | 'Pending' | 'Returned'
+  readonly status: 'Complete' | 'Confirmed' | 'Open' | 'Returned'
   readonly stripeSubscriptionId: string
 }
 
@@ -31,7 +31,7 @@ export class Order {
         restId: cart.restId,
         meals: cart.meals,
       },
-      status: 'Pending',
+      status: 'Open',
       consumer: {
         userId: signedInUser.userId,
         profile: {

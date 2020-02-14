@@ -192,7 +192,6 @@ const UpcomingDeliveries = () => {
       </Typography>
       <DeliveryOverview />
       <DeliveryOverview />
-      <DeliveryOverview />
     </Container>
   );
 }
