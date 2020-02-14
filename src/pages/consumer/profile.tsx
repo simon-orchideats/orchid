@@ -86,7 +86,7 @@ const profile = () => {
               secondary='*************'
             />
           </ListItem>
-          <ListItem divider>
+          <ListItem divider disableGutters>
             {
               isUpdatingPhone ?
               <div>
