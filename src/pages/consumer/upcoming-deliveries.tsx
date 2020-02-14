@@ -6,14 +6,22 @@ import { useRouter } from "next/router";
 import withClientApollo from "../../client/utils/withClientApollo";
 import Close from '@material-ui/icons/Close';
 import { useState } from "react";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
   },
+  marginBottom: {
+    marginBottom: theme.spacing(3),
+  },
   confirmation: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(3),
+    borderColor: theme.palette.primary.main
+  },
+  overviewSection: {
+    padding: theme.spacing(2),
   },
   divider: {
     marginTop: theme.spacing(1),
@@ -26,6 +34,17 @@ const useStyles = makeStyles(theme => ({
   },
   close: {
     cursor: 'pointer'
+  },
+  hint: {
+    color: theme.palette.text.hint
+  },
+  link: {
+    color: theme.palette.common.link
+  },
+  column: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
 }));
 
@@ -40,7 +59,7 @@ const Confirmation: React.FC<{
   // const groupedMeals = cart.getGroupedMeals();
   const classes = useStyles();
   return (
-    <Paper className={classes.confirmation}>
+    <Paper variant='outlined' className={classes.confirmation}>
       <div className={classes.row}>
         <Typography variant='h6' color='primary'>
           Thank you, your delivery has been scheduled
@@ -53,8 +72,6 @@ const Confirmation: React.FC<{
       <Typography variant='body1'>
         We'll text you the day of your delivery
       </Typography>
-
-
       <Typography variant='body1'>
         Deliver on 2/23/20, 6pm - 9pm
       </Typography>
@@ -91,6 +108,73 @@ const Confirmation: React.FC<{
   )
 } 
 
+const DeliveryOverview: React.FC = () => {
+  const classes = useStyles();
+  return (
+    <Paper className={classes.marginBottom}>
+      <div className={`${classes.row} ${classes.overviewSection}`}>
+        <div className={classes.column}>
+          <Typography variant='subtitle1'>
+            Deliver on
+          </Typography>
+          <Typography variant='body1' className={classes.hint}>
+            10/24/20
+          </Typography>
+        </div>
+        <div className={classes.column}>
+          <Typography variant='subtitle1'>
+            Total
+          </Typography>
+          <Typography variant='body1' className={classes.hint}>
+            4 meals ($8.99 ea)
+          </Typography>
+        </div>
+        <div className={classes.column}>
+          <Typography variant='subtitle1'>
+            Deliver to
+          </Typography>
+          <div className={`${classes.row} ${classes.link}`}>
+            <Typography variant='body1'>
+              Simon
+            </Typography>
+            <ExpandMoreIcon />
+          </div>
+        </div>
+      </div>
+      <Divider />
+      <div className={classes.overviewSection}>
+        <Typography variant='subtitle1'>
+          Domo
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+        <Typography variant='body1'>
+          {4} {'Rice and chicken'}
+        </Typography>
+      </div>
+    </Paper>
+  )
+}
+
 const UpcomingDeliveries = () => {
   const classes = useStyles();
   const needsConfirmation = useRouter().query.confirmation;
@@ -103,9 +187,12 @@ const UpcomingDeliveries = () => {
         && showConfirmation
         && <Confirmation onClose={() => setShowConfirmation(false)} />
       }
-      <Typography variant='h3'>
+      <Typography variant='h3' className={classes.marginBottom}>
         Upcoming deliveries
       </Typography>
+      <DeliveryOverview />
+      <DeliveryOverview />
+      <DeliveryOverview />
     </Container>
   );
 }
