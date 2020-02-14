@@ -22,6 +22,7 @@ import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
+import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -55,7 +56,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const classes = useStyles();
   const cart = useGetCart();
   const notify = useNotify();
-  const [deliveryName, setDeliveryName] = useState<string>('');
+  const [deliveryName, setDeliveryName] = useState<string>('namename');
   const [deliveryNameError, setDeliveryNameError] = useState<string>('');
   const [addr1, setAddr1] = useState<string>('19 middle st');
   const [addr1Error, setAddr1Error] = useState<string>('');
@@ -83,8 +84,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   useEffect(() => {
     if (placeOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
-    } else if (placeOrderRes.data !== undefined && placeOrderRes.data.error) {
-      notify(placeOrderRes.data.error, NotificationType.error, false);
+    }
+    if (placeOrderRes.data !== undefined) {
+      if (placeOrderRes.data.error) {
+        notify(placeOrderRes.data.error, NotificationType.error, false);
+      } else {
+        Router.push(({
+          pathname: upcomingDeliveriesRoute,
+          query: { confirmation: 'true' },
+        }))
+      }
     }
   }, [placeOrderRes])
   const theme = useTheme<Theme>();
@@ -92,7 +101,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   if (isServer()) {
     return <Typography>Redirecting...</Typography>
   } else if (!cart) {
-    Router.replace(`/${menuRoute}`);
+    Router.replace(`${menuRoute}`);
     return <Typography>Redirecting...</Typography>
   }
   const validate = () => {

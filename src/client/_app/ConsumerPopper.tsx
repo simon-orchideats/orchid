@@ -5,7 +5,8 @@ import EventIcon from '@material-ui/icons/Event';
 import PersonIcon from '@material-ui/icons/Person';
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
 import Link from 'next/link';
-import { profileRoute } from '../../pages/account/profile';
+import { profileRoute } from '../../pages/consumer/profile';
+import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -63,12 +64,14 @@ const ConsumerPopper: React.FC<{
             My plan
           </Typography>
         </div>
-        <div className={classes.row}>
-          <EventIcon fontSize='large' />
-          <Typography variant='h6'>
-            Upcoming deliveries
-          </Typography>
-        </div>
+        <Link href={upcomingDeliveriesRoute}>
+          <div className={classes.row}>
+            <EventIcon fontSize='large' />
+            <Typography variant='h6'>
+              Upcoming deliveries
+            </Typography>
+          </div>
+        </Link>
       </Paper>
     </Popover>
   );

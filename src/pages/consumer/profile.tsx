@@ -4,8 +4,13 @@ import PhoneInput from '../../client/general/inputs/PhoneInput'
 
 const useStyles = makeStyles(theme => ({
   container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4)
+    background: 'none'
+  },
+  list: {
+    marginTop: theme.spacing(3),
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+    background: theme.palette.background.paper
   },
   buttons: {
     display: 'flex',
@@ -59,10 +64,10 @@ const profile = () => {
   return (
     <>
       <Container maxWidth='lg' className={classes.container}>
-        <Typography variant='h4'>
+        <Typography variant='h3'>
           Profile
         </Typography>
-        <List>
+        <List className={classes.list}>
           <ListItem divider disableGutters>
             <Labels
               primary='Name'
@@ -136,7 +141,7 @@ const profile = () => {
               </Button>
             </ListItemSecondaryAction>
           </ListItem>
-          <ListItem divider disableGutters>
+          <ListItem disableGutters>
             <Labels
               primary='Address'
               secondary='19 Middle st boston ma 02127'
@@ -155,4 +160,4 @@ const profile = () => {
 
 export default profile;
 
-export const profileRoute = 'account/profile';
+export const profileRoute = '/consumer/profile';

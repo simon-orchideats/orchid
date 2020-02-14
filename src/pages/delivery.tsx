@@ -52,7 +52,7 @@ const delivery = () => {
     setLabelWidth(inputLabel.current!.offsetWidth);
   }, []);
   const cart = useGetCart();
-  if (!cart && !isServer()) Router.replace(`/${menuRoute}`);
+  if (!cart && !isServer()) Router.replace(`${menuRoute}`);
   return (
     <>
       <Container className={classes.container}>
