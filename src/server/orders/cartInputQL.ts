@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 const CartMealInputQL = gql`
   input CartMealInput {
     mealId: ID!
+    img: String!
     name: String!
     quantity: Int!
   }

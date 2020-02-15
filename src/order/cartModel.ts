@@ -16,7 +16,27 @@ export interface ICart {
 export type ICartMealInput = {
   readonly mealId: string
   readonly name: string
+  readonly img: string
   readonly quantity: number
+}
+
+export class CartMealInput implements ICartMealInput {
+  readonly mealId: string;
+  readonly img: string;
+  readonly name: string;
+  readonly quantity: number
+
+  constructor(meal: ICartMealInput) {
+    this.mealId = meal.mealId;
+    this.img = meal.img;
+    this.name = meal.name;
+    this.quantity = meal.quantity
+  }
+
+  public get MealId() { return this.mealId }
+  public get Img() { return this.img }
+  public get Name() { return this.name }
+  public get Quantity() { return this.quantity }
 }
 
 export interface ICartInput {
@@ -51,22 +71,24 @@ export class Cart implements ICart {
   public get RestId() { return this.restId }
   public get Zip() { return this.zip }
 
-  public getGroupedMeals() {
-    return this.meals.reduce<{
-      quantity: number,
-      meal: Meal,
-    }[]>((groupings, meal) => {
-      const groupIndex = groupings.findIndex(group => group.meal.Id === meal.Id);
+  public static getCartMealInputs(meals: IMeal[]) {
+    return meals.reduce<CartMealInput[]>((groupings, meal) => {
+      const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push({
+        groupings.push(new CartMealInput({
           quantity: 1,
-          meal,
-        })
+          img: meal.img,
+          mealId: meal._id,
+          name: meal.name
+        }));
       } else {
-        groupings[groupIndex].quantity++;
+        groupings[groupIndex] = new CartMealInput({
+          ...groupings[groupIndex],
+          quantity: groupings[groupIndex].quantity + 1
+        })
       }
       return groupings;
-    }, []);
+    }, [])
   }
 
   public addMeal(meal: Meal) {
@@ -111,7 +133,7 @@ export class Cart implements ICart {
         stripePlanId: this.StripePlanId,
         deliveryDay: this.DeliveryDay,
         renewal,
-        cuisines
+        cuisines,
       },
       deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),
       destination: {
@@ -125,22 +147,7 @@ export class Cart implements ICart {
         },
         instructions,
       },
-      meals: this.Meals.reduce<ICartMealInput[]>((groupings, meal) => {
-        const groupIndex = groupings.findIndex(group => group.mealId === meal.Id);
-        if (groupIndex === -1) {
-          groupings.push({
-            quantity: 1,
-            mealId: meal.Id,
-            name: meal.Name
-          })
-        } else {
-          groupings[groupIndex] = {
-            ...groupings[groupIndex],
-            quantity: groupings[groupIndex].quantity + 1
-          }
-        }
-        return groupings;
-      }, [])
+      meals: Cart.getCartMealInputs(this.Meals)
     }
   }
 

@@ -22,8 +22,24 @@ class PlanService {
         weekPrice: plan.amount! / 100,
       }))
     } catch (e) {
-      console.error(`[Plan service] could not get plans. '${e.message}'`);
+      console.error(`[PlanService] could not get plans. '${e.message}'`);
       throw e;
+    }
+  }
+
+  async getPlan(planId: string): Promise<IPlan | null> {
+    try {
+      const plan = await this.stripe.plans.retrieve(planId);
+      if (!plan.active) throw new Error(`Plan ${planId} is inactive`);
+      return {
+        stripeId: plan.id,
+        mealCount: parseFloat(plan.metadata.mealCount),
+        mealPrice: parseFloat(plan.metadata.mealPrice),
+        weekPrice: plan.amount! / 100,
+      }
+    } catch (e) {
+      console.error(`[PlanService] could not get plan '${planId}'. ${e.message}'`);
+      return null;
     }
   }
 }

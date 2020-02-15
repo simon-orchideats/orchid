@@ -8,6 +8,7 @@ import { Plan } from "../../plan/planModel";
 import Link from 'next/link'
 import { deliveryRoute } from "../../pages/delivery";
 import CartMealGroup from "../order/CartMealGroup";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -43,7 +44,7 @@ const MenuCart: React.FC = () => {
   const rest = useGetRest(cart ? cart.RestId : null);
   const mealCount = cart ? cart.Meals.length : 0;
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
-  const groupedMeals = cart && cart.getGroupedMeals();
+  const groupedMeals = cart && Cart.getCartMealInputs(cart.Meals);
   return (
     <>
       <Typography
@@ -54,7 +55,7 @@ const MenuCart: React.FC = () => {
         {rest.data ? `Meals from ${rest.data.Profile.Name}` : 'Your meals'}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
-        <CartMealGroup key={mealGroup.meal.Id} mealGroup={mealGroup} />
+        <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
       ))}
       <div className={classes.bottom}>
         <Typography variant='body1' className={classes.suggestion}>

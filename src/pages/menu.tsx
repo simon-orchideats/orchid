@@ -12,6 +12,8 @@ import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 
+// left off. reset cart after ordering? when i go to menu screen with item sin my cart already it's messed up
+
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',

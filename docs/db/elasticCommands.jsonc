@@ -21,317 +21,32 @@ GET /consumers/_search?
     }
 }
 
-############################
-
-
-
-
-######### INSERTS ##########
-
-POST rests/_doc/
+GET /rests/_search?
 {
-  "createdDate": 1580502754744,
-  "location": {
-    "address": {
-      "address1": "100 greene st",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.715677,
-      "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
+    "query" : {
+        "match_all" : {}
     }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "Uo9a1o0eHJEOKc2_PaBRH",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 01"
-    },
-    {
-      "_id": "OGvDiIy5NCn2o6U21UI9d",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 03"
-    },
-    {
-      "_id": "nAaGh-QQF36XuZBgIFwOL",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 04"
-    },
-    {
-      "_id": "aTTARK_fbw0jN73OYa0nU",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 05"
-    },
-    {
-      "_id": "0nG7D5vDhwZJfo2mWSetk",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 06"
-    },
-    {
-      "_id": "dNX-nBBQih34eUALdImvL",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 07"
-    },
-    {
-      "_id": "GBF2CkjtEsjt8jqayk6_S",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 08"
-    },
-    {
-      "_id": "he5jySbTcbHY6qvNWS0Nk",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 09"
-    },
-    {
-      "_id": "w8O5R2rgzI9bPgVwD3pNl",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 10"
-    }
-  ],
-  "profile": {
-    "name": "Domo",
-    "phone": "609-513-8166",
-    "tags": []
-  }
 }
 
-POST rests/_doc/
+GET /rests/_search?
 {
-  "createdDate": 1580502754744,
-  "location": {
-    "address": {
-      "address1": "100 greene st",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.715677,
-      "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
+  "query" : {
+    "bool": {
+      "filter": {
+        "terms": {
+          "profile.tags.keyword": ["Chinese"]
+        }
+      }
     }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "eM4SzUFNlICy_v5yEb9Wq",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 01"
-    },
-    {
-      "_id": "O6_4TKaCEMVBFpB3-XR0P",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 03"
-    },
-    {
-      "_id": "IEt50RPjQqGPz7X5m5WaR",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 04"
-    },
-    {
-      "_id": "c-67feK6I6Ad_dJRKTr6w",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 05"
-    },
-    {
-      "_id": "DskCXQWchhxAo_KrLZiNh",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 06"
-    },
-    {
-      "_id": "pmuZPcloW76KRBWpOAkPe",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 07"
-    },
-    {
-      "_id": "3mwAu9Yh7PmzlBUzT-lQr",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 08"
-    },
-    {
-      "_id": "j3ghT9alMmdElOobaRYMV",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 09"
-    },
-    {
-      "_id": "4ru2hI76iVLIkXaMgZEee",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 10"
-    }
-  ],
-  "profile": {
-    "name": "Domo2",
-    "phone": "609-513-8166",
-    "tags": []
   }
 }
-
-POST rests/_doc/
-{
-  "createdDate": 1580502754744,
-  "location": {
-    "address": {
-      "address1": "100 greene st",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.715677,
-      "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
-    }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "YBCvO0V2z3UDSfC6evRZe",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 01"
-    },
-    {
-      "_id": "leM-xEuV4ucGVV2GdcM3x",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 03"
-    },
-    {
-      "_id": "umQoRB1zA7dpb2lZ_eta1",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 04"
-    },
-    {
-      "_id": "zFSbyFbfXkD-pSI6p-ETG",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 05"
-    },
-    {
-      "_id": "kmXktTAR0c0FA7aA9RwJj",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 06"
-    },
-    {
-      "_id": "uxeKzlMF-24OF8GXTrhUm",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 07"
-    },
-    {
-      "_id": "Kzc7UgM3N7T7k76Id30h3",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 08"
-    },
-    {
-      "_id": "28ktqKMqcGI0Ngj96XgVm",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 09"
-    },
-    {
-      "_id": "9JIyySgL1litlsXD2Bu7s",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 10"
-    }
-  ],
-  "profile": {
-    "name": "Domo3",
-    "phone": "609-513-8166",
-    "tags": []
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1580502754744,
-  "location": {
-    "address": {
-      "address1": "100 greene st",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.715677,
-      "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
-    }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "EYfOpNG2KTRNhHVZSGHmm",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 01"
-    },
-    {
-      "_id": "XQNJ7ElD4zFmjmvdOiTdc",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 03"
-    },
-    {
-      "_id": "4T5aQ9FLI8lyoA3zoToKt",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 04"
-    },
-    {
-      "_id": "Cl0wYEgZ3fg1kk7qzRQ45",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 05"
-    },
-    {
-      "_id": "4wogDeH4Kmasoz6fIDnny",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 06"
-    },
-    {
-      "_id": "kFRbIxYEWI7awVYQnFkkI",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 07"
-    },
-    {
-      "_id": "9k9b8CQeLfC66GMBj-35O",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 08"
-    },
-    {
-      "_id": "vXeI_rDl34xYFNfkg3gdE",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 09"
-    },
-    {
-      "_id": "aJdqt8qz832ItovKyiy66",
-      "img": "placeholderMeal.jpg",
-      "name": "Ricebowl 10"
-    }
-  ],
-  "profile": {
-    "name": "Domo4",
-    "phone": "609-513-8166",
-    "tags": []
-  }
-}
-
-
 
 ############################
-
 
 
 ######### DELETE ###########
 
+DELETE rests
 DELETE orders
 DELETE consumers
 
@@ -585,6 +300,9 @@ PUT /orders/
               "mealId": {
                 "type": "keyword"
               },
+              "img": {
+                "type": "keyword"
+              },
               "name": {
                 "type": "keyword"
               },
@@ -780,5 +498,326 @@ PUT /consumers/
 ############################
 
 
+######### INSERTS ##########
 
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "100 greene st",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    },
+    "timezone": {
+      "name": "America/New_York",
+      "shortName": "EST"
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "Uo9a1o0eHJEOKc2_PaBRH",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 01"
+    },
+    {
+      "_id": "OGvDiIy5NCn2o6U21UI9d",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 03"
+    },
+    {
+      "_id": "nAaGh-QQF36XuZBgIFwOL",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 04"
+    },
+    {
+      "_id": "aTTARK_fbw0jN73OYa0nU",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 05"
+    },
+    {
+      "_id": "0nG7D5vDhwZJfo2mWSetk",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 06"
+    },
+    {
+      "_id": "dNX-nBBQih34eUALdImvL",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 07"
+    },
+    {
+      "_id": "GBF2CkjtEsjt8jqayk6_S",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 08"
+    },
+    {
+      "_id": "he5jySbTcbHY6qvNWS0Nk",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 09"
+    },
+    {
+      "_id": "w8O5R2rgzI9bPgVwD3pNl",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 10"
+    }
+  ],
+  "profile": {
+    "name": "Domo",
+    "phone": "609-513-8166",
+    "tags": ["Chinese", "Japanese", "Thai"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "100 greene st",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    },
+    "timezone": {
+      "name": "America/New_York",
+      "shortName": "EST"
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "eM4SzUFNlICy_v5yEb9Wq",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 01"
+    },
+    {
+      "_id": "O6_4TKaCEMVBFpB3-XR0P",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 03"
+    },
+    {
+      "_id": "IEt50RPjQqGPz7X5m5WaR",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 04"
+    },
+    {
+      "_id": "c-67feK6I6Ad_dJRKTr6w",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 05"
+    },
+    {
+      "_id": "DskCXQWchhxAo_KrLZiNh",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 06"
+    },
+    {
+      "_id": "pmuZPcloW76KRBWpOAkPe",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 07"
+    },
+    {
+      "_id": "3mwAu9Yh7PmzlBUzT-lQr",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 08"
+    },
+    {
+      "_id": "j3ghT9alMmdElOobaRYMV",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 09"
+    },
+    {
+      "_id": "4ru2hI76iVLIkXaMgZEee",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 10"
+    }
+  ],
+  "profile": {
+    "name": "Domo2",
+    "phone": "609-513-8166",
+    "tags": ["Vegan", "Vegetarian", "Indian", "Chinese"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "100 greene st",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    },
+    "timezone": {
+      "name": "America/New_York",
+      "shortName": "EST"
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "YBCvO0V2z3UDSfC6evRZe",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 01"
+    },
+    {
+      "_id": "leM-xEuV4ucGVV2GdcM3x",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 03"
+    },
+    {
+      "_id": "umQoRB1zA7dpb2lZ_eta1",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 04"
+    },
+    {
+      "_id": "zFSbyFbfXkD-pSI6p-ETG",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 05"
+    },
+    {
+      "_id": "kmXktTAR0c0FA7aA9RwJj",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 06"
+    },
+    {
+      "_id": "uxeKzlMF-24OF8GXTrhUm",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 07"
+    },
+    {
+      "_id": "Kzc7UgM3N7T7k76Id30h3",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 08"
+    },
+    {
+      "_id": "28ktqKMqcGI0Ngj96XgVm",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 09"
+    },
+    {
+      "_id": "9JIyySgL1litlsXD2Bu7s",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 10"
+    }
+  ],
+  "profile": {
+    "name": "Domo3",
+    "phone": "609-513-8166",
+    "tags": ["American", "Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "100 greene st",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    },
+    "timezone": {
+      "name": "America/New_York",
+      "shortName": "EST"
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "EYfOpNG2KTRNhHVZSGHmm",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 01"
+    },
+    {
+      "_id": "XQNJ7ElD4zFmjmvdOiTdc",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 03"
+    },
+    {
+      "_id": "4T5aQ9FLI8lyoA3zoToKt",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 04"
+    },
+    {
+      "_id": "Cl0wYEgZ3fg1kk7qzRQ45",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 05"
+    },
+    {
+      "_id": "4wogDeH4Kmasoz6fIDnny",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 06"
+    },
+    {
+      "_id": "kFRbIxYEWI7awVYQnFkkI",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 07"
+    },
+    {
+      "_id": "9k9b8CQeLfC66GMBj-35O",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 08"
+    },
+    {
+      "_id": "vXeI_rDl34xYFNfkg3gdE",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 09"
+    },
+    {
+      "_id": "aJdqt8qz832ItovKyiy66",
+      "img": "placeholderMeal.jpg",
+      "name": "Ricebowl 10"
+    }
+  ],
+  "profile": {
+    "name": "Domo4",
+    "phone": "609-513-8166",
+    "tags": ["Mexican"]
+  }
+}
+
+POST _bulk
+{ "index" : { "_index" : "tags", "_id": "American" } }
+{ "name" : "American", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "BBQ" } }
+{ "name" : "BBQ", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Chinese" } }
+{ "name" : "Chinese", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Indian" } }
+{ "name" : "Indian", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Italian" } }
+{ "name" : "Italian", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Japanese" } }
+{ "name" : "Japanese", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Mediterranean" } }
+{ "name" : "Mediterranean", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Mexican" } }
+{ "name" : "Mexican", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Thai" } }
+{ "name" : "Thai", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Vegan" } }
+{ "name" : "Vegan", "count": 0 }
+{ "index" : { "_index" : "tags", "_id": "Vegetarian" } }
+{ "name" : "Vegetarian", "count": 0 }
+############################
 

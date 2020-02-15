@@ -7,6 +7,7 @@ import { getNextDeliveryDate } from "../../order/utils";
 import { Consumer } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -46,7 +47,7 @@ const CheckoutCart: React.FC<props> = ({
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
   const rest = useGetRest(cart ? cart.RestId : null);
-  const groupedMeals = cart && cart.getGroupedMeals();
+  const groupedMeals = cart && Cart.getCartMealInputs(cart.Meals);
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   return (
     <>
@@ -71,7 +72,7 @@ const CheckoutCart: React.FC<props> = ({
         {rest.data ? rest.data.Profile.Name : ''}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
-        <CartMealGroup key={mealGroup.meal.Id} mealGroup={mealGroup} />
+        <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
       ))}
       <Typography variant='body1'>
         Deliver on {getNextDeliveryDate(cart.DeliveryDay).format('M/D/YY')}, 6pm - 9pm

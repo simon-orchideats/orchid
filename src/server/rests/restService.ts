@@ -1,3 +1,4 @@
+import { CuisineType } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest } from './../../rest/restModel';
@@ -15,7 +16,7 @@ class RestService {
     try {
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
-        size: 1000,
+        size: 1000, // todo handle case when results > 1000
       });
       return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
@@ -41,6 +42,35 @@ class RestService {
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
       return null;
+    }
+  }
+
+  async getRestsByCuisines(cuisines: CuisineType[], fields?: string[]): Promise<IRest[]> {
+    const options: any = {
+      index: 'rests',
+      size: 1000,
+      body: {
+        query: {
+          bool: {
+            filter: {
+              terms: {
+                'profile.tags.keyword': cuisines
+              }
+            }
+          }
+        }
+      }
+    };
+    if (fields) options._source = fields;
+    try {
+      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
+      return res.body.hits.hits.map(({ _id, _source }) => ({
+        ..._source,
+        _id
+      }))
+    } catch (e) {
+      console.error(`[RestService] could not get rests of cuisines '${JSON.stringify(cuisines)}'. '${e.stack}'`);
+      throw e;
     }
   }
 }

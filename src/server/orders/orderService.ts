@@ -1,6 +1,9 @@
+import { IMeal } from './../../rest/mealModel';
+import { getPlanService } from './../plans/planService';
+import { RenewalTypes } from './../../consumer/consumerModel';
 import { SignedInUser } from './../utils/models';
 import { getConsumerService } from './../consumer/consumerService';
-import { ICartInput } from './../../order/cartModel';
+import { ICartInput, Cart } from './../../order/cartModel';
 import { getGeoService } from './../place/geoService';
 import { getRestService } from './../rests/restService';
 import { getCannotBeEmptyError } from './../utils/error';
@@ -11,8 +14,26 @@ import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer } from '../../consumer/consumerModel';
+import moment from 'moment';
 
 const ORDER_INDEX = 'orders';
+
+/**
+ * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
+ * are returned at which point the chooser "resets". Upon a reset, Chooser returns another cycle of unique elements.
+ * Therefore repeat values only occur from mulitple cycles.
+ * @param arr the array which contains items to be chosen
+ */
+const getItemChooser = <T>(arr: T[]) => {
+  let copy = arr.slice(0);
+  return () => {
+    if (copy.length < 1) {
+      copy = arr.slice(0);
+    }
+    const index = Math.floor(Math.random() * copy.length);
+    return copy.splice(index, 1)[0];
+  };
+}
 
 class OrderService {
   private readonly elastic: Client
@@ -84,22 +105,75 @@ class OrderService {
           return msg;
         })
 
-      try {
-        const messages = await Promise.all([p1, p2]);
-        if (messages[0]) {
-          return {
-            res: false,
-            error: messages[0]
+      const planId = cart.consumerPlan.stripePlanId;
+      const cartMealCount = cart.meals.reduce((sum, meal) => sum + meal.quantity, 0);
+      const p3 = getPlanService().getPlan(planId)
+        .then(stripePlan => {
+          if (!stripePlan) {
+            const msg = `Can't find plan '${planId}'`
+            console.warn('[OrderService]', msg);
+            return {
+              plan: null,
+              msg
+            };
           }
-        }
-        if (messages[1]) {
-          return {
-            res: false,
-            error: messages[1]
+          if (cartMealCount !== stripePlan.mealCount) {
+            const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
+            console.warn('[OrderService]', msg);
+            return {
+              plan: stripePlan,
+              msg
+            };
           }
+          return {
+            plan: stripePlan,
+            msg: ''
+          };
+        })
+        .catch(e => {
+          const msg = `Couldn't verify plan '${planId}'`
+          console.warn('[OrderService]', msg, e.stack);
+          return {
+            plan: null,
+            msg
+          };
+        })
+
+      const messages = await Promise.all([p1, p2, p3]);
+      if (messages[0]) {
+        return {
+          res: false,
+          error: messages[0]
         }
-      } catch (e) {
-        throw new Error(`Couldn't validate'${e.stack}'`);
+      }
+      if (messages[1]) {
+        return {
+          res: false,
+          error: messages[1]
+        }
+      }
+      if (messages[2].msg) {
+        return {
+          res: false,
+          error: messages[2]
+        }
+      }
+
+      // const plan = messages[2].plan!;
+
+      const {
+        deliveryDay,
+        renewal,
+        cuisines,
+      } = cart.consumerPlan;
+
+      if (renewal === RenewalTypes.Auto && cuisines.length === 0) {
+        const msg = `Cuisines cannot be empty if renewal type is '${renewal}'`;
+        console.warn('[OrderService]', msg);
+        return {
+          res: false,
+          error: msg,
+        }
       }
 
       const signedInUser: SignedInUser = {
@@ -112,17 +186,11 @@ class OrderService {
         },
       }
 
-      const {
-        deliveryDay,
-        renewal,
-        cuisines,
-      } = cart.consumerPlan;
-
       let stripeCustomerId = signedInUser.stripeCustomerId;
       let stripeSubscriptionId = signedInUser.stripeSubscriptionId;
       let eConsumer = {
         plan: {
-          stripePlanId: cart.consumerPlan.stripePlanId,
+          stripePlanId: planId,
           deliveryDay,
           renewal,
           cuisines,
@@ -143,7 +211,7 @@ class OrderService {
           proration_behavior: 'none',
           items: [{
             id: subscription.items.data[0].id,
-            plan: cart.consumerPlan.stripePlanId,
+            plan: planId,
           }]
         });
       } else {
@@ -159,7 +227,7 @@ class OrderService {
           const subscription = await this.stripe.subscriptions.create({
             customer: stripeCustomerId,
             // fails on any id that isn't an active stripe plan
-            items: [{ plan: cart.consumerPlan.stripePlanId }]
+            items: [{ plan: planId }]
           });
           stripeSubscriptionId = subscription.id
         } catch (e) {
@@ -168,6 +236,7 @@ class OrderService {
           throw e;
         }
       }
+
       const order = Order.getNewOrderFromCartInput(signedInUser, cart, stripeSubscriptionId);
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
@@ -178,6 +247,32 @@ class OrderService {
         stripeSubscriptionId,
         ...eConsumer
       });
+
+      if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
+        getRestService().getRestsByCuisines(cart.consumerPlan.cuisines, ['menu'])
+          .then(rests => {
+            const rest = rests[Math.floor(Math.random() * rests.length)];
+            const menu = rest.menu;
+            const chooseRandomly = getItemChooser<IMeal>(menu);
+            const meals: IMeal[] = [];
+            for (let i = 0; i < cartMealCount; i++) meals.push(chooseRandomly())
+            const cartMeals = Cart.getCartMealInputs(meals);
+            const newCart = {
+              ...cart,
+              restId: rest._id,
+              meals: cartMeals,
+              deliveryDate: moment(cart.deliveryDate).add(1, 'w').valueOf(),
+            }
+            const order = Order.getNewOrderFromCartInput(signedInUser, newCart, stripeSubscriptionId!);
+            return this.elastic.index({
+              index: ORDER_INDEX,
+              body: order
+            })
+          })
+          .catch(e => {
+            console.error('[OrderService] could not auto pick rests', e.stack);
+          })
+      }
 
       await Promise.all([subUpdater, consumerUpserter, indexer]);
 
