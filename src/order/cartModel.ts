@@ -5,14 +5,6 @@ import { deliveryDay, IConsumerPlan, RenewalType, CuisineType } from '../consume
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 
-export interface ICart {
-  readonly meals: IMeal[];
-  readonly restId: string | null;
-  readonly stripePlanId: string | null;
-  readonly deliveryDay: deliveryDay | null;
-  readonly zip: string | null;
-}
-
 export type ICartMealInput = {
   readonly mealId: string
   readonly name: string
@@ -37,6 +29,15 @@ export class CartMealInput implements ICartMealInput {
   public get Img() { return this.img }
   public get Name() { return this.name }
   public get Quantity() { return this.quantity }
+
+  static getCartMealInput(meal: IMeal, quantity: number = 1) {
+    return new CartMealInput({
+      mealId: meal._id,
+      img: meal.img,
+      name: meal.name,
+      quantity,
+    });
+  }
 }
 
 export interface ICartInput {
@@ -50,15 +51,23 @@ export interface ICartInput {
   readonly deliveryDate: number
 };
 
+export interface ICart {
+  readonly meals: ICartMealInput[];
+  readonly restId: string | null;
+  readonly stripePlanId: string | null;
+  readonly deliveryDay: deliveryDay | null;
+  readonly zip: string | null;
+}
+
 export class Cart implements ICart {
-  readonly meals: Meal[] // todo: change this to ICartMealInput
+  readonly meals: CartMealInput[]
   readonly restId: string | null
   readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
 
   constructor(cart: ICart) {
-    this.meals = cart.meals.map(meal => new Meal(meal));
+    this.meals = cart.meals.map(meal => new CartMealInput(meal));
     this.restId = cart.restId;
     this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
@@ -75,12 +84,7 @@ export class Cart implements ICart {
     return meals.reduce<CartMealInput[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push(new CartMealInput({
-          quantity: 1,
-          img: meal.img,
-          mealId: meal._id,
-          name: meal.name
-        }));
+        groupings.push(CartMealInput.getCartMealInput(meal));
       } else {
         groupings[groupIndex] = new CartMealInput({
           ...groupings[groupIndex],
@@ -91,19 +95,36 @@ export class Cart implements ICart {
     }, [])
   }
 
-  public addMeal(meal: Meal) {
+  public static getMealCount(meals: ICartMealInput[]) {
+    return meals.reduce<number>((sum, meal) => sum + meal.quantity, 0);
+  }
+
+  public addMeal(newMeal: Meal) {
     const newCart = new Cart(this);
-    newCart.meals!.push(meal);
+    const index = newCart.Meals.findIndex(meal => meal.MealId === newMeal.Id);
+    if (index === -1) {
+      newCart.meals.push(CartMealInput.getCartMealInput(newMeal));
+    } else {
+      newCart.meals[index] = CartMealInput.getCartMealInput(newMeal, newCart.Meals[index].Quantity + 1);
+    }
     return newCart;
   }
 
   public removeMeal(mealId: string) {
     const newCart = new Cart(this);
-    const index = newCart.Meals.findIndex(meal => meal.Id === mealId);
+    const index = newCart.Meals.findIndex(meal => meal.MealId === mealId);
     if (index === -1) {
       throw new Error(`MealId '${mealId}' not found in cart`);
     }
-    newCart.Meals.splice(index, 1);
+    const targetMeal = newCart.Meals[index];
+    if (targetMeal.Quantity === 1) {
+      newCart.Meals.splice(index, 1);
+    } else {
+      newCart.Meals[index] = new CartMealInput({
+        ...targetMeal,
+        quantity: targetMeal.Quantity - 1,
+      })
+    }
     return newCart;
   }
 
@@ -147,7 +168,7 @@ export class Cart implements ICart {
         },
         instructions,
       },
-      meals: Cart.getCartMealInputs(this.Meals)
+      meals: this.Meals,
     }
   }
 

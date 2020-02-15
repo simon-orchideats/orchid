@@ -1,3 +1,4 @@
+import { CartMealInput } from './../../../order/cartModel';
 import { deliveryDay } from './../../../consumer/consumerModel';
 import { Plan } from './../../../plan/planModel';
 import { getAvailablePlans } from './../../../plan/planService';
@@ -13,19 +14,14 @@ type cartQueryRes = {
 };
 
 export const cartQL = gql`
-  type Meal {
-    _id: ID!
-    img: String!
-    name: String!
-  }
   type Cart {
-    meals: [Meal!]
+    meals: [CartMealInput!]!
     restId: ID
     stripePlanId: ID
     deliveryDay: Int!
   }
   extend type Query {
-    cart: [Meal!]!
+    cart: Cart
   }
   extend type Mutation {
     addMealToCart(meal: Meal!, restId: ID!): Cart!
@@ -119,9 +115,10 @@ export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal, restId }, { cache }) => {
     const res = getCart(cache);
     const plans = getAvailablePlans(cache);
+    const newCartMealInput = CartMealInput.getCartMealInput(meal);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
-        meals: [meal],
+        meals: [newCartMealInput],
         restId,
         stripePlanId: null,
         deliveryDay: null,
@@ -131,9 +128,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (res.cart.restId && res.cart.restId !== restId) {
       throw new Error(`Cannot add meals from new restId ${restId} since cart already holds items from ${res.cart.restId}`);
     }
-    if (res.cart.Meals.length === 0) {
+    if (Cart.getMealCount(res.cart.Meals) === 0) {
       return updateCartCache(cache, new Cart({
-        meals: [meal],
+        meals: [newCartMealInput],
         restId,
         stripePlanId: res.cart.stripePlanId,
         deliveryDay: res.cart.DeliveryDay,
@@ -142,7 +139,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     const newCart = res.cart.addMeal(meal);
-    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
+    const stripePlanId = Plan.getPlanId(Cart.getMealCount(newCart.Meals), plans.availablePlans);
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId,
@@ -158,8 +155,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     let newCart = res.cart.removeMeal(mealId);
-    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
-    if (newCart.Meals.length === 0) {
+    const mealCount = Cart.getMealCount(newCart.Meals);
+    const stripePlanId = Plan.getPlanId(mealCount, plans.availablePlans);
+    if (mealCount === 0) {
       newCart = new Cart({
         meals: [],
         restId: null,

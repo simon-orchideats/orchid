@@ -6,6 +6,7 @@ import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
 import Link from 'next/link'
 import { deliveryRoute } from "../../pages/delivery";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -28,7 +29,7 @@ const MenuMiniCart: React.FC = () => {
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
-  const mealCount = cart ? cart.Meals.length : 0;
+  const mealCount = cart ? Cart.getMealCount(cart.Meals) : 0;
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   return (
     <div className={classes.container}>

@@ -106,7 +106,7 @@ class OrderService {
         })
 
       const planId = cart.consumerPlan.stripePlanId;
-      const cartMealCount = cart.meals.reduce((sum, meal) => sum + meal.quantity, 0);
+      const cartMealCount = Cart.getMealCount(cart.meals);
       const p3 = getPlanService().getPlan(planId)
         .then(stripePlan => {
           if (!stripePlan) {

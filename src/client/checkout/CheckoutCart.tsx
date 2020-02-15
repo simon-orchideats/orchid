@@ -47,7 +47,7 @@ const CheckoutCart: React.FC<props> = ({
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
   const rest = useGetRest(cart ? cart.RestId : null);
-  const groupedMeals = cart && Cart.getCartMealInputs(cart.Meals);
+  const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   return (
     <>
@@ -84,7 +84,7 @@ const CheckoutCart: React.FC<props> = ({
       <div className={classes.summary}>
         <div className={classes.row}>
           <Typography variant='body1'>
-            {cart.Meals.length} meal plan
+            {Cart.getMealCount(cart.Meals)} meal plan
           </Typography>
           <Typography variant='body1'>
             {price}
