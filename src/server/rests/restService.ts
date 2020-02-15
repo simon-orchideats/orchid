@@ -4,7 +4,7 @@ import { ERest, IRest } from './../../rest/restModel';
 
 const REST_INDEX = 'rests';
 
-export class RestService {
+class RestService {
   private readonly elastic: Client
 
   public constructor(elastic: Client) {
@@ -40,7 +40,7 @@ export class RestService {
       return rest as IRest;
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
-      throw e;
+      return null;
     }
   }
 }

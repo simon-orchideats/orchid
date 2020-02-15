@@ -108,23 +108,34 @@ export class ConsumerPlan implements IConsumerPlan {
   public get Cuisines() { return this.cuisines }
 }
 
-export interface IConsumer {
-  readonly userId: string
-  readonly profile: IConsumerProfile
+export interface EConsumer {
   readonly plan: IConsumerPlan
+  readonly profile: IConsumerProfile
+  readonly stripeCustomerId: string
+  readonly stripeSubscriptionId: string
+}
+
+export interface IConsumer extends EConsumer {
+  readonly userId: string
 }
 
 export class Consumer implements IConsumer {
   readonly userId: string
+  readonly stripeCustomerId: string
+  readonly stripeSubscriptionId: string
   readonly profile: ConsumerProfile
   readonly plan: ConsumerPlan
 
   constructor(consumer: IConsumer) {
     this.userId = consumer.userId
+    this.stripeCustomerId = consumer.stripeCustomerId;
+    this.stripeSubscriptionId = consumer.stripeSubscriptionId;
     this.profile = consumer.profile && new ConsumerProfile(consumer.profile);
     this.plan = new ConsumerPlan(consumer.plan)
   }
 
+  public get StripeSubscriptionId() { return this.stripeSubscriptionId }
+  public get StripeCustomerId() { return this.stripeCustomerId }
   public get UserId() { return this.userId }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }

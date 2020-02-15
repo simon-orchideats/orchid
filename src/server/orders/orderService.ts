@@ -1,3 +1,5 @@
+import { SignedInUser } from './../utils/models';
+import { getConsumerService } from './../consumer/consumerService';
 import { ICartInput } from './../../order/cartModel';
 import { getGeoService } from './../place/geoService';
 import { getRestService } from './../rests/restService';
@@ -12,7 +14,7 @@ import { Consumer } from '../../consumer/consumerModel';
 
 const ORDER_INDEX = 'orders';
 
-export class OrderService {
+class OrderService {
   private readonly elastic: Client
   private readonly stripe: Stripe
 
@@ -99,55 +101,93 @@ export class OrderService {
       } catch (e) {
         throw new Error(`Couldn't validate'${e.stack}'`);
       }
-      
-      // todo: check if stripe customer exists first, if not then do this otherwise skip
-      const signedInUser = {
+
+      const signedInUser: SignedInUser = {
         userId: '123',
-        name: 'name',
-        email: 'email@email.com',
+        stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
+        stripeCustomerId : "cus_GjlPTWyWniuNPa",
+        profile: {
+          name: 'name',
+          email: 'email@email.com',
+        },
       }
 
-      let stripeCustomer;
-      try {
-        stripeCustomer = await this.stripe.customers.create({
+      const {
+        deliveryDay,
+        renewal,
+        cuisines,
+      } = cart.consumerPlan;
+
+      let stripeCustomerId = signedInUser.stripeCustomerId;
+      let stripeSubscriptionId = signedInUser.stripeSubscriptionId;
+      let eConsumer = {
+        plan: {
+          stripePlanId: cart.consumerPlan.stripePlanId,
+          deliveryDay,
+          renewal,
+          cuisines,
+        },
+        profile: {
+          name: signedInUser.profile.name,
+          email: signedInUser.profile.email,
+          phone: cart.phone,
+          card: cart.card,
+          destination: cart.destination,
+        }
+      };
+
+      let subUpdater: Promise<void | Stripe.Subscription> = Promise.resolve();
+      if (stripeSubscriptionId && stripeCustomerId) {
+        const subscription = await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
+        subUpdater = this.stripe.subscriptions.update(stripeSubscriptionId, {
+          proration_behavior: 'none',
+          items: [{
+            id: subscription.items.data[0].id,
+            plan: cart.consumerPlan.stripePlanId,
+          }]
+        });
+      } else {
+        const stripeCustomer = await this.stripe.customers.create({
           payment_method: cart.paymentMethodId,
-          email: signedInUser.email,
+          email: signedInUser.profile.email,
           invoice_settings: {
             default_payment_method: cart.paymentMethodId,
           },
         });
-      } catch (e) {
-        throw new Error(`Couldn't create customer '${e.stack}'`);
+        stripeCustomerId = stripeCustomer.id;
+        try {
+          const subscription = await this.stripe.subscriptions.create({
+            customer: stripeCustomerId,
+            // fails on any id that isn't an active stripe plan
+            items: [{ plan: cart.consumerPlan.stripePlanId }]
+          });
+          stripeSubscriptionId = subscription.id
+        } catch (e) {
+          // delete stripe customer to avoid zombie stripe customers
+          await this.stripe.customers.del(stripeCustomerId);
+          throw e;
+        }
       }
-  
-      let subscription;
-      try {
-        subscription = await this.stripe.subscriptions.create({
-          customer: stripeCustomer.id,
-          // fails on any id that isn't an active stripe plan
-          items: [{ plan: cart.consumerPlan.stripePlanId }]
-        });
-      } catch (e) {
-        throw new Error(`Couldn't create subscription '${e.stack}'`);
-      }
-  
-      const order = Order.getNewOrderFromCartInput(signedInUser, cart, subscription.id,);
+      const order = Order.getNewOrderFromCartInput(signedInUser, cart, stripeSubscriptionId);
+      const indexer = this.elastic.index({
+        index: ORDER_INDEX,
+        body: order
+      })
+      const consumerUpserter = getConsumerService().upsertConsumer(signedInUser.userId, {
+        stripeCustomerId,
+        stripeSubscriptionId,
+        ...eConsumer
+      });
 
-      try {
-        await this.elastic.index({
-          index: ORDER_INDEX,
-          body: order
-        });
-        return {
-          res: true,
-          error: null
-        };
-      } catch (e) {
-        throw new Error(`Couldn't index order '${e.stack}'`);
-      }
+      await Promise.all([subUpdater, consumerUpserter, indexer]);
+
+      return {
+        res: true,
+        error: null
+      };
     } catch (e) {
       console.error('[OrderService] could not place order', e.stack);
-      throw e;
+      throw new Error('Internal Server Error');
     }
   }
 }
