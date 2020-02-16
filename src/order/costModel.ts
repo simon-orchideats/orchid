@@ -1,7 +1,8 @@
 export interface ICost {
   tax: number
   tip: number
-  mealTotal: number
+  mealPrice: number
+  total: number
   percentFee: number
   flatRateFee: number
 }

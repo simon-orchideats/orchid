@@ -1,3 +1,4 @@
+import { EOrder, IOrder } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService } from './../plans/planService';
 import { RenewalTypes } from './../../consumer/consumerModel';
@@ -8,13 +9,14 @@ import { getGeoService } from './../place/geoService';
 import { getRestService } from './../rests/restService';
 import { getCannotBeEmptyError } from './../utils/error';
 import { isDate2DaysLater } from './../../order/utils';
-import { initElastic } from './../elasticConnector';
-import { Client } from '@elastic/elasticsearch';
+import { initElastic, SearchResponse } from './../elasticConnector';
+import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer } from '../../consumer/consumerModel';
 import moment from 'moment';
+import { MutationBoolRes } from '../../utils/mutationResModel';
 
 const ORDER_INDEX = 'orders';
 
@@ -44,7 +46,7 @@ class OrderService {
     this.stripe = stripe;
   }
 
-  async placeOrder(cart: ICartInput) {
+  async placeOrder(signedInUser: SignedInUser, cart: ICartInput): Promise<MutationBoolRes> {
     try {
       if (!cart.phone) {
         const msg = getCannotBeEmptyError('Phone number');
@@ -112,31 +114,19 @@ class OrderService {
           if (!stripePlan) {
             const msg = `Can't find plan '${planId}'`
             console.warn('[OrderService]', msg);
-            return {
-              plan: null,
-              msg
-            };
+            return msg;
           }
           if (cartMealCount !== stripePlan.mealCount) {
             const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
             console.warn('[OrderService]', msg);
-            return {
-              plan: stripePlan,
-              msg
-            };
+            return msg;
           }
-          return {
-            plan: stripePlan,
-            msg: ''
-          };
+          return '';
         })
         .catch(e => {
           const msg = `Couldn't verify plan '${planId}'`
           console.warn('[OrderService]', msg, e.stack);
-          return {
-            plan: null,
-            msg
-          };
+          return msg;
         })
 
       const messages = await Promise.all([p1, p2, p3]);
@@ -152,14 +142,12 @@ class OrderService {
           error: messages[1]
         }
       }
-      if (messages[2].msg) {
+      if (messages[2]) {
         return {
           res: false,
           error: messages[2]
         }
       }
-
-      // const plan = messages[2].plan!;
 
       const {
         deliveryDay,
@@ -176,18 +164,8 @@ class OrderService {
         }
       }
 
-      const signedInUser: SignedInUser = {
-        userId: '123',
-        stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
-        stripeCustomerId : "cus_GjlPTWyWniuNPa",
-        profile: {
-          name: 'name',
-          email: 'email@email.com',
-        },
-      }
-
       let stripeCustomerId = signedInUser.stripeCustomerId;
-      let stripeSubscriptionId = signedInUser.stripeSubscriptionId;
+      let subscription: Stripe.Subscription;
       let eConsumer = {
         plan: {
           stripePlanId: planId,
@@ -205,9 +183,9 @@ class OrderService {
       };
 
       let subUpdater: Promise<void | Stripe.Subscription> = Promise.resolve();
-      if (stripeSubscriptionId && stripeCustomerId) {
-        const subscription = await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
-        subUpdater = this.stripe.subscriptions.update(stripeSubscriptionId, {
+      if (signedInUser.stripeSubscriptionId && stripeCustomerId) {
+        subscription = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
+        subUpdater = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
           proration_behavior: 'none',
           items: [{
             id: subscription.items.data[0].id,
@@ -224,12 +202,11 @@ class OrderService {
         });
         stripeCustomerId = stripeCustomer.id;
         try {
-          const subscription = await this.stripe.subscriptions.create({
+          subscription = await this.stripe.subscriptions.create({
             customer: stripeCustomerId,
             // fails on any id that isn't an active stripe plan
             items: [{ plan: planId }]
           });
-          stripeSubscriptionId = subscription.id
         } catch (e) {
           // delete stripe customer to avoid zombie stripe customers
           await this.stripe.customers.del(stripeCustomerId);
@@ -237,14 +214,20 @@ class OrderService {
         }
       }
 
-      const order = Order.getNewOrderFromCartInput(signedInUser, cart, stripeSubscriptionId);
+      const order = Order.getNewOrderFromCartInput(
+        signedInUser,
+        cart,
+        subscription.id,
+        parseFloat(subscription.plan!.metadata.mealPrice),
+        subscription.plan!.amount! / 100,
+      );
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
         body: order
       })
       const consumerUpserter = getConsumerService().upsertConsumer(signedInUser.userId, {
         stripeCustomerId,
-        stripeSubscriptionId,
+        stripeSubscriptionId: subscription.id,
         ...eConsumer
       });
 
@@ -256,14 +239,20 @@ class OrderService {
             const chooseRandomly = getItemChooser<IMeal>(menu);
             const meals: IMeal[] = [];
             for (let i = 0; i < cartMealCount; i++) meals.push(chooseRandomly())
-            const cartMeals = Cart.getCartMealInputs(meals);
+            const cartMeals = Cart.getCartMeals(meals);
             const newCart = {
               ...cart,
               restId: rest._id,
               meals: cartMeals,
               deliveryDate: moment(cart.deliveryDate).add(1, 'w').valueOf(),
             }
-            const order = Order.getNewOrderFromCartInput(signedInUser, newCart, stripeSubscriptionId!);
+            const order = Order.getNewOrderFromCartInput(
+              signedInUser,
+              newCart,
+              subscription.id,
+              parseFloat(subscription.plan!.metadata.mealPrice),
+              subscription.plan!.amount! / 100,
+            );
             return this.elastic.index({
               index: ORDER_INDEX,
               body: order
@@ -282,6 +271,47 @@ class OrderService {
       };
     } catch (e) {
       console.error('[OrderService] could not place order', e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+    try {
+      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      range: {
+                        deliveryDate: {
+                          gte: Date.now(),
+                        }
+                      },
+                    },
+                    {
+                      term: {
+                        'consumer.userId': signedInUser.userId
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+        }
+      });
+      return await Promise.all(res.body.hits.hits.map(async ({ _id, _source }) => {
+        const rest = await getRestService().getRest(_source.rest.restId)
+        if (!rest) throw Error(`Couldn't get rest ${_source.rest.restId}`);
+        return Order.getIOrderFromEOrder(_id, _source, rest)
+      }))
+    } catch (e) {
+      console.error(`[OrderService] couldn't get upcoming orders for '${signedInUser.userId}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }

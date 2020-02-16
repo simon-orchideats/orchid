@@ -5,8 +5,12 @@ import { useRouter } from "next/router";
 // import { getNextDeliveryDate } from "../../order/utils";
 import withClientApollo from "../../client/utils/withClientApollo";
 import Close from '@material-ui/icons/Close';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { useGetUpcomingOrders } from "../../client/order/orderService";
+import { Cart } from "../../order/cartModel";
+import { Order } from "../../order/orderModel";
+import moment from "moment";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -108,7 +112,7 @@ const Confirmation: React.FC<{
   )
 } 
 
-const DeliveryOverview: React.FC = () => {
+const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
   const classes = useStyles();
   return (
     <Paper className={classes.marginBottom}>
@@ -118,7 +122,7 @@ const DeliveryOverview: React.FC = () => {
             Deliver on
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            10/24/20
+            {moment(order.DeliveryDate).format('M/DD/Y')}
           </Typography>
         </div>
         <div className={classes.column}>
@@ -126,7 +130,7 @@ const DeliveryOverview: React.FC = () => {
             Total
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            4 meals ($8.99 ea)
+            {Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)
           </Typography>
         </div>
         <div className={classes.column}>
@@ -135,7 +139,7 @@ const DeliveryOverview: React.FC = () => {
           </Typography>
           <div className={`${classes.row} ${classes.link}`}>
             <Typography variant='body1'>
-              Simon
+              {order.Destination.Name}
             </Typography>
             <ExpandMoreIcon />
           </div>
@@ -144,32 +148,13 @@ const DeliveryOverview: React.FC = () => {
       <Divider />
       <div className={classes.overviewSection}>
         <Typography variant='subtitle1'>
-          Domo
+          {order.Rest.Profile.Name}
         </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
-        <Typography variant='body1'>
-          {4} {'Rice and chicken'}
-        </Typography>
+        {order.Meals.map(meal => (
+          <Typography variant='body1' key={meal.mealId}>
+            {meal.Quantity} {meal.Name}
+          </Typography>
+        ))}
       </div>
     </Paper>
   )
@@ -179,6 +164,15 @@ const UpcomingDeliveries = () => {
   const classes = useStyles();
   const needsConfirmation = useRouter().query.confirmation;
   const [showConfirmation, setShowConfirmation] = useState(true);
+  const orders = useGetUpcomingOrders();
+  const OrderOverviews = useMemo(() => ( 
+    orders.data && orders.data.map(order => 
+      <DeliveryOverview
+        key={order.Id}
+        order={order}
+      />
+    )
+  ), [orders.data]);
   return (
     <Container maxWidth='lg' className={classes.container}>
       {
@@ -190,8 +184,7 @@ const UpcomingDeliveries = () => {
       <Typography variant='h3' className={classes.marginBottom}>
         Upcoming deliveries
       </Typography>
-      <DeliveryOverview />
-      <DeliveryOverview />
+      {OrderOverviews}
     </Container>
   );
 }

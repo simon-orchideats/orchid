@@ -47,7 +47,7 @@ class RestService {
 
   async getRestsByCuisines(cuisines: CuisineType[], fields?: string[]): Promise<IRest[]> {
     const options: any = {
-      index: 'rests',
+      index: REST_INDEX,
       size: 1000,
       body: {
         query: {

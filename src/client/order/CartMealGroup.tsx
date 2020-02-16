@@ -1,5 +1,5 @@
 import { makeStyles, Typography, Grid } from "@material-ui/core";
-import { CartMealInput } from "../../order/cartModel";
+import { CartMeal } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const CartMealGroup: React.FC<{
-  mealGroup: CartMealInput
+  mealGroup: CartMeal
 }> = ({ mealGroup }) => {
   const classes = useStyles();
   return (

@@ -26,7 +26,7 @@ class GeoService {
         const {
           accuracy,
           accuracy_type,
-          fields
+          // fields
         } = firstRes;
         if (accuracy > 0.7 && (accuracy_type === 'rooftop' || accuracy_type === 'range_interpolation' || accuracy_type === 'point')) {
           const { lat, lng } = firstRes.location;
@@ -35,10 +35,10 @@ class GeoService {
               lat: lat as string,
               lon: lng as string,
             },
-            timezone: {
-              name: fields.timezone.name as string,
-              shortName: fields.timezone.abbreviation as string
-            }
+            // timezone: {
+            //   name: fields.timezone.name as string,
+            //   shortName: fields.timezone.abbreviation as string
+            // }
           }
         }
       }

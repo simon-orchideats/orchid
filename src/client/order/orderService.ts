@@ -1,9 +1,45 @@
-import { MutationBoolRes } from './../utils/mutationResModel';
+import { IOrder, Order } from './../../order/orderModel';
+import { MutationBoolRes } from '../../utils/mutationResModel';
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
+import { restFragment } from '../../rest/restFragment';
+
+const MY_UPCOMING_ORDERS = gql`
+  query myUpcomingOrders {
+    myUpcomingOrders {
+      _id
+      deliveryDate
+      destination {
+        name
+        address {
+          address1
+          address2
+          city
+          state
+          zip
+        }
+        instructions
+      }
+      mealPrice
+      meals {
+        mealId
+        img
+        name
+        quantity
+      }
+      phone
+      rest {
+        ...restFragment
+      }
+      status
+    }
+  }
+  ${restFragment}
+`
+
 
 export const usePlaceOrder = (): [
   (cart: ICartInput) => void,
@@ -32,4 +68,17 @@ export const usePlaceOrder = (): [
       data: mutation.data ? mutation.data.placeOrder : undefined,
     }
   ], [mutation]);
+}
+
+export const useGetUpcomingOrders = () => {
+  type res = { myUpcomingOrders: IOrder[] }
+  const res = useQuery<res>(MY_UPCOMING_ORDERS);
+  const orders = useMemo<Order[] | undefined>(() => (
+    res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
+  ), [res.data]);
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: orders
+  }
 }

@@ -1,4 +1,4 @@
-import { CartMealInput } from './../../../order/cartModel';
+import { CartMeal } from './../../../order/cartModel';
 import { deliveryDay } from './../../../consumer/consumerModel';
 import { Plan } from './../../../plan/planModel';
 import { getAvailablePlans } from './../../../plan/planService';
@@ -14,20 +14,21 @@ type cartQueryRes = {
 };
 
 export const cartQL = gql`
-  type Cart {
-    meals: [CartMealInput!]!
+  type CartState {
+    meals: [CartMeal!]!
     restId: ID
     stripePlanId: ID
     deliveryDay: Int!
+    zip: String
   }
   extend type Query {
-    cart: Cart
+    cart: CartState
   }
   extend type Mutation {
-    addMealToCart(meal: Meal!, restId: ID!): Cart!
-    removeMealFromCart(mealId: ID!): Cart!
-    updateDeliveryDay(day: Int!): Cart!
-    updateZip(zip: String!): Cart!
+    addMealToCart(meal: Meal!, restId: ID!): CartState!
+    removeMealFromCart(mealId: ID!): CartState!
+    updateDeliveryDay(day: Int!): CartState!
+    updateZip(zip: String!): CartState!
   }
 `
 
@@ -115,7 +116,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal, restId }, { cache }) => {
     const res = getCart(cache);
     const plans = getAvailablePlans(cache);
-    const newCartMealInput = CartMealInput.getCartMealInput(meal);
+    const newCartMealInput = CartMeal.getCartMeal(meal);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
         meals: [newCartMealInput],

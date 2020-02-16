@@ -93,16 +93,6 @@ PUT /rests/
           },
           "geo": {
             "type": "geo_point"
-          },
-          "timezone": {
-            "properties": {
-              "name": {
-                "type": "keyword"
-              },
-              "shortName": {
-                "type": "keyword"
-              }
-            }
           }
         }
       },
@@ -397,7 +387,10 @@ PUT /orders/
           "tip": {
             "type": "float"
           },
-          "mealTotal": {
+          "mealPrice": {
+            "type": "float"
+          },
+          "total": {
             "type": "float"
           },
           "percentFee": {
@@ -513,10 +506,6 @@ POST rests/_doc/
     "geo": {
       "lat": 40.715677,
       "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
     }
   },
   "managers": [],
@@ -587,10 +576,6 @@ POST rests/_doc/
     "geo": {
       "lat": 40.715677,
       "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
     }
   },
   "managers": [],
@@ -661,10 +646,6 @@ POST rests/_doc/
     "geo": {
       "lat": 40.715677,
       "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
     }
   },
   "managers": [],
@@ -735,10 +716,6 @@ POST rests/_doc/
     "geo": {
       "lat": 40.715677,
       "lon": -74.035868
-    },
-    "timezone": {
-      "name": "America/New_York",
-      "shortName": "EST"
     }
   },
   "managers": [],
