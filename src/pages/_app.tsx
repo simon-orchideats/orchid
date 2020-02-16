@@ -7,6 +7,8 @@ import { getTheme } from '../client/global/styles/theme';
 import Navbar from '../client/_app/Navbar';
 import fetch from 'isomorphic-unfetch';
  import {urlParams} from '../client/utils/tokenGenerate';
+import {redirectURL} from '../client/utils/redirectURL';
+import {activeConfig} from '../config'
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 
 export default class MyApp extends App {
@@ -20,7 +22,7 @@ export default class MyApp extends App {
 
     if(urlParams().get('code')) {
       const getTokens = async () => { 
-        try { 
+        try {
           return await fetch('https://foodflick.auth0.com/oauth/token', {
             method: 'POST',
             mode:'cors',
@@ -30,11 +32,11 @@ export default class MyApp extends App {
             },
             body: JSON.stringify({
                 grant_type: 'authorization_code',
-                audience: 'https://saute.com',
-                client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+                audience: activeConfig.authorization.audience,
+                client_id: activeConfig.authorization.client_id,
                 code_verifier: sessionStorage.getItem('codeVerifier'),
                 code: urlParams().get('code'),
-                redirect_uri: 'http://localhost:8443'
+                redirect_uri: redirectURL()
               }),
             })
         } catch(err) {return err}
@@ -50,7 +52,8 @@ export default class MyApp extends App {
     } else if(window.localStorage.getItem('REFRESH_TOKEN')) {
 
        const getRefreshToken = async () => {
-       try { return await fetch('https://foodflick.auth0.com/oauth/token', {
+       try { 
+          return await fetch('https://foodflick.auth0.com/oauth/token', {
             method: 'POST',
             mode:'cors',
             headers: {
@@ -59,13 +62,13 @@ export default class MyApp extends App {
             },
             body: JSON.stringify({
               grant_type: 'refresh_token',
-              client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+              client_id: activeConfig.authorization.client_id,
               refresh_token: window.localStorage.getItem('REFRESH_TOKEN')
             }),
           })
         } catch (err) {return err}
       };
-      
+
       let data = await getRefreshToken();
       data = await data.json();
       console.log(data);

@@ -5,6 +5,7 @@ type config = {
     endpoint: string,
     client_id: string,
     scope: string,
+    audience: string,
   },
   client: {
     stripe: {
@@ -35,7 +36,8 @@ const development: config = {
   authorization: {
     endpoint: 'https://foodflick.auth0.com/authorize',
     client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
-    scope: 'offline_access'
+    scope: 'offline_access',
+    audience: 'https://saute.com',
   },
   client: {
     stripe: {
@@ -66,7 +68,8 @@ const production: config = {
   authorization: {
     endpoint: 'https://foodflick.auth0.com/authorize',
     client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
-    scope: 'offline_access'
+    scope: 'offline_access',
+    audience: 'https://saute.com',
   },
   client: {
     stripe: {
