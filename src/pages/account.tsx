@@ -1,11 +1,6 @@
 import Link from 'next/link'
-import { AuthProps, privateRoute } from "../client/components/privateRoute";
-
-type Props = AuthProps;
-function Account ({auth, refreshToken}:Props){
-  console.log("2");
-  console.log(auth);
-  console.log(refreshToken)
+import {requireAuth} from '../client/component/requireAuth';
+  const Account = () => {
   return(
   <div>
     This is a static page goto{' '}
@@ -15,12 +10,5 @@ function Account ({auth, refreshToken}:Props){
     page.
   </div>);
 }
-
-Account.getInitialProps = async ({ auth }: AuthProps): Promise<Props> => {
-  let refreshToken:string;
-  refreshToken = 'test';
-  return  {refreshToken,auth};
-}
-
-export default privateRoute(Account);
+export default requireAuth(Account, 'account'); 
 export const accountRoute = 'account';

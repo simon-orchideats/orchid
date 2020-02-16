@@ -7,10 +7,6 @@ import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './server/schema/schema';
 import { initRestService } from './server/rests/restService';
-import cookieParser from 'cookie-parser'; 
-import authRoutes from './server/auth-routes';
-import jwt from 'express-jwt';
-import jwksRsa from 'jwks-rsa';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -29,20 +25,15 @@ import jwksRsa from 'jwks-rsa';
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-
-
 const start = async () => {
   const ssr = next({
     dev: !isProd
   })
 
-
-
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();
 
   const app = express();
-  app.use(cookieParser());
   
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
@@ -58,55 +49,6 @@ const start = async () => {
       }
     });
   }
-
-  app.use(authRoutes);
-
-   // you are restricting access to some routes
-   
-const restrictAccess = (_val:string) => {
-  console.log("restricting access")
-  return (_req:any, res:any, _next:any) => {
-    console.log("BOOOM")
-    console.log(_req.cookies['access_token']);
-    if(_req.cookies['access_token'])
-      { 
-        console.log("??")
-        // Create middleware for checking the JWT
-        const checkJwt = jwt({
-          secret: jwksRsa.expressJwtSecret({
-            cache: true,
-            rateLimit: true,
-            jwksRequestsPerMinute: 5,
-            jwksUri: `https://foodflick.auth0.com/.well-known/jwks.json`
-          }),
-
-          // Validate the audience and the issuer.
-          audience: 'https://saute.com',
-          issuer: `https://foodflick.auth0.com/`,
-          algorithms: ['RS256'],
-
-          // Gets token from cookie
-          getToken:  () => {
-            let token =JSON.parse(_req.cookies['access_token']);
-           return token; 
-          }
-        });
-
-      app.use(_val,checkJwt,function (err:any, _req:any, res:any, _next:any) {
-        if (err.name === 'UnauthorizedError') {
-          res.status(401).send('invalid token...');
-        }
-      });
-      _next();
-    } else{
-      console.log("ye");
-      res.redirect(`https://foodflick.auth0.com/authorize?response_type=code&client_id=yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg&redirect_uri=http://localhost:8443/callback&scope=offline_access&audience=https://saute.com&state=${_val}`);
-    }
-    _next();
-  };
-}
-  // handles requests to /account and calls middleware
-  app.use("/account", restrictAccess('/account'));
 
   const elastic = initElastic();
   initPlanService(elastic);
