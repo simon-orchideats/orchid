@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { isServer } from '../utils/isServer';
 import Redirect from './redirect';
 
-export function requireAuth(WrappedComponent: React.ComponentType, route:string) {
+export function requireAuth(WrappedComponent: React.ComponentType) {
   return class extends Component {
     render() {
       const {...propsWithoutAuth } = this.props;
@@ -13,7 +13,7 @@ export function requireAuth(WrappedComponent: React.ComponentType, route:string)
         } else if(sessionStorage.getItem('codeVerifier')){
           
         }else {
-          return  <Redirect route={route}/>
+          return  <Redirect/>
         }
       }
       return <WrappedComponent  {...propsWithoutAuth} />;

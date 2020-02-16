@@ -10,5 +10,5 @@ import {requireAuth} from '../client/component/requireAuth';
     page.
   </div>);
 }
-export default requireAuth(Account, 'account'); 
+export default requireAuth(Account); 
 export const accountRoute = 'account';
