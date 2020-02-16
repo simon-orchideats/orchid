@@ -55,8 +55,16 @@ const StateQL =  gql`
   }
 `
 
-const AddressQL = gql`
+const _AddressQL = gql`
   type Address {
+    address1: String!
+    address2: String
+    city: String!
+    state: State!
+    zip: String!
+  }
+
+  input AddressInput {
     address1: String!
     address2: String
     city: String!
@@ -65,15 +73,7 @@ const AddressQL = gql`
   }
 `
 
-const _LocationQL = gql`
-  type Location {
-    address: Address!
-    timezone: String!
-  }
-`
-
-export const LocationQL = () => [
-  AddressQL,
-  _LocationQL,
+export const AddressQL = () => [
   StateQL,
+  _AddressQL,
 ]

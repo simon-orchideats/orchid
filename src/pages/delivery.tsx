@@ -1,10 +1,11 @@
 import { Container, makeStyles, Typography, FormControl, InputLabel, Select, MenuItem, Button } from "@material-ui/core";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import Faq from "../client/reused/Faq";
+import Faq from "../client/general/Faq";
 import { useState, useRef, useEffect } from "react";
 import { useUpdateDeliveryDay, useGetCart } from "../client/global/state/cartState";
 import { deliveryDay } from "../consumer/consumerModel";
+import { getNextDeliveryDate } from '../order/utils';
 import withClientApollo from "../client/utils/withClientApollo";
 import Link from "next/link";
 import { checkoutRoute } from "./checkout";
@@ -102,7 +103,7 @@ const delivery = () => {
             First delivery:&nbsp;
           </Typography>
           <Typography variant='subtitle1'>
-            12/12/12, 6pm - 9pm
+            {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
           </Typography>
         </div>
         <Link href={checkoutRoute}>

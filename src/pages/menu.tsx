@@ -10,7 +10,7 @@ import MenuCart from "../client/menu/MenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
-import StickyDrawer from "../client/reused/StickyDrawer";
+import StickyDrawer from "../client/general/StickyDrawer";
 
 const useStyles = makeStyles(theme => ({
   container: {

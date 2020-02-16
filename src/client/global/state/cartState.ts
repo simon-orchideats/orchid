@@ -3,7 +3,7 @@ import { Plan } from './../../../plan/planModel';
 import { getAvailablePlans } from './../../../plan/planService';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
-import { Cart } from '../../../cart/cartModel';
+import { Cart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -21,8 +21,8 @@ export const cartQL = gql`
   type Cart {
     meals: [Meal!]
     restId: ID
-    planId: ID
-    deliveryDay: Integer!
+    stripePlanId: ID
+    deliveryDay: Int!
   }
   extend type Query {
     cart: [Meal!]!
@@ -30,7 +30,7 @@ export const cartQL = gql`
   extend type Mutation {
     addMealToCart(meal: Meal!, restId: ID!): Cart!
     removeMealFromCart(mealId: ID!): Cart!
-    updateDeliveryDay(day: Integer!): Cart!
+    updateDeliveryDay(day: Int!): Cart!
     updateZip(zip: String!): Cart!
   }
 `
@@ -75,7 +75,7 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
 export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   type vars = { day: deliveryDay };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updateDeliveryDay($day: Integer!) {
+    mutation updateDeliveryDay($day: Int!) {
       updateDeliveryDay(day: $day) @client
     }
   `);
@@ -87,7 +87,7 @@ export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
 export const useUpdateZip = (): (zip: string) => void => {
   type vars = { zip: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updateZip($zip: Integer!) {
+    mutation updateZip($zip: Int!) {
       updateZip(zip: $zip) @client
     }
   `);
@@ -123,7 +123,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [meal],
         restId,
-        planId: null,
+        stripePlanId: null,
         deliveryDay: null,
         zip: null,
       }));
@@ -135,18 +135,18 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [meal],
         restId,
-        planId: res.cart.PlanId,
+        stripePlanId: res.cart.stripePlanId,
         deliveryDay: res.cart.DeliveryDay,
         zip: res.cart.Zip,
       }));
     }
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     const newCart = res.cart.addMeal(meal);
-    const planId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
+    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId,
-      planId: planId ? planId : null,
+      stripePlanId: stripePlanId ? stripePlanId : null,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
     }));
@@ -158,12 +158,12 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
     if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     let newCart = res.cart.removeMeal(mealId);
-    const planId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
+    const stripePlanId = Plan.getPlanId(newCart.Meals.length, plans.availablePlans);
     if (newCart.Meals.length === 0) {
       newCart = new Cart({
         meals: [],
         restId: null,
-        planId: planId ? planId : null,
+        stripePlanId: stripePlanId ? stripePlanId : null,
         deliveryDay: newCart.DeliveryDay,
         zip: newCart.Zip,
       });
@@ -171,7 +171,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId: newCart.RestId,
-      planId: planId ? planId : null,
+      stripePlanId: stripePlanId ? stripePlanId : null,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
     }));
@@ -183,7 +183,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: res.cart.Meals,
       restId: res.cart.RestId,
-      planId: res.cart.PlanId,
+      stripePlanId: res.cart.stripePlanId,
       deliveryDay: day,
       zip: res.cart.Zip,
     }));
@@ -195,7 +195,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         meals: [],
         restId: null,
-        planId: null,
+        stripePlanId: null,
         deliveryDay: null,
         zip,
       }));
@@ -203,7 +203,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: res.cart.Meals,
       restId: res.cart.RestId,
-      planId: res.cart.PlanId,
+      stripePlanId: res.cart.stripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip,
     }));

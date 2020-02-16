@@ -1,3 +1,4 @@
+import { initOrderService } from './server/orders/orderService';
 import express from 'express';
 import next from 'next';
 import { initElastic } from './server/elasticConnector';
@@ -5,8 +6,9 @@ import { initPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
-import { schema } from './server/schema/schema';
+import { schema } from './schema';
 import { initRestService } from './server/rests/restService';
+import Stripe from 'stripe';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -51,8 +53,12 @@ const start = async () => {
   }
 
   const elastic = initElastic();
-  initPlanService(elastic);
+  const stripe = new Stripe(activeConfig.server.stripe.key, {
+    apiVersion: '2019-12-03',
+  });
+  initPlanService(stripe);
   initRestService(elastic);
+  initOrderService(elastic, stripe);
 
   const apolloServer = new ApolloServer({
     schema,

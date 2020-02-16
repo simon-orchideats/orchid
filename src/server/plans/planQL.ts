@@ -2,7 +2,7 @@ import { gql } from 'apollo-server';
 
 export const PlanQL = gql`
   type Plan {
-    _id: ID!
+    stripeId: ID!
     mealCount: Int!
     mealPrice: Float!
     weekPrice: Float!

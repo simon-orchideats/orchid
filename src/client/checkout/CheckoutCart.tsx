@@ -2,7 +2,11 @@ import { makeStyles, Typography, Divider, Button } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import withClientApollo from "../utils/withClientApollo";
-import CartMealGroup from "../reused/CartMealGroup";
+import CartMealGroup from "../order/CartMealGroup";
+import { getNextDeliveryDate } from "../../order/utils";
+import { Consumer } from "../../consumer/consumerModel";
+import { useGetAvailablePlans } from "../../plan/planService";
+import { Plan } from "../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -35,8 +39,11 @@ const CheckoutCart: React.FC<props> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
+  const plans = useGetAvailablePlans();
+  if (!cart || !plans.data) return null;
   const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.getGroupedMeals();
+  const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   return (
     <>
       <Button
@@ -63,19 +70,19 @@ const CheckoutCart: React.FC<props> = ({
         <CartMealGroup key={mealGroup.meal.Id} mealGroup={mealGroup} />
       ))}
       <Typography variant='body1'>
-        Deliver on 12/12/20, 4pm - 9pm
+        Deliver on {getNextDeliveryDate(cart.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
       </Typography>
       <Typography variant='body1'>
-        Deliver again on Sundays
+        Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}
       </Typography>
       <Divider className={classes.divider} />
       <div className={classes.summary}>
         <div className={classes.row}>
           <Typography variant='body1'>
-            12 meal plan
+            {cart.Meals.length} meal plan
           </Typography>
           <Typography variant='body1'>
-            $107.99
+            {price}
           </Typography>
         </div>
         <div className={classes.row}>
@@ -91,7 +98,7 @@ const CheckoutCart: React.FC<props> = ({
             Today's total
           </Typography>
           <Typography variant='body1' color='primary'>
-            $107.99
+            {price}
           </Typography>
         </div>
       </div>

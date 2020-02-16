@@ -1,4 +1,4 @@
-
+// import { Address } from './../../../location/addressModel';
 import {
   deliveryDay,
   // ConsumerProfile,
@@ -13,60 +13,9 @@ import gql from 'graphql-tag';
 import { Consumer } from '../../../consumer/consumerModel';
 
 export const consumerQL = gql`
-  type Name {
-    firstName: String!
-    lastName: String!
-  }
-  type Card {
-    _id: ID!
-    last4: String!
-    expMonth: Int!
-    expYear: Int!
-  }
-  type Destination {
-    location: Location!
-    instructions: String!
-  }
-  type ConsumerProfile {
-    name: Name!
-    email: String!
-    phone: String!
-    card: Card!
-    destination: Destination!
-  }
-  enum CuisineType {
-    American
-    BBQ
-    Chinese
-    Indian
-    Italian
-    Japanese
-    Mediterranean
-    Mexican
-    Thai
-    Vegan
-    Vegetarian
-  }
-  enum RenewalType {
-    Skip
-    Auto
-  }
-  type ConsumerPlan {
-    planId: String!
-    deliveryDay: Integer
-    renewal: RenewalType
-    cuisines: [CuisineType!]
-  }
-  type Consumer {
-    profile: ConsumerProfile
-    plan: ConsumerPlan
-  }
-  extend type Query {
-    consumer: Consumer
-  }
   extend type Mutation {
     updateDeliveryDay(day: Number!): Consumer!
-    updatePlan(planId: ID!): Consumer!
+    updatePlan(stripePlanId: ID!): Consumer!
     updateRewneal(renewal: RenewalType!): Boolean!
     addCuisine(cuisne: CusineType!): Boolean!
     removeCuisine(cuisine: CusineType!): Boolean!
@@ -92,7 +41,7 @@ export const useGetConsumer = () => {
 export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   type vars = { day: deliveryDay };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updateDeliveryDay($day: Integer!) {
+    mutation updateDeliveryDay($day: Int!) {
       updateDeliveryDay(day: $day) @client
     }
   `);
@@ -101,15 +50,15 @@ export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   }
 }
 
-export const useUpdatePlan = (): (planId: string) => void => {
-  type vars = { planId: string };
+export const useUpdatePlan = (): (stripePlanId: string) => void => {
+  type vars = { stripePlanId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation updatePlan($planId: ID!) {
-      updatePlan(planId: $planId) @client
+    mutation updatePlan($stripePlanId: ID!) {
+      updatePlan(stripePlanId: $stripePlanId) @client
     }
   `);
-  return (planId: string) => {
-    mutate({ variables: { planId } })
+  return (stripePlanId: string) => {
+    mutate({ variables: { stripePlanId } })
   }
 }
 

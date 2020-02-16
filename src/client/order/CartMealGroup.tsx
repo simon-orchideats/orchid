@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 
 const CartMealGroup: React.FC<{
   mealGroup: {
-    count: number,
+    quantity: number,
     meal: Meal
   }
 }> = ({ mealGroup }) => {
@@ -25,7 +25,7 @@ const CartMealGroup: React.FC<{
     <Grid container key={mealGroup.meal.Id} className={classes.group}>
       <Grid item sm={1}>
         <Typography variant='body1'>
-          {mealGroup.count}
+          {mealGroup.quantity}
         </Typography>
       </Grid>
       <Grid item sm={4}>

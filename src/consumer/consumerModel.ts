@@ -1,70 +1,8 @@
-import { ILocation, Location } from './../location/locationModel';
+import { IDestination, Destination } from './../place/destinationModel';
+import { ICard, Card } from './../card/cardModel';
 
-interface IName {
-  readonly firstName: string
-  readonly lastName: string
-}
-
-export class Name implements IName {
-  readonly firstName: string
-  readonly lastName: string
-
-  constructor(name: IName) {
-    this.firstName = name.firstName;
-    this.lastName = name.lastName;
-  }
-
-  public get FirstName() { return this.firstName }
-  public get LastName() { return this.lastName }
-}
-
-interface ICard {
-  readonly _id: string
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
-}
-
-export class Card implements ICard {
-  readonly _id: string
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
-
-  constructor(card: ICard) {
-    this._id = card._id;
-    this.last4 = card.last4;
-    this.expMonth = card.expMonth;
-    this.expYear = card.expYear;
-  }
-
-  public get Id() { return this._id };
-  public get HiddenNumber() { return `**** ${this.Last4}`}
-  public get Last4() { return this.last4 };
-  public get ExpMonth() { return this.expMonth };
-  public get ExpYear() { return this.expYear };
-}
-
-interface IDestination {
-  readonly location: ILocation
-  readonly instructions: string
-}
-
-export class Destination implements IDestination {
-  readonly location: Location
-  readonly instructions: string
-
-  constructor(destination: IDestination) {
-    this.location = new Location(destination.location);
-    this.instructions = destination.instructions;
-  }
-
-  public get Location() { return this.location }
-  public get Instructions() { return this.instructions }
-}
-
-interface IConsumerProfile {
-  readonly name: IName
+export interface IConsumerProfile {
+  readonly name: string
   readonly email: string
   readonly phone: string
   readonly card: ICard
@@ -72,14 +10,14 @@ interface IConsumerProfile {
 }
 
 export class ConsumerProfile implements IConsumerProfile {
-  readonly name: Name
+  readonly name: string
   readonly email: string
   readonly phone: string
   readonly card: Card
   readonly destination: Destination
 
   constructor(consumerProfile: IConsumerProfile) {
-    this.name = new Name(consumerProfile.name);
+    this.name = consumerProfile.name;
     this.email = consumerProfile.email;
     this.phone = consumerProfile.phone;
     this.card = new Card(consumerProfile.card);
@@ -144,47 +82,88 @@ export const RenewalTypes: {
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-interface IConsumerPlan {
-  readonly planId: string
+export interface IConsumerPlan {
+  readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
   readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
-  readonly planId: string
+  readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
   readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 
   constructor(consumerPlan: IConsumerPlan) {
-    this.planId = consumerPlan.planId
+    this.stripePlanId = consumerPlan.stripePlanId
     this.deliveryDay = consumerPlan.deliveryDay;
     this.renewal = consumerPlan.renewal;
     this.cuisines = consumerPlan.cuisines;
   }
 
-  public get PlanId() { return this.planId }
+  public get StripePlanId() { return this.stripePlanId }
   public get DeliveryDay() { return this.deliveryDay }
   public get Renewal() { return this.renewal }
   public get Cuisines() { return this.cuisines }
 }
 
-interface IConsumer {
-  readonly profile?: IConsumerProfile
+export interface IConsumer {
+  readonly userId: string
+  readonly profile: IConsumerProfile
   readonly plan: IConsumerPlan
 }
 
 export class Consumer implements IConsumer {
-  readonly profile?: ConsumerProfile
+  readonly userId: string
+  readonly profile: ConsumerProfile
   readonly plan: ConsumerPlan
 
   constructor(consumer: IConsumer) {
+    this.userId = consumer.userId
     this.profile = consumer.profile && new ConsumerProfile(consumer.profile);
     this.plan = new ConsumerPlan(consumer.plan)
   }
 
+  public get UserId() { return this.userId }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
+
+  static areCuisinesValid(cuisines: string[]) {
+    for (let i = 0; i < cuisines.length; i++) {
+      if (!Object.values<string>(CuisineTypes).includes(cuisines[i])) return false;
+    }
+    return true;
+  }
+
+  static isDeliveryDayValid(d: number) {
+    if (
+      d === 0
+      || d === 1
+      || d === 2
+      || d === 3
+      || d === 4
+      || d === 5
+      || d === 6
+    ) return true;
+    return false;
+  }
+
+  static isRenewalTypeValid(type: string) {
+    return !!Object.values<string>(RenewalTypes).includes(type);
+  }
+
+  static getWeekday(d: deliveryDay | null) {
+    switch (d) {
+      case 0: return 'Sunday'
+      case 1: return 'Monday'
+      case 2: return 'Tuesday'
+      case 3: return 'Wednesday'
+      case 4: return 'Thursday'
+      case 5: return 'Friday'
+      case 6: return 'Saturday'
+      default: throw new Error(`Invalid day '${d}'`);
+    }
+  }
 
 }

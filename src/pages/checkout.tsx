@@ -7,17 +7,20 @@ import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
-import StickyDrawer from "../client/reused/StickyDrawer";
-import { useState } from "react";
-import { state, States } from "../location/addressModel";
+import StickyDrawer from "../client/general/StickyDrawer";
+import { useState, useEffect } from "react";
+import { state, States } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
+import { usePlaceOrder } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
+import { Card } from "../card/cardModel";
+import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -45,46 +48,129 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
-  stripe
+  stripe,
+  elements
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
   const notify = useNotify();
-  const [deliveryName, setDeliveryName] = useState<string>('')
-  const [addr1, setAddr1] = useState<string>('')
-  const [addr2, setAddr2] = useState<string>('')
-  const [city, setCity] = useState<string>('')
-  const [zip, setZip] = useState<string>(cart && cart.Zip ? cart.Zip : '');
-  const [phone, setPhone] = useState<string>('');
-  const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [state, setState] = useState<state | ''>();
-  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Auto)
+  const [deliveryName, setDeliveryName] = useState<string>('');
+  const [deliveryNameError, setDeliveryNameError] = useState<string>('');
+  const [addr1, setAddr1] = useState<string>('19 middle st');
+  const [addr1Error, setAddr1Error] = useState<string>('');
+  const [addr2, setAddr2] = useState<string>('');
+  const [city, setCity] = useState<string>('Boston');
+  const [cityError, setCityError] = useState<string>('');
+  const [state, setState] = useState<state | ''>('MA');
+  const [stateError,setStateError] = useState<string>('');
+  const [zip, setZip] = useState<string>(cart && cart.Zip ? cart.Zip : '02127');
+  const [zipError, setZipError] = useState<string>('');
+  const [phone, setPhone] = useState<string>('6095138166');
+  const [phoneError, setPhoneError] = useState<string>('');
+  const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
+  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
-  const [accountName, setAccountName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [cuisinesError, setCuisinesError] = useState<string>('');
+  const [accountName, setAccountName] = useState<string>('simon vuong');
+  const [accountNameError, setAccountNameError] = useState<string>('');
+  const [email, setEmail] = useState<string>('simon.vuong@yahoo.com');
+  const [emailError, setEmailError] = useState<string>('');
+  const [password, setPassword] = useState<string>('password');
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [placeOrder, placeOrderRes] = usePlaceOrder();
+  useEffect(() => {
+    if (placeOrderRes.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    } else if (placeOrderRes.data !== undefined && placeOrderRes.data.error) {
+      notify(placeOrderRes.data.error, NotificationType.error, false);
+    }
+  }, [placeOrderRes])
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
-  const onPlaceOrder = async () => {
-    if (!stripe) throw new Error('Stripe not initialized');
-    const res = await stripe.createToken({ name: accountName });
-    if (res.error) {
-      const msg = `Could not process card. '${res.error.message}'`;
-      notify(msg, NotificationType.error, false);
-      return;
-      // todo: add a logrocket exception instead of throwing error
-      // throw new Error(msg);
-    };
-    const cardTok = res.token!.id;
-    console.log(cardTok);
+  if (isServer()) {
+    return <Typography>Redirecting...</Typography>
+  } else if (!cart) {
+    Router.replace(`/${menuRoute}`);
+    return <Typography>Redirecting...</Typography>
   }
-  if (!cart && !isServer()) Router.replace(`/${menuRoute}`);
+  const validate = () => {
+    let isValid = true;
+    if (!deliveryName) {
+      setDeliveryNameError('Your name is incomplete');
+      isValid = false;
+    }
+    if (!addr1) {
+      setAddr1Error('Your address is incomplete');
+      isValid = false;
+    }
+    if (!city) {
+      setCityError('Your city is incomplete');
+      isValid = false;
+    }
+    if (!zip) {
+      setZipError('Your zip is incomplete');
+      isValid = false;
+    }
+    if (!phone) {
+      setPhoneError('Your phone is incomplete');
+      isValid = false;
+    }
+    if (!state) {
+      setStateError('Your state is incomplete');
+      isValid = false;
+    }
+    if (!accountName) {
+      setAccountNameError('Your name is incomplete');
+      isValid = false;
+    }
+    if (!email) {
+      setEmailError('Your email is incomplete');
+      isValid = false;
+    }
+    if (!password) {
+      setPasswordError('Your password is incomplete');
+      isValid = false;
+    }
+    if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
+      setCuisinesError('Your picks are incomplete');
+      isValid = false;
+    }
+    return isValid;
+  }
+  const onClickPlaceOrder = async () => {
+    if (!stripe) throw new Error('Stripe not initialized');
+    if (!cart) throw new Error('Cart is null');
+    if (!elements) throw new Error('No elements');
+    const cardElement = elements.getElement('cardNumber');
+    if (!cardElement) throw new Error('No card element');
+    const pm = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+      billing_details: { name: accountName },
+    });
+    if (!validate() || pm.error) return;
+    placeOrder(cart.getCartInput(
+      deliveryName,
+      addr1,
+      addr2,
+      city,
+      state as state,
+      zip,
+      phone,
+      Card.getCardFromStripe(pm.paymentMethod!.card),
+      pm.paymentMethod!.id,
+      deliveryInstructions,
+      renewal,
+      cuisines,
+    ));
+  }
   return (
     <Container
       maxWidth='xl'
       className={classes.container}
     >
+      <Notifier />
       <Grid container alignItems='stretch'>
         <Grid
           item
@@ -107,10 +193,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 variant='outlined'
                 size='small'
                 fullWidth
+                error={!!deliveryNameError}
+                helperText={deliveryNameError}
                 value={deliveryName}
                 onChange={e => {
-                  if (oneName) setAccountName(e.target.value);
-                  setDeliveryName(e.target.value)
+                  if (oneName) {
+                    setAccountName(e.target.value);
+                    if (accountNameError) setAccountNameError('');
+                  }
+                  setDeliveryName(e.target.value);
+                  if (deliveryNameError) setDeliveryNameError('');
                 }}
               />
             </Grid>
@@ -135,9 +227,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='Address'
                 variant='outlined'
                 size='small'
+                error={!!addr1Error}
+                helperText={addr1Error}
                 fullWidth
                 value={addr1}
-                onChange={e => setAddr1(e.target.value)}
+                onChange={e => {
+                  setAddr1(e.target.value);
+                  if (addr1Error) setAddr1Error('')
+                }}
               />
             </Grid>
             <Grid
@@ -163,9 +260,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='City'
                 variant='outlined'
                 size='small'
+                error={!!cityError}
+                helperText={cityError}
                 fullWidth
                 value={city}
-                onChange={e => setCity(e.target.value)}
+                onChange={e => {
+                  setCity(e.target.value);
+                  if (cityError) setCityError('');
+                }}
               />
             </Grid>
             <Grid
@@ -176,13 +278,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <Autocomplete
                 options={Object.values<state>(States)}
                 value={state || '' as state}
-                onChange={(_e: any, value: state | null) => setState(value ? value : '')}
+                onChange={(_e: any, value: state | null) => {
+                  setState(value ? value : '');
+                  if (stateError) setStateError('');
+                }}
                 renderInput={params => (
                   <TextField
                     {...params}
                     size='small'
                     label='State'
                     variant='outlined'
+                    error={!!stateError}
+                    helperText={stateError}
                     fullWidth
                   />
                 )}
@@ -197,9 +304,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='Zip'
                 variant='outlined'
                 size='small'
+                error={!!zipError}
+                helperText={zipError}
                 fullWidth
                 value={zip}
-                onChange={e => setZip(e.target.value)}
+                onChange={e => {
+                  setZip(e.target.value);
+                  if (zipError) setZipError('');
+                }}
               />
             </Grid>
             <Grid
@@ -211,9 +323,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='Phone'
                 variant='outlined'
                 size='small'
+                error={!!phoneError}
+                helperText={phoneError}
                 fullWidth
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={e => {
+                  setPhone(e.target.value);
+                  if (phoneError) setPhoneError('');
+                }}
               />
             </Grid>
             <Grid
@@ -245,10 +362,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 variant='outlined'
                 size='small'
                 fullWidth
+                error={!!accountNameError}
+                helperText={accountNameError}
                 value={accountName}
                 onChange={e => {
-                  if (oneName) setDeliveryName(e.target.value);
-                  setAccountName(e.target.value)
+                  if (oneName) {
+                    setDeliveryName(e.target.value);
+                    if (deliveryNameError) setDeliveryNameError('');
+                  }
+                  setAccountName(e.target.value);
+                  if (accountNameError) setAccountNameError('');
                 }}
               />
             </Grid>
@@ -257,9 +380,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='Email'
                 variant='outlined'
                 size='small'
+                error={!!emailError}
+                helperText={emailError}
                 fullWidth
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -268,9 +396,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 type='password'
                 variant='outlined'
                 size='small'
+                error={!!passwordError}
+                helperText={passwordError}
                 fullWidth
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError('');
+                }}
               />
             </Grid>
           </Grid>
@@ -334,6 +467,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 <Typography variant='subtitle2' className={classes.subtitle}>
                   We only pick 1 restaurant per week
                 </Typography>
+                <Typography
+                  component='p'
+                  variant='caption'
+                  color='error'
+                  className={classes.subtitle}
+                >
+                  {cuisinesError}
+                </Typography>
               </Grid>
               <Grid container spacing={2}>
                 {Object.values<CuisineType>(CuisineTypes).map(cuisine => {
@@ -357,6 +498,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                             return;
                           }
                           setCuisines([...cuisines, cuisine]);
+                          if (withoutCuisine.length === 0) setCuisinesError('')
                         }}
                       >
                         {cuisine}
@@ -376,7 +518,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             lg={3}
           >
             <StickyDrawer>
-              <CheckoutCart onPlaceOrder={onPlaceOrder} />
+              <CheckoutCart onPlaceOrder={onClickPlaceOrder} />
             </StickyDrawer>
           </Grid>
         }

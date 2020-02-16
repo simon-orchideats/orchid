@@ -1,6 +1,6 @@
 import { Container, makeStyles, Typography, Divider, Hidden, Button } from "@material-ui/core";
 import PlanCards from "../client/plan/PlanCards";
-import Faq from "../client/reused/Faq";
+import Faq from "../client/general/Faq";
 import Link from "next/link";
 import { menuRoute } from "./menu";
 

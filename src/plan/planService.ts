@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 const AVAILABLE_PLANS_QUERY = gql`
   query availablePlans {
     availablePlans {
-      _id
+      stripeId
       mealPrice
       mealCount
       weekPrice
