@@ -15,7 +15,7 @@ function Redirect (props:redirectProps) {
             window.location.href = authorizeLink
           });    
     },[])
-    return <><text>redirect</text></>
+    return <h1>redirect</h1>
 }
 
 export default Redirect
