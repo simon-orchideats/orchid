@@ -12,8 +12,6 @@ import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 
-// left off. reset cart after ordering? when i go to menu screen with item sin my cart already it's messed up
-
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
@@ -54,6 +52,7 @@ const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const cartRestId = cart ? cart.RestId : null;
+  const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
@@ -62,6 +61,7 @@ const menu = () => {
       <RestMenu
         key={rest.Id}
         rest={rest}
+        cartMeals={cartMeals}
         cartRestId={cartRestId}
       />
     )

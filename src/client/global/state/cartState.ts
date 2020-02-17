@@ -25,6 +25,7 @@ export const cartQL = gql`
     cart: CartState
   }
   extend type Mutation {
+    clearCartMeals : CartState
     addMealToCart(meal: Meal!, restId: ID!): CartState!
     removeMealFromCart(mealId: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
@@ -43,6 +44,17 @@ const CART_QUERY = gql`
 export const useGetCart = () => {
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   return queryRes.data ? queryRes.data.cart : null
+}
+
+export const useClearCartMeals = () => {
+  const [mutate] = useMutation(gql`
+    mutation clearCartMeals {
+      clearCartMeals @client
+    }
+  `);
+  return () => {
+    mutate();
+  }
 }
 
 export const useAddMealToCart = (): (meal: Meal, restId: string) => void => {
@@ -95,12 +107,13 @@ export const useUpdateZip = (): (zip: string) => void => {
 
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
+  clearCartMeals: ClientResolver<undefined, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
 
-const updateCartCache = (cache: ApolloCache<any>, cart: Cart) => {
+const updateCartCache = (cache: ApolloCache<any>, cart: Cart | null) => {
   cache.writeQuery({
     query: CART_QUERY,
     data: { cart }
@@ -147,6 +160,18 @@ export const cartMutationResolvers: cartMutationResolvers = {
       stripePlanId: stripePlanId ? stripePlanId : null,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
+    }));
+  },
+
+  clearCartMeals: (_, _args, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) throw new Error('Cannot clear cart meals from null cart')
+    return updateCartCache(cache, new Cart({
+      meals: [],
+      restId: null,
+      stripePlanId: null,
+      deliveryDay: res.cart.DeliveryDay,
+      zip: res.cart.Zip,
     }));
   },
 

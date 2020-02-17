@@ -303,6 +303,13 @@ class OrderService {
               }
             }
           },
+          sort: [
+            {
+              deliveryDate: {
+                order: 'desc',
+              }
+            }
+          ],
         }
       });
       return await Promise.all(res.body.hits.hits.map(async ({ _id, _source }) => {

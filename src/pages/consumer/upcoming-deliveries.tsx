@@ -1,16 +1,18 @@
-import { makeStyles, Typography, Container, Paper, Divider } from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, Divider, Popover, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
-// import { useGetCart } from "../../client/global/state/cartState";
-// import { useGetRest } from "../../rest/restService";
-// import { getNextDeliveryDate } from "../../order/utils";
+import { useGetRest } from "../../rest/restService";
+import { getNextDeliveryDate } from "../../order/utils";
 import withClientApollo from "../../client/utils/withClientApollo";
 import Close from '@material-ui/icons/Close';
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders } from "../../client/order/orderService";
 import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
 import moment from "moment";
+import { Destination } from "../../place/destinationModel";
+import CartMealGroup from "../../client/order/CartMealGroup";
+import { useGetCart, useClearCartMeals } from "../../client/global/state/cartState";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -31,6 +33,12 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  popover: {
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+  },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -43,7 +51,15 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.text.hint
   },
   link: {
-    color: theme.palette.common.link
+    color: theme.palette.common.link,
+    cursor: 'pointer',
+  },
+  skip:{
+    marginRight: theme.spacing(2),
+  },
+  buttons: {
+    display: 'flex',
+    justifyContent: 'flex-end'
   },
   column: {
     display: 'flex',
@@ -57,10 +73,13 @@ const Confirmation: React.FC<{
 }> = ({
   onClose,
 }) => {
-  // const cart = useGetCart();
-  // if (!cart) throw new Error('Cart is null');
-  // const res = useGetRest(cart.RestId);
-  // const groupedMeals = cart.getGroupedMeals();
+  const cart = useGetCart();
+  const cartRef = useRef(cart);
+  const clearCartMeals = useClearCartMeals();
+  useEffect(() => clearCartMeals(), []);
+  if (!cartRef.current) throw new Error('Cart is null');
+  const res = useGetRest(cartRef.current.RestId);
+  const groupedMeals = cartRef.current.Meals;
   const classes = useStyles();
   return (
     <Paper variant='outlined' className={classes.confirmation}>
@@ -77,43 +96,77 @@ const Confirmation: React.FC<{
         We'll text you the day of your delivery
       </Typography>
       <Typography variant='body1'>
-        Deliver on 2/23/20, 6pm - 9pm
-      </Typography>
-      <Divider className={classes.divider} />
-      <Typography variant='subtitle1'>
-        Domo
-      </Typography>
-      <Typography variant='body1'>
-        {4} {'Rice and chicken'}
-      </Typography>
-      <Typography variant='body1'>
-        {4} {'Rice and chicken'}
-      </Typography>
-      <Typography variant='body1'>
-        {4} {'Rice and chicken'}
-      </Typography>
-      <Typography variant='body1'>
-        {4} {'Rice and chicken'}
-      </Typography>
-      {/*
-      <Typography variant='body1'>
-        Deliver on {getNextDeliveryDate(cart.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
+        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
       </Typography>
       <Typography variant='subtitle1'>
         {res.data && res.data.Profile.Name}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
         <Typography variant='body1'>
-          {mealGroup.quantity} {mealGroup.meal.Name}
+          {mealGroup.quantity} {mealGroup.Name}
         </Typography>
       ))} 
-      */}
     </Paper>
   )
-} 
+}
+
+const DestinationPopper: React.FC<{
+  destination: Destination
+  open: boolean,
+  onClose: () => void,
+  anchorEl: Element | ((element: Element) => Element) | null | undefined
+}> = ({
+  destination,
+  open,
+  onClose,
+  anchorEl,
+}) => {
+  const classes = useStyles();
+  return (
+    <Popover
+      open={open}
+      onClose={onClose}
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      <Paper className={classes.popover}>
+        <Typography variant='subtitle1'>
+          {destination.Name}
+        </Typography>
+        <Typography variant='body1'>
+          {destination.Address.Address1}
+        </Typography>
+        {
+          destination.Address.Address2 &&
+          <Typography variant='body1'>
+            {destination.Address.Address1}
+          </Typography>
+        }
+        <Typography variant='body1'>
+          {destination.Address.City}, {destination.Address.State} {destination.Address.Zip}
+        </Typography>
+        <Typography variant='body1'>
+          {destination.Instructions}
+        </Typography>
+      </Paper>
+    </Popover>
+  )
+}
 
 const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
   const classes = useStyles();
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
       <div className={`${classes.row} ${classes.overviewSection}`}>
@@ -137,7 +190,7 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
           <Typography variant='subtitle1'>
             Deliver to
           </Typography>
-          <div className={`${classes.row} ${classes.link}`}>
+          <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
             <Typography variant='body1'>
               {order.Destination.Name}
             </Typography>
@@ -150,12 +203,27 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
         <Typography variant='subtitle1'>
           {order.Rest.Profile.Name}
         </Typography>
-        {order.Meals.map(meal => (
-          <Typography variant='body1' key={meal.mealId}>
-            {meal.Quantity} {meal.Name}
-          </Typography>
-        ))}
+        {order.Meals.map(meal => <CartMealGroup mealGroup={meal} />)}
       </div>
+      <Divider />
+      <div className={`${classes.overviewSection} ${classes.buttons}`}>
+        <Button
+          variant='outlined'
+          color='primary'
+          className={classes.skip}
+        >
+          Skip
+        </Button>
+        <Button variant='contained' color='primary'>
+          Edit meals
+        </Button>
+      </div>
+      <DestinationPopper
+        destination={order.Destination}
+        open={open}
+        onClose={() => setAnchorEl(null)}
+        anchorEl={anchorEl}
+      />
     </Paper>
   )
 }

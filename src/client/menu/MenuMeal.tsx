@@ -59,16 +59,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
+  defaultCount: number
   disabled: boolean,
   meal: Meal,
   restId: string,
 }> = ({
+  defaultCount,
   disabled,
   meal,
   restId
 }) => {
   const classes = useStyles();
-  const [count, updateCount] = useState(0);
+  const [count, updateCount] = useState(defaultCount);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {

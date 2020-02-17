@@ -4,9 +4,9 @@ import { Paper, Typography, Popover } from '@material-ui/core';
 import EventIcon from '@material-ui/icons/Event';
 import PersonIcon from '@material-ui/icons/Person';
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
-import Link from 'next/link';
 import { profileRoute } from '../../pages/consumer/profile';
 import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
+import Router from 'next/router'
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -50,28 +50,29 @@ const ConsumerPopper: React.FC<{
       }}
     >
       <Paper className={classes.paper}>
-        <Link href={profileRoute}>
-          <div className={classes.row}>
-            <PersonIcon fontSize='large' />
-            <Typography variant='h6'>
-              Profile
-            </Typography>
-          </div>
-        </Link>
+        <div className={classes.row} onClick={() => {
+          Router.push(profileRoute);
+          onClose();
+        }}>
+          <PersonIcon fontSize='large' />
+          <Typography variant='h6'>
+            Profile
+          </Typography>
+        </div>
         <div className={classes.row}>
           <RestaurantMenuIcon fontSize='large' />
           <Typography variant='h6'>
             My plan
           </Typography>
         </div>
-        <Link href={upcomingDeliveriesRoute}>
-          <div className={classes.row}>
-            <EventIcon fontSize='large' />
-            <Typography variant='h6'>
-              Upcoming deliveries
-            </Typography>
-          </div>
-        </Link>
+        <div className={classes.row} onClick={() => {
+          Router.push(upcomingDeliveriesRoute);
+          onClose();
+        }}>          <EventIcon fontSize='large' />
+          <Typography variant='h6'>
+            Upcoming deliveries
+          </Typography>
+        </div>
       </Paper>
     </Popover>
   );

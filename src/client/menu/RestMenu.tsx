@@ -4,6 +4,7 @@ import { Rest } from "../../rest/restModel";
 import { useRef, useState, ChangeEvent } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MenuMeal from "./MenuMeal";
+import { CartMeal } from '../../order/cartModel';
 
 const useStyles = makeStyles(theme => ({
   restTitle: {
@@ -13,12 +14,13 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-type props = {
-  cartRestId: string | null
-  rest: Rest
-}
 
-const RestMenu: React.FC<props> = ({
+const RestMenu: React.FC<{
+  cartRestId: string | null
+  cartMeals: CartMeal[]
+  rest: Rest
+}> = ({
+  cartMeals,
   cartRestId,
   rest
 }) => {
@@ -49,21 +51,25 @@ const RestMenu: React.FC<props> = ({
 
   const disabled = cartRestId ? cartRestId !== rest.Id : false;
 
-  const meals = useMemo(() => rest.Menu.map(meal => (
-    <Grid
-      item
-      key={meal.Id}
-      xs={6}
-      sm={4}
-      lg={3}
-    >
-      <MenuMeal
-        disabled={cartRestId ? cartRestId !== rest.Id : false}
-        restId={rest.Id}
-        meal={meal} 
-      />
-    </Grid>
-  )), [rest.Menu, disabled])
+  const meals = useMemo(() => rest.Menu.map(meal => {
+    const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
+    return (
+      <Grid
+        item
+        key={meal.Id}
+        xs={6}
+        sm={4}
+        lg={3}
+      >
+        <MenuMeal
+          disabled={cartRestId ? cartRestId !== rest.Id : false}
+          restId={rest.Id}
+          meal={meal} 
+          defaultCount={index === -1 ? 0 : cartMeals[index].Quantity}
+        />
+      </Grid>
+    )
+  }), [rest.Menu, disabled])
 
   const forceToggle = (_e: ChangeEvent<{}>, newExpansion: boolean) => {
     lastChangeWasManual.current = true;

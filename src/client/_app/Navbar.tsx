@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const open = !!anchorEl;
@@ -164,7 +164,7 @@ const Navbar: React.FC = () => {
               <img src='/logo.png' alt='logo' className={classes.logo} />
             </Link>
             {bar}
-            <div className={classes.account} onClick={handleClick}>
+            <div className={classes.account} onClick={onClickUser}>
               {
                 isMdAndUp ?
                 <>
