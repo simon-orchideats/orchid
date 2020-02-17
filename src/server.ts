@@ -31,11 +31,12 @@ const start = async () => {
   const ssr = next({
     dev: !isProd
   })
+
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();
 
   const app = express();
-
+  
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
     app.use((req, res, next) => {
