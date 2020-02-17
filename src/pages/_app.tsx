@@ -24,8 +24,8 @@ export default class MyApp extends App {
       }
       console.log(data);
     } else if (canLogin()) {
-        let data = await getAccessToken();
-        console.log(data);
+      let data = await getAccessToken();
+      console.log(data);
     }
   }
 

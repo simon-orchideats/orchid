@@ -6,7 +6,7 @@ import { getCurrentURL } from '../utils/getCurrentURL';
 const Redirect = () => {
   useEffect(() => {
     const authRedirect = async () => {
-      let codeVerifier= randomString(32);
+      const codeVerifier= randomString(32);
       const authorizationEndpointUrl = new URL(`${activeConfig.authorization.domain}/authorize`);
       sessionStorage.setItem('codeVerifier', codeVerifier);
       const res = await sha256(codeVerifier);

@@ -4,20 +4,11 @@ import Redirect from './AuthRedirect';
 
 const requireAuth = (WrappedComponent: React.ComponentType) => {
   
-  const requireAuth = () => {
-    if (!isServer()) { 
-      const hasSignedInUser = window.localStorage.REFRESH_TOKEN;
-      if (hasSignedInUser) {
-        return <WrappedComponent/>;
-      } else if(!sessionStorage.getItem('codeVerifier')){
-        return  <Redirect/>
-      } else{
-        return <WrappedComponent/>;
-      }
-    }
-    return <WrappedComponent/>;
+  return () => {
+    if (isServer()) return <WrappedComponent/>
+    const hasSignedInUser = window.localStorage.REFRESH_TOKEN;
+    return !hasSignedInUser && !sessionStorage.getItem('codeVerifier') ? <Redirect/> : <WrappedComponent/>
   }
-  return requireAuth;
 }
 
 export default requireAuth;

@@ -80,7 +80,7 @@ export const getTokens = async () => {
         const data =  await res.json();
         return data;
     } catch(err) {
-      console.log(err);
+      console.error(err);
     }
 }
 
@@ -104,20 +104,12 @@ export const getAccessToken = async () => {
     return data;
 
    } catch (err) {
-     console.log(err);
+     console.error(err);
    }
  };
 
- export const needsLogin = () => {
-   if (urlParams().get('code')) {
-     return true
-   }
-   return false;
- }
+ export const needsLogin = () => !!urlParams().get('code')
+ 
 
- export const canLogin = () => {
-   if (window.localStorage.getItem('REFRESH_TOKEN')) {
-     return true;
-   }
-   return false
- }
+ export const canLogin = () => !!window.localStorage.getItem('REFRESH_TOKEN')
+ 
