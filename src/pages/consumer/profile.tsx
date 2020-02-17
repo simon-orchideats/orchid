@@ -1,6 +1,7 @@
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
+import requireAuth from "../../client/utils/auth/requireAuth";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -158,6 +159,6 @@ const profile = () => {
   )
 }
 
-export default profile;
+export default requireAuth(profile); 
 
 export const profileRoute = '/consumer/profile';

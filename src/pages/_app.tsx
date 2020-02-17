@@ -5,16 +5,18 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { getTheme } from '../client/global/styles/theme';
 import Navbar from '../client/_app/Navbar';
-
+import { attemptLogin } from '../client/utils/auth/auth';
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 
 export default class MyApp extends App {
-  componentDidMount() {
+  
+  async componentDidMount() {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
       jssStyles.parentElement!.removeChild(jssStyles);
     }
+    attemptLogin();
   }
 
   render() {

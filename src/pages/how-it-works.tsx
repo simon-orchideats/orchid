@@ -298,4 +298,4 @@ const HowItWorks = () => {
 
 export default HowItWorks;
 
-export const howItWorksRoute = 'how-it-works';
+export const howItWorksRoute = '/how-it-works';

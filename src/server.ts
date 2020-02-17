@@ -31,6 +31,7 @@ const start = async () => {
   const ssr = next({
     dev: !isProd
   })
+
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();
 

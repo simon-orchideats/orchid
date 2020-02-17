@@ -1,6 +1,12 @@
 const env = process.env.NODE_ENV;
 
 type config = {
+  authorization: {
+    domain: string,
+    clientId: string,
+    scope: string,
+    audience: string,
+  },
   client: {
     stripe: {
       key: string,
@@ -27,6 +33,12 @@ type config = {
 }
 
 const development: config = {
+  authorization: {
+    domain: 'https://foodflick.auth0.com',
+    clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+    scope: 'offline_access',
+    audience: 'https://saute.com',
+  },
   client: {
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
@@ -53,6 +65,12 @@ const development: config = {
 };
 
 const production: config = {
+  authorization: {
+    domain: 'https://foodflick.auth0.com',
+    clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+    scope: 'offline_access',
+    audience: 'https://saute.com',
+  },
   client: {
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',

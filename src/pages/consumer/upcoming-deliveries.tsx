@@ -15,6 +15,7 @@ import CartMealGroup from "../../client/order/CartMealGroup";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
 import { menuRoute } from "../menu";
+import requireAuth from "../../client/utils/auth/requireAuth";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -268,6 +269,6 @@ const UpcomingDeliveries = () => {
   );
 }
 
-export default withClientApollo(UpcomingDeliveries);
+export default requireAuth(withClientApollo(UpcomingDeliveries));
 
 export const upcomingDeliveriesRoute = '/consumer/upcoming-deliveries';
