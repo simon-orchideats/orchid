@@ -39,10 +39,6 @@ const start = async () => {
   
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
-    //if your application is behind a proxy (like on Heroku)
-    // or if you're encountering the error message:
-    // "Unable to verify authorization request state"
-    app.set('trust proxy', 1);
     app.use((req, res, next) => {
       if (req.header('x-forwarded-proto') !== 'https') {
         res.redirect('https://' + req.header('host') + req.url);

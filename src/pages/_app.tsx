@@ -5,11 +5,22 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { getTheme } from '../client/global/styles/theme';
 import Navbar from '../client/_app/Navbar';
-import fetch from 'isomorphic-unfetch';
+// import fetch from 'isomorphic-unfetch';
  import {urlParams} from '../client/utils/tokenGenerate';
 import {redirectURL} from '../client/utils/redirectURL';
 import {activeConfig} from '../config'
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
+
+
+// const testFn = async () => {
+//   return 5
+// }
+
+// const testFn2 = () => { return Promise.resolve(5) }
+
+// const testfn3 = async () => {
+//   return await Promise.resolve(5);
+// }
 
 export default class MyApp extends App {
   
@@ -19,11 +30,11 @@ export default class MyApp extends App {
     if (jssStyles) {
       jssStyles.parentElement!.removeChild(jssStyles);
     }
-
+   let refreshToken =  window.localStorage.getItem('REFRESH_TOKEN')
     if(urlParams().get('code')) {
       const getTokens = async () => { 
         try {
-          return await fetch('https://foodflick.auth0.com/oauth/token', {
+          let res = await fetch('https://foodflick.auth0.com/oauth/token', {
             method: 'POST',
             mode:'cors',
             headers: {
@@ -39,21 +50,24 @@ export default class MyApp extends App {
                 redirect_uri: redirectURL()
               }),
             })
-        } catch(err) {return err}
+            const data =  await res.json();
+            return data;
+        } catch(err) {
+          console.log(err);
+        }
       };
 
       let data = await getTokens();
-      data = await data.json();
       if(data['refresh_token']){
         window.localStorage.setItem('REFRESH_TOKEN',data['refresh_token']);
         window.sessionStorage.removeItem('codeVerifier');
       }
       console.log(data);
-    } else if(window.localStorage.getItem('REFRESH_TOKEN')) {
+    } else if(refreshToken) {
 
-       const getRefreshToken = async () => {
+       const getAccessToken = async () => {
        try { 
-          return await fetch('https://foodflick.auth0.com/oauth/token', {
+          let res = await fetch('https://foodflick.auth0.com/oauth/token', {
             method: 'POST',
             mode:'cors',
             headers: {
@@ -63,14 +77,18 @@ export default class MyApp extends App {
             body: JSON.stringify({
               grant_type: 'refresh_token',
               client_id: activeConfig.authorization.client_id,
-              refresh_token: window.localStorage.getItem('REFRESH_TOKEN')
+              refresh_token: refreshToken
             }),
-          })
-        } catch (err) {return err}
-      };
+          });
 
-      let data = await getRefreshToken();
-      data = await data.json();
+         let data = await res.json();
+         return data;
+
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      let data = await getAccessToken();
       console.log(data);
     }
   }

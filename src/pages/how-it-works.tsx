@@ -204,7 +204,7 @@ const Explanation: React.FC<{
   )
 }
 
-const HowItWorks =  () => {
+const HowItWorks = () => {
   const classes = useStyles();
   return (
     <>
