@@ -1,3 +1,6 @@
+
+import { activeConfig } from '../../config';
+import { getCurrentURL } from './getCurrentURL'
 /**
  * Takes a base64 encoded string and returns a url encoded string
  * by replacing the characters + and / with -, _ respectively,
@@ -55,3 +58,66 @@ const urlEncodeB64 = (input:string) => {
   array = array.map(x => validChars.charCodeAt(x % validChars.length));
   return String.fromCharCode(...array);
 }
+
+export const getTokens = async () => {
+    try {
+      let res = await fetch(`${activeConfig.authorization.domain}/oauth/token`, {
+        method: 'POST',
+        mode:'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            grant_type: 'authorization_code',
+            audience: activeConfig.authorization.audience,
+            client_id: activeConfig.authorization.clientId,
+            code_verifier: sessionStorage.getItem('codeVerifier'),
+            code: urlParams().get('code'),
+            redirect_uri: getCurrentURL()
+          }),
+        })
+        const data =  await res.json();
+        return data;
+    } catch(err) {
+      console.log(err);
+    }
+}
+
+export const getAccessToken = async () => {
+  try { 
+     let res = await fetch(`${activeConfig.authorization.domain}/oauth/token`, {
+       method: 'POST',
+       mode:'cors',
+       headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({
+         grant_type: 'refresh_token',
+         client_id: activeConfig.authorization.clientId,
+         refresh_token: window.localStorage.REFRESH_TOKEN
+       }),
+     });
+
+    let data = await res.json();
+    return data;
+
+   } catch (err) {
+     console.log(err);
+   }
+ };
+
+ export const needsLogin = () => {
+   if (urlParams().get('code')) {
+     return true
+   }
+   return false;
+ }
+
+ export const canLogin = () => {
+   if (window.localStorage.getItem('REFRESH_TOKEN')) {
+     return true;
+   }
+   return false
+ }

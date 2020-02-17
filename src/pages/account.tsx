@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import {requireAuth} from '../client/component/requireAuth';
+import requireAuth from '../client/component/requireAuth';
   const Account = () => {
   return(
   <div>

@@ -2,8 +2,8 @@ const env = process.env.NODE_ENV;
 
 type config = {
   authorization: {
-    endpoint: string,
-    client_id: string,
+    domain: string,
+    clientId: string,
     scope: string,
     audience: string,
   },
@@ -34,8 +34,8 @@ type config = {
 
 const development: config = {
   authorization: {
-    endpoint: 'https://foodflick.auth0.com/authorize',
-    client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+    domain: 'https://foodflick.auth0.com',
+    clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
     scope: 'offline_access',
     audience: 'https://saute.com',
   },
@@ -66,8 +66,8 @@ const development: config = {
 
 const production: config = {
   authorization: {
-    endpoint: 'https://foodflick.auth0.com/authorize',
-    client_id: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+    domain: 'https://foodflick.auth0.com',
+    clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
     scope: 'offline_access',
     audience: 'https://saute.com',
   },
