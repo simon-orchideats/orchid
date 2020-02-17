@@ -1,13 +1,13 @@
 import { CartMeal } from './../../../order/cartModel';
 import { deliveryDay } from './../../../consumer/consumerModel';
-import { Plan } from './../../../plan/planModel';
-import { getAvailablePlans } from './../../../plan/planService';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
 import { Cart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
+import { Order } from '../../../order/orderModel';
+import moment from 'moment';
 
 type cartQueryRes = {
   cart: Cart | null
@@ -28,6 +28,8 @@ export const cartQL = gql`
     clearCartMeals : CartState
     addMealToCart(meal: Meal!, restId: ID!): CartState!
     removeMealFromCart(mealId: ID!): CartState!
+    setCart(order: Order!): CartState!
+    updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
     updateZip(zip: String!): CartState!
   }
@@ -81,6 +83,30 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
   }
 }
 
+export const useSetCart = (): (order: Order) => void => {
+  type vars = { order: Order };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation setCart($order: Order!) {
+      setCart(order: $order) @client
+    }
+  `);
+  return (order: Order) => {
+    mutate({ variables: { order } })
+  }
+}
+
+export const useUpdateCartPlanId = (): (id: string) => void => {
+  type vars = { id: string };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation updateCartPlanId($id: ID!) {
+      updateCartPlanId(id: $id) @client
+    }
+  `);
+  return (id: string) => {
+    mutate({ variables: { id } })
+  }
+}
+
 export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
   type vars = { day: deliveryDay };
   const [mutate] = useMutation<any, vars>(gql`
@@ -109,6 +135,8 @@ type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
+  setCart: ClientResolver<{ order: Order }, Cart | null>
+  updateCartPlanId: ClientResolver<{ id: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
@@ -128,7 +156,6 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal, restId }, { cache }) => {
     const res = getCart(cache);
-    const plans = getAvailablePlans(cache);
     const newCartMealInput = CartMeal.getCartMeal(meal);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
@@ -151,13 +178,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
         zip: res.cart.Zip,
       }));
     }
-    if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     const newCart = res.cart.addMeal(meal);
-    const stripePlanId = Plan.getPlanId(Cart.getMealCount(newCart.Meals), plans.availablePlans);
     return updateCartCache(cache, new Cart({
       meals: newCart.Meals,
       restId,
-      stripePlanId: stripePlanId ? stripePlanId : null,
+      stripePlanId: newCart.StripePlanId,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
     }));
@@ -177,27 +202,40 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   removeMealFromCart: (_, { mealId }, { cache }) => {
     const res = getCart(cache);
-    const plans = getAvailablePlans(cache);
     if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
-    if (!plans) throw new Error('Cannot add meals to cart since no available plans');
     let newCart = res.cart.removeMeal(mealId);
     const mealCount = Cart.getMealCount(newCart.Meals);
-    const stripePlanId = Plan.getPlanId(mealCount, plans.availablePlans);
     if (mealCount === 0) {
       newCart = new Cart({
         meals: [],
         restId: null,
-        stripePlanId: stripePlanId ? stripePlanId : null,
+        stripePlanId: null,
         deliveryDay: newCart.DeliveryDay,
         zip: newCart.Zip,
       });
     }
+    return updateCartCache(cache, newCart);
+  },
+
+  setCart: (_, { order }, { cache }) =>
+    updateCartCache(cache, new Cart({
+      meals: order.Meals,
+      restId: order.Rest.Id,
+      stripePlanId: null,
+      deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
+      zip: order.Destination.Address.Zip,
+    }
+  )),
+
+  updateCartPlanId: (_, { id }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) throw new Error('Cannot set planId day since cart is empty');
     return updateCartCache(cache, new Cart({
-      meals: newCart.Meals,
-      restId: newCart.RestId,
-      stripePlanId: stripePlanId ? stripePlanId : null,
-      deliveryDay: newCart.DeliveryDay,
-      zip: newCart.Zip,
+      meals: res.cart.Meals,
+      restId: res.cart.RestId,
+      stripePlanId: id,
+      deliveryDay: res.cart.DeliveryDay,
+      zip: res.cart.Zip,
     }));
   },
 

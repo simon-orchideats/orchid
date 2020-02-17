@@ -306,7 +306,7 @@ class OrderService {
           sort: [
             {
               deliveryDate: {
-                order: 'desc',
+                order: 'asc',
               }
             }
           ],

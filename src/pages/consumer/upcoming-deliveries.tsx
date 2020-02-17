@@ -12,7 +12,9 @@ import { Order } from "../../order/orderModel";
 import moment from "moment";
 import { Destination } from "../../place/destinationModel";
 import CartMealGroup from "../../client/order/CartMealGroup";
-import { useGetCart, useClearCartMeals } from "../../client/global/state/cartState";
+import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
+import Router from 'next/router'
+import { menuRoute } from "../menu";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -102,7 +104,7 @@ const Confirmation: React.FC<{
         {res.data && res.data.Profile.Name}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
-        <Typography variant='body1'>
+        <Typography key={mealGroup.MealId} variant='body1'>
           {mealGroup.quantity} {mealGroup.Name}
         </Typography>
       ))} 
@@ -162,10 +164,15 @@ const DestinationPopper: React.FC<{
 
 const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
   const classes = useStyles();
+  const setCart = useSetCart();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const onEdit = () => {
+    setCart(order);
+    Router.push(menuRoute);
+  }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
@@ -203,7 +210,7 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
         <Typography variant='subtitle1'>
           {order.Rest.Profile.Name}
         </Typography>
-        {order.Meals.map(meal => <CartMealGroup mealGroup={meal} />)}
+        {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
       </div>
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
@@ -214,7 +221,11 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
         >
           Skip
         </Button>
-        <Button variant='contained' color='primary'>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onEdit}
+        >
           Edit meals
         </Button>
       </div>

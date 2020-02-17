@@ -1,14 +1,14 @@
 import { makeStyles, Typography, Button } from "@material-ui/core";
-import { useGetCart } from "../global/state/cartState";
+import { useGetCart, useUpdateCartPlanId } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
-import Link from 'next/link'
 import { deliveryRoute } from "../../pages/delivery";
 import CartMealGroup from "../order/CartMealGroup";
 import { Cart } from "../../order/cartModel";
+import Router from 'next/router'
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -43,6 +43,13 @@ const MenuCart: React.FC = () => {
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
   const rest = useGetRest(cart ? cart.RestId : null);
   const mealCount = cart ? Cart.getMealCount(cart.Meals) : 0;
+  const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
+  const setCartStripePlanId = useUpdateCartPlanId();
+  const onNext = () => {
+    if (!stripePlanId) throw new Error('Missing stripePlanId')
+    Router.push(deliveryRoute);
+    setCartStripePlanId(stripePlanId);
+  }
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   const groupedMeals = cart && cart.Meals;
   return (
@@ -64,17 +71,16 @@ const MenuCart: React.FC = () => {
         <Typography variant='body1' className={classes.suggestion}>
           {cart && cart.Zip ? null : 'Enter zip to continue'}
         </Typography>
-        <Link href={deliveryRoute}>
-          <Button
-            disabled={disabled}
-            variant='contained'
-            color='primary'
-            className={classes.button}
-            fullWidth
-          >
-            {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
-          </Button>
-        </Link>
+        <Button
+          disabled={disabled}
+          variant='contained'
+          color='primary'
+          className={classes.button}
+          fullWidth
+          onClick={onNext}
+        >
+          {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
+        </Button>
       </div>
     </>
   )
