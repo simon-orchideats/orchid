@@ -4,9 +4,9 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
-import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
+import { signUpRoute } from "../../pages/sign-up";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -34,7 +34,7 @@ const MenuMiniCart: React.FC = () => {
   const setCartStripePlanId = useUpdateCartPlanId();
   const onNext = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId')
-    Router.push(deliveryRoute);
+    Router.push(signUpRoute);
     setCartStripePlanId(stripePlanId);
   }
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
