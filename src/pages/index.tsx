@@ -3,6 +3,9 @@ import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { plansRoute } from './plans';
 import { menuRoute } from './menu';
+import RestIcon from '@material-ui/icons/RestaurantMenu';
+import TodayIcon from '@material-ui/icons/Today';
+import StoreIcon from '@material-ui/icons/Storefront';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -18,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center'
   },
   welcome: {
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('lg')]: {
       background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(bowls.jpg)',
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
@@ -36,6 +39,9 @@ const useStyles = makeStyles(theme => ({
   },
   welcomeText: {
     maxWidth: 600 // chosen by inspection
+  },
+  explanationImg: {
+    height: 200
   },
   plansDescription: {
     maxWidth: 400 // chosen by inspection
@@ -81,12 +87,19 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.secondary.main
   },
   lowWidth: {
-    maxWidth: 150,  
+    maxWidth: 150,
+  },
+  microwave: {
+    maxWidth: 135,
+    height: 85,
   },
   shrinker: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.25rem',
     },
+  },
+  howIcon: {
+    fontSize: 90,
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -116,14 +129,28 @@ const Welcome = () => {
 
 const HowItWorks = () => {
   const classes = useStyles();
-  const Content: React.FC<{ description: string }> = ({ description }) => (
+  const Content: React.FC<{
+    description: string,
+    img?: string,
+    icon?: JSX.Element,
+  }> = ({
+    description,
+    icon,
+    img
+  }) => (
     <Grid item xs={12} sm={6} md={3}>
       <div className={classes.centered}>
-        <img
-          src='/placeholder.jpg'
-          alt='logo'
-          className={classes.lowWidth}
-        />
+        {
+          img &&
+          <img
+            src={img}
+            alt='logo'
+            className={classes.microwave}
+          />
+        }
+        {
+          icon && icon
+        }
         <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
           {description}
         </Typography>
@@ -136,10 +163,10 @@ const HowItWorks = () => {
         How it works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Content description='Choose your plan of prepared meals' />
-        <Content description='Choose when you want for them' />
-        <Content description='Local restaurants cook, we deliver' />
-        <Content description='Enjoy immediately' />
+        <Content description='Choose your plan of prepared meals' icon={<RestIcon className={classes.howIcon} />} />
+        <Content description='Choose when you want them' icon={<TodayIcon className={classes.howIcon} />} />
+        <Content description='Local restaurants cook, we deliver' icon={<StoreIcon className={classes.howIcon} />} />
+        <Content description='Enjoy immediately' img='home/microwave.png'/>
       </Grid>
       <Link href={menuRoute}>
         <Button variant='outlined' color='primary'>GET STARTED</Button>
@@ -162,7 +189,7 @@ const Plans = () => {
         <PlanCards />
         <Link href={menuRoute}>
           <Button
-            variant='outlined'
+            variant='contained'
             color='primary'
             className={classes.largeVerticalMargin}
           >
@@ -179,13 +206,13 @@ const Benefits = () => {
   const TextBlock: React.FC<{title: string, description: string}> = ({ title, description }) => (
     <>
       <Typography
-        variant='h3'
+        variant='h4'
         color='primary'
         className={`${classes.verticalMargin} ${classes.shrinker}`}
       >
         {title}
       </Typography>
-      <Typography variant='h4' color='textSecondary'>
+      <Typography variant='h6' color='textSecondary'>
         {description}
       </Typography>
     </>
@@ -218,7 +245,7 @@ const Benefits = () => {
     if (imgLeft) {
       left = (
         <Grid item xs={5} className={classes.verticalCenter}>
-          <img src={img} alt='logo' />
+          <img src={img} alt='logo' className={classes.explanationImg} />
         </Grid>
       )
       right = (
@@ -244,7 +271,7 @@ const Benefits = () => {
       );
       right = (
         <Grid item xs={5} className={classes.verticalCenter}>
-          <img src={img} alt='logo' />
+          <img src={img} alt='logo' className={classes.explanationImg} />
         </Grid>
       )
     }
@@ -263,29 +290,31 @@ const Benefits = () => {
           <Grid container>
             <Explanation 
               title='Sustainable'
-              description='yada yada, local. never frozen. not some warehouse accross the country. no more icepacks'
-              img='/placeholder.jpg'
+              description='No cross-country shipments. No ice packs. No warehouses. Food is delievered fresh from down
+              the street in eco-friendly, compostable containers.'
+              img='home/sustainable.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Same day cooking'
-              description='freshest. yada yada YADA yda yda yda yda yada YADA yda yda yda yda yada YADA yda yda yda'
-              img='/placeholder.jpg'
+              description='Every meal is same-day fresh. Enjoy your meal as the chef intended.'
+              img='home/fresh.jpeg'
               imgLeft={false}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Favorite restaurants'
               description='Support your local favorites. Change places and flavors every week for infinite variety.'
-              img='/placeholder.jpg'
+              img='home/rest.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Affordable'
-              description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
-              img='/placeholder.jpg'
+              description='Restaurant quality, without restaurant prices. Restaurants save when you buy ahead in bulk
+              and we pass those savings to you.'
+              img='home/chicken.jpeg'
               imgLeft={false}
             />
           </Grid>

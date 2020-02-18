@@ -227,7 +227,7 @@ const HowItWorks = () => {
           <Explanation
             title='Pick the menu'
             description="Like variety? Pick a set of customized meals from a variety of your favorite local restaurants.
-            Forget to choose next weeks menu? No worries. We'll renew your previous selection."
+            Forget to choose next weeks menu? No worries. We'll pick a new restaurant, personalized for you."
             dividerTitle='Step'
             dividerSubtitle='2'
             img='how-it-works/chef.jpg'
@@ -247,8 +247,8 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Pick the meal plan'
-            description='Enjoy the meal as intended, fresh from the kitchen. No reheating. No wasteful packaging. Just
+            title='Enjoy'
+            description='Enjoy the meal as intended, fresh from the kitchen. Never frozen. No wasteful packaging. Just
             food. Just eat.'
             dividerTitle='Step'
             dividerSubtitle='4'
@@ -268,23 +268,23 @@ const HowItWorks = () => {
         <Grid item xs={2} />
         <BenefitTextBox
           title='Sustainable'
-          description='yadayda. support local business. locally sourced food. take it a step further and combine your delivery times.'
+          description='Responsibly sourced food from local restaurants.'
         />
         <Grid item xs={2} />
         <BenefitTextBox
           title='Affordable'
-          description='Bulk and save. cheaper than eating out all the time.'
+          description='Buy in bulk and save.'
         />
         <Grid item xs={2} />
         <Grid item xs={2} />
         <BenefitTextBox
           title='Convenient'
-          description='No microwave. No oven. Just eat. Send meals to your office, home or both. Customize your delivery schedule to suit you.'
+          description='Just reheat and eat. Customize your delivery schedule to suit you.'
         />
         <Grid item xs={2} />
         <BenefitTextBox
           title='Variety'
-          description='Ultimate variety from a endless array of restaurants.'
+          description='Ultimate variety from a endless collection of restaurants.'
         />
         <Grid item xs={2} />
       </Grid>
