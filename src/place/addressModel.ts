@@ -79,6 +79,9 @@ export class Address implements IAddress {
   public get State() { return this.state }
   public get Zip() { return this.zip }
 
+  public getAddrStr() {
+    return `${this.address1} ${this.address2 ? this.address2 + ' ' : ''}${this.city}, ${this.state} ${this.zip}`
+  }
 }
 
 type states = {

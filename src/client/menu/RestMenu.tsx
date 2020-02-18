@@ -7,13 +7,10 @@ import MenuMeal from "./MenuMeal";
 import { CartMeal } from '../../order/cartModel';
 
 const useStyles = makeStyles(theme => ({
-  restTitle: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+  summary: {
     paddingLeft: theme.spacing(1),
   },
 }))
-
 
 const RestMenu: React.FC<{
   cartRestId: string | null
@@ -78,9 +75,17 @@ const RestMenu: React.FC<{
   return (
     <ExpansionPanel expanded={expanded} onChange={forceToggle} TransitionProps={{ unmountOnExit: true }}>
       <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant='h4' className={classes.restTitle}>
-          {rest.Profile.Name}
-        </Typography>
+        <div className={classes.summary}>
+          <Typography variant='h4'>
+            {rest.Profile.Name}
+          </Typography>
+          <Typography variant='subtitle1' color='textSecondary'>
+            {rest.Location.Address.getAddrStr()}
+          </Typography>
+          <Typography variant='subtitle1' color='textSecondary'>
+            {rest.Profile.Phone}
+          </Typography>
+        </div>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails>
         <Grid container>
