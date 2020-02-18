@@ -11,6 +11,9 @@ type config = {
     stripe: {
       key: string,
     },
+    logRocket: {
+      key: string;
+    },
   },
   server: {
     app: {
@@ -43,6 +46,9 @@ const development: config = {
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
+    logRocket: {
+      key: '',
+    },
   },
   server: {
     app: {
@@ -74,6 +80,9 @@ const production: config = {
   client: {
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+    },
+    logRocket: {
+      key: 'ugxrrj/orchid',
     },
   },
   server: {
