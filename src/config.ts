@@ -14,6 +14,9 @@ type config = {
     logRocket: {
       key: string;
     },
+    analytics: {
+      key: string
+    },
   },
   server: {
     app: {
@@ -49,6 +52,9 @@ const development: config = {
     logRocket: {
       key: '',
     },
+    analytics: {
+      key: '5437afb3d48e3f34441c41e9295261ac',
+    },
   },
   server: {
     app: {
@@ -83,6 +89,9 @@ const production: config = {
     },
     logRocket: {
       key: 'ugxrrj/orchid',
+    },
+    analytics: {
+      key: '5437afb3d48e3f34441c41e9295261ac',
     },
   },
   server: {
