@@ -15,8 +15,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
 import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
-import { signUpRoute } from '../../pages/sign-up';
-import { interestedRoute } from '../../pages/interested';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -97,15 +95,14 @@ const Navbar: React.FC = () => {
       <Typography
         variant='button'
         color='primary'
-        // className={classes.link}
-        className={classes.disabled}
+        className={classes.link}
       >
         Menu
       </Typography>
     </Link>
   );
   let bar;
-  if (currRoute === `${deliveryRoute}`) {
+  if (currRoute === `/${deliveryRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
@@ -121,39 +118,7 @@ const Navbar: React.FC = () => {
         </div>
       </div>
     )
-  } else if (currRoute === `${signUpRoute}`) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          {menuStep}
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button'>
-            Welcome
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Thank you
-          </Typography>
-        </div>
-      </div>
-    )
-  } else if (currRoute === `${interestedRoute}`) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          {menuStep}
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Welcome
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.link}>
-            Thank you
-          </Typography>
-        </div>
-      </div>
-    )
-  } else if (currRoute === `${checkoutRoute}`) {
+  } else if (currRoute === `/${checkoutRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
