@@ -773,6 +773,176 @@ POST rests/_doc/
   }
 }
 
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "Hudson St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "_Kd1x3O4mEABkROx7qoYm",
+      "img": "meals/ALMOND-GINGER-CHICKEN-BOWL.jpg",
+      "name": "Almond Ginger Chicken Bowl"
+    },
+    {
+      "_id": "pscX2KLhfmEMuIj_Xj1kL",
+      "img": "meals/ANDOUILLE-CHICKEN-GUMBO.jpg",
+      "name": "Andouille & Chicken Gumbo"
+    },
+    {
+      "_id": "rKW6c14bAp9Ruelt4zQ5C",
+      "img": "meals/BUFFALO-CHICKEN.jpg",
+      "name": "Buffalo Chicken"
+    },
+    {
+      "_id": "dJDbVkelvsJjy28slHRW0",
+      "img": "meals/CARVED-TURKEY-GRAIN-FREE-STUFFING.jpg",
+      "name": "Carved Turkey Grain-free Stuffing"
+    },
+    {
+      "_id": "vpsuG02HBkhEwhfTFm_kw",
+      "img": "meals/CAULIFLOWER-SHELL-BOLOGNESE.jpg",
+      "name": "Couliflower Shell Bolognese"
+    },
+    {
+      "_id": "cerbwhVozaWN00zTPggJm",
+      "img": "meals/CHICKEN-CACCIATORE.jpg",
+      "name": "Chicken Cacciatore"
+    },
+    {
+      "_id": "_KXDoqkzCfaa9FOnZU-2N",
+      "img": "meals/CHICKEN-LIVORNO.jpg",
+      "name": "Chicken Livorno"
+    },
+    {
+      "_id": "OU-PrpwLaIoQT2kP8jCOC",
+      "img": "meals/CHICKEN-TAGINE.jpg",
+      "name": "Chicken Tagine"
+    },
+    {
+      "_id": "BCYOWORN6YkHCU4NZCeao",
+      "img": "meals/CHICKEN-TERIYAKI.jpg",
+      "name": "Chicken Teriyaki"
+    },
+    {
+      "_id": "1wXnzyOm6seJnu8UqMWA0",
+      "img": "meals/CHICKEN-TIKKA-MASALA.jpg",
+      "name": "Chicken Tikka Masala"
+    },
+    {
+      "_id": "Yy3dxNopB1pmeiGMu18Mb",
+      "img": "meals/CHILI-MAC-CHEESE.jpg",
+      "name": "Chili Mac & Cheese"
+    },
+    {
+      "_id": "qYXFSOIKlijQCzBw5chv0",
+      "img": "meals/COD-CAKES.jpg",
+      "name": "Cod Cakes"
+    }
+  ],
+  "profile": {
+    "name": "JC Diner",
+    "phone": "609-513-8166",
+    "tags": ["Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "Hudson St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "5E8IO8p3N9HBTmXG16QLv",
+      "img": "meals/CREAMY-CHICKEN-CASSEROLE.jpg",
+      "name": "Creamy Chicken Casserole"
+    },
+    {
+      "_id": "SSZnRga_jPP8mHSK_eECe",
+      "img": "meals/CREAMY-RED-BEET-CHICKEN-RISOTTO.jpg",
+      "name": "Creamy Red Beet Chicken Risotto"
+    },
+    {
+      "_id": "FMHSwI21-jLwyGMeXnEK-",
+      "img": "meals/GOLDEN-OVEN-FRIED-CHICKEN-MASH.jpg",
+      "name": "Golden Oven Fried Chicken Mash"
+    },
+    {
+      "_id": "BYNB7K5ovjFDkjA2026Ur",
+      "img": "meals/HOMESTYLE-CHICKEN.jpg",
+      "name": "Homestyle Chicken"
+    },
+    {
+      "_id": "-egup_S0NcSlZVcqATo1G",
+      "img": "meals/HONEY-MUSTARD-CHICKEN-BOWL.jpg",
+      "name": "Honey Mustard Chicken Bowl"
+    },
+    {
+      "_id": "MdRTnywFnehYJt_kfUFaU",
+      "img": "meals/HOT-CHICKEN-BOWL.jpg",
+      "name": "Hot Chicken Bowl"
+    },
+    {
+      "_id": "F9wiNpJL1zA7WIfYhR5bO",
+      "img": "meals/LAREDO-CHICKEN.jpg",
+      "name": "Laredo Chicken"
+    },
+    {
+      "_id": "8v9oQsF4xGC0cpQAdkeAr",
+      "img": "meals/MEXICAN-STYLE-SHREDDED-BEEF.jpg",
+      "name": "Mexican Style Shredded Beef"
+    },
+    {
+      "_id": "EtjRLLAz5tDwfHbhcVmPh",
+      "img": "meals/PORK-CARNITAS.jpg",
+      "name": "Pork Carnitas"
+    },
+    {
+      "_id": "lPa3d4g0okva7jZvkpnCf",
+      "img": "meals/RUSTIC-CHICKEN.jpg",
+      "name": "Rustic Chicken"
+    },
+    {
+      "_id": "8gmKmtgWPOg8aZtxU1qDv",
+      "img": "meals/SAUSAGE-PEPPERS.jpg",
+      "name": "Sausage Peppers"
+    },
+    {
+      "_id": "xh_WDF9vYKQ8r_19JraXy",
+      "img": "meals/SICILIAN-STYLE-CHICKEN-PARM.jpg",
+      "name": "Sicilian Style Chicken Parm"
+    }
+  ],
+  "profile": {
+    "name": "The Copperstone",
+    "phone": "609-513-8166",
+    "tags": ["Mexican"]
+  }
+}
+
 POST _bulk
 { "index" : { "_index" : "tags", "_id": "American" } }
 { "name" : "American", "count": 0 }
