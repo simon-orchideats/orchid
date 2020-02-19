@@ -1,6 +1,7 @@
 import { isServer } from './isServer';
 import { activeConfig } from '../../config';
 import { AmplitudeClient } from 'amplitude-js';
+import Router from 'next/router'
 
 const amplitude: {
   getInstance: () => AmplitudeClient
@@ -10,6 +11,8 @@ export const events = {
   INTERESTED: 'Interested',
   FILLED_CART: 'Filled cart',
   ADDED_TO_FINAL_CART: 'Added to final cart',
+  OPENED_APP: 'Opened app',
+  NAVIGATED: 'Navigated to route',
 }
 
 class AnalyticsService {
@@ -22,9 +25,24 @@ class AnalyticsService {
 
   public async init(): Promise<void> {
     if (this.didInit) throw new Error('AnalyticsService aleady initialized');
-    await amplitude.getInstance().init(activeConfig.client.analytics.key);
+    await amplitude.getInstance().init(activeConfig.client.analytics.amplitude.key, undefined, {
+      includeUtm: true,
+      includeReferrer: true,
+    });
     this.didInit = true;
-    return;
+    this.trackEvent(events.OPENED_APP, {
+      url: window.location.pathname,
+    });
+    Router.events.on('routeChangeComplete', url => {
+      this.trackEvent(events.NAVIGATED, {
+        url
+      });
+      // @ts-ignore
+      window.gtag('config', activeConfig.client.analytics.ga.trackingId, {
+        page_path: url,
+      })
+
+    });
   }
 
   public async setUserId(userId: string): Promise<void> {
@@ -43,9 +61,9 @@ class AnalyticsService {
 
   /**
    * @param eventName the event name
-   * @param properties custom map oPrf properties
+   * @param properties custom map of properties
    */
-  public async trackEvent(eventName: string, properties: object): Promise<amplitude.LogReturn> {
+  public async trackEvent(eventName: string, properties?: object): Promise<amplitude.LogReturn> {
     this.throwIfNoInit();
     return amplitude.getInstance().logEvent(eventName, properties ? properties : undefined);
   }

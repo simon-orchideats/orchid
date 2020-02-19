@@ -15,7 +15,12 @@ type config = {
       key: string;
     },
     analytics: {
-      key: string
+      amplitude: {
+        key: string
+      },
+      ga: {
+        trackingId: string
+      }
     },
   },
   server: {
@@ -53,7 +58,12 @@ const development: config = {
       key: '',
     },
     analytics: {
-      key: '5437afb3d48e3f34441c41e9295261ac',
+      amplitude: {
+        key: '5437afb3d48e3f34441c41e9295261ac',
+      },
+      ga: {
+        trackingId: 'UA-158803692-1',
+      }
     },
   },
   server: {
@@ -91,7 +101,12 @@ const production: config = {
       key: 'ugxrrj/orchid',
     },
     analytics: {
-      key: '5437afb3d48e3f34441c41e9295261ac',
+      amplitude: {
+        key: '5437afb3d48e3f34441c41e9295261ac',
+      },
+      ga: {
+        trackingId: 'UA-158791511-1',
+      }
     },
   },
   server: {
