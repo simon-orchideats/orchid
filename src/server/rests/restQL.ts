@@ -5,6 +5,7 @@ const MealQL = gql`
     _id: ID!
     img: String!
     name: String!
+    description: String
   }
 `
 

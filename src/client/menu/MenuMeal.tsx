@@ -30,6 +30,7 @@ const useStyles = makeStyles(theme => ({
   },
   actionBar: {
     display: 'flex',
+    marginBottom: theme.spacing(1),
   },
   minusButton: {
     backgroundColor: `${theme.palette.grey[600]}`,
@@ -39,6 +40,9 @@ const useStyles = makeStyles(theme => ({
     '&:disabled': {
       backgroundColor: theme.palette.grey[300],
     },
+  },
+  title: {
+    lineHeight: 1.5
   },
   button: {
     flex: 0.15,
@@ -121,8 +125,15 @@ const MenuMeal: React.FC<{
             <AddIcon />
           </Button>
         </div>
-        <Typography gutterBottom variant='subtitle1'>
+        <Typography
+          gutterBottom
+          variant='subtitle1'
+          className={classes.title}
+        >
           {meal.Name.toUpperCase()}
+        </Typography>
+        <Typography variant='body2' color='textSecondary'>
+          {meal.Description}
         </Typography>
       </CardContent>
     </Card>

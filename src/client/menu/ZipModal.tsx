@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
       backgroundPosition: '75% 50%',
     },
     [theme.breakpoints.down('xs')]: {
-      height: '40%',
+      height: '30%',
       backgroundPosition: '50% 100%',
       top: 0,
     },
