@@ -4,9 +4,9 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { getSuggestion } from "./utils";
 import { Plan } from "../../plan/planModel";
-import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
+import { signUpRoute } from "../../pages/sign-up";
 import { useGetRest } from "../../rest/restService";
 import { sendCartMenuMetrics } from './menuMetrics';
 
@@ -36,8 +36,8 @@ const MenuMiniCart: React.FC = () => {
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
   const setCartStripePlanId = useUpdateCartPlanId();
   const onNext = () => {
-    if (!stripePlanId) throw new Error('Missing stripePlanId')
-    Router.push(deliveryRoute);
+    if (!stripePlanId) throw new Error('Missing stripePlanId');
+    Router.push(signUpRoute);
     setCartStripePlanId(stripePlanId);
     sendCartMenuMetrics(
       stripePlanId,
