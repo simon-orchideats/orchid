@@ -79,6 +79,12 @@ const RestMenu: React.FC<{
           <Typography variant='h4'>
             {rest.Profile.Name}
           </Typography>
+          <Typography variant='subtitle1' color='textSecondary'>
+            {rest.Location.Address.getAddrStr()}
+          </Typography>
+          <Typography variant='subtitle1' color='textSecondary'>
+            {rest.Profile.Phone}
+          </Typography>
         </div>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails>
