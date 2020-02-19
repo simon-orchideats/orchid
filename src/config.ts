@@ -59,10 +59,12 @@ const development: config = {
     },
     analytics: {
       amplitude: {
-        key: '5437afb3d48e3f34441c41e9295261ac',
+        // key: '5437afb3d48e3f34441c41e9295261ac',
+        key: '',
       },
       ga: {
-        trackingId: 'UA-158803692-1',
+        // trackingId: 'UA-158803692-1',
+        trackingId: '',
       }
     },
   },
@@ -105,7 +107,7 @@ const production: config = {
         key: '5437afb3d48e3f34441c41e9295261ac',
       },
       ga: {
-        trackingId: 'UA-158791511-1',
+        trackingId: 'UA-158803692-1',
       }
     },
   },
