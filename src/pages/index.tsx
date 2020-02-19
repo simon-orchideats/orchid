@@ -115,7 +115,7 @@ const Welcome = () => {
           Chef-cooked healthy meals delivered from local restaurants to you
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Offering meals starting at $8.99
+          Offering meals starting at $9.99
         </Typography>
         <Link href={plansRoute}>
           <Button variant='contained' color='primary'>

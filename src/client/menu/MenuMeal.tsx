@@ -30,6 +30,7 @@ const useStyles = makeStyles(theme => ({
   },
   actionBar: {
     display: 'flex',
+    marginBottom: theme.spacing(1),
   },
   minusButton: {
     backgroundColor: `${theme.palette.grey[600]}`,
@@ -39,6 +40,12 @@ const useStyles = makeStyles(theme => ({
     '&:disabled': {
       backgroundColor: theme.palette.grey[300],
     },
+  },
+  title: {
+    lineHeight: 1.5
+  },
+  originalPrice: {
+    color: theme.palette.primary.main
   },
   button: {
     flex: 0.15,
@@ -121,8 +128,21 @@ const MenuMeal: React.FC<{
             <AddIcon />
           </Button>
         </div>
-        <Typography gutterBottom variant='subtitle1'>
+        <Typography
+          gutterBottom
+          variant='subtitle1'
+          className={classes.title}
+        >
           {meal.Name.toUpperCase()}
+          {
+            meal.OriginalPrice !== null
+            && meal.OriginalPrice < 11.5
+            && meal.OriginalPrice > 9.99
+            && <Typography color='primary' variant='subtitle1'> (originally <del>${meal.OriginalPrice.toFixed(2)}</del>) </Typography>
+          }
+        </Typography>
+        <Typography variant='body2' color='textSecondary'>
+          {meal.Description}
         </Typography>
       </CardContent>
     </Card>
