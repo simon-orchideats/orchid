@@ -1,7 +1,10 @@
-import { makeStyles, Typography, Button, TextField, Paper } from "@material-ui/core";
+import { makeStyles, Typography, Button, Paper } from "@material-ui/core";
 import Faq from "../client/general/Faq";
 import Router from "next/router";
 import { interestedRoute } from "./interested";
+import { createRef } from "react";
+import BaseInput from "../client/general/inputs/BaseInput";
+import { analyticsService, events } from "../client/utils/analyticsService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -28,8 +31,11 @@ const useStyles = makeStyles(theme => ({
 
 const signUp = () => {
   const classes = useStyles();
+  const inputRef = createRef<HTMLInputElement>();
   const onNext = () => {
-    console.log('yo');
+    analyticsService.trackEvent(events.INTERESTED, {
+      email: inputRef!.current!.value
+    });
     Router.push(interestedRoute);
   }
   return (
@@ -43,11 +49,9 @@ const signUp = () => {
           >
             Sign up
           </Typography>
-          <TextField
+          <BaseInput
             label='Email'
-            variant='outlined'
-            size='small'
-            fullWidth
+            inputRef={inputRef}
             className={classes.bottomPadding}
           />
           <Button

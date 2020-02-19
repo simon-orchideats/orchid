@@ -9,7 +9,7 @@ import { attemptLogin } from '../client/utils/auth/auth';
 import { isServer } from '../client/utils/isServer';
 import LogRocket from 'logrocket';
 import { activeConfig } from '../config';
-import analyticsService from '../client/utils/analyticsService';
+import { analyticsService } from '../client/utils/analyticsService';
 
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 

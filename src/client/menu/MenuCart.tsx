@@ -9,6 +9,7 @@ import { signUpRoute } from "../../pages/sign-up";
 import CartMealGroup from "../order/CartMealGroup";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
+import { sendCartMenuMetrics } from "./menuMetrics";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -46,9 +47,16 @@ const MenuCart: React.FC = () => {
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
   const setCartStripePlanId = useUpdateCartPlanId();
   const onNext = () => {
-    if (!stripePlanId) throw new Error('Missing stripePlanId')
+    if (!stripePlanId) throw new Error('Missing stripePlanId');
     Router.push(signUpRoute);
     setCartStripePlanId(stripePlanId);
+    sendCartMenuMetrics(
+      stripePlanId,
+      sortedPlans.data,
+      cart,
+      rest.data,
+      mealCount,
+    );
   }
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   const groupedMeals = cart && cart.Meals;
