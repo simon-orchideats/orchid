@@ -17,6 +17,7 @@ const restFragment = gql`
       img
       name
       description
+      originalPrice
     }
     profile {
       name

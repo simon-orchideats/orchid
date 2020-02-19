@@ -44,6 +44,9 @@ const useStyles = makeStyles(theme => ({
   title: {
     lineHeight: 1.5
   },
+  originalPrice: {
+    color: theme.palette.primary.main
+  },
   button: {
     flex: 0.15,
     boxShadow: 'none',
@@ -131,6 +134,12 @@ const MenuMeal: React.FC<{
           className={classes.title}
         >
           {meal.Name.toUpperCase()}
+          {
+            meal.OriginalPrice !== null
+            && meal.OriginalPrice < 11.5
+            && meal.OriginalPrice > 9.99
+            && <Typography color='primary' variant='subtitle1'> (originally <del>${meal.OriginalPrice.toFixed(2)}</del>) </Typography>
+          }
         </Typography>
         <Typography variant='body2' color='textSecondary'>
           {meal.Description}

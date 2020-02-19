@@ -6,6 +6,7 @@ const MealQL = gql`
     img: String!
     name: String!
     description: String
+    originalPrice: Float
   }
 `
 
