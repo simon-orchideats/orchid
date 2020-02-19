@@ -25,7 +25,7 @@ class AnalyticsService {
 
   public async init(): Promise<void> {
     if (this.didInit) throw new Error('AnalyticsService aleady initialized');
-    await amplitude.getInstance().init(activeConfig.client.analytics.key, undefined, {
+    await amplitude.getInstance().init(activeConfig.client.analytics.amplitude.key, undefined, {
       includeUtm: true,
       includeReferrer: true,
     });
@@ -36,7 +36,12 @@ class AnalyticsService {
     Router.events.on('routeChangeComplete', url => {
       this.trackEvent(events.NAVIGATED, {
         url
+      });
+      // @ts-ignore
+      window.gtag('config', activeConfig.client.analytics.ga.trackingId, {
+        page_path: url,
       })
+
     });
   }
 
