@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+// import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
 import { Container, Typography, useMediaQuery } from '@material-ui/core';
 import { howItWorksRoute } from '../../pages/how-it-works';
@@ -11,7 +11,7 @@ import { menuRoute } from '../../pages/menu';
 import { indexRoute } from '../../pages';
 import { useRouter } from 'next/router';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
 import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
@@ -83,12 +83,12 @@ const useStyles = makeStyles(theme => ({
 const Navbar: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  // const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
   const open = !!anchorEl;
 
   const currRoute = useRouter().pathname;
@@ -199,7 +199,7 @@ const Navbar: React.FC = () => {
               <img src='/logo.png' alt='logo' className={classes.logo} />
             </Link>
             {bar}
-            <div className={classes.account} onClick={onClickUser}>
+            {/* <div className={classes.account} onClick={onClickUser}>
               {
                 isMdAndUp ?
                 <>
@@ -211,7 +211,7 @@ const Navbar: React.FC = () => {
                 :
                 <AccountCircleIcon />
               }
-            </div>
+            </div> */}
           </Toolbar>
           <ConsumerPopper
             open={open}
