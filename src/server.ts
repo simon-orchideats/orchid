@@ -1,3 +1,4 @@
+import { getContext } from './server/utils/apolloUtils';
 import { initOrderService } from './server/orders/orderService';
 import express from 'express';
 import next from 'next';
@@ -9,6 +10,8 @@ import { activeConfig, isProd } from './config';
 import { schema } from './schema';
 import { initRestService } from './server/rests/restService';
 import Stripe from 'stripe';
+import cookieParser from "cookie-parser";
+import { handleLoginRoute, handleAuthCallback } from './server/auth/authenticate';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -36,6 +39,7 @@ const start = async () => {
   await ssr.prepare();
 
   const app = express();
+  app.use(cookieParser());
 
   //needed if since we run behind a heroku load balancer in prod
   if (process.env.NODE_ENV === 'production') {
@@ -58,15 +62,16 @@ const start = async () => {
 
   const apolloServer = new ApolloServer({
     schema,
-    context: () => ({
-      signedInUser: 'testUser'
-    }),
+    context: ({ req }) => getContext(req),
   });
 
   apolloServer.applyMiddleware({
     app,
     path: '/api/graphql'
   })
+
+  app.use('/login', handleLoginRoute);
+  app.use('/auth-callback', handleAuthCallback)
 
   app.all('*', (req, res) => ssrHandler(req, res));
 

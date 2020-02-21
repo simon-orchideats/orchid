@@ -1,26 +1,28 @@
 // import { Address } from './../../../location/addressModel';
-import {
-  deliveryDay,
-  // ConsumerProfile,
-  // Destination,
-  // ConsumerPlan
-} from './../../../consumer/consumerModel';
+// import {
+//   deliveryDay,
+//   // ConsumerProfile,
+//   // Destination,
+//   // ConsumerPlan
+// } from './../../../consumer/consumerModel';
 // import { ApolloCache } from 'apollo-cache';
 // import { Cart } from '../../../cart/cartModel';
 // import { ClientResolver } from './localState';
-import { useMutation, useQuery } from '@apollo/react-hooks';
+import { 
+  // useMutation, 
+  useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Consumer } from '../../../consumer/consumerModel';
 
-export const consumerQL = gql`
-  extend type Mutation {
-    updateDeliveryDay(day: Number!): Consumer!
-    updatePlan(stripePlanId: ID!): Consumer!
-    updateRewneal(renewal: RenewalType!): Boolean!
-    addCuisine(cuisne: CusineType!): Boolean!
-    removeCuisine(cuisine: CusineType!): Boolean!
-  }
-`
+// export const consumerQL = gql`
+//   extend type Mutation {
+//     updateDeliveryDay(day: Number!): Consumer!
+//     updatePlan(stripePlanId: ID!): Consumer!
+//     updateRewneal(renewal: RenewalType!): Boolean!
+//     addCuisine(cuisne: CusineType!): Boolean!
+//     removeCuisine(cuisine: CusineType!): Boolean!
+//   }
+// `
 
 export const consumerInitialState: Consumer | null = null;
 
@@ -38,29 +40,29 @@ export const useGetConsumer = () => {
   return queryRes.data ? queryRes.data.consumer : null
 }
 
-export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
-  type vars = { day: deliveryDay };
-  const [mutate] = useMutation<any, vars>(gql`
-    mutation updateDeliveryDay($day: Int!) {
-      updateDeliveryDay(day: $day) @client
-    }
-  `);
-  return (day: deliveryDay) => {
-    mutate({ variables: { day } })
-  }
-}
+// export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
+//   type vars = { day: deliveryDay };
+//   const [mutate] = useMutation<any, vars>(gql`
+//     mutation updateDeliveryDay($day: Int!) {
+//       updateDeliveryDay(day: $day) @client
+//     }
+//   `);
+//   return (day: deliveryDay) => {
+//     mutate({ variables: { day } })
+//   }
+// }
 
-export const useUpdatePlan = (): (stripePlanId: string) => void => {
-  type vars = { stripePlanId: string };
-  const [mutate] = useMutation<any, vars>(gql`
-    mutation updatePlan($stripePlanId: ID!) {
-      updatePlan(stripePlanId: $stripePlanId) @client
-    }
-  `);
-  return (stripePlanId: string) => {
-    mutate({ variables: { stripePlanId } })
-  }
-}
+// export const useUpdatePlan = (): (stripePlanId: string) => void => {
+//   type vars = { stripePlanId: string };
+//   const [mutate] = useMutation<any, vars>(gql`
+//     mutation updatePlan($stripePlanId: ID!) {
+//       updatePlan(stripePlanId: $stripePlanId) @client
+//     }
+//   `);
+//   return (stripePlanId: string) => {
+//     mutate({ variables: { stripePlanId } })
+//   }
+// }
 
 // type consumerMutationResolvers = {
 //   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Consumer | null>

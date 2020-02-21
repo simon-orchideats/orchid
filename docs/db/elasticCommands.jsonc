@@ -164,6 +164,9 @@ PUT /rests/
                 ]
               }
             }
+          },
+          "originalPrice": {
+            "type": "float"
           }
         }
       },
@@ -940,6 +943,182 @@ POST rests/_doc/
     "name": "The Copperstone",
     "phone": "609-513-8166",
     "tags": ["Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate" : 1580502754744,
+  "location" : {
+    "address" : {
+      "address1" : "175 Sip Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07306"
+    },
+    "geo" : {
+      "lat" : 40.715677,
+      "lon" : -74.035868
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "5E8IO8p3N9HBTmXG16QLv",
+      "img" : "menu/vipDiner/turkey-triple.jpg",
+      "name" : "Turkey & Bacon Triple Decker",
+      "description" : "with lettuce & tomato",
+      "originalPrice" : 10.65
+    },
+    {
+      "_id" : "SSZnRga_jPP8mHSK_eECe",
+      "img" : "menu/vipDiner/penne-rigate-ala-vodka.jpg",
+      "name" : "Penne Rigate Ala Vodka",
+      "originalPrice" : 11.5
+    },
+    {
+      "_id" : "FMHSwI21-jLwyGMeXnEK-",
+      "img" : "menu/vipDiner/philly-cheesesteak.jpg",
+      "name" : "Philly Cheese Steak",
+      "originalPrice" : 8.95,
+      "description" : "with fries, peppers, onions & american cheese on hero bread"
+    },
+    {
+      "_id" : "BYNB7K5ovjFDkjA2026Ur",
+      "img" : "menu/vipDiner/penne-with-broccoli.jpg",
+      "name" : "Penne Rigate with Broccoli",
+      "originalPrice" : 10.95
+    },
+    {
+      "_id" : "-egup_S0NcSlZVcqATo1G",
+      "img" : "menu/vipDiner/chopped-sirloin.jpg",
+      "name" : "Chopped Sirloin Steak",
+      "description" : "with mushroom sauce",
+      "originalPrice" : 12.95
+    },
+    {
+      "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
+      "img" : "menu/vipDiner/hero-chicken-parm.jpg",
+      "name" : "Hero Chicken Parmigiana",
+      "description" : "on italian bread with fries",
+      "originalPrice" : 8.95
+    }
+  ],
+  "profile" : {
+    "name" : "Vip Diner",
+    "phone" : "609-513-8166",
+    "tags" : [
+      "American"
+    ]
+  }
+}
+
+POST rest/_doc/
+{
+  "createdDate" : 1580502754744,
+  "location" : {
+    "address" : {
+      "address1" : "263 1st St",
+      "city" : "Hoboken",
+      "state" : "NJ",
+      "zip" : "07030"
+    },
+    "geo" : {
+      "lat" : 40.715677,
+      "lon" : -74.035868
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "Z8GgZteZfv2pvI-pV8J9W",
+      "img" : "menu/tony/7-wings.jpg",
+      "name" : "7 wings"
+    },
+    {
+      "_id" : "aLhdJA-gb2sZuwDxsGmPu",
+      "img" : "menu/tony/aloo-fries.jpg",
+      "name" : "Aloo Fries",
+      "originalPrice" : 10.5,
+      "description" : "Indian tikka masala, fried jalapeno, paneer, green chutney, and cilantro"
+    },
+    {
+      "_id" : "uddHQFUUbV2pmoESjer10",
+      "img" : "menu/tony/boken-boy-sub.jpg",
+      "name" : "Boken-boy Sub",
+      "originalPrice" : 13.0,
+      "description" : "chicken cutlet, garlic aioli, soppressata, baby arugula, fresh & smoked mutz, house dressing"
+    },
+    {
+      "_id" : "XBaVxyJDYOAndUnqdMuuJ",
+      "img" : "menu/tony/cacio-pepe-mac-balls.jpg",
+      "name" : "Cacio Pepe Mac Balls",
+      "originalPrice" : 10.0,
+      "description" : "3 homemade cheezy peppery smoked mozzarella psta balls w/ side of vodka sauce"
+    },
+    {
+      "_id" : "XIbyfNlr5xVqVLFj-vrFj",
+      "img" : "menu/tony/ducktown-melt-sub.jpg",
+      "name" : "Ducktown Melt Sub",
+      "description" : "shaved ribey, smoked bacon, garlic aioli, fresh mutz on garlic bread",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "LT1iQt_gmNikEpGEZhkB9",
+      "img" : "menu/tony/filthy-rich-pennybags-sub.jpg",
+      "name" : "Filthy Rich Pennybags Sub",
+      "description" : "don't pass go...chicken cutlet, salted ricotta, sage pesto, fresh mutz, honey balsamic",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "ykV_-LKycfchzeJTEODdb",
+      "img" : "menu/tony/greektown-salad.jpg",
+      "name" : "Greektown Salad",
+      "description" : "romaine, grilled halloumi, Kalamata olive, grape tomato, cucumber, parsley and creamy Greek dressing",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "f_zjVeag78JVvsZcX-tW6",
+      "img" : "menu/tony/jersey-jezebel-sub.jpg",
+      "name" : "Jersey Jezebel Sub",
+      "description" : "nashville chicken, purple slaw, sour dill pickle, smoked cheddar, dill aioli",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "iXA1-rkz64MdpsomiNMVF",
+      "img" : "menu/tony/original-pretzel-mozzarella-sticks.jpg",
+      "name" : "Original Pretzel Mozzarella Sticks",
+      "description" : "pennsylvania dutch pretzel crusted w/ super creamy homemade mozzarella, w/ marinara sauce",
+      "originalPrice" : 12.0
+    },
+    {
+      "_id" : "3z3-vTOaw7Or0t-Wp8tx_",
+      "img" : "menu/tony/pueblito-salad.jpg",
+      "name" : "Pueblito Salad",
+      "description" : "romaine, rosated corn, black been, grape tomato, string cheese, cilantro, tortilla chips, smashed avocado, pumpkin seeds, spicy mole sauce, picked jalapeno crema dressing",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "xXEHW1t-pbCVjQkh_QLET",
+      "img" : "menu/tony/three-piece-chicken-tenders-and-fries-10.jpg",
+      "name" : "3 Piece Chicken Tenders and Fries",
+      "description" : "3 chicken tenders with fries and honey mustard",
+      "originalPrice" : 10.0
+    },
+    {
+      "_id" : "aUvOb_cDftrkbMXgaSXgW",
+      "img" : "menu/tony/geppetto-sub.jpg",
+      "name" : "Geppetto Sub",
+      "description" : "house parm sub, salted ricotta, basil, and pecorino",
+      "originalPrice" : 13.0
+    }
+  ],
+  "profile" : {
+    "name" : "Tony Boloney's",
+    "phone" : "609-513-8166",
+    "tags" : [
+      "American"
+    ]
   }
 }
 

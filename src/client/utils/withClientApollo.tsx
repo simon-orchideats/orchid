@@ -10,7 +10,7 @@ import { initApolloClient } from './withPageApollo';
  */
 export default function withClientApollo<T>(Component: React.ComponentType<T>) {
   const WithClientApollo = (props: T) => {
-    const client = initApolloClient()
+    const client = initApolloClient({})
     return (
       <ApolloProvider client={client}>
         <Component {...props} />

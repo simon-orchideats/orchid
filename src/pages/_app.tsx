@@ -5,7 +5,6 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { getTheme } from '../client/global/styles/theme';
 import Navbar from '../client/_app/Navbar';
-import { attemptLogin } from '../client/utils/auth/auth';
 import { isServer } from '../client/utils/isServer';
 import LogRocket from 'logrocket';
 import { activeConfig } from '../config';
@@ -23,7 +22,6 @@ export default class MyApp extends App {
       analyticsService.init();
       LogRocket.init(activeConfig.client.logRocket.key);
     }
-    attemptLogin();
   }
 
   render() {
