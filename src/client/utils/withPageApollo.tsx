@@ -18,6 +18,7 @@ import {
   clientInitialState
 } from '../global/state/localState'
 import { isServer } from './isServer';
+import { getContext } from '../../server/utils/apolloUtils';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 
@@ -72,7 +73,7 @@ export default function withApollo(
 
       // Initialize ApolloClient, add it to the ctx object so
       // we can use it in `PageComponent.getInitialProp`.
-      const apolloClient = (ctx.apolloClient = initApolloClient())
+      const apolloClient = (ctx.apolloClient = initApolloClient(getContext(ctx.req)))
 
       // Run wrapped getInitialProps methods
       let pageProps = {}
@@ -132,16 +133,16 @@ export default function withApollo(
  * Creates or reuses apollo client in the browser.
  * @param  {Object} initialState
  */
-export function initApolloClient(initialState?: any) {
+export function initApolloClient(ctx: object, initialState?: any) {
   // Make sure to create a new client for every server-side request so that data
   // isn't shared between connections (which would be bad)
   if (isServer()) {
-    return createApolloClient(initialState)
+    return createApolloClient(ctx, initialState)
   }
 
   // Reuse client on the client-side
   if (!globalApolloClient) {
-    globalApolloClient = createApolloClient(initialState)
+    globalApolloClient = createApolloClient(ctx, initialState)
   }
 
   return globalApolloClient
@@ -151,7 +152,7 @@ export function initApolloClient(initialState?: any) {
  * Creates and configures the ApolloClient
  * @param  {Object} [initialState={}]
  */
-function createApolloClient(initialState = {}) {
+function createApolloClient(ctx = {}, initialState = {}) {
   const ssrMode = isServer();
   const cache = new InMemoryCache({
     cacheRedirects: {
@@ -166,20 +167,20 @@ function createApolloClient(initialState = {}) {
   // Check out https://github.com/zeit/next.js/pull/4611 if you want to use the AWSAppSyncClient
   return new ApolloClient({
     ssrMode,
-    link: createIsomorphLink(),
+    link: createIsomorphLink(ctx),
     cache,
     typeDefs: clientTypeDefs,
     resolvers: clientResolvers,
   })
 }
 
-function createIsomorphLink() {
+function createIsomorphLink(context: object) {
   // can't do isServer() here, not sure why
   if (typeof window === 'undefined') {
     // not sure why i had to do import instead of require which the example...
     // const { SchemaLink } = require('./node_modules/apollo-link-schema')
     const schema = require('../../schema').schema
-    return new SchemaLink({ schema })
+    return new SchemaLink({ schema, context })
   } else {
     // const { HttpLink } = require('./node_modules/apollo-link-http')
     return new HttpLink({

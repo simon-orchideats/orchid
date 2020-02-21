@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 const _ConsumerQL = gql`
   type Consumer {
-    userId: ID!
+    _id: ID!
     plan: ConsumerPlan!
     card: Card!
     phone: String!

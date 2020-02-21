@@ -2,7 +2,6 @@ import { makeStyles, Typography, Container, Paper, Divider, Popover, Button } fr
 import { useRouter } from "next/router";
 import { useGetRest } from "../../rest/restService";
 import { getNextDeliveryDate } from "../../order/utils";
-import withClientApollo from "../../client/utils/withClientApollo";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -15,7 +14,8 @@ import CartMealGroup from "../../client/order/CartMealGroup";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
 import { menuRoute } from "../menu";
-import requireAuth from "../../client/utils/auth/requireAuth";
+import withApollo from "../../client/utils/withPageApollo";
+import { useRequireConsumer } from "../../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -84,6 +84,10 @@ const Confirmation: React.FC<{
   const res = useGetRest(cartRef.current.RestId);
   const groupedMeals = cartRef.current.Meals;
   const classes = useStyles();
+  const consumer = useRequireConsumer(upcomingDeliveriesRoute);
+  if (!consumer.data && !consumer.loading && !consumer.error) {
+    return <Typography>Logging you in...</Typography>
+  }
   return (
     <Paper variant='outlined' className={classes.confirmation}>
       <div className={classes.row}>
@@ -269,6 +273,6 @@ const UpcomingDeliveries = () => {
   );
 }
 
-export default requireAuth(withClientApollo(UpcomingDeliveries));
+export default withApollo(UpcomingDeliveries);
 
 export const upcomingDeliveriesRoute = '/consumer/upcoming-deliveries';

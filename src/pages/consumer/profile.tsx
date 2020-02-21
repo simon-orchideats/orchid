@@ -1,7 +1,8 @@
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
-import requireAuth from "../../client/utils/auth/requireAuth";
+import  { useRequireConsumer } from '../../consumer/consumerService';
+import withApollo from "../../client/utils/withPageApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -53,6 +54,11 @@ const profile = () => {
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [phoneLabel, setPhoneLabel] = useState<string>('609-513-8166')
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+  const consumer = useRequireConsumer(profileRoute);
+  if (!consumer.data && !consumer.loading && !consumer.error) {
+    return <Typography>Logging you in...</Typography>
+  }
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
@@ -61,7 +67,6 @@ const profile = () => {
   const onCancelPhone = () => {
     setIsUpdatingPhone(false);
   }
-  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   return (
     <>
       <Container maxWidth='lg' className={classes.container}>
@@ -159,6 +164,6 @@ const profile = () => {
   )
 }
 
-export default requireAuth(profile); 
+export default withApollo(profile); 
 
 export const profileRoute = '/consumer/profile';

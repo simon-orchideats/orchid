@@ -1,5 +1,7 @@
+import { IConsumer } from './../../consumer/consumerModel';
+
 export type Context = {
-  signedInUser: string
+  signedInUser: IConsumer
 };
 
 export type ServerResolovers = {
