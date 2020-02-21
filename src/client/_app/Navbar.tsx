@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 // import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
-import { Container, Typography, useMediaQuery } from '@material-ui/core';
+import { Container, Typography } from '@material-ui/core';
 import { howItWorksRoute } from '../../pages/how-it-works';
 import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
@@ -82,7 +82,7 @@ const useStyles = makeStyles(theme => ({
 
 const Navbar: React.FC = () => {
   const classes = useStyles();
-  const theme = useTheme();
+  // const theme = useTheme();
   // const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
