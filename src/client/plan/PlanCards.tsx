@@ -1,8 +1,9 @@
 import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
-import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
-
+import MealCard from './MealCard';
+import { IPlan  } from '../../plan/planModel';
+import { useState } from 'react';
 const useStyles = makeStyles(theme => ({
   item: {
     display: 'flex',
@@ -20,9 +21,21 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const PlanCards = () => {
+const PlanCards = (props:any) => {
+  console.log(props.isClickable)
+  const isClickable = {...props};
   const classes = useStyles();
   const plans = useGetAvailablePlans();
+  let clickedMealCard:IPlan =
+  {
+    stripeId: '',
+    mealCount: 0,
+    mealPrice: 0,
+    weekPrice: 0,
+  }
+  console.log(clickedMealCard)
+  const [mealPlan, setMealPlan] = useState<IPlan>();
+  console.log(mealPlan);
   if (!plans.data) {
     return <div>loading</div>
   }
@@ -30,19 +43,16 @@ const PlanCards = () => {
     <Grid container justify='center'>
       {plans.data.map(plan => (
         <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
-          <Card key={plan.MealPrice} className={classes.card}>
-            <CardContent>
-              <Typography variant='h6'>
-                {plan.MealCount} meals/week
-              </Typography>
-              <Typography variant='body2' color='textSecondary'>
-                ${plan.MealPrice.toFixed(2)}/meal
-              </Typography>
-              <Typography variant='body2' color='textSecondary'>
-                ${plan.WeekPrice.toFixed(2)}/week
-              </Typography>
-            </CardContent>
-          </Card>
+          <div onClick={() => {
+      if (props.isClickable){
+        console.log("test");
+        let mealPlan:IPlan = {...plan};
+        clickedMealCard =  {...mealPlan}
+        setMealPlan(mealPlan);
+      }
+      }}>
+          <MealCard  {...{plan, ...isClickable, ...clickedMealCard}}/>
+          </div>
         </Grid>
       ))}
     </Grid>

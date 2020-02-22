@@ -1,14 +1,14 @@
 
-import { Card, CardContent, makeStyles, Typography, Container, InputLabel, Select, MenuItem, FormControl, Grid, Button } from "@material-ui/core";
+import { makeStyles, Typography, Container, InputLabel, Select, MenuItem, FormControl, Grid, Button } from "@material-ui/core";
 import requireAuth from "../../client/utils/auth/requireAuth";
 import { useState, useRef, useEffect } from 'react';
 import { deliveryDay } from '../../consumer/consumerModel';
 import withClientApollo from "../../client/utils/withClientApollo";
 import { useUpdateDeliveryDay } from '../../client/global/state/cartState';
-import { useGetAvailablePlans } from '../../plan/planService';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import { getNextDeliveryDate } from '../../order/utils';
 import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../../consumer/consumerModel";
+import PlanCards from '../../client/plan/PlanCards';
 // import { useNotify } from "../../client/global/state/notificationState";
 import Notifier from "../../client/notification/Notifier";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -81,53 +81,46 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.text.secondary,
   }
 }));
-const PlanCards = () => {
-  // use plan model
-  interface MealPlan {
-    stripeId: string;
-    mealCount: number;
-    mealPrice: number;
-    weekPrice: number;
-  }
-  // const notify = useNotify();
-  const classes = useStyles();
-  const plans = useGetAvailablePlans();
-  const [mealPlan, setMealPlan] = useState<MealPlan>();
-  console.log(mealPlan);
-  if (!plans.data) {
-    return <div>loading</div>
-  }
-  return (
-    <Grid container justify='center'>
-      {plans.data.map(plan => (
-        <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
-          <Card onClick={() => {
-              let mealPlan: MealPlan;
-              mealPlan = {
-                stripeId: plan.stripeId,
-                mealCount: plan.mealCount,
-                mealPrice: plan.mealPrice,
-                weekPrice: plan.weekPrice,
-              }
-              setMealPlan(mealPlan);
-            }} key={plan.MealPrice} className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelected : classes.card}>
-              <CardContent>
-                <Typography variant='h6'>
-                  {plan.MealCount} meals/week
-                </Typography>
-                <Typography variant='body2' className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
-                  ${plan.MealPrice.toFixed(2)}/meal
-                </Typography>
-                <Typography variant='body2' className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
-                  ${plan.WeekPrice.toFixed(2)}/week
-                </Typography>
-              </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
-  );
-}
+// const PlanCards = () => {
+//   // const notify = useNotify();
+//   const classes = useStyles();
+//   const plans = useGetAvailablePlans();
+//   const [mealPlan, setMealPlan] = useState<IPlan>();
+//   console.log(mealPlan);
+//   if (!plans.data) {
+//     return <div>loading</div>
+//   }
+//   return (
+//     <Grid container justify='center'>
+//       {plans.data.map(plan => (
+//         <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
+//           <Card onClick={() => {
+//               let mealPlan: IPlan;
+//               mealPlan = {
+//                 stripeId: plan.stripeId,
+//                 mealCount: plan.mealCount,
+//                 mealPrice: plan.mealPrice,
+//                 weekPrice: plan.weekPrice,
+//               }
+//               setMealPlan(mealPlan);
+//             }} key={plan.MealPrice} className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelected : classes.card}>
+//               <CardContent>
+//                 <Typography variant='h6'>
+//                   {plan.MealCount} meals/week
+//                 </Typography>
+//                 <Typography variant='body2' className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+//                   ${plan.MealPrice.toFixed(2)}/meal
+//                 </Typography>
+//                 <Typography variant='body2' className={ mealPlan?.mealPrice === plan.MealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+//                   ${plan.WeekPrice.toFixed(2)}/week
+//                 </Typography>
+//               </CardContent>
+//           </Card>
+//         </Grid>
+//       ))}
+//     </Grid>
+//   );
+// }
 // const validate = () => {
 //   let isValid = true;
 //   if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
@@ -152,7 +145,7 @@ const myPlan = () => {
   return (
     <Container maxWidth='xl' className={classes.container}>
        <Notifier />
-     <PlanCards/>
+     <PlanCards isClickable={true}/>
       <Typography
           variant='h3'
           color='primary'

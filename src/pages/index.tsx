@@ -150,6 +150,7 @@ const HowItWorks = () => {
 
 const Plans = () => {
   const classes = useStyles();
+  // const isntClickable = false
   return (
     <div className={`${classes.plans}`}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
@@ -159,7 +160,7 @@ const Plans = () => {
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
           Each Sauté delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
-        <PlanCards />
+        <PlanCards isClickable={false}/>
         <Link href={menuRoute}>
           <Button
             variant='outlined'
