@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 interface mealCardProps {
   plan: IPlan;
   isClickable: boolean;
-  clickedMealCard: any;
+  mealPrice:number;
   onClick: () => void;
 }
 const MealCard = (props:mealCardProps) => {
@@ -46,15 +46,15 @@ const MealCard = (props:mealCardProps) => {
 
   console.log(props);
   return (
-    <Card  key={props.plan.mealPrice} className={ props.clickedMealCard?.mealPrice == props.plan.mealPrice ? classes.cardSelected : classes.card}>
+    <Card  key={props.plan.mealPrice} className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelected : classes.card}>
       <CardContent>
         <Typography variant='h6'>
           {props.plan.mealCount} meals/week
         </Typography>
-        <Typography variant='body2' className={ props.clickedMealCard?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+        <Typography variant='body2' className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
           ${props.plan.mealPrice.toFixed(2)}/meal
         </Typography>
-        <Typography variant='body2' className={ props.clickedMealCard?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+        <Typography variant='body2' className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
           ${props.plan.weekPrice.toFixed(2)}/week
         </Typography>
       </CardContent>

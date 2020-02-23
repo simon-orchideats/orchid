@@ -51,7 +51,7 @@ const PlanCards = (props:any) => {
         setMealPlan(mealPlan);
       }
       }}>
-          <MealCard  {...{plan, ...isClickable, ...clickedMealCard}}/>
+          <MealCard  {...{plan, ...isClickable, ...mealPlan}}/>
           </div>
         </Grid>
       ))}
