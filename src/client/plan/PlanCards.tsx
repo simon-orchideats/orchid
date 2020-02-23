@@ -29,19 +29,31 @@ const PlanCards = (props:any) => {
     return <div>loading</div>
   }
   return (
-    <Grid container justify='center'>
-      {plans.data.map(plan => (
-        <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
-          <div onClick={() => {
-            if (props.isClickable){
-              setMealPlan(plan);
-            }
-          }}>
-            <MealCard {...{plan, mealPlan}}/>
-          </div>
+    <>
+      {props.isClickable ? (
+         <Grid container >
+          {plans.data.map(plan => (
+            <Grid justify='center' key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+              <div onClick={() => {
+                if (props.isClickable){
+                  setMealPlan(plan);
+                }
+              }}>
+                <MealCard {...{plan,...props, mealPlan}}/>
+              </div>
+            </Grid>
+          ))}
         </Grid>
-      ))}
-    </Grid>
+      ): (
+        <Grid container justify='center'>
+          {plans.data.map(plan => (
+            <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
+              <MealCard {...{plan}}/>
+            </Grid>
+          ))}
+       </Grid>
+      )}
+    </>
   );
 }
 

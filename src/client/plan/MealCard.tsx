@@ -19,8 +19,6 @@ const useStyles = makeStyles(theme => ({
   },
   cardSelected: {
     textAlign: 'center',
-    marginLeft: theme.spacing(3),
-    marginRight: theme.spacing(3),
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
     paddingLeft: theme.spacing(2),
@@ -29,18 +27,28 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.primary.main,
     color:"white",
   },
+  clickableCard: {
+    textAlign: 'center',
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    width: 250,
+  },
   cardSubtitle: {
     color: theme.palette.text.secondary,
   }
 }));
 interface mealCardProps {
   plan: Plan;
-  mealPlan: Plan | undefined;
+  mealPlan?: Plan | undefined;
+  isClickable?: boolean;
 }
 const MealCard = (props:mealCardProps) => {
   const classes = useStyles();
   return (
-    <Card  key={props.plan.mealPrice} className={ props.mealPlan?.mealPrice == props.plan.mealPrice ? classes.cardSelected : classes.card}>
+    <Card key={props.plan.mealPrice} className={ props.mealPlan?.mealPrice == props.plan.mealPrice ? classes.cardSelected: 
+                                                props.isClickable ? classes.clickableCard: classes.card}>
       <CardContent>
         <Typography variant='h6'>
           {props.plan.mealCount} meals/week
