@@ -2,7 +2,7 @@ import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
 import MealCard from './MealCard';
-import { IPlan  } from '../../plan/planModel';
+import { Plan  } from '../../plan/planModel';
 import { useState } from 'react';
 const useStyles = makeStyles(theme => ({
   item: {
@@ -22,20 +22,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const PlanCards = (props:any) => {
-  console.log(props.isClickable)
-  const isClickable = {...props};
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  let clickedMealCard:IPlan =
-  {
-    stripeId: '',
-    mealCount: 0,
-    mealPrice: 0,
-    weekPrice: 0,
-  }
-  console.log(clickedMealCard)
-  const [mealPlan, setMealPlan] = useState<IPlan>();
-  console.log(mealPlan);
+  const [mealPlan, setMealPlan] = useState<Plan>();
   if (!plans.data) {
     return <div>loading</div>
   }
@@ -44,14 +33,11 @@ const PlanCards = (props:any) => {
       {plans.data.map(plan => (
         <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
           <div onClick={() => {
-      if (props.isClickable){
-        console.log("test");
-        let mealPlan:IPlan = {...plan};
-        clickedMealCard =  {...mealPlan}
-        setMealPlan(mealPlan);
-      }
-      }}>
-          <MealCard  {...{plan, ...isClickable, ...mealPlan}}/>
+            if (props.isClickable){
+              setMealPlan(plan);
+            }
+          }}>
+            <MealCard {...{plan, mealPlan}}/>
           </div>
         </Grid>
       ))}

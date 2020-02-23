@@ -1,7 +1,6 @@
 import { Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
-import { IPlan} from '../../plan/planModel';
-// import { useState } from 'react';
+import { Plan } from '../../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -35,26 +34,21 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 interface mealCardProps {
-  plan: IPlan;
-  isClickable: boolean;
-  mealPrice:number;
-  onClick: () => void;
+  plan: Plan;
+  mealPlan: Plan | undefined;
 }
 const MealCard = (props:mealCardProps) => {
-  
   const classes = useStyles();
-
-  console.log(props);
   return (
-    <Card  key={props.plan.mealPrice} className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelected : classes.card}>
+    <Card  key={props.plan.mealPrice} className={ props.mealPlan?.mealPrice == props.plan.mealPrice ? classes.cardSelected : classes.card}>
       <CardContent>
         <Typography variant='h6'>
           {props.plan.mealCount} meals/week
         </Typography>
-        <Typography variant='body2' className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+        <Typography variant='body2' className={ props.mealPlan?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
           ${props.plan.mealPrice.toFixed(2)}/meal
         </Typography>
-        <Typography variant='body2' className={ props?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
+        <Typography variant='body2' className={ props.mealPlan?.mealPrice == props.plan.mealPrice ? classes.cardSelectedSubtitle : classes.cardSubtitle}>
           ${props.plan.weekPrice.toFixed(2)}/week
         </Typography>
       </CardContent>
