@@ -11,6 +11,7 @@ export default class MyDocument extends Document {
   render() {
     return (
       <html lang="en">
+        <script src="https://js.stripe.com/v3/"></script>
         <Head>
           {/* Global Site Tag (gtag.js) - Google Analytics */}
           <script
