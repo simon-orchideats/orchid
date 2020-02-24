@@ -164,6 +164,9 @@ PUT /rests/
                 ]
               }
             }
+          },
+          "originalPrice": {
+            "type": "float"
           }
         }
       },
@@ -770,6 +773,352 @@ POST rests/_doc/
     "name": "Domo4",
     "phone": "609-513-8166",
     "tags": ["Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "Hudson St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "_Kd1x3O4mEABkROx7qoYm",
+      "img": "meals/ALMOND-GINGER-CHICKEN-BOWL.jpg",
+      "name": "Almond Ginger Chicken Bowl"
+    },
+    {
+      "_id": "pscX2KLhfmEMuIj_Xj1kL",
+      "img": "meals/ANDOUILLE-CHICKEN-GUMBO.jpg",
+      "name": "Andouille & Chicken Gumbo"
+    },
+    {
+      "_id": "rKW6c14bAp9Ruelt4zQ5C",
+      "img": "meals/BUFFALO-CHICKEN.jpg",
+      "name": "Buffalo Chicken"
+    },
+    {
+      "_id": "dJDbVkelvsJjy28slHRW0",
+      "img": "meals/CARVED-TURKEY-GRAIN-FREE-STUFFING.jpg",
+      "name": "Carved Turkey Grain-free Stuffing"
+    },
+    {
+      "_id": "vpsuG02HBkhEwhfTFm_kw",
+      "img": "meals/CAULIFLOWER-SHELL-BOLOGNESE.jpg",
+      "name": "Couliflower Shell Bolognese"
+    },
+    {
+      "_id": "cerbwhVozaWN00zTPggJm",
+      "img": "meals/CHICKEN-CACCIATORE.jpg",
+      "name": "Chicken Cacciatore"
+    },
+    {
+      "_id": "_KXDoqkzCfaa9FOnZU-2N",
+      "img": "meals/CHICKEN-LIVORNO.jpg",
+      "name": "Chicken Livorno"
+    },
+    {
+      "_id": "OU-PrpwLaIoQT2kP8jCOC",
+      "img": "meals/CHICKEN-TAGINE.jpg",
+      "name": "Chicken Tagine"
+    },
+    {
+      "_id": "BCYOWORN6YkHCU4NZCeao",
+      "img": "meals/CHICKEN-TERIYAKI.jpg",
+      "name": "Chicken Teriyaki"
+    },
+    {
+      "_id": "1wXnzyOm6seJnu8UqMWA0",
+      "img": "meals/CHICKEN-TIKKA-MASALA.jpg",
+      "name": "Chicken Tikka Masala"
+    },
+    {
+      "_id": "Yy3dxNopB1pmeiGMu18Mb",
+      "img": "meals/CHILI-MAC-CHEESE.jpg",
+      "name": "Chili Mac & Cheese"
+    },
+    {
+      "_id": "qYXFSOIKlijQCzBw5chv0",
+      "img": "meals/COD-CAKES.jpg",
+      "name": "Cod Cakes"
+    }
+  ],
+  "profile": {
+    "name": "JC Diner",
+    "phone": "609-513-8166",
+    "tags": ["Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1580502754744,
+  "location": {
+    "address": {
+      "address1": "Hudson St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.715677,
+      "lon": -74.035868
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "5E8IO8p3N9HBTmXG16QLv",
+      "img": "meals/CREAMY-CHICKEN-CASSEROLE.jpg",
+      "name": "Creamy Chicken Casserole"
+    },
+    {
+      "_id": "SSZnRga_jPP8mHSK_eECe",
+      "img": "meals/CREAMY-RED-BEET-CHICKEN-RISOTTO.jpg",
+      "name": "Creamy Red Beet Chicken Risotto"
+    },
+    {
+      "_id": "FMHSwI21-jLwyGMeXnEK-",
+      "img": "meals/GOLDEN-OVEN-FRIED-CHICKEN-MASH.jpg",
+      "name": "Golden Oven Fried Chicken Mash"
+    },
+    {
+      "_id": "BYNB7K5ovjFDkjA2026Ur",
+      "img": "meals/HOMESTYLE-CHICKEN.jpg",
+      "name": "Homestyle Chicken"
+    },
+    {
+      "_id": "-egup_S0NcSlZVcqATo1G",
+      "img": "meals/HONEY-MUSTARD-CHICKEN-BOWL.jpg",
+      "name": "Honey Mustard Chicken Bowl"
+    },
+    {
+      "_id": "MdRTnywFnehYJt_kfUFaU",
+      "img": "meals/HOT-CHICKEN-BOWL.jpg",
+      "name": "Hot Chicken Bowl"
+    },
+    {
+      "_id": "F9wiNpJL1zA7WIfYhR5bO",
+      "img": "meals/LAREDO-CHICKEN.jpg",
+      "name": "Laredo Chicken"
+    },
+    {
+      "_id": "8v9oQsF4xGC0cpQAdkeAr",
+      "img": "meals/MEXICAN-STYLE-SHREDDED-BEEF.jpg",
+      "name": "Mexican Style Shredded Beef"
+    },
+    {
+      "_id": "EtjRLLAz5tDwfHbhcVmPh",
+      "img": "meals/PORK-CARNITAS.jpg",
+      "name": "Pork Carnitas"
+    },
+    {
+      "_id": "lPa3d4g0okva7jZvkpnCf",
+      "img": "meals/RUSTIC-CHICKEN.jpg",
+      "name": "Rustic Chicken"
+    },
+    {
+      "_id": "8gmKmtgWPOg8aZtxU1qDv",
+      "img": "meals/SAUSAGE-PEPPERS.jpg",
+      "name": "Sausage Peppers"
+    },
+    {
+      "_id": "xh_WDF9vYKQ8r_19JraXy",
+      "img": "meals/SICILIAN-STYLE-CHICKEN-PARM.jpg",
+      "name": "Sicilian Style Chicken Parm"
+    }
+  ],
+  "profile": {
+    "name": "The Copperstone",
+    "phone": "609-513-8166",
+    "tags": ["Mexican"]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate" : 1580502754744,
+  "location" : {
+    "address" : {
+      "address1" : "175 Sip Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07306"
+    },
+    "geo" : {
+      "lat" : 40.715677,
+      "lon" : -74.035868
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "5E8IO8p3N9HBTmXG16QLv",
+      "img" : "menu/vipDiner/turkey-triple.jpg",
+      "name" : "Turkey & Bacon Triple Decker",
+      "description" : "with lettuce & tomato",
+      "originalPrice" : 10.65
+    },
+    {
+      "_id" : "SSZnRga_jPP8mHSK_eECe",
+      "img" : "menu/vipDiner/penne-rigate-ala-vodka.jpg",
+      "name" : "Penne Rigate Ala Vodka",
+      "originalPrice" : 11.5
+    },
+    {
+      "_id" : "FMHSwI21-jLwyGMeXnEK-",
+      "img" : "menu/vipDiner/philly-cheesesteak.jpg",
+      "name" : "Philly Cheese Steak",
+      "originalPrice" : 8.95,
+      "description" : "with fries, peppers, onions & american cheese on hero bread"
+    },
+    {
+      "_id" : "BYNB7K5ovjFDkjA2026Ur",
+      "img" : "menu/vipDiner/penne-with-broccoli.jpg",
+      "name" : "Penne Rigate with Broccoli",
+      "originalPrice" : 10.95
+    },
+    {
+      "_id" : "-egup_S0NcSlZVcqATo1G",
+      "img" : "menu/vipDiner/chopped-sirloin.jpg",
+      "name" : "Chopped Sirloin Steak",
+      "description" : "with mushroom sauce",
+      "originalPrice" : 12.95
+    },
+    {
+      "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
+      "img" : "menu/vipDiner/hero-chicken-parm.jpg",
+      "name" : "Hero Chicken Parmigiana",
+      "description" : "on italian bread with fries",
+      "originalPrice" : 8.95
+    }
+  ],
+  "profile" : {
+    "name" : "Vip Diner",
+    "phone" : "609-513-8166",
+    "tags" : [
+      "American"
+    ]
+  }
+}
+
+POST rest/_doc/
+{
+  "createdDate" : 1580502754744,
+  "location" : {
+    "address" : {
+      "address1" : "263 1st St",
+      "city" : "Hoboken",
+      "state" : "NJ",
+      "zip" : "07030"
+    },
+    "geo" : {
+      "lat" : 40.715677,
+      "lon" : -74.035868
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "Z8GgZteZfv2pvI-pV8J9W",
+      "img" : "menu/tony/7-wings.jpg",
+      "name" : "7 wings"
+    },
+    {
+      "_id" : "aLhdJA-gb2sZuwDxsGmPu",
+      "img" : "menu/tony/aloo-fries.jpg",
+      "name" : "Aloo Fries",
+      "originalPrice" : 10.5,
+      "description" : "Indian tikka masala, fried jalapeno, paneer, green chutney, and cilantro"
+    },
+    {
+      "_id" : "uddHQFUUbV2pmoESjer10",
+      "img" : "menu/tony/boken-boy-sub.jpg",
+      "name" : "Boken-boy Sub",
+      "originalPrice" : 13.0,
+      "description" : "chicken cutlet, garlic aioli, soppressata, baby arugula, fresh & smoked mutz, house dressing"
+    },
+    {
+      "_id" : "XBaVxyJDYOAndUnqdMuuJ",
+      "img" : "menu/tony/cacio-pepe-mac-balls.jpg",
+      "name" : "Cacio Pepe Mac Balls",
+      "originalPrice" : 10.0,
+      "description" : "3 homemade cheezy peppery smoked mozzarella psta balls w/ side of vodka sauce"
+    },
+    {
+      "_id" : "XIbyfNlr5xVqVLFj-vrFj",
+      "img" : "menu/tony/ducktown-melt-sub.jpg",
+      "name" : "Ducktown Melt Sub",
+      "description" : "shaved ribey, smoked bacon, garlic aioli, fresh mutz on garlic bread",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "LT1iQt_gmNikEpGEZhkB9",
+      "img" : "menu/tony/filthy-rich-pennybags-sub.jpg",
+      "name" : "Filthy Rich Pennybags Sub",
+      "description" : "don't pass go...chicken cutlet, salted ricotta, sage pesto, fresh mutz, honey balsamic",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "ykV_-LKycfchzeJTEODdb",
+      "img" : "menu/tony/greektown-salad.jpg",
+      "name" : "Greektown Salad",
+      "description" : "romaine, grilled halloumi, Kalamata olive, grape tomato, cucumber, parsley and creamy Greek dressing",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "f_zjVeag78JVvsZcX-tW6",
+      "img" : "menu/tony/jersey-jezebel-sub.jpg",
+      "name" : "Jersey Jezebel Sub",
+      "description" : "nashville chicken, purple slaw, sour dill pickle, smoked cheddar, dill aioli",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "iXA1-rkz64MdpsomiNMVF",
+      "img" : "menu/tony/original-pretzel-mozzarella-sticks.jpg",
+      "name" : "Original Pretzel Mozzarella Sticks",
+      "description" : "pennsylvania dutch pretzel crusted w/ super creamy homemade mozzarella, w/ marinara sauce",
+      "originalPrice" : 12.0
+    },
+    {
+      "_id" : "3z3-vTOaw7Or0t-Wp8tx_",
+      "img" : "menu/tony/pueblito-salad.jpg",
+      "name" : "Pueblito Salad",
+      "description" : "romaine, rosated corn, black been, grape tomato, string cheese, cilantro, tortilla chips, smashed avocado, pumpkin seeds, spicy mole sauce, picked jalapeno crema dressing",
+      "originalPrice" : 13.0
+    },
+    {
+      "_id" : "xXEHW1t-pbCVjQkh_QLET",
+      "img" : "menu/tony/three-piece-chicken-tenders-and-fries-10.jpg",
+      "name" : "3 Piece Chicken Tenders and Fries",
+      "description" : "3 chicken tenders with fries and honey mustard",
+      "originalPrice" : 10.0
+    },
+    {
+      "_id" : "aUvOb_cDftrkbMXgaSXgW",
+      "img" : "menu/tony/geppetto-sub.jpg",
+      "name" : "Geppetto Sub",
+      "description" : "house parm sub, salted ricotta, basil, and pecorino",
+      "originalPrice" : 13.0
+    }
+  ],
+  "profile" : {
+    "name" : "Tony Boloney's",
+    "phone" : "609-513-8166",
+    "tags" : [
+      "American"
+    ]
   }
 }
 

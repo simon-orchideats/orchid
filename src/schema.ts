@@ -1,3 +1,4 @@
+import { ConsumerQueryResolvers } from './server/consumer/consumerResolver';
 import { ConsumerPlanQL } from './server/consumer/consumerPlanQL';
 import { DestinationQL } from './server/place/destinationQL';
 import { AddressQL } from './server/place/addressQL';
@@ -19,6 +20,7 @@ const query = gql`
     myUpcomingOrders: [Order!]!
     nearbyRests(zip: String): [Rest!]!
     rest(restId: ID!): Rest!
+    myConsumer: Consumer
   }
 `
 
@@ -58,7 +60,8 @@ const resolvers = {
   Query: merge(
     RestQueryResolvers,
     PlanQueryResolvers,
-    OrderQueryResolvers
+    OrderQueryResolvers,
+    ConsumerQueryResolvers,
   ),
   Mutation: merge(
     OrderMutationResolvers

@@ -45,4 +45,11 @@ export class Plan implements IPlan {
     }
     throw new Error(`No plan found for stripePlanId '${stripePlanId}'`)
   }
+
+  public static getMealPrice(stripePlanId: string | null, plans: Plan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (plans[i].StripeId === stripePlanId) return plans[i].MealPrice;
+    }
+    throw new Error(`No plan found for stripePlanId '${stripePlanId}'`)
+  }
 }

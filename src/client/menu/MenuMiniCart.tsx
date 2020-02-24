@@ -7,6 +7,8 @@ import { Plan } from "../../plan/planModel";
 import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
+import { useGetRest } from "../../rest/restService";
+import { sendCartMenuMetrics } from './menuMetrics';
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -29,6 +31,7 @@ const MenuMiniCart: React.FC = () => {
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
   const planCounts = Plan.getPlanCounts(sortedPlans.data);
+  const rest = useGetRest(cart ? cart.RestId : null);
   const mealCount = cart ? Cart.getMealCount(cart.Meals) : 0;
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
   const setCartStripePlanId = useUpdateCartPlanId();
@@ -36,6 +39,13 @@ const MenuMiniCart: React.FC = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId')
     Router.push(deliveryRoute);
     setCartStripePlanId(stripePlanId);
+    sendCartMenuMetrics(
+      stripePlanId,
+      sortedPlans.data,
+      cart,
+      rest.data,
+      mealCount,
+    );
   }
   const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   return (

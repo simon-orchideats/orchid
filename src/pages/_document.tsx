@@ -1,16 +1,36 @@
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
-
 import React from 'react';
 import Document, { Head, Main, NextScript } from 'next/document';
 import { ServerStyleSheets } from '@material-ui/core/styles';
 import { getTheme } from '../client/global/styles/theme';
+import { activeConfig } from '../config';
+
+const tracking = activeConfig.client.analytics.ga.trackingId;
 
 export default class MyDocument extends Document {
   render() {
     return (
       <html lang="en">
+        <script src="https://js.stripe.com/v3/"></script>
         <Head>
-          <script src="https://js.stripe.com/v3/"></script>
+          {/* Global Site Tag (gtag.js) - Google Analytics */}
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${tracking}`}
+          />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${tracking}', {
+                  page_path: window.location.pathname,
+                });
+              `,
+            }}
+          />
+
           {/* PWA primary color */}
           <meta name="theme-color" content={getTheme().palette.primary.main} />
           <link
