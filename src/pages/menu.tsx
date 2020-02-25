@@ -88,8 +88,8 @@ const menu = () => {
         <Grid
           item
           sm={12}
-          md={8}
-          lg={9}
+          md={9}
+          lg={8}
           className={classes.menu}
         >
           <div className={classes.filters}>
@@ -110,8 +110,8 @@ const menu = () => {
           isMdAndUp &&
           <Grid
             item
-            md={4}
-            lg={3}
+            md={3}
+            lg={4}
           >
             <StickyDrawer>
               <MenuCart />

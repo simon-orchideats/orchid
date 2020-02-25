@@ -5,8 +5,8 @@ import { getOrderService } from './orderService';
 
 const signedInUser: SignedInUser = {
   userId: '123',
-  stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
-  stripeCustomerId : "cus_GjlPTWyWniuNPa",
+  // stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
+  // stripeCustomerId : "cus_GjlPTWyWniuNPa",
   profile: {
     name: 'name',
     email: 'email@email.com',
@@ -25,5 +25,12 @@ export const OrderMutationResolvers: ServerResolovers = {
     { cart }: { cart: ICartInput },
   ) => {
     return await getOrderService().placeOrder(signedInUser, cart);
+  },
+
+  updateOrder: async (
+    _root,
+    { cart, orderId }: { cart: ICartInput, orderId: string },
+  ) => {
+    return await getOrderService().updateOrder(signedInUser, orderId, cart);
   },
 }

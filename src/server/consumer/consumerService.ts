@@ -11,15 +11,13 @@ class ConsumerService {
     this.elastic = elastic;
   }
 
-  async upsertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+  async insertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+    // left off here: make sure repeat userId fails
     try {
-      await this.elastic.update({
+      await this.elastic.index({
         index: CONSUMER_INDEX,
         id: userId,
-        body: {
-          doc: consumer,
-          doc_as_upsert: true
-        },
+        body: consumer
       });
       return {
         userId,

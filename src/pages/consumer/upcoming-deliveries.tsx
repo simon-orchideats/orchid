@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Container, Paper, Divider, Popover, Button } from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
 import { useRouter } from "next/router";
 import { useGetRest } from "../../rest/restService";
 import { getNextDeliveryDate } from "../../order/utils";
@@ -16,10 +16,20 @@ import Router from 'next/router'
 import { menuRoute } from "../menu";
 import withApollo from "../../client/utils/withPageApollo";
 import { useRequireConsumer } from "../../consumer/consumerService";
+import StickyDrawer from "../../client/general/StickyDrawer";
+import MenuCart from "../../client/menu/MenuCart";
+import { deliveryRoute } from "../delivery";
 
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
+  },
+  needsCartContainer: {
+    background: 'none',
+    marginTop: -theme.mixins.navbar.marginBottom,
+  },
+  paddingTop: {
+    paddingTop: theme.spacing(2),
   },
   marginBottom: {
     marginBottom: theme.spacing(3),
@@ -167,7 +177,13 @@ const DestinationPopper: React.FC<{
   )
 }
 
-const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
+const DeliveryOverview: React.FC<{
+  order: Order,
+  isUpdating: boolean,
+}> = ({
+  order,
+  isUpdating,
+}) => {
   const classes = useStyles();
   const setCart = useSetCart();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
@@ -177,6 +193,9 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
   const onEdit = () => {
     setCart(order);
     Router.push(menuRoute);
+  }
+  const onUpdateOrder = () => {
+    Router.push(deliveryRoute);
   }
   const open = !!anchorEl;
   return (
@@ -219,20 +238,33 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
       </div>
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
-        <Button
-          variant='outlined'
-          color='primary'
-          className={classes.skip}
-        >
-          Skip
-        </Button>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={onEdit}
-        >
-          Edit meals
-        </Button>
+        {
+          isUpdating ?
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={onUpdateOrder}
+          >
+            Update order
+          </Button>
+          :
+          <>
+            <Button
+              variant='outlined'
+              color='primary'
+              className={classes.skip}
+            >
+              Skip
+            </Button>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={onEdit}
+            >
+              Edit meals
+            </Button>
+          </>
+        }
       </div>
       <DestinationPopper
         destination={order.Destination}
@@ -248,15 +280,54 @@ const UpcomingDeliveries = () => {
   const classes = useStyles();
   const needsConfirmation = useRouter().query.confirmation;
   const [showConfirmation, setShowConfirmation] = useState(true);
+  const isUpdating = useRouter().query.updating;
+  const [showCart] = useState(true);
+  const cart = useGetCart();
   const orders = useGetUpcomingOrders();
+  const theme = useTheme<Theme>();
+  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const needsCart = !!isUpdating && isUpdating === 'true' && !!showCart;
+  if (needsCart && !cart) throw new Error('Needs cart, but no cart');
   const OrderOverviews = useMemo(() => ( 
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
         order={order}
+        isUpdating={needsCart}
       />
     )
   ), [orders.data]);
+  if (needsCart) {
+    return (
+      <Container maxWidth='lg' className={classes.needsCartContainer}>
+        <Grid container alignItems='stretch'>
+          <Grid
+            item
+            sm={12}
+            md={9}
+            lg={8}
+          >
+            <Typography variant='h3' className={`${classes.marginBottom} ${classes.paddingTop}`}>
+              Upcoming deliveries
+            </Typography>
+            {OrderOverviews}
+          </Grid>
+          {
+            isMdAndUp &&
+            <Grid
+              item
+              md={3}
+              lg={4}
+            >
+              <StickyDrawer>
+                <MenuCart hideNext />
+              </StickyDrawer>
+            </Grid>
+          }
+        </Grid>
+      </Container>
+    )
+  }
   return (
     <Container maxWidth='lg' className={classes.container}>
       {

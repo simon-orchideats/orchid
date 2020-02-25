@@ -26,7 +26,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MenuMiniCart: React.FC = () => {
+const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
@@ -47,21 +47,26 @@ const MenuMiniCart: React.FC = () => {
       mealCount,
     );
   }
-  const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
+  const disabled = hideNext || !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   return (
     <div className={classes.container}>
-      <Typography variant='body1' className={classes.suggestion}>
-        {cart && cart.Zip ? getSuggestion(mealCount, sortedPlans.data) : 'Enter zip to continue'}
-      </Typography>
-      <Button
-        disabled={disabled}
-        variant='contained'
-        color='primary'
-        className={classes.button}
-        onClick={onNext}
-      >
-        {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
-      </Button>
+      {
+        !hideNext &&
+        <>
+          <Typography variant='body1' className={classes.suggestion}>
+            {cart && cart.Zip ? getSuggestion(mealCount, sortedPlans.data) : 'Enter zip to continue'}
+          </Typography>
+          <Button
+            disabled={disabled}
+            variant='contained'
+            color='primary'
+            className={classes.button}
+            onClick={onNext}
+          >
+            {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
+          </Button>
+        </>
+      }
     </div>
   )
 }

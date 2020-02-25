@@ -31,6 +31,7 @@ const mutation = gql`
   }
   type Mutation {
     placeOrder(cart: CartInput!): BoolRes!
+    updateOrder(orderId: ID!, cart: CartInput!): BoolRes!
   }
 `
 

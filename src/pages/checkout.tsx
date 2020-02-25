@@ -89,10 +89,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (placeOrderRes.data.error) {
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
-        Router.push(({
+        Router.push({
           pathname: upcomingDeliveriesRoute,
           query: { confirmation: 'true' },
-        }))
+        })
       }
     }
   }, [placeOrderRes])

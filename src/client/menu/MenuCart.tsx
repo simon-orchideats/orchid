@@ -10,6 +10,7 @@ import CartMealGroup from "../order/CartMealGroup";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
+import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -37,7 +38,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MenuCart: React.FC = () => {
+const MenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
@@ -48,7 +49,14 @@ const MenuCart: React.FC = () => {
   const setCartStripePlanId = useUpdateCartPlanId();
   const onNext = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId')
-    Router.push(deliveryRoute);
+    if (true) {
+      Router.push({
+        pathname: upcomingDeliveriesRoute,
+        query: { updating: 'true' }
+      });
+    } else {
+      Router.push(deliveryRoute);
+    }
     setCartStripePlanId(stripePlanId);
     sendCartMenuMetrics(
       stripePlanId,
@@ -58,7 +66,7 @@ const MenuCart: React.FC = () => {
       mealCount,
     );
   }
-  const disabled = !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
+  const disabled = hideNext || !cart || !cart.Zip || mealCount === 0 || (planCounts && !planCounts.includes(mealCount))
   const groupedMeals = cart && cart.Meals;
   return (
     <>
@@ -73,22 +81,27 @@ const MenuCart: React.FC = () => {
         <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
       ))}
       <div className={classes.bottom}>
-        <Typography variant='body1' className={classes.suggestion}>
-          {getSuggestion(mealCount, sortedPlans.data)}
-        </Typography>
-        <Typography variant='body1' className={classes.suggestion}>
-          {cart && cart.Zip ? null : 'Enter zip to continue'}
-        </Typography>
-        <Button
-          disabled={disabled}
-          variant='contained'
-          color='primary'
-          className={classes.button}
-          fullWidth
-          onClick={onNext}
-        >
-          {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
-        </Button>
+        {
+          !hideNext &&
+          <>
+            <Typography variant='body1' className={classes.suggestion}>
+              {getSuggestion(mealCount, sortedPlans.data)}
+            </Typography>
+            <Typography variant='body1' className={classes.suggestion}>
+              {cart && cart.Zip ? null : 'Enter zip to continue'}
+            </Typography>
+            <Button
+              disabled={disabled}
+              variant='contained'
+              color='primary'
+              className={classes.button}
+              fullWidth
+              onClick={onNext}
+            >
+              {disabled ? 'Next' : `Next w/ ${mealCount} meals`}
+            </Button>
+          </>
+        }
       </div>
     </>
   )
