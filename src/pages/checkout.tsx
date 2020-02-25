@@ -1,6 +1,4 @@
-import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme, Button } from "@material-ui/core";
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import withClientApollo from "../client/utils/withClientApollo";
@@ -13,7 +11,7 @@ import { state, States } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
-import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../consumer/consumerModel";
+import { RenewalTypes, RenewalType, CuisineType } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
@@ -23,6 +21,7 @@ import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import NextWeek from '../client/general/NextWeek';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -70,10 +69,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
-  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
+  const [selectedRenewal, setSelectedRenewal] = useState<RenewalType>(RenewalTypes.Skip)
+  const [selectedCuisines, setSelectedCuisines] = useState<CuisineType[]>([]);
+  const [selectedCuisinesError, setSelectedCuisinesError] = useState<string>('');
+  // const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
-  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
-  const [cuisinesError, setCuisinesError] = useState<string>('');
+  // const [cuisines, setCuisines] = useState<CuisineType[]>([]);
+  // const [cuisinesError, setCuisinesError] = useState<string>('');
   const [accountName, setAccountName] = useState<string>('simon vuong');
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [email, setEmail] = useState<string>('simon.vuong@yahoo.com');
@@ -81,6 +83,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [password, setPassword] = useState<string>('password');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
+  const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedCuisinesError, setSelectedCuisinesError};
+  const autoSave={autoSave:false};
+  console.log(selectedRenewal);
   useEffect(() => {
     if (placeOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -141,8 +146,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setPasswordError('Your password is incomplete');
       isValid = false;
     }
-    if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
-      setCuisinesError('Your picks are incomplete');
+    if (selectedCuisines.length === 0 && selectedRenewal === RenewalTypes.Auto) {
+      console.log("test");
+      setSelectedCuisinesError('Your picks are incomplete');
       isValid = false;
     }
     return isValid;
@@ -170,8 +176,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       Card.getCardFromStripe(pm.paymentMethod!.card),
       pm.paymentMethod!.id,
       deliveryInstructions,
-      renewal,
-      cuisines,
+      selectedRenewal,
+      selectedCuisines,
     ));
   }
   return (
@@ -418,100 +424,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <CardForm />
-          <Grid container>
-            <Grid item xs={12}>
-              <Typography
-                variant='h6'
-                color='primary'
-                className={classes.title}
-              >
-                Next Week
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant='subtitle2' className={classes.subtitle}>
-                How do you want to handle meals for next week?
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <ToggleButtonGroup
-                className={classes.toggleButtonGroup}
-                size='small'
-                exclusive
-                value={renewal}
-                onChange={(_, rt: RenewalType) => {
-                  // rt === null when selecting button
-                  if (rt === null) return;
-                  setRenewal(rt)
-                }}
-              >
-                <ToggleButton value={RenewalTypes.Auto}>
-                  Pick for me
-                </ToggleButton>
-                <ToggleButton value={RenewalTypes.Skip}>
-                  Skip them
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Grid>
-          </Grid>
-          {
-            renewal === RenewalTypes.Auto &&
-            <Grid container>
-              <Grid item xs={12}>
-                <Typography
-                  variant='h6'
-                  color='primary'
-                  className={classes.title}
-                >
-                  What foods would you like in your meal plan?
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant='subtitle2' className={classes.subtitle}>
-                  We only pick 1 restaurant per week
-                </Typography>
-                <Typography
-                  component='p'
-                  variant='caption'
-                  color='error'
-                  className={classes.subtitle}
-                >
-                  {cuisinesError}
-                </Typography>
-              </Grid>
-              <Grid container spacing={2}>
-                {Object.values<CuisineType>(CuisineTypes).map(cuisine => {
-                  const withoutCuisine = cuisines.filter(c => cuisine !== c);
-                  const isSelected = withoutCuisine.length !== cuisines.length;
-                  return (
-                    <Grid
-                      key={cuisine}
-                      item
-                      xs={6}
-                      sm={4}
-                      lg={3}
-                    >
-                      <Button
-                        fullWidth
-                        color='primary'
-                        variant={isSelected ? 'contained' : 'outlined'}
-                        onClick={() => {
-                          if (isSelected) {
-                            setCuisines(withoutCuisine);
-                            return;
-                          }
-                          setCuisines([...cuisines, cuisine]);
-                          if (withoutCuisine.length === 0) setCuisinesError('')
-                        }}
-                      >
-                        {cuisine}
-                      </Button>
-                    </Grid>
-                  )
-                })}
-              </Grid>
-            </Grid>
-          }
+          
+         <NextWeek {...{...cuisineProps,...autoSave}}/>
         </Grid>
         {
           isMdAndUp &&

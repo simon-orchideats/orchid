@@ -19,6 +19,11 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(2),
     width: 250,
   },
+  clickableGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignSelf: 'start',
+  }
 }));
 
 const PlanCards = (props:any) => {
@@ -31,9 +36,9 @@ const PlanCards = (props:any) => {
   return (
     <>
       {props.isClickable ? (
-         <Grid container >
+         <Grid className={classes.clickableGrid}>
           {plans.data.map(plan => (
-            <Grid justify='center' key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+            <Grid  key={plan.StripeId} item sm={12} md={4} className={classes.item}>
               <div onClick={() => {
                 if (props.isClickable){
                   setMealPlan(plan);
