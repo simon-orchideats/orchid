@@ -50,7 +50,7 @@ const Faq = () => {
         </Typography>
         <Expander
           q='Will I be locked into a contract?'
-          a='No, you can cancel your plan at any time. Any remaining meals this week will be delivered.'
+          a='No, you can cancel your plan at any time. Any confirmed meals this week will be delivered.'
         />
         <Expander
           q='Can I skip a week of delivery?'
@@ -58,11 +58,11 @@ const Faq = () => {
         />
         <Expander
           q="What if I forget to choose next week's menu?"
-          a="No worries. We'll just repeat your previous restaurant menu"
+          a="No worries. We'll hand pick new meals for you."
         />
         <Expander
           q='Can update my schedule?'
-          a='Yes. You can always update future weeks. You schedule your deliveries up to 6 weeks ahead of time.'
+          a='Yes. You can always update future weeks.'
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
           *The cutoff for any changes is 11:59 pm EST, 2 days before the start of your next week.
