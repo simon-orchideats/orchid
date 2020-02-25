@@ -10,7 +10,7 @@ import CartMealGroup from "../order/CartMealGroup";
 import { Cart } from "../../order/cartModel";
 import Router from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
-import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
+// import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -49,14 +49,14 @@ const MenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const setCartStripePlanId = useUpdateCartPlanId();
   const onNext = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId')
-    if (true) {
-      Router.push({
-        pathname: upcomingDeliveriesRoute,
-        query: { updating: 'true' }
-      });
-    } else {
+    // if (true) {
+      // Router.push({
+      //   pathname: upcomingDeliveriesRoute,
+      //   query: { updating: 'true' }
+      // });
+    // } else {
       Router.push(deliveryRoute);
-    }
+    // }
     setCartStripePlanId(stripePlanId);
     sendCartMenuMetrics(
       stripePlanId,

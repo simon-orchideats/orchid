@@ -34,12 +34,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Cast event data to Stripe object.
     if (event.type !== 'invoice.created') {
       console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
-      res.json({ received: true })
+      res.json({ received: true });
+      return;
     }
-    
+    console.log('got created', event.type);
     const invoice = event.data.object as Stripe.Invoice
-    console.log(`invoice ${JSON.stringify(invoice)}`)
+    // console.log(`invoice ${JSON.stringify(invoice)}`)
 
+    try {
+      await stripe.invoiceItems.create({
+        subscription: invoice.subscription as string,
+        customer: invoice.customer as string,
+        currency: 'usd',
+        amount: 2500,
+        discountable: false,
+        invoice: invoice.id,
+        description: 'sup',
+      });
+    } catch (e) {
+      console.error('[SubscriptionHook] failed to create invoiceItem', e.stack)
+    }
     res.json({ received: true })
   } else {
     res.setHeader('Allow', 'POST')

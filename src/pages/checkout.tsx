@@ -22,7 +22,7 @@ import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
-import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+// import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -89,10 +89,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (placeOrderRes.data.error) {
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
-        Router.push({
-          pathname: upcomingDeliveriesRoute,
-          query: { confirmation: 'true' },
-        })
+        // Router.push({
+        //   pathname: upcomingDeliveriesRoute,
+        //   query: { confirmation: 'true' },
+        // })
       }
     }
   }, [placeOrderRes])
