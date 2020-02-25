@@ -85,7 +85,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedCuisinesError, setSelectedCuisinesError};
   const autoSave={autoSave:false};
-  console.log(selectedRenewal);
+
   useEffect(() => {
     if (placeOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -147,7 +147,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       isValid = false;
     }
     if (selectedCuisines.length === 0 && selectedRenewal === RenewalTypes.Auto) {
-      console.log("test");
       setSelectedCuisinesError('Your picks are incomplete');
       isValid = false;
     }

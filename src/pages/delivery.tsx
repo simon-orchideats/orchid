@@ -50,7 +50,7 @@ const delivery = () => {
         >
           Choose a repeat delivery day
         </Typography>
-        <DeliveryDay/>
+        <DeliveryDay autoSave={false}/>
       </Container>
       <Faq />
     </>

@@ -22,7 +22,10 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
   },
 }));
-const DeliveryDate = () => {
+interface DeliveryDateProps {
+  autoSave:boolean
+}
+const DeliveryDate = (props:DeliveryDateProps) => {
 
   const classes = useStyles();
   const [day, setDay] = useState<deliveryDay>(0);
@@ -77,6 +80,7 @@ const DeliveryDate = () => {
               {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
             </Typography>
           </div>
+          {!props.autoSave &&
           <Link href={checkoutRoute}>
             <Button
               variant='contained'
@@ -87,6 +91,7 @@ const DeliveryDate = () => {
               Next
             </Button>
           </Link>
+        }
           </>
   );
 }
