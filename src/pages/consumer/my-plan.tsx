@@ -1,12 +1,8 @@
 
 import { makeStyles, Typography, Container, Paper} from "@material-ui/core";
-// import requireAuth from "../../client/utils/auth/requireAuth";
 import { useState } from 'react';
 import { CuisineType, RenewalType, RenewalTypes } from '../../consumer/consumerModel';
 import withClientApollo from "../../client/utils/withClientApollo";
-
-
-
 import PlanCards from '../../client/plan/PlanCards';
 // import { useNotify } from "../../client/global/state/notificationState";
 import NextWeek from '../../client/general/NextWeek';
@@ -54,9 +50,9 @@ const myPlan = () => {
   const [selectedRenewal, setSelectedRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [selectedCuisines, setSelectedCuisines] = useState<CuisineType[]>([]);
   const [selectedcuisinesError, setSelectedCuisinesError] = useState<string>('');
-
   const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedcuisinesError, setSelectedCuisinesError};
   const autoSave={autoSave:true};
+  
   return (
     <Container maxWidth='xl' className={classes.container}>
        <Typography
