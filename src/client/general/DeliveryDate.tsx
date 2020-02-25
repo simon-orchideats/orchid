@@ -74,14 +74,16 @@ const DeliveryDate = (props:DeliveryDateProps) => {
           <MenuItem value={6}>Sat</MenuItem>
         </Select>
       </FormControl>
-      <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-        <Typography variant='subtitle1'>
-          First delivery:&nbsp;
-        </Typography>
-        <Typography variant='subtitle1'>
-          {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
-        </Typography>
-      </div>
+      {!props.autoSave && 
+        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
+          <Typography variant='subtitle1'>
+            First delivery:&nbsp;
+          </Typography>
+          <Typography variant='subtitle1'>
+            {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
+          </Typography>
+        </div>
+      }
       {!props.autoSave &&
         <Link href={checkoutRoute}>
           <Button
