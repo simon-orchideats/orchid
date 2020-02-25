@@ -53,7 +53,7 @@ const menu = () => {
   const cart = useGetCart();
   const cartRestId = cart ? cart.RestId : null;
   const cartMeals = cart ? cart.Meals : [];
-  const zip = cart && cart.Zip ? cart.Zip : '';
+  const zip = cart && cart.Zip ? cart.Zip : '07306';
   const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
   const RestMenus = useMemo(() => ( 
