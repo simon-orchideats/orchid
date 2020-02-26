@@ -116,8 +116,12 @@ const menu = () => {
           <div className={classes.filters}>
             <Link className={classes.link} color='inherit' onClick={onClickZip}>
               <LocationOnIcon />
-              <Typography>{zip ? zip : 'Zip'}</Typography>
-              <ArrowDropDownIcon />
+              {isMdAndUp &&
+                <>
+                  <Typography>{zip ? zip : 'Zip'}</Typography>
+                  <ArrowDropDownIcon />
+                </>
+              }
             </Link>
             <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
               <InputLabel>
@@ -129,7 +133,7 @@ const menu = () => {
               >
                 {sortedPlans.data && sortedPlans.data.map(plan => (
                   <MenuItem key={plan.StripeId} value={plan.StripeId}>
-                    {plan.MealCount} meals
+                    {plan.MealCount} (${plan.MealPrice.toFixed(2)} ea)
                   </MenuItem>
                 ))}
               </Select>
