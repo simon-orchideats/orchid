@@ -48,6 +48,40 @@ class GeoService {
       throw e;
     }
   }
+
+  async getCityState(zip: string): Promise<{
+    city: string
+    state: string
+  }> {
+    try {
+      const query = `postal_code=${querystring.escape(zip)}&api_key=${activeConfig.server.geo.key}`;
+      let jsonData;
+      try {
+        const res = await fetch(`https://api.geocod.io/v1.3/geocode?${query}`);
+        if (res.status != 200) throw new Error('Could not fetch geocode');
+        jsonData = await res.json();
+      } catch (e) {
+        throw new Error(`Could not fetch city, state for '${zip}'`);
+      }
+      if (jsonData.results && jsonData.results.length > 0) {
+        const {
+          accuracy,
+          accuracy_type,
+          address_components,
+        } = jsonData.results[0];
+        if (accuracy === 1 && accuracy_type === 'place') {
+          return {
+            city: address_components.city,
+            state: address_components.state,
+          }
+        }
+      }
+      throw new Error(`Could not find city, state for '${zip}'`);
+    } catch (e) {
+      console.error('[GeoService] could not get city, state', e.stack);
+      throw e;
+    }
+  }
 }
 
 let geoService: GeoService;

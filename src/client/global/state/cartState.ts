@@ -229,7 +229,15 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   updateCartPlanId: (_, { id }, { cache }) => {
     const res = getCart(cache);
-    if (!res || !res.cart) throw new Error('Cannot set planId day since cart is empty');
+    if (!res || !res.cart) {
+      return updateCartCache(cache, new Cart({
+        meals: [],
+        restId: null,
+        stripePlanId: id,
+        deliveryDay: null,
+        zip: null,
+      }));
+    }
     return updateCartCache(cache, new Cart({
       meals: res.cart.Meals,
       restId: res.cart.RestId,

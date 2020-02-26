@@ -19,6 +19,7 @@ const useGetNearbyRests = (zip: string) => {
     `, 
     {
       variables: { zip },
+      skip: !zip,
     }
   );
 

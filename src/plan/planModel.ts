@@ -39,6 +39,14 @@ export class Plan implements IPlan {
     }, [plans])
   }
 
+  
+  public static getPlanCount(stripePlanId: string, plans: Plan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (plans[i].StripeId === stripePlanId) return plans[i].MealCount;
+    }
+    throw new Error(`No count found for stripePlanId '${stripePlanId}'`)
+  }
+
   public static getPlanPrice(stripePlanId: string | null, plans: Plan[]) {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].StripeId === stripePlanId) return plans[i].WeekPrice;

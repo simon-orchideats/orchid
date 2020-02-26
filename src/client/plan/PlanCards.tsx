@@ -2,11 +2,15 @@ import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
+import Router from 'next/router';
+import { menuRoute } from '../../pages/menu';
+import { useUpdateCartPlanId } from '../global/state/cartState';
 
 const useStyles = makeStyles(theme => ({
   item: {
     display: 'flex',
     justifyContent: 'center',
+    cursor: 'pointer',
   },
   card: {
     textAlign: 'center',
@@ -23,13 +27,25 @@ const useStyles = makeStyles(theme => ({
 const PlanCards = () => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
+  const setCartStripePlanId = useUpdateCartPlanId();
   if (!plans.data) {
     return <div>loading</div>
   }
+  const onClick = (id: string) => {
+    Router.push(menuRoute);
+    setCartStripePlanId(id);
+  };
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid key={plan.StripeId}item sm={12} md={4} className={classes.item}>
+        <Grid
+          key={plan.StripeId}
+          onClick={() => onClick(plan.StripeId)}
+          item
+          sm={12}
+          md={4}
+          className={classes.item}
+        >
           <Card key={plan.MealPrice} className={classes.card}>
             <CardContent>
               <Typography variant='h6'>

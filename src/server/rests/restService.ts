@@ -1,3 +1,4 @@
+import { getGeoService } from './../place/geoService';
 import { CuisineType } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
@@ -14,13 +15,21 @@ class RestService {
 
   async getNearbyRests(zip: string) {
     try {
+      const { city, state } = await getGeoService().getCityState(zip);
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
       });
       return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
-        _id
+        _id,
+        location: {
+          address: {
+            ..._source.location.address,
+            city,
+            state,
+          }
+        }
       }))
     } catch (e) {
       console.error(`[RestService] could not get nearby rests for '${zip}'. '${e.stack}'`);
