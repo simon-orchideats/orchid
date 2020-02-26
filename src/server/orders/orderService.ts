@@ -166,21 +166,6 @@ class OrderService {
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
       let subscription: Stripe.Subscription;
-      let eConsumer = {
-        plan: {
-          stripePlanId: planId,
-          deliveryDay,
-          renewal,
-          cuisines,
-        },
-        profile: {
-          name: signedInUser.profile.name,
-          email: signedInUser.profile.email,
-          phone: cart.phone,
-          card: cart.card,
-          destination: cart.destination,
-        }
-      };
 
       let subUpdater: Promise<void | Stripe.Subscription> = Promise.resolve();
       if (signedInUser.stripeSubscriptionId && stripeCustomerId) {
@@ -226,9 +211,22 @@ class OrderService {
         body: order
       })
       const consumerUpserter = getConsumerService().upsertConsumer(signedInUser.userId, {
+        createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
-        ...eConsumer
+        plan: {
+          stripePlanId: planId,
+          deliveryDay,
+          renewal,
+          cuisines,
+        },
+        profile: {
+          name: signedInUser.profile.name,
+          email: signedInUser.profile.email,
+          phone: cart.phone,
+          card: cart.card,
+          destination: cart.destination,
+        }
       });
 
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
