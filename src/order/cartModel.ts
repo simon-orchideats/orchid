@@ -57,6 +57,7 @@ export interface ICart {
   readonly stripePlanId: string | null;
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
+  readonly email: string | null;
 }
 
 export class Cart implements ICart {
@@ -65,6 +66,7 @@ export class Cart implements ICart {
   readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
+  readonly email: string | null;
 
   constructor(cart: ICart) {
     this.meals = cart.meals.map(meal => new CartMeal(meal));
@@ -72,9 +74,11 @@ export class Cart implements ICart {
     this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
     this.zip = cart.zip;
+    this.email = cart.email;
   }
 
   public get DeliveryDay() { return this.deliveryDay }
+  public get Email() { return this.email }
   public get Meals() { return this.meals }
   public get StripePlanId() { return this.stripePlanId }
   public get RestId() { return this.restId }

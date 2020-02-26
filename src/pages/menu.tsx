@@ -60,7 +60,7 @@ const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
-  const defaultPlan = cart ? cart.StripePlanId : ''
+  const defaultPlan = cart && cart.StripePlanId ? cart.StripePlanId : ''
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(defaultPlan);
   const setCartStripePlanId = useUpdateCartPlanId();
   const updatePlanId = (planId: string) => {
