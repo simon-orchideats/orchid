@@ -1,13 +1,10 @@
 
 import { makeStyles, Typography, Container, Paper} from "@material-ui/core";
 import { useState } from 'react';
-import { CuisineType, RenewalType, RenewalTypes } from '../../consumer/consumerModel';
-import withClientApollo from "../../client/utils/withClientApollo";
+import { CuisineType, RenewalType, RenewalTypes, deliveryDay } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
-// import { useNotify } from "../../client/global/state/notificationState";
-import NextWeek from '../../client/general/NextWeek';
-import DeliveryDay from '../../client/general/DeliveryDate';
-import Notifier from "../../client/notification/Notifier";
+import RenewalChooser from '../../client/general/RenewalChooser';
+import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -21,71 +18,64 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'left',
+    marginTop: theme.spacing(3),
     paddingBottom: theme.spacing(4),
-    paddingTop: theme.spacing(4),
+   
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),
   },
-  toggleButtonGroup: {
-    width: '100%',
-    marginBottom: theme.spacing(2),
-  },
-  input: {
-    alignSelf: 'stretch',
-  },
-  smallPaddingBottom: {
-    paddingBottom: theme.spacing(2),
-  },
-  row: {
-    display: 'flex',
-  },
+
   header: {
-    paddingBottom: theme.spacing(4),
+    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(2),
   },
 }));
 
 const myPlan = () => {
-
   const classes = useStyles();
   const [selectedRenewal, setSelectedRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [selectedCuisines, setSelectedCuisines] = useState<CuisineType[]>([]);
   const [selectedcuisinesError, setSelectedCuisinesError] = useState<string>('');
   const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedcuisinesError, setSelectedCuisinesError};
-  const autoSave={autoSave:true};
-  
+  const [day, setDay] = useState<deliveryDay>(0);
+  const onDayChange = (day:deliveryDay) => {
+    setDay(day);
+  }
   return (
-    <Container maxWidth='xl' className={classes.container}>
-       <Typography
+    <Container maxWidth='lg' className={classes.container}>
+      <Typography variant='h3'>
+        My plan
+      </Typography>
+      <Paper className={classes.paperContainer}>
+        <Typography
           variant='h6'
           color='primary'
           className={classes.header}
         >
-         My plan
+          Preferred meal plan
         </Typography>
-       <Notifier />
-       <Paper className={classes.paperContainer}>
-       <Typography
+        <PlanCards isSelectable={true}/>
+        <Typography
           variant='h6'
           color='primary'
           className={classes.header}
         >
-         Preferred meal plan
+          Preferred delivery day
         </Typography>
-     <PlanCards isClickable={true}/>
-      <Typography
+        <DeliveryDateChooser day={day} onDayChange={onDayChange}/>
+        <Typography
           variant='h6'
           color='primary'
           className={classes.header}
         >
-         Preferred delivery day
+          Next Week
         </Typography>
-        <DeliveryDay {...autoSave}/>
-        <NextWeek {...{...cuisineProps,...autoSave}}/>
-        </Paper>
+        <RenewalChooser {...cuisineProps} autoSave={true}/>
+      </Paper>
     </Container>
   );
 }
 
-export default withClientApollo(myPlan); 
+export default myPlan; 
 
 export const myPlanRoute = '/consumer/my-plan';

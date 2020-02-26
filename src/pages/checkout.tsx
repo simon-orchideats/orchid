@@ -21,7 +21,7 @@ import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
-import NextWeek from '../client/general/NextWeek';
+import RenewalChooser from '../client/general/RenewalChooser';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -424,7 +424,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Typography>
           <CardForm />
           
-         <NextWeek {...{...cuisineProps,...autoSave}}/>
+         <RenewalChooser {...{...cuisineProps,...autoSave}}/>
         </Grid>
         {
           isMdAndUp &&

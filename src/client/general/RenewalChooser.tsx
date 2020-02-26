@@ -26,26 +26,17 @@ interface nextWeekProps {
   setSelectedCuisinesError:(value:string | ((arg1: string) => string)) => void,
   autoSave:boolean
 }
-const NextWeek = (props:nextWeekProps) => {
+const RenewalChooser = (props:nextWeekProps) => {
   const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip);
   const [cuisinesError, setCuisinesError] = useState<string>('');
   useEffect( () => {
-    if(props.autoSave===true) setCuisinesError('Your picks are incomplete');
+    if(props.autoSave===true) setCuisinesError('Please pick 1 type of cuisine');
   },[])
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const classes = useStyles();
   return (
     <>
       <Grid container>
-        <Grid item xs={12}>
-          <Typography
-            variant='h6'
-            color='primary'
-            className={classes.title}
-          >
-            Next Week
-          </Typography>
-        </Grid>
         <Grid item xs={12}>
           <Typography variant='subtitle2' className={classes.subtitle}>
             How do you want to handle meals for next week?
@@ -128,6 +119,7 @@ const NextWeek = (props:nextWeekProps) => {
                         }
                         return;
                       }
+                      // do onCuisineChange
                       setCuisines([...cuisines, cuisine]);
                       props.setSelectedCuisines([...cuisines, cuisine]);
                       if (withoutCuisine.length === 0) {
@@ -148,4 +140,4 @@ const NextWeek = (props:nextWeekProps) => {
   );
 }
 
-export default NextWeek;
+export default RenewalChooser;

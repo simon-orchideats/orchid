@@ -83,7 +83,7 @@ const plans = () => {
             />
           </div>
         </Hidden>
-        <PlanCards />
+        <PlanCards isSelectable={false}/>
         <Link href={menuRoute}>
           <Button
             variant='contained'

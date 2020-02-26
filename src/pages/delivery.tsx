@@ -1,11 +1,16 @@
-import { Container, makeStyles, Typography } from "@material-ui/core";
+import { Container, makeStyles, Typography, Button } from "@material-ui/core";
 import Faq from "../client/general/Faq";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useUpdateDeliveryDay } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
+import Link from "next/link";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
-import DeliveryDay from '../client/general/DeliveryDate'
+import DeliveryDateChooser from '../client/general/DeliveryDateChooser'
+import { getNextDeliveryDate } from '../order/utils';
+import { checkoutRoute } from "./checkout";
+import { useState } from "react";
+import { deliveryDay } from "../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -16,9 +21,6 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(4),
   },
   header: {
-    paddingBottom: theme.spacing(4),
-  },
-  largePaddingBottom: {
     paddingBottom: theme.spacing(4),
   },
   smallPaddingBottom: {
@@ -39,6 +41,11 @@ const useStyles = makeStyles(theme => ({
 const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const [day, setDay] = useState<deliveryDay>(0);
+  const onDayChange = (day:deliveryDay) => {
+    setDay(day);
+  }
+  const updateDeliveryDay = useUpdateDeliveryDay();
   if (!cart && !isServer()) Router.replace(`${menuRoute}`);
   return (
     <>
@@ -50,7 +57,25 @@ const delivery = () => {
         >
           Choose a repeat delivery day
         </Typography>
-        <DeliveryDay autoSave={false}/>
+        <DeliveryDateChooser day={day} onDayChange={onDayChange}/>
+        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
+          <Typography variant='subtitle1'>
+            First delivery:&nbsp;
+          </Typography>
+          <Typography variant='subtitle1'>
+            {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
+          </Typography>
+        </div>
+        <Link href={checkoutRoute}>
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            onClick={() => updateDeliveryDay(day)}
+          >
+            Next
+          </Button>
+        </Link>
       </Container>
       <Faq />
     </>

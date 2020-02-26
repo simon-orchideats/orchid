@@ -1,12 +1,9 @@
 import ToggleButton from '@material-ui/lab/ToggleButton';
-import { makeStyles, Typography, FormControl, InputLabel, Select, MenuItem, Button } from "@material-ui/core";
+import { makeStyles, FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { useUpdateDeliveryDay } from "../../client/global/state/cartState";
 import { deliveryDay } from "../../consumer/consumerModel";
-import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { getNextDeliveryDate } from '../../order/utils';
-import { checkoutRoute } from "../../pages/checkout";
+import withClientApollo from '../utils/withClientApollo';
 
 const useStyles = makeStyles(theme => ({
   smallPaddingBottom: {
@@ -23,17 +20,15 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
   },
 }));
-
-interface DeliveryDateProps {
-  autoSave:boolean
+interface DeliveryDateChooserProps {
+  onDayChange: (d:deliveryDay) => void
+  day: deliveryDay
 }
-const DeliveryDate = (props:DeliveryDateProps) => {
-
+const DeliveryDateChooser = (props:DeliveryDateChooserProps) => {
   const classes = useStyles();
-  const [day, setDay] = useState<deliveryDay>(0);
   const inputLabel = useRef<HTMLLabelElement>(null);
+  const {day, onDayChange} = props;
   const [labelWidth, setLabelWidth] = useState(0);
-  const updateDeliveryDay = useUpdateDeliveryDay();
   useEffect(() => {
     setLabelWidth(inputLabel.current!.offsetWidth);
   }, []);
@@ -46,7 +41,7 @@ const DeliveryDate = (props:DeliveryDateProps) => {
         onChange={(_, d: deliveryDay) => {
           // d === null when selecting same day
           if (d === null) return;
-          setDay(d)
+          onDayChange(d);
         }}
       >
         <ToggleButton value={0}>
@@ -66,7 +61,7 @@ const DeliveryDate = (props:DeliveryDateProps) => {
         <Select
           labelWidth={labelWidth}
           value={day === 0 || day === 3 || day === 5 ? '' : day}
-          onChange={e => setDay(e.target.value as deliveryDay)}
+          onChange={e => onDayChange(e.target.value as deliveryDay)}
         >
           <MenuItem value={1}>Mon</MenuItem>
           <MenuItem value={2}>Tue</MenuItem>
@@ -74,30 +69,8 @@ const DeliveryDate = (props:DeliveryDateProps) => {
           <MenuItem value={6}>Sat</MenuItem>
         </Select>
       </FormControl>
-      {!props.autoSave && 
-        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-          <Typography variant='subtitle1'>
-            First delivery:&nbsp;
-          </Typography>
-          <Typography variant='subtitle1'>
-            {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
-          </Typography>
-        </div>
-      }
-      {!props.autoSave &&
-        <Link href={checkoutRoute}>
-          <Button
-            variant='contained'
-            color='primary'
-            fullWidth
-            onClick={() => updateDeliveryDay(day)}
-          >
-            Next
-          </Button>
-        </Link>
-      }
     </>
   );
 }
 
-export default DeliveryDate;
+export default withClientApollo(DeliveryDateChooser);
