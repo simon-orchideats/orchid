@@ -26,7 +26,7 @@ export const useGetAvailablePlans = () => {
   if (isServer()) {
     return {
       loading: true,
-      error: false,
+      error: undefined,
       data: undefined,
     }
   }

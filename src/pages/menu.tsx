@@ -1,16 +1,17 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, InputLabel, Select, MenuItem, FormControl } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
-import MenuCart from "../client/menu/MenuCart";
+import SideMenuCart from "../client/menu/SideMenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useUpdateCartPlanId } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
+import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -28,6 +29,13 @@ const useStyles = makeStyles(theme => ({
   },
   mini: {
     marginLeft: 'auto',
+  },
+  smallPaddingBottom: {
+    paddingBottom: theme.spacing(2),
+  },
+  input: {
+    alignSelf: 'stretch',
+    marginLeft: theme.spacing(2),
   },
   filters: {
     paddingLeft: theme.spacing(2),
@@ -51,6 +59,19 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const sortedPlans = useGetAvailablePlans();
+  const defaultPlan = cart ? cart.StripePlanId : ''
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(defaultPlan);
+  const setCartStripePlanId = useUpdateCartPlanId();
+  const updatePlanId = (planId: string) => {
+    setCartStripePlanId(planId);
+    setSelectedPlanId(planId);
+  };
+  useEffect(() => {
+    if ((!cart || !cart.StripePlanId) && sortedPlans.data) {
+      updatePlanId(sortedPlans.data[0].StripeId);
+    }
+  }, [sortedPlans.data])
   const cartRestId = cart ? cart.RestId : null;
   const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
@@ -98,6 +119,21 @@ const menu = () => {
               <Typography>{zip ? zip : 'Zip'}</Typography>
               <ArrowDropDownIcon />
             </Link>
+            <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
+              <InputLabel>
+                Plan
+              </InputLabel>
+              <Select
+                value={selectedPlanId}
+                onChange={e => updatePlanId(e.target.value as string)}
+              >
+                {sortedPlans.data && sortedPlans.data.map(plan => (
+                  <MenuItem key={plan.StripeId} value={plan.StripeId}>
+                    {plan.MealCount} meals
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             {!isMdAndUp &&
               <div className={classes.mini}>
                 <MenuMiniCart />
@@ -114,7 +150,7 @@ const menu = () => {
             lg={3}
           >
             <StickyDrawer>
-              <MenuCart />
+              <SideMenuCart />
             </StickyDrawer>
           </Grid>
         }

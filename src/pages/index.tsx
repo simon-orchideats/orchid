@@ -169,7 +169,7 @@ const HowItWorks = () => {
         <Content description='Enjoy immediately' img='home/microwave.png'/>
       </Grid>
       <Link href={menuRoute}>
-        <Button variant='outlined' color='primary'>GET STARTED</Button>
+        <Button variant='contained' color='primary'>GET STARTED</Button>
       </Link>
     </div>
   );
@@ -320,7 +320,7 @@ const Benefits = () => {
           </Grid>
           <Link href={menuRoute}>
             <Button
-              variant='outlined'
+              variant='contained'
               color='primary'
               className={classes.largeVerticalMargin}
             >
@@ -349,7 +349,7 @@ const Benefits = () => {
           />
           <Link href={menuRoute}>
             <Button
-              variant='outlined'
+              variant='contained'
               color='primary'
               className={classes.largeBottomMargin}
             >

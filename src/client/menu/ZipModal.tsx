@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
-import Close from '@material-ui/icons/Close';
 import { TextField, Paper, Typography, Grid, Button } from '@material-ui/core';
 import { useUpdateZip } from '../global/state/cartState';
 
@@ -70,9 +69,14 @@ const ZipModal: React.FC<{
   defaultZip,
 }) => {
   const classes = useStyles();
+  const [error, setError] = useState('');
   const [zip, setZip] = useState<string>('');
   const updateCartZip = useUpdateZip()
   const findFood = () => {
+    if (!zip) {
+      setError('Enter zip');
+      return;
+    }
     updateCartZip(zip);
     onClose();
   }
@@ -81,10 +85,10 @@ const ZipModal: React.FC<{
       open={open}
       onClose={onClose}
       BackdropComponent={() => null}
+      disableEscapeKeyDown
     >
       <Slide in={open} direction='down'>
         <Paper className={classes.paper}>
-          <Close onClick={onClose} className={classes.close} />
           <Grid container className={classes.gridContainer}>
             <Grid item xs={12} sm={5} md={7} className={classes.img} />
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
@@ -98,13 +102,15 @@ const ZipModal: React.FC<{
                       hiddenLabel
                       fullWidth
                       variant='outlined'
+                      error={!!error}
+                      helperText={error}
                       defaultValue={defaultZip}
                       onChange={e => setZip(e.target.value)}
                       margin='none'
                       placeholder='Zip'
                     />
                   </Grid>
-                  <Grid item xs={6} sm={12}  md={3}>
+                  <Grid item xs={12} sm={12} md={6}>
                     <Button
                       variant='contained'
                       color='primary'
@@ -112,16 +118,6 @@ const ZipModal: React.FC<{
                       onClick={findFood}
                     >
                       Find food
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6} sm={12}  md={3}>
-                    <Button
-                      variant='outlined'
-                      color='primary'
-                      className={classes.button}
-                      onClick={onClose}
-                    >
-                      Just look
                     </Button>
                   </Grid>
                 </Grid>
