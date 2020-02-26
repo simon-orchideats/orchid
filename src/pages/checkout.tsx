@@ -23,6 +23,7 @@ import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import EmailInput from "../client/general/inputs/EmailInput";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -76,8 +77,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const [accountName, setAccountName] = useState<string>('simon vuong');
   const [accountNameError, setAccountNameError] = useState<string>('');
-  const [email, setEmail] = useState<string>('simon.vuong@yahoo.com');
-  const [emailError, setEmailError] = useState<string>('');
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
   const [password, setPassword] = useState<string>('password');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
@@ -133,8 +134,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setAccountNameError('Your name is incomplete');
       isValid = false;
     }
-    if (!email) {
-      setEmailError('Your email is incomplete');
+    if (!validateEmailRef.current!()) {
       isValid = false;
     }
     if (!password) {
@@ -379,17 +379,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                label='Email'
-                variant='outlined'
-                size='small'
-                error={!!emailError}
-                helperText={emailError}
-                fullWidth
-                value={email}
-                onChange={e => {
-                  setEmail(e.target.value);
-                  if (emailError) setEmailError('');
+              <EmailInput
+                inputRef={emailInputRef}
+                defaultValue={cart.Email ? cart.Email : ''}
+                setValidator={(validator: () => boolean) => {
+                  validateEmailRef.current = validator;
                 }}
               />
             </Grid>

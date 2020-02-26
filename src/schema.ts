@@ -1,4 +1,4 @@
-import { ConsumerQueryResolvers } from './server/consumer/consumerResolver';
+import { ConsumerQueryResolvers, ConsumerMutationResolvers } from './server/consumer/consumerResolver';
 import { ConsumerPlanQL } from './server/consumer/consumerPlanQL';
 import { DestinationQL } from './server/place/destinationQL';
 import { AddressQL } from './server/place/addressQL';
@@ -30,6 +30,7 @@ const mutation = gql`
     error: String
   }
   type Mutation {
+    insertEmail(email: String!): BoolRes!
     placeOrder(cart: CartInput!): BoolRes!
   }
 `
@@ -64,7 +65,8 @@ const resolvers = {
     ConsumerQueryResolvers,
   ),
   Mutation: merge(
-    OrderMutationResolvers
+    OrderMutationResolvers,
+    ConsumerMutationResolvers
   ),
 };
 
