@@ -194,7 +194,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       meals: [],
       restId: null,
-      stripePlanId: null,
+      stripePlanId: res.cart.StripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
     }));
@@ -209,7 +209,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       newCart = new Cart({
         meals: [],
         restId: null,
-        stripePlanId: null,
+        stripePlanId: newCart.StripePlanId,
         deliveryDay: newCart.DeliveryDay,
         zip: newCart.Zip,
       });
