@@ -27,16 +27,16 @@ const PlanDetails: React.FC<{
 }> = ({ selected = false, mealPlan, onClick }) => {
   const classes = useStyles({ selected });
   return (
-    <Card onClick={() => onClick(mealPlan)} key={mealPlan.mealPrice} className={classes.card}>
+    <Card onClick={() => onClick(mealPlan)} key={mealPlan.StripeId} className={classes.card}>
       <CardContent>
         <Typography variant='h6'>
-          {mealPlan.mealCount} meals/week
+          {mealPlan.MealCount} meals/week
         </Typography>
         <Typography variant='body2' className={classes.cardSubtitle}>
-          ${mealPlan.mealPrice.toFixed(2)}/meal
+          ${mealPlan.MealPrice.toFixed(2)}/meal
         </Typography>
         <Typography variant='body2' className={classes.cardSubtitle}>
-          ${mealPlan.weekPrice.toFixed(2)}/week
+          ${mealPlan.WeekPrice.toFixed(2)}/week
         </Typography>
       </CardContent>
     </Card>

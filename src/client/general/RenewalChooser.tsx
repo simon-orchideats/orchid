@@ -35,7 +35,7 @@ const RenewalChooser: React.FC<{
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const classes = useStyles();
   const validateCuisine = () => { 
-    if (cuisines.length <= 1 && renewal === RenewalTypes.Auto) {
+    if (cuisines.length <=1 && renewal === RenewalTypes.Auto) {
       setCuisinesError('Please pick 1 type');
       return false;
     }

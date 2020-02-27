@@ -16,7 +16,7 @@ const useStyles = makeStyles(() => ({
 const PlanCards: React.FC <{
   isSelectable?: boolean;
   onClickCard?: { (plan: Plan): void }
-}> = ({ isSelectable=false, onClickCard=undefined }) => {
+}> = ({ isSelectable=false, onClickCard=undefined}) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   const [selectedPlan, setSelectedPlan] = useState<Plan>();
