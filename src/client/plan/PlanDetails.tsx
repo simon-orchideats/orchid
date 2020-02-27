@@ -27,7 +27,7 @@ const PlanDetails: React.FC<{
 }> = ({selected = false, mealPlan, onClick}) => {
   const classes = useStyles({ selected });
   return (
-    <Card onClick={()=> onClick(mealPlan)} key={mealPlan.mealPrice} className={classes.card}>
+    <Card onClick={() => onClick(mealPlan)} key={mealPlan.mealPrice} className={classes.card}>
       <CardContent>
         <Typography variant='h6'>
           {mealPlan.mealCount} meals/week

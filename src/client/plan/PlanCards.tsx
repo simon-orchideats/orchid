@@ -16,7 +16,7 @@ const useStyles = makeStyles(() => ({
 const PlanCards: React.FC <{
   isSelectable?: boolean;
   onClickCard?: (plan: Plan) => void;
-}> = ({isSelectable = false, onClickCard=()=>{} }) => {
+}> = ({isSelectable=false, onClickCard=()=>{}}) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   const initialPlan = {
@@ -37,11 +37,11 @@ const PlanCards: React.FC <{
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid onClick={()=>{ onClickCard(plan) }} key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+        <Grid onClick={()=> onClickCard(plan)} key={plan.StripeId} item sm={12} md={4} className={classes.item}>
           <PlanDetails
             selected={isSelectable && selectedPlan && selectedPlan.StripeId === plan.StripeId}
             mealPlan={plan}
-            onClick={plan => setSelectedPlan(plan) } 
+            onClick={plan => setSelectedPlan(plan)} 
           />
         </Grid>
       ))}

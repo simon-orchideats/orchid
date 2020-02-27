@@ -113,9 +113,7 @@ const RenewalChooser: React.FC<{
                         return;
                       }
                       onCuisineChange([...cuisines, cuisine]);
-                      if (withoutCuisine.length === 0) {
-                        setCuisinesError('');
-                      }
+                      if (withoutCuisine.length === 0) setCuisinesError('');
                     }}
                   >
                     {cuisine}

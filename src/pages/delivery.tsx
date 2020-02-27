@@ -42,9 +42,6 @@ const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const [day, setDay] = useState<deliveryDay>(0);
-  const onDayChange = (day:deliveryDay) => {
-    setDay(day);
-  }
   const updateDeliveryDay = useUpdateDeliveryDay();
   if (!cart && !isServer()) Router.replace(`${menuRoute}`);
   return (
@@ -57,7 +54,7 @@ const delivery = () => {
         >
           Choose a repeat delivery day
         </Typography>
-        <DeliveryDateChooser day={day} onDayChange={onDayChange}/>
+        <DeliveryDateChooser day={day} onDayChange={day => setDay(day)}/>
         <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
           <Typography variant='subtitle1'>
             First delivery:&nbsp;
