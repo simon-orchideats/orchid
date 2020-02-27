@@ -38,7 +38,6 @@ const PlanCards: React.FC <{
               onClickCard(plan);
               setSelectedPlan(plan);
             }}
-            // onClick={!!onClickCard? (plan) => onClickCard(plan) : (plan) => setSelectedPlan(plan)} 
           />
         </Grid>
       ))}
