@@ -15,7 +15,9 @@ class RestService {
 
   async getNearbyRests(zip: string) {
     try {
-      const { city, state } = await getGeoService().getCityState(zip);
+      const geo = await getGeoService().getCityState(zip);
+      if (!geo) return [];
+      const { city, state } = geo;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000

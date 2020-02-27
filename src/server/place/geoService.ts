@@ -52,7 +52,7 @@ class GeoService {
   async getCityState(zip: string): Promise<{
     city: string
     state: string
-  }> {
+  } | null> {
     try {
       const query = `postal_code=${querystring.escape(zip)}&api_key=${activeConfig.server.geo.key}`;
       let jsonData;
@@ -76,7 +76,8 @@ class GeoService {
           }
         }
       }
-      throw new Error(`Could not find city, state for '${zip}'`);
+      console.warn(`[GeoService] Could not find city, state for '${zip}'`);
+      return null;
     } catch (e) {
       console.error('[GeoService] could not get city, state', e.stack);
       throw e;

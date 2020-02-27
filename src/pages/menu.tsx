@@ -37,6 +37,9 @@ const useStyles = makeStyles(theme => ({
     alignSelf: 'stretch',
     marginLeft: theme.spacing(2),
   },
+  paddingTop: {
+    paddingTop: theme.spacing(2),
+  },
   filters: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
@@ -87,6 +90,7 @@ const menu = () => {
       />
     )
   ), [rests.data, cartRestId]);
+  const hasNoRests = !rests.loading && !rests.error && rests.data && rests.data.length === 0;
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const onClickZip = () => {
@@ -144,7 +148,14 @@ const menu = () => {
               </div>
             }
           </div>
-          {RestMenus}
+          {
+            hasNoRests ?
+            <Typography variant='h5' className={classes.paddingTop}>
+              No restaurants found for zip code {zip}
+            </Typography>
+            :
+            RestMenus
+          }
         </Grid>
         {
           isMdAndUp &&
