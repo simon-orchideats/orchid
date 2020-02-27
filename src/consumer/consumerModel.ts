@@ -109,13 +109,14 @@ export class ConsumerPlan implements IConsumerPlan {
 }
 
 export interface EConsumer {
+  readonly createdDate: number,
   readonly plan: IConsumerPlan
   readonly profile: IConsumerProfile
   readonly stripeCustomerId: string
   readonly stripeSubscriptionId: string
 }
 
-export interface IConsumer extends EConsumer {
+export interface IConsumer extends Omit<EConsumer, 'createdDate'> {
   readonly userId: string
 }
 

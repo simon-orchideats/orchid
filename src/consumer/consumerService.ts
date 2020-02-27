@@ -1,10 +1,41 @@
+import { MutationBoolRes } from './../utils/mutationResModel';
+import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
 import { IConsumer, Consumer } from './consumerModel';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useMemo } from 'react';
 import { activeConfig } from '../config';
+
+export const useAddConsumerEmail = (): [
+  (email: string) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { insertEmail: MutationBoolRes };
+  type vars = { email: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation insertEmail($email: String!) {
+      insertEmail(email: $email) {
+        res
+        error
+      }
+    }
+  `);
+  const addConsumerEmail = (email: string) => {
+    mutate({ variables: { email } })
+  }
+  return useMemo(() => [
+    addConsumerEmail,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.insertEmail : undefined,
+    }
+  ], [mutation]);
+}
 
 export const useRequireConsumer = (url: string) => {
   type res = {
@@ -20,7 +51,6 @@ export const useRequireConsumer = (url: string) => {
       ${consumerFragment}
     `,
   );
-
 
   const consumer = useMemo<Consumer | null>(() => (
     res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
