@@ -1,7 +1,7 @@
 
 import { makeStyles, Typography, Container, Paper} from "@material-ui/core";
-import { useState } from 'react';
-import { CuisineType, RenewalType, RenewalTypes, deliveryDay } from '../../consumer/consumerModel';
+import { useState, useRef } from 'react';
+import { CuisineType, RenewalType,RenewalTypes, deliveryDay } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
@@ -20,11 +20,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'left',
     marginTop: theme.spacing(3),
     paddingBottom: theme.spacing(4),
-   
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),
   },
-
   header: {
     paddingBottom: theme.spacing(2),
     paddingTop: theme.spacing(2),
@@ -33,13 +31,18 @@ const useStyles = makeStyles(theme => ({
 
 const myPlan = () => {
   const classes = useStyles();
-  const [selectedRenewal, setSelectedRenewal] = useState<RenewalType>(RenewalTypes.Skip)
-  const [selectedCuisines, setSelectedCuisines] = useState<CuisineType[]>([]);
-  const [selectedcuisinesError, setSelectedCuisinesError] = useState<string>('');
-  const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedcuisinesError, setSelectedCuisinesError};
+  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
+  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [day, setDay] = useState<deliveryDay>(0);
+  const validateCuisineRef= useRef<() => boolean>();
   const onDayChange = (day:deliveryDay) => {
     setDay(day);
+  }
+  const onCuisineChange = (cuisines:CuisineType[]) => {
+    setCuisines(cuisines);
+  }
+  const onRenewalChange = (renewal:RenewalType) => {
+    setRenewal(renewal);
   }
   return (
     <Container maxWidth='lg' className={classes.container}>
@@ -70,7 +73,15 @@ const myPlan = () => {
         >
           Next Week
         </Typography>
-        <RenewalChooser {...cuisineProps} autoSave={true}/>
+        <RenewalChooser 
+          renewal={renewal}
+          cuisines={cuisines}
+          onCuisineChange={onCuisineChange}
+          onRenewalChange={onRenewalChange}
+          validateCuisineRef={(validateCuisine: () => boolean) => {
+            validateCuisineRef.current = validateCuisine;
+          }}
+        />
       </Paper>
     </Container>
   );

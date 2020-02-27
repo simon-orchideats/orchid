@@ -20,17 +20,17 @@ const PlanCards = ({isSelectable}:{isSelectable:boolean}) => {
     return <div>loading</div>
   }
   return (
-      <Grid container justify='center'>
-        {plans.data.map(plan => (
-          <Grid  key={plan.StripeId} item sm={12} md={4} className={classes.item}>
-            <div onClick={() => setSelectedPlan(plan)}>
-              <MealCard
-                selected={isSelectable && selectedPlan && selectedPlan.StripeId === plan.StripeId}
-                mealPlan={plan} 
-              />
-            </div>
-          </Grid>
-        ))}
+    <Grid container justify='center'>
+      {plans.data.map(plan => (
+        <Grid  key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+          <div onClick={() => setSelectedPlan(plan)}>
+            <MealCard
+              selected={isSelectable && selectedPlan && selectedPlan.StripeId === plan.StripeId}
+              mealPlan={plan} 
+            />
+          </div>
+        </Grid>
+      ))}
     </Grid>
   );
 }

@@ -11,7 +11,7 @@ import { state, States } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
-import { RenewalTypes, RenewalType, CuisineType } from "../consumer/consumerModel";
+import { RenewalTypes, CuisineType, RenewalType } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
@@ -35,15 +35,8 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(2),
     background: theme.palette.background.paper
   },
-  toggleButtonGroup: {
-    width: '100%',
-  },
   title: {
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
-  subtitle: {
-    marginTop: -theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
 }));
@@ -69,13 +62,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
-  const [selectedRenewal, setSelectedRenewal] = useState<RenewalType>(RenewalTypes.Skip)
-  const [selectedCuisines, setSelectedCuisines] = useState<CuisineType[]>([]);
-  const [selectedCuisinesError, setSelectedCuisinesError] = useState<string>('');
-  // const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
+  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
-  // const [cuisines, setCuisines] = useState<CuisineType[]>([]);
-  // const [cuisinesError, setCuisinesError] = useState<string>('');
+  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [accountName, setAccountName] = useState<string>('simon vuong');
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [email, setEmail] = useState<string>('simon.vuong@yahoo.com');
@@ -83,8 +72,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [password, setPassword] = useState<string>('password');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
-  const cuisineProps = {selectedCuisines, setSelectedCuisines, selectedRenewal, setSelectedRenewal, selectedCuisinesError, setSelectedCuisinesError};
-  const autoSave={autoSave:false};
+  const validateCuisineRef= useRef<() => boolean>();
 
   useEffect(() => {
     if (placeOrderRes.error) {
@@ -108,6 +96,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   } else if (!cart) {
     Router.replace(`${menuRoute}`);
     return <Typography>Redirecting...</Typography>
+  }
+  const onCuisineChange = (cuisines:CuisineType[]) => {
+    setCuisines(cuisines);
+  }
+
+  const onRenewalChange = (renewal:RenewalType) => {
+    setRenewal(renewal);
   }
   const validate = () => {
     let isValid = true;
@@ -146,8 +141,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setPasswordError('Your password is incomplete');
       isValid = false;
     }
-    if (selectedCuisines.length === 0 && selectedRenewal === RenewalTypes.Auto) {
-      setSelectedCuisinesError('Your picks are incomplete');
+    if (!validateCuisineRef.current!()) {
       isValid = false;
     }
     return isValid;
@@ -175,8 +169,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       Card.getCardFromStripe(pm.paymentMethod!.card),
       pm.paymentMethod!.id,
       deliveryInstructions,
-      selectedRenewal,
-      selectedCuisines,
+      renewal,
+      cuisines,
     ));
   }
   return (
@@ -423,8 +417,22 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <CardForm />
-          
-         <RenewalChooser {...{...cuisineProps,...autoSave}}/>
+          <Typography
+            variant='h6'
+            color='primary'
+            className={classes.title}
+          >
+            Next Week
+          </Typography>
+          <RenewalChooser
+            renewal={renewal}
+            cuisines = {cuisines}
+            validateCuisineRef={(validateCuisine: () => boolean) => {
+              validateCuisineRef.current = validateCuisine;
+            }}
+            onCuisineChange={onCuisineChange}
+            onRenewalChange={onRenewalChange}
+          />
         </Grid>
         {
           isMdAndUp &&

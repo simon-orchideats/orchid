@@ -3,7 +3,7 @@ import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../../cons
 import { Typography, makeStyles, Grid, Button } from "@material-ui/core";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { useState, useEffect} from "react";
+import { useState, useRef, useEffect } from "react";
 
 const useStyles = makeStyles(theme => ({
   toggleButtonGroup: {
@@ -18,22 +18,32 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
   },
 }));
+
 interface nextWeekProps {
-  selectedRenewal:RenewalType,
-  setSelectedRenewal:(value:RenewalType | ((arg1: RenewalType) => RenewalType)) => void,
-  selectedCuisinesError?:string,
-  setSelectedCuisines: (value:CuisineType[] | ((arg1: CuisineType[]) => CuisineType[])) => void,
-  setSelectedCuisinesError:(value:string | ((arg1: string) => string)) => void,
-  autoSave:boolean
+  validateCuisineRef: (validateCuisine: () => boolean) => void,
+  renewal:RenewalType,
+  cuisines:CuisineType[],
+  onRenewalChange: (renewal:RenewalType) => void,
+  onCuisineChange: (cuisine:CuisineType[]) => void
 }
+
 const RenewalChooser = (props:nextWeekProps) => {
-  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip);
   const [cuisinesError, setCuisinesError] = useState<string>('');
-  useEffect( () => {
-    if(props.autoSave===true) setCuisinesError('Please pick 1 type of cuisine');
-  },[])
-  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
+  const {onCuisineChange, onRenewalChange, cuisines, renewal, validateCuisineRef} = props;
   const classes = useStyles();
+  const errorRef = useRef(cuisinesError);
+  // Create function for parent to reference to
+  const validateCuisine = () => { 
+    if (errorRef.current) {
+      return false;
+    }
+    return true;
+  }
+  // Pass function back up to parent
+  validateCuisineRef(validateCuisine);
+  useEffect( () => {
+    errorRef.current=cuisinesError
+  },[cuisinesError])
   return (
     <>
       <Grid container>
@@ -51,13 +61,10 @@ const RenewalChooser = (props:nextWeekProps) => {
             onChange={(_, rt: RenewalType) => {
               // rt === null when selecting button
               if (rt === null) return;
-              setRenewal(rt)
-              
-              props.setSelectedRenewal(rt)
-              if (props.autoSave && cuisines.length === 0 && renewal === RenewalTypes.Auto) 
-                {
-                  setCuisinesError('Your picks are incomplete');
-                }
+              onRenewalChange(rt);
+              if (cuisines.length===0 && rt === RenewalTypes.Auto) {
+               setCuisinesError('Please pick 1 type')
+              }
             }}
           >
             <ToggleButton value={RenewalTypes.Auto}>
@@ -69,8 +76,7 @@ const RenewalChooser = (props:nextWeekProps) => {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      {
-        renewal === RenewalTypes.Auto &&
+      {renewal === RenewalTypes.Auto &&
         <Grid container>
           <Grid item xs={12}>
             <Typography
@@ -91,7 +97,7 @@ const RenewalChooser = (props:nextWeekProps) => {
               color='error'
               className={classes.subtitle}
             >
-              {props.autoSave? cuisinesError :props.selectedCuisinesError}
+              { cuisinesError }
             </Typography>
           </Grid>
           <Grid container spacing={2}>
@@ -111,20 +117,16 @@ const RenewalChooser = (props:nextWeekProps) => {
                     color='primary'
                     variant={isSelected ? 'contained' : 'outlined'}
                     onClick={() => {
+                      if (isSelected && cuisines.length == 1) {
+                        setCuisinesError('Pick at least 1 type');
+                      }
                       if (isSelected) {
-                        setCuisines(withoutCuisine);
-                        props.setSelectedCuisines(withoutCuisine);
-                        if(props.autoSave === true ) {
-                          setCuisinesError('Your picks are incomplete');
-                        }
+                        onCuisineChange(withoutCuisine);
                         return;
                       }
-                      // do onCuisineChange
-                      setCuisines([...cuisines, cuisine]);
-                      props.setSelectedCuisines([...cuisines, cuisine]);
+                      onCuisineChange([...cuisines, cuisine]);
                       if (withoutCuisine.length === 0) {
                         setCuisinesError('');
-                        props.setSelectedCuisinesError('');
                       }
                     }}
                   >
