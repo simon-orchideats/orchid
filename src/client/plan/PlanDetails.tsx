@@ -19,29 +19,29 @@ const useStyles = makeStyles(theme => ({
     color: selected ? theme.palette.grey['300'] : theme.palette.text.secondary,
   }),
 }));
-interface mealCardProps {
+interface PlanDetailsProps {
   mealPlan?: Plan | undefined;
   selected: boolean | undefined;
 }
 
-const MealCard = (props:mealCardProps) => {
-  const { selected } = props;
+const PlanDetails = (props:PlanDetailsProps) => {
+  const { selected, mealPlan } = props;
   const classes = useStyles({selected});
   return (
-    <Card key={props.mealPlan?.mealPrice} className={classes.card}>
+    <Card key={mealPlan?.mealPrice} className={classes.card}>
       <CardContent>
         <Typography variant='h6'>
-          {props.mealPlan?.mealCount} meals/week
+          {mealPlan?.mealCount} meals/week
         </Typography>
         <Typography variant='body2' className={ classes.cardSubtitle}>
-          ${props.mealPlan?.mealPrice.toFixed(2)}/meal
+          ${mealPlan?.mealPrice.toFixed(2)}/meal
         </Typography>
         <Typography variant='body2' className={classes.cardSubtitle}>
-          ${props.mealPlan?.weekPrice.toFixed(2)}/week
+          ${mealPlan?.weekPrice.toFixed(2)}/week
         </Typography>
       </CardContent>
     </Card>
   );
 }
 
-export default MealCard;
+export default PlanDetails;

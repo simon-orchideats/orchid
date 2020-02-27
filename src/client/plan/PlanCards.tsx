@@ -1,7 +1,7 @@
 import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
-import MealCard from './MealCard';
+import PlanDetails from './PlanDetails';
 import { Plan } from '../../plan/planModel';
 import { useState } from 'react';
 
@@ -24,7 +24,7 @@ const PlanCards = ({isSelectable}:{isSelectable:boolean}) => {
       {plans.data.map(plan => (
         <Grid  key={plan.StripeId} item sm={12} md={4} className={classes.item}>
           <div onClick={() => setSelectedPlan(plan)}>
-            <MealCard
+            <PlanDetails
               selected={isSelectable && selectedPlan && selectedPlan.StripeId === plan.StripeId}
               mealPlan={plan} 
             />

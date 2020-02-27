@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-interface nextWeekProps {
+interface RenewalProps {
   validateCuisineRef: (validateCuisine: () => boolean) => void,
   renewal:RenewalType,
   cuisines:CuisineType[],
@@ -27,7 +27,7 @@ interface nextWeekProps {
   onCuisineChange: (cuisine:CuisineType[]) => void
 }
 
-const RenewalChooser = (props:nextWeekProps) => {
+const RenewalChooser = (props:RenewalProps) => {
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const {onCuisineChange, onRenewalChange, cuisines, renewal, validateCuisineRef} = props;
   const classes = useStyles();
