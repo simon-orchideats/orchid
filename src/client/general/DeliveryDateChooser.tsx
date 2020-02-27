@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 const DeliveryDateChooser: React.FC<{
   onDayChange: (d: deliveryDay) => void
   day: deliveryDay
-}> = ({onDayChange, day}) => {
+}> = ({ onDayChange, day }) => {
   const classes = useStyles();
   const inputLabel = useRef<HTMLLabelElement>(null);
   const [labelWidth, setLabelWidth] = useState(0);

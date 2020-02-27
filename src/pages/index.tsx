@@ -206,7 +206,7 @@ const HowItWorks = () => {
 
 const Plans = withClientApollo(() => {
   const setCartStripePlanId = useUpdateCartPlanId();
-    const onClick = (plan: Plan) => {
+  const onClick = (plan: Plan) => {
     Router.push(menuRoute);
     setCartStripePlanId(plan.stripeId);
   };

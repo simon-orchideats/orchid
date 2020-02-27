@@ -414,7 +414,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <RenewalChooser
             renewal={renewal}
             cuisines = {cuisines}
-            validateCuisineRef={(validateCuisine) => {
+            validateCuisineRef={validateCuisine => {
               validateCuisineRef.current = validateCuisine;
             }}
             onCuisineChange={cuisines => setCuisines(cuisines)}

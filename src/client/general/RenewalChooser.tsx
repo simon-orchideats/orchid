@@ -25,14 +25,21 @@ const RenewalChooser: React.FC<{
   cuisines: CuisineType[],
   onRenewalChange: (renewal:RenewalType) => void,
   onCuisineChange: (cuisine:CuisineType[]) => void
-}>= ({onCuisineChange, onRenewalChange, cuisines, renewal, validateCuisineRef}) => {
+}>= ({
+  onCuisineChange,
+  onRenewalChange,
+  cuisines,
+  renewal,
+  validateCuisineRef
+}) => {
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const classes = useStyles();
   const validateCuisine = () => { 
-    if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
+    if (cuisines.length <= 1 && renewal === RenewalTypes.Auto) {
       setCuisinesError('Please pick 1 type');
       return false;
     }
+    setCuisinesError('');
     return true;
   }
   // Pass function back up to parent
@@ -107,9 +114,9 @@ const RenewalChooser: React.FC<{
                     color='primary'
                     variant={isSelected ? 'contained' : 'outlined'}
                     onClick={() => {
-                      if (isSelected && cuisines.length == 1) {
-                        setCuisinesError('Pick at least 1 type');
+                      if (isSelected) {
                         onCuisineChange(withoutCuisine);
+                        validateCuisine();
                         return;
                       }
                       onCuisineChange([...cuisines, cuisine]);

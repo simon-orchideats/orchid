@@ -22,9 +22,9 @@ const useStyles = makeStyles(theme => ({
 
 const PlanDetails: React.FC<{
   mealPlan: Plan;
-  selected: boolean;
-  onClick: (plan: Plan) => void;
-}> = ({selected = false, mealPlan, onClick}) => {
+  selected?: boolean;
+  onClick: (plan: Plan) => void 
+}> = ({ selected = false, mealPlan, onClick }) => {
   const classes = useStyles({ selected });
   return (
     <Card onClick={() => onClick(mealPlan)} key={mealPlan.mealPrice} className={classes.card}>

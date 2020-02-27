@@ -15,21 +15,11 @@ const useStyles = makeStyles(() => ({
 
 const PlanCards: React.FC <{
   isSelectable?: boolean;
-  onClickCard?: (plan: Plan) => void;
-}> = ({isSelectable=false, onClickCard=()=>{}}) => {
+  onClickCard?: { (plan: Plan): void }
+}> = ({ isSelectable=false, onClickCard=undefined }) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  const initialPlan = {
-    stripeId:'',
-    mealCount:0,
-    mealPrice:0,
-    weekPrice:0,
-    StripeId:'',
-    MealCount:0, 
-    MealPrice:0,
-    WeekPrice:0
-  };
-  const [selectedPlan, setSelectedPlan] = useState<Plan>(initialPlan);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>();
  
   if (!plans.data) {
     return <div>loading</div>
@@ -37,11 +27,11 @@ const PlanCards: React.FC <{
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid onClick={()=> onClickCard(plan)} key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+        <Grid key={plan.StripeId} item sm={12} md={4} className={classes.item}>
           <PlanDetails
-            selected={isSelectable && selectedPlan && selectedPlan.StripeId === plan.StripeId}
+            selected={isSelectable && !!selectedPlan && selectedPlan.StripeId === plan.StripeId}
             mealPlan={plan}
-            onClick={plan => setSelectedPlan(plan)} 
+            onClick={!!onClickCard? (plan) => onClickCard(plan) : (plan) => setSelectedPlan(plan)} 
           />
         </Grid>
       ))}

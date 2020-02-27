@@ -69,7 +69,7 @@ const myPlan = () => {
           cuisines={cuisines}
           onCuisineChange={cuisines => setCuisines(cuisines)}
           onRenewalChange={renewal => setRenewal(renewal)}
-          validateCuisineRef={(validateCuisine) => {
+          validateCuisineRef={validateCuisine => {
             validateCuisineRef.current = validateCuisine;
           }}
         />
