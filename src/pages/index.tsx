@@ -13,6 +13,9 @@ import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import { useUpdateCartEmail } from '../client/global/state/cartState';
 import { useAddConsumerEmail } from '../consumer/consumerService';
+import { Plan } from "../plan/planModel";
+import { useUpdateCartPlanId } from '../client/global/state/cartState';
+
 const useStyles = makeStyles(theme => ({
   centered: {
     textAlign: 'center',
@@ -201,7 +204,12 @@ const HowItWorks = () => {
   );
 };
 
-const Plans = () => {
+const Plans = withClientApollo(() => {
+  const setCartStripePlanId = useUpdateCartPlanId();
+    const onClick = (plan: Plan) => {
+    Router.push(menuRoute);
+    setCartStripePlanId(plan.stripeId);
+  };
   const classes = useStyles();
   return (
     <div className={`${classes.plans}`}>
@@ -212,7 +220,7 @@ const Plans = () => {
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
           Each Sauté delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
-        <PlanCards isSelectable={false}/>
+        <PlanCards onClickCard={onClick}/>
         <Link href={menuRoute}>
           <Button
             variant='contained'
@@ -225,7 +233,7 @@ const Plans = () => {
       </Paper>
     </div>
   )
-}
+})
 
 const Benefits = () => {
   const classes = useStyles();

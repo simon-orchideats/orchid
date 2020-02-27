@@ -3,7 +3,7 @@ import { RenewalTypes, RenewalType, CuisineTypes, CuisineType } from "../../cons
 import { Typography, makeStyles, Grid, Button } from "@material-ui/core";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { useState, useRef, useEffect } from "react";
+import { useState} from "react";
 
 const useStyles = makeStyles(theme => ({
   toggleButtonGroup: {
@@ -19,31 +19,24 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-interface RenewalProps {
+const RenewalChooser: React.FC<{
   validateCuisineRef: (validateCuisine: () => boolean) => void,
-  renewal:RenewalType,
-  cuisines:CuisineType[],
+  renewal: RenewalType,
+  cuisines: CuisineType[],
   onRenewalChange: (renewal:RenewalType) => void,
   onCuisineChange: (cuisine:CuisineType[]) => void
-}
-
-const RenewalChooser = (props:RenewalProps) => {
+}>= ({onCuisineChange, onRenewalChange, cuisines, renewal, validateCuisineRef}) => {
   const [cuisinesError, setCuisinesError] = useState<string>('');
-  const {onCuisineChange, onRenewalChange, cuisines, renewal, validateCuisineRef} = props;
   const classes = useStyles();
-  const errorRef = useRef(cuisinesError);
-  // Create function for parent to reference to
   const validateCuisine = () => { 
-    if (errorRef.current) {
+    if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
+      setCuisinesError('Please pick 1 type');
       return false;
     }
     return true;
   }
   // Pass function back up to parent
   validateCuisineRef(validateCuisine);
-  useEffect( () => {
-    errorRef.current=cuisinesError
-  },[cuisinesError])
   return (
     <>
       <Grid container>
@@ -62,9 +55,6 @@ const RenewalChooser = (props:RenewalProps) => {
               // rt === null when selecting button
               if (rt === null) return;
               onRenewalChange(rt);
-              if (cuisines.length===0 && rt === RenewalTypes.Auto) {
-               setCuisinesError('Please pick 1 type')
-              }
             }}
           >
             <ToggleButton value={RenewalTypes.Auto}>
@@ -97,7 +87,7 @@ const RenewalChooser = (props:RenewalProps) => {
               color='error'
               className={classes.subtitle}
             >
-              { cuisinesError }
+              {cuisinesError}
             </Typography>
           </Grid>
           <Grid container spacing={2}>
@@ -119,8 +109,6 @@ const RenewalChooser = (props:RenewalProps) => {
                     onClick={() => {
                       if (isSelected && cuisines.length == 1) {
                         setCuisinesError('Pick at least 1 type');
-                      }
-                      if (isSelected) {
                         onCuisineChange(withoutCuisine);
                         return;
                       }

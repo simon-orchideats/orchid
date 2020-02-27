@@ -98,13 +98,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     Router.replace(`${menuRoute}`);
     return <Typography>Redirecting...</Typography>
   }
-  const onCuisineChange = (cuisines:CuisineType[]) => {
-    setCuisines(cuisines);
-  }
-
-  const onRenewalChange = (renewal:RenewalType) => {
-    setRenewal(renewal);
-  }
   const validate = () => {
     let isValid = true;
     if (!deliveryName) {
@@ -421,11 +414,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <RenewalChooser
             renewal={renewal}
             cuisines = {cuisines}
-            validateCuisineRef={(validateCuisine: () => boolean) => {
+            validateCuisineRef={(validateCuisine) => {
               validateCuisineRef.current = validateCuisine;
             }}
-            onCuisineChange={onCuisineChange}
-            onRenewalChange={onRenewalChange}
+            onCuisineChange={cuisines => setCuisines(cuisines)}
+            onRenewalChange={renewal => setRenewal(renewal)}
           />
         </Grid>
         {

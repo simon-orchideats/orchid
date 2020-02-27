@@ -16,18 +16,14 @@ const useStyles = makeStyles(theme => ({
   input: {
     alignSelf: 'stretch',
   },
-  row: {
-    display: 'flex',
-  },
 }));
-interface DeliveryDateChooserProps {
-  onDayChange: (d:deliveryDay) => void
+
+const DeliveryDateChooser: React.FC<{
+  onDayChange: (d: deliveryDay) => void
   day: deliveryDay
-}
-const DeliveryDateChooser = (props:DeliveryDateChooserProps) => {
+}> = ({onDayChange, day}) => {
   const classes = useStyles();
   const inputLabel = useRef<HTMLLabelElement>(null);
-  const {day, onDayChange} = props;
   const [labelWidth, setLabelWidth] = useState(0);
   useEffect(() => {
     setLabelWidth(inputLabel.current!.offsetWidth);

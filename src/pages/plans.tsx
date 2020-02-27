@@ -3,7 +3,10 @@ import PlanCards from "../client/plan/PlanCards";
 import Faq from "../client/general/Faq";
 import Link from "next/link";
 import { menuRoute } from "./menu";
-
+import Router from "next/router";
+import { Plan } from "../plan/planModel";
+import { useUpdateCartPlanId } from '../client/global/state/cartState';
+import withClientApollo from '../client/utils/withClientApollo';
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
@@ -58,6 +61,11 @@ const Detail: React.FC<{
 }
 
 const plans = () => {
+  const setCartStripePlanId = useUpdateCartPlanId();
+    const onClick = (plan: Plan) => {
+    Router.push(menuRoute);
+    setCartStripePlanId(plan.stripeId);
+  };
   const classes = useStyles();
   return (
     <>
@@ -83,7 +91,7 @@ const plans = () => {
             />
           </div>
         </Hidden>
-        <PlanCards isSelectable={false}/>
+        <PlanCards onClickCard={onClick}/>
         <Link href={menuRoute}>
           <Button
             variant='contained'
@@ -99,6 +107,6 @@ const plans = () => {
   )
 }
 
-export default plans;
+export default withClientApollo(plans);
 
 export const plansRoute = '/plans';

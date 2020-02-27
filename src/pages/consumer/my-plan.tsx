@@ -35,15 +35,6 @@ const myPlan = () => {
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [day, setDay] = useState<deliveryDay>(0);
   const validateCuisineRef= useRef<() => boolean>();
-  const onDayChange = (day:deliveryDay) => {
-    setDay(day);
-  }
-  const onCuisineChange = (cuisines:CuisineType[]) => {
-    setCuisines(cuisines);
-  }
-  const onRenewalChange = (renewal:RenewalType) => {
-    setRenewal(renewal);
-  }
   return (
     <Container maxWidth='lg' className={classes.container}>
       <Typography variant='h3'>
@@ -65,7 +56,7 @@ const myPlan = () => {
         >
           Preferred delivery day
         </Typography>
-        <DeliveryDateChooser day={day} onDayChange={onDayChange}/>
+        <DeliveryDateChooser day={day} onDayChange={day => setDay(day)}/>
         <Typography
           variant='h6'
           color='primary'
@@ -76,9 +67,9 @@ const myPlan = () => {
         <RenewalChooser 
           renewal={renewal}
           cuisines={cuisines}
-          onCuisineChange={onCuisineChange}
-          onRenewalChange={onRenewalChange}
-          validateCuisineRef={(validateCuisine: () => boolean) => {
+          onCuisineChange={cuisines => setCuisines(cuisines)}
+          onRenewalChange={renewal => setRenewal(renewal)}
+          validateCuisineRef={(validateCuisine) => {
             validateCuisineRef.current = validateCuisine;
           }}
         />
