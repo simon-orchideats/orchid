@@ -135,6 +135,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       isValid = false;
     }
     if (!validateCuisineRef.current!()) {
+      console.log('inCheckout it ran invalid');
       isValid = false;
     }
     return isValid;

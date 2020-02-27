@@ -35,15 +35,16 @@ const RenewalChooser: React.FC<{
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const classes = useStyles();
   const validateCuisine = () => { 
-    if (cuisines.length <=1 && renewal === RenewalTypes.Auto) {
-      setCuisinesError('Please pick 1 type');
+    if (cuisines.length === 0 && renewal === RenewalTypes.Auto) {
+      if (!cuisinesError) setCuisinesError('Please pick 1 type')
       return false;
     }
-    setCuisinesError('');
+    if (cuisinesError) setCuisinesError('');
     return true;
   }
   // Pass function back up to parent
   validateCuisineRef(validateCuisine);
+  validateCuisine()
   return (
     <>
       <Grid container>
@@ -113,15 +114,9 @@ const RenewalChooser: React.FC<{
                     fullWidth
                     color='primary'
                     variant={isSelected ? 'contained' : 'outlined'}
-                    onClick={() => {
-                      if (isSelected) {
-                        onCuisineChange(withoutCuisine);
-                        validateCuisine();
-                        return;
-                      }
-                      onCuisineChange([...cuisines, cuisine]);
-                      if (withoutCuisine.length === 0) setCuisinesError('');
-                    }}
+                    onClick={() => 
+                      isSelected ? onCuisineChange(withoutCuisine) : onCuisineChange([...cuisines, cuisine])
+                    }
                   >
                     {cuisine}
                   </Button>

@@ -15,8 +15,11 @@ const useStyles = makeStyles(() => ({
 
 const PlanCards: React.FC <{
   isSelectable?: boolean;
-  onClickCard?: ( (plan: Plan) => void )
-}> = ({ isSelectable=false, onClickCard=undefined}) => {
+  onClickCard?: (plan: Plan) => void
+}> = ({
+  isSelectable =  false,
+  onClickCard = (_plan: Plan) => {}
+}) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   const [selectedPlan, setSelectedPlan] = useState<Plan>();
@@ -31,7 +34,11 @@ const PlanCards: React.FC <{
           <PlanDetails
             selected={isSelectable && !!selectedPlan && selectedPlan.StripeId === plan.StripeId}
             mealPlan={plan}
-            onClick={!!onClickCard? (plan) => onClickCard(plan) : (plan) => setSelectedPlan(plan)} 
+            onClick={() => {
+              onClickCard(plan);
+              setSelectedPlan(plan);
+            }}
+            // onClick={!!onClickCard? (plan) => onClickCard(plan) : (plan) => setSelectedPlan(plan)} 
           />
         </Grid>
       ))}
