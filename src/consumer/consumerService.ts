@@ -41,6 +41,7 @@ export const useRequireConsumer = (url: string) => {
   type res = {
     myConsumer: IConsumer | null
   }
+  console.log('useRedquireConsumer')
   const res = useQuery<res>(
     gql`
       query myConsumer {
@@ -51,11 +52,12 @@ export const useRequireConsumer = (url: string) => {
       ${consumerFragment}
     `,
   );
-
+ 
+  console.log(`USED REQUIRED RESULTS FROM ${JSON.stringify(res.data)}`);
   const consumer = useMemo<Consumer | null>(() => (
     res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
   ), [res.data]);
-
+ 
   if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {

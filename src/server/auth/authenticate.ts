@@ -4,40 +4,88 @@ import cookie from 'cookie'
 import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
+import { getConsumerService } from '../consumer/consumerService'
 
 const STATE_COOKIE_NAME = 'orchid_state';
 const ACCESS_TOKEN_NAME = 'orchid_access';
 const REFRESH_TOKEN_NAME = 'orchid_refresh';
 
-export const getSignedInUser = (req?: IncomingMessage) => {
+export const getSignedInUser = async (req?: IncomingMessage) => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[ACCESS_TOKEN_NAME];
   if (!access) return null;
-  return {
-    _id: '123',
-    plan: {
-      stripePlanId: 'plan123',
-      deliveryDay: 0,
-      rewnewal: 'Skip',
-      cuisines: []
-    },
-    card: {
-      last4: '1234',
-      expMonth: 12,
-      expYear: 2004
-    },
-    phone: '6095138166',
-    destination: {
-      name: 'name',
-      instructions: 'to door',
-      address: {
-        address1: '1',
-        city: 'boston',
-        state: 'MA',
-        zip: '02127'
+
+  if(access) {
+   const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
+    method: 'GET',
+    // mode:'cors',
+    headers: {'Authorization':`Bearer ${access}`},
+  })
+    const data = await authRes.json()
+    const consumerService = getConsumerService();
+    let returnedConsumer;
+    let customerRes;
+    //make it work for if it already existts thats why it not returning anything
+    try{
+    
+      try {
+      customerRes = await consumerService.getConsumerProfile(data.sub);
+      
+      } catch (e) {
+        console.log(e);
       }
+      if (customerRes.body.hits.total.value === 0) {
+        
+        customerRes = await consumerService.insertConsumerProfile(data.sub,data.name,data.email);
+      }
+    } catch(e) {
+      console.log(e);
+    }
+    console.log(`true? ${JSON.stringify(customerRes)}`);
+    if(customerRes.res) {
+     
+      try {
+        returnedConsumer = await consumerService.getConsumerProfile(data.sub);
+        
+        } catch (e) {
+          console.log(e);
+        }
+        console.log(returnedConsumer.body.hits.hits)
+        let datas:any = returnedConsumer.body.hits.hits;
+        return {
+          _id: datas.id,
+          profile: {
+           name: datas.name,
+           email: datas.email 
+          }
+        }
     }
   }
+  // return {
+  //   _id: '123',
+  //   plan: {
+  //     stripePlanId: 'plan123',
+  //     deliveryDay: 0,
+  //     rewnewal: 'Skip',
+  //     cuisines: []
+  //   },
+  //   card: {
+  //     last4: '1234',
+  //     expMonth: 12,
+  //     expYear: 2004
+  //   },
+  //   phone: '6095138166',
+  //   destination: {
+  //     name: 'name',
+  //     instructions: 'to door',
+  //     address: {
+  //       address1: '1',
+  //       city: 'boston',
+  //       state: 'MA',
+  //       zip: '02127'
+  //     }
+  //   }
+  // }
 }
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
@@ -56,7 +104,7 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
       response_type: 'code',
       redirect_uri: activeConfig.server.auth.redirect,
       client_id: activeConfig.server.auth.clientId,
-      scope: 'offline_access',
+      scope: 'offline_access openid profile email',
       state,
     }).toString();
     res.redirect(authorizationEndpointUrl.toString());

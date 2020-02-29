@@ -59,6 +59,8 @@ const profile = () => {
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
+  console.log('profile');
+  console.log(consumer);
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);

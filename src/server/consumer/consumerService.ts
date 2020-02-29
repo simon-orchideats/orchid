@@ -1,5 +1,5 @@
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer} from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 
@@ -32,6 +32,72 @@ class ConsumerService {
       console.error(`[ConsumerService] failed to upsert consumer '${userId}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
+  }
+
+  async insertConsumerProfile(userId: string,name: string, email: string): Promise<MutationBoolRes> {
+    try {
+      let res: ApiResponse<SearchResponse<any>>
+      try {
+        res = await this.elastic.search({
+          index: CONSUMER_INDEX,
+          size: 1000,
+          _source: 'false',
+          body: {
+            query: {
+              ids: {
+                values: userId
+              }
+            }
+          }
+        });
+      } catch (e) {
+        throw new Error(`Coudln't search for userId ${userId}. ${e.stack}`);
+      }
+      if (res.body.hits.total > 0) throw new Error('userId already exists');
+      await this.elastic.index({
+        index: CONSUMER_INDEX,
+        id: userId,
+        body: {
+          createdDate: Date.now(),
+          profile: {
+             name,
+             email,
+          }
+        }
+      });
+      return {
+        res: true,
+        error: null,
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to insert email '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async getConsumerProfile(userId: string): Promise<any> {
+    let res: ApiResponse<SearchResponse<any>>
+    try {
+      res = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: { _id: userId }
+                }
+              ]
+            }
+          }
+        }
+      });
+      return res;
+    } catch (e) {
+      throw new Error("Couldn't get consumer Profile");
+    }
+   
   }
 
   async insertEmail(email: string): Promise<MutationBoolRes> {
