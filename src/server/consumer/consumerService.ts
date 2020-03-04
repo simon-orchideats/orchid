@@ -62,7 +62,30 @@ class ConsumerService {
           profile: {
              name,
              email,
-          }
+             card: {
+              last4: '',
+              expMonth: 0,
+              expYear: 0
+            },
+            phone: '',
+            destination: {
+              name: '',
+              instructions: '',
+              address: {
+                address1: '',
+                city: '',
+                state: null,
+                zip: ''
+              }
+            }
+          },
+          plan: {
+            stripePlanId: '',
+            deliveryDay: 0,
+            rewnewal: '',
+            cuisines: []
+          },
+         
         }
       });
       return {

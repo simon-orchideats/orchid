@@ -9,6 +9,9 @@ export const consumerFragment = gql`
       renewal
       cuisines
     }
+    profile{
+      name
+      email
     card {
       last4
       expMonth
@@ -25,6 +28,7 @@ export const consumerFragment = gql`
         state
         zip
       }
+    }
     }
   }
 `

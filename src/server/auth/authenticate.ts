@@ -16,12 +16,18 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
   if (!access) return null;
 
   if(access) {
-   const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
+    let data;
+    try {
+    const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
     method: 'GET',
     // mode:'cors',
     headers: {'Authorization':`Bearer ${access}`},
   })
-    const data = await authRes.json()
+  data = await authRes.json()
+} catch (e) {
+    console.log(e);
+  }
+   
     const consumerService = getConsumerService();
     let returnedConsumer;
     let customerRes;
@@ -43,7 +49,9 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
         console.log(datas["_id"]);
         return {
           _id: datas["_id"],
-          profile: datas["_source"]["profile"]
+          profile: datas["_source"]["profile"],
+          plan: datas["_source"]["plan"]
+
         }
       }
     } catch(e) {

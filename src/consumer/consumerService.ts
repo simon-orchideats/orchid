@@ -54,6 +54,11 @@ export const useRequireConsumer = (url: string) => {
   );
  
   console.log(`USED REQUIRED RESULTS FROM ${JSON.stringify(res.data)}`);
+  if(res.data?.myConsumer) {
+    // @ts-ignore
+  Object.defineProperty(res.data.myConsumer, 'userId', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id')); 
+    // delete res.data.['_id'];  
+                }              // delete old key
   const consumer = useMemo<Consumer | null>(() => (
     res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
   ), [res.data]);

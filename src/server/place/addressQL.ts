@@ -60,7 +60,7 @@ const _AddressQL = gql`
     address1: String!
     address2: String
     city: String!
-    state: State!
+    state: State
     zip: String!
   }
 
