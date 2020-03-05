@@ -53,10 +53,11 @@ class ConsumerService {
       } catch (e) {
         throw new Error(`Coudln't search for userId ${userId}. ${e.stack}`);
       }
-      if (res.body.hits.total > 0) throw new Error('userId already exists');
+      if (res.body.hits.total.value > 0) throw new Error('userId already exists');
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: userId,
+        refresh: 'true', 
         body: {
           createdDate: Date.now(),
           profile: {
@@ -84,8 +85,7 @@ class ConsumerService {
             deliveryDay: 0,
             rewnewal: '',
             cuisines: []
-          },
-         
+          }, 
         }
       });
       return {
@@ -116,7 +116,7 @@ class ConsumerService {
           }
         }
       });
-      return res;
+      return res.body;
     } catch (e) {
       throw new Error("Couldn't get consumer Profile");
     }
@@ -146,7 +146,7 @@ class ConsumerService {
       } catch (e) {
         throw new Error(`Coudln't seach for consumer email ${email}. ${e.stack}`);
       }
-      if (res.body.hits.total > 0) throw new Error('Email already exists');
+      if (res.body.hits.total.value > 0) throw new Error('Email already exists');
       await this.elastic.index({
         index: CONSUMER_INDEX,
         body: {

@@ -5,6 +5,9 @@ import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
 import { getConsumerService } from '../consumer/consumerService'
+import { SearchResponse } from '../elasticConnector';
+import { MutationBoolRes } from '../../utils/mutationResModel';
+import { IConsumer } from '../../consumer/consumerModel';
 
 const STATE_COOKIE_NAME = 'orchid_state';
 const ACCESS_TOKEN_NAME = 'orchid_access';
@@ -16,113 +19,53 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
   if (!access) return null;
 
   if(access) {
-    let data;
+    let authData;
     try {
-    const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
-    method: 'GET',
-    // mode:'cors',
-    headers: {'Authorization':`Bearer ${access}`},
-  })
-  data = await authRes.json()
-} catch (e) {
-    console.log(e);
-  }
+      const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
+      method: 'GET',
+      // mode:'cors',
+      headers: {'Authorization':`Bearer ${access}`},
+    })
+    authData = await authRes.json()
+    } catch (e) {
+        console.log(e);
+      }
    
     const consumerService = getConsumerService();
-    let returnedConsumer;
-    let customerRes;
-    //make it work for if it already existts thats why it not returning anything
-    try{
-    
       try {
-      customerRes = await consumerService.getConsumerProfile(data.sub);
-      
-      } catch (e) {
-        console.log(`From getConsumerProfile first try: ${e}`);
-      }
-      if (customerRes.body.hits.total.value === 0) {
-        
-        customerRes = await consumerService.insertConsumerProfile(data.sub,data.name,data.email);
-      } else {
-        console.log(`It does exists!: ${JSON.stringify(customerRes.body.hits.hits)}`)
-        let datas:any = customerRes.body.hits.hits[0];
-        console.log(datas["_id"]);
-        return {
-          _id: datas["_id"],
-          profile: datas["_source"]["profile"],
-          plan: datas["_source"]["plan"]
-
-        }
-      }
-    } catch(e) {
-      console.log(`From InsertConsumerProfile: ${e}`);
-    }
-    console.log(`true? ${JSON.stringify(customerRes)}`);
-    if(customerRes.res) {
-     
-      try {
-        returnedConsumer = await consumerService.getConsumerProfile(data.sub);
-        
-        } catch (e) {
-          console.log(`From GetConsumerProfile second time${e}`);
-        }
-        console.log(returnedConsumer.body.hits.hits)
-        //let datas:any = returnedConsumer.body.hits.hits;
-        return {
-          
-          _id: '123',
-    plan: {
-      stripePlanId: 'plan123',
-      deliveryDay: 0,
-      rewnewal: 'Skip',
-      cuisines: []
-    },
-    card: {
-      last4: '1234',
-      expMonth: 12,
-      expYear: 2004
-    },
-    phone: '6095138166',
-    destination: {
-      name: 'name',
-      instructions: 'to door',
-      address: {
-        address1: '1',
-        city: 'boston',
-        state: 'MA',
-        zip: '02127'
-      }
-    }
+        let getConsumer: SearchResponse<IConsumer> = await consumerService.getConsumerProfile(authData.sub);
+        if (getConsumer.hits.total.value === 0) {
+          const insertConsumer: MutationBoolRes  = await consumerService.insertConsumerProfile(
+            authData.sub,
+            authData.name,
+            authData.email
+            );
+          if (insertConsumer.res) {
+            try {
+              getConsumer = await consumerService.getConsumerProfile(authData.sub);
+            } catch (e) {
+                console.log(`After inserting, attempted to grab ConsumerProfile${e}`);
+              }
+            const data = getConsumer.hits.hits[0];
+            return {
+              _id: data._id,
+              profile: data._source.profile,
+              plan: data._source.plan
+            }
           }
+        } else {
+            const data = getConsumer.hits.hits[0];
+            return {
+              _id: data._id,
+              profile: data._source.profile,
+              plan: data._source.plan
+            }
+          }
+      } catch (e) {
+          console.log(`From getConsumerProfile first try: ${e}`);
         }
-    }
   }
-  // return {
-  //   _id: '123',
-  //   plan: {
-  //     stripePlanId: 'plan123',
-  //     deliveryDay: 0,
-  //     rewnewal: 'Skip',
-  //     cuisines: []
-  //   },
-  //   card: {
-  //     last4: '1234',
-  //     expMonth: 12,
-  //     expYear: 2004
-  //   },
-  //   phone: '6095138166',
-  //   destination: {
-  //     name: 'name',
-  //     instructions: 'to door',
-  //     address: {
-  //       address1: '1',
-  //       city: 'boston',
-  //       state: 'MA',
-  //       zip: '02127'
-  //     }
-  //   }
-  // }
-
+}
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
   try {
