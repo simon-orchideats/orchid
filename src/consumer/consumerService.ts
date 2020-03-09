@@ -62,6 +62,7 @@ export const useRequireConsumer = (url: string) => {
   const consumer = useMemo<Consumer | null>(() => (
     res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
   ), [res.data]);
+
  
   if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);

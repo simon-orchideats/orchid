@@ -1,4 +1,8 @@
-import { consumerInitialState } from './consumerState';
+import { 
+  consumerInitialState,
+  consumerQL,
+  consumerMutationResolvers,
+ } from './consumerState';
 import { Resolvers } from 'apollo-client';
 import { ApolloCache } from 'apollo-cache';
 import {
@@ -28,6 +32,7 @@ const clientResolvers: ClientResolvers = {
   Mutation: {
     ...cartMutationResolvers,
     ...notificationMutationResolvers,
+    ...consumerMutationResolvers
   },
 };
 
@@ -39,7 +44,8 @@ const clientInitialState = {
 
 const clientTypeDefs = [
   cartQL,
-  notificationQL
+  notificationQL,
+  consumerQL
 ]
 
 export {

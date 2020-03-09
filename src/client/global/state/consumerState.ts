@@ -1,19 +1,18 @@
-//@ts-nocheck
 
-// import { ConsumerState } from './consumerState';
-// // import { Address } from './../../../location/addressModel';
-// // import {
-// //   deliveryDay,
-// //   // ConsumerProfile,
-// //   // Destination,
-// //   // ConsumerPlan
-// // } from './../../../consumer/consumerModel';
-// import { ApolloCache } from 'apollo-cache';
+// import { Address } from './../../../location/addressModel';
+// import {
+//   deliveryDay,
+//   // ConsumerProfile,
+//   // Destination,
+//   // ConsumerPlan
+// } from './../../../consumer/consumerModel';
+import { ApolloCache } from 'apollo-cache';
 // // import { Cart } from '../../../cart/cartModel';
 // import { ClientResolver } from './localState';
-// import { useMutation, useQuery } from '@apollo/react-hooks';
-// import gql from 'graphql-tag';
-// import { Consumer } from '../../../consumer/consumerModel';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import gql from 'graphql-tag';
+import { Consumer } from '../../../consumer/consumerModel';
+import { ClientResolver } from './localState';
 
 // // export const consumerQL = gql`
 // //   extend type Mutation {
@@ -25,21 +24,51 @@
 // //   }
 // // `
 
+
+
 export const consumerInitialState: Consumer | null = null;
 
-// export const CONSUMER_QUERY = gql`
-//   query consumer {
-//     consumer @client
-//   }
-// `
-// type consumerQueryRes = {
-//   consumer: ConsumerState | null
-// };
+type consumerQueryRes = {
+  consumer: Consumer | null
+};
 
-// export const useGetConsumer = () => {
-//   const queryRes = useQuery<consumerQueryRes>(CONSUMER_QUERY);
-//   return queryRes.data ? queryRes.data.consumer : null
-// }
+export const consumerQL = gql`
+  type ConsumerState {
+    _id: ID!
+    plan: ConsumerPlan!
+    profile: ConsumerProfile!
+  }
+  extend type Query {
+    consumer: ConsumerState
+  }
+  extend type Mutation {
+    setConsumerState(consumer: ConsumerState!): ConsumerState!
+  }
+`
+
+export const CONSUMER_QUERY = gql`
+  query consumer {
+    consumer @client
+  }
+`
+
+export const useGetConsumer = () => {
+  const queryRes = useQuery<consumerQueryRes>(CONSUMER_QUERY);
+  console.log(queryRes.data);
+  return queryRes.data ? queryRes.data.consumer : null
+}
+
+export const useSetConsumerState = (): (consumer: Consumer) => void => {
+  type vars = { consumer: Consumer };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation setConsumerState($consumer: Consumer!) {
+      setConsumerState(consumer: $consumer) @client
+    }
+  `);
+  return (consumer: Consumer) => {
+    mutate({ variables: { consumer } })
+  }
+}
 
 // export const useUpdateEmail = (): (email: string) => void => {
 //   type vars = { email: string };
@@ -77,49 +106,51 @@ export const consumerInitialState: Consumer | null = null;
 // //   }
 // // }
 
-// type consumerMutationResolvers = {
-//   // updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Consumer | null>
-//   // updatePlan: ClientResolver<{ planId: string }, Consumer | null>
-//   updateEmail: ClientResolver<{ email: string }, ConsumerState>
-// }
+type consumerMutationResolvers = {
+  // updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Consumer | null>
+  // updatePlan: ClientResolver<{ planId: string }, Consumer | null>
+  // updateEmail: ClientResolver<{ email: string }, Consumer>
+  setConsumerState: ClientResolver<{consumer:Consumer}, Consumer | null>
+}
 
-// const updateConsumerCache = (cache: ApolloCache<any>, consumer: ConsumerState) => {
-//   cache.writeQuery({
-//     query: CONSUMER_QUERY,
-//     data: { consumer }
-//   });
-//   return consumer;
-// }
+const updateConsumerCache = (cache: ApolloCache<any>, consumer: Consumer) => {
+  console.log("test");
+  cache.writeQuery({
+    query: CONSUMER_QUERY,
+    data: { consumer }
+  });
+  return consumer;
+}
 
-// const getConsumer = (cache: ApolloCache<any>) => cache.readQuery<consumerQueryRes>({
-//   query: CONSUMER_QUERY
-// });
+// // const getConsumer = (cache: ApolloCache<any>) => cache.readQuery<consumerQueryRes>({
+// //   query: CONSUMER_QUERY
+// // });
 
-// export const consumerMutationResolvers: consumerMutationResolvers = {
-//   updateEmail: (_, { email }, { cache }) => {
-//     const res = getConsumer(cache);
-//     if (!res || !res.consumer) {
-//       return updateConsumerCache(cache, new Consumer({
-//         profile:{
-//           name: null,
-//           email,
-//           phone: null,
-//           destination: null,
-//         },
-//         plan: null,
-//         userId: null,
-//         stripeCustomerId: null,
-//         stripeSubscriptionId: null,
-//       }))
-//     }
-//     return updateCartCache(cache, new Consumer({
-
-//     }));
-//   },  
-//   // updateDeliveryDay: (_, { day }, { cache }) => {
-//   //   return null;
-//   // },  
-//   // updatePlan: (_, { planId }, { cache }) => {
-//   //   return null;
-//   // },
-// }
+export const consumerMutationResolvers: consumerMutationResolvers = {
+  setConsumerState: (_, {consumer}, {cache}) => {
+    return updateConsumerCache(cache, consumer);
+  }
+  // updateEmail: (_, { email }:{email:string}, { cache }:{cache:ApolloCache<any>}) => {
+  //   const res = getConsumer(cache);
+  //   if (!res || !res.consumer) {
+  //     return updateConsumerCache(cache, new Consumer({
+  //       profile:{
+  //         name: '',
+  //         email,
+  //         phone: '',
+  //         destination: null,
+  //       },
+  //       plan: null,
+  //       userId: '',
+  //       stripeCustomerId: '',
+  //       stripeSubscriptionId: '',
+  //     }))
+  //   }
+  // },  
+  // updateDeliveryDay: (_, { day }, { cache }) => {
+  //   return null;
+  // },  
+  // updatePlan: (_, { planId }, { cache }) => {
+  //   return null;
+  // },
+}
