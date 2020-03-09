@@ -1,64 +1,44 @@
 import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
-import { Card, CardContent, Typography } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
-import Router from 'next/router';
-import { menuRoute } from '../../pages/menu';
-import { useUpdateCartPlanId } from '../global/state/cartState';
+import PlanDetails from './PlanDetails';
+import { Plan } from '../../plan/planModel';
+import { useState } from 'react';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   item: {
     display: 'flex',
     justifyContent: 'center',
     cursor: 'pointer',
   },
-  card: {
-    textAlign: 'center',
-    marginLeft: theme.spacing(3),
-    marginRight: theme.spacing(3),
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    width: 250,
-  },
 }));
 
-const PlanCards = () => {
+const PlanCards: React.FC <{
+  isSelectable?: boolean;
+  onClickCard?: (plan: Plan) => void
+}> = ({
+  isSelectable =  false,
+  onClickCard = (_plan: Plan) => {}
+}) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  const setCartStripePlanId = useUpdateCartPlanId();
+  const [selectedPlan, setSelectedPlan] = useState<Plan>();
+ 
   if (!plans.data) {
     return <div>loading</div>
   }
-  const onClick = (id: string) => {
-    Router.push(menuRoute);
-    setCartStripePlanId(id);
-  };
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid
-          key={plan.StripeId}
-          onClick={() => onClick(plan.StripeId)}
-          item
-          sm={12}
-          md={4}
-          className={classes.item}
-        >
-          <Card key={plan.MealPrice} className={classes.card}>
-            <CardContent>
-              <Typography variant='h6'>
-                {plan.MealCount} meals/week
-              </Typography>
-              <Typography variant='body2' color='textSecondary'>
-                ${plan.MealPrice.toFixed(2)}/meal
-              </Typography>
-              <Typography variant='body2' color='textSecondary'>
-                ${plan.WeekPrice.toFixed(2)}/week
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid key={plan.StripeId} item sm={12} md={4} className={classes.item}>
+          <PlanDetails
+            selected={isSelectable && !!selectedPlan && selectedPlan.StripeId === plan.StripeId}
+            mealPlan={plan}
+            onClick={() => {
+              onClickCard(plan);
+              setSelectedPlan(plan);
+            }}
+          />
         </Grid>
       ))}
     </Grid>
