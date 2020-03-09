@@ -57,7 +57,7 @@ class ConsumerService {
       } catch (e) {
         throw new Error(`Coudln't seach for consumer email ${email}. ${e.stack}`);
       }
-      if (res.body.hits.total > 0) throw new Error('Email already exists');
+      if (res.body.hits.total.value > 0) throw new Error('Email already exists');
       await this.elastic.index({
         index: CONSUMER_INDEX,
         body: {

@@ -5,6 +5,8 @@ import { interestedRoute } from "./interested";
 import { createRef, useRef } from "react";
 import { analyticsService } from "../client/utils/analyticsService";
 import EmailInput from "../client/general/inputs/EmailInput";
+import { useAddConsumerEmail } from "../consumer/consumerService";
+import withClientApollo from "../client/utils/withClientApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -33,11 +35,14 @@ const signUp = () => {
   const classes = useStyles();
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
+  const [addEmail] = useAddConsumerEmail()
   const onNext = () => {
     if (!validateEmailRef.current!()) return;
+    const email = emailInputRef.current!.value;
     analyticsService.setUserProperties({
-      email: emailInputRef!.current!.value
+      email
     });
+    addEmail(email);
     Router.push(interestedRoute);
   }
   return (
@@ -74,6 +79,6 @@ const signUp = () => {
   )
 }
 
-export default signUp;
+export default withClientApollo(signUp);
 
 export const signUpRoute = '/sign-up';
