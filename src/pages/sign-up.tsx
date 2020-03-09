@@ -2,9 +2,9 @@ import { makeStyles, Typography, Button, Paper } from "@material-ui/core";
 import Faq from "../client/general/Faq";
 import Router from "next/router";
 import { interestedRoute } from "./interested";
-import { createRef } from "react";
-import BaseInput from "../client/general/inputs/BaseInput";
-import { analyticsService, events } from "../client/utils/analyticsService";
+import { createRef, useRef } from "react";
+import { analyticsService } from "../client/utils/analyticsService";
+import EmailInput from "../client/general/inputs/EmailInput";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -31,10 +31,12 @@ const useStyles = makeStyles(theme => ({
 
 const signUp = () => {
   const classes = useStyles();
-  const inputRef = createRef<HTMLInputElement>();
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
   const onNext = () => {
-    analyticsService.trackEvent(events.INTERESTED, {
-      email: inputRef!.current!.value
+    if (!validateEmailRef.current!()) return;
+    analyticsService.setUserProperties({
+      email: emailInputRef!.current!.value
     });
     Router.push(interestedRoute);
   }
@@ -49,10 +51,13 @@ const signUp = () => {
           >
             Sign up
           </Typography>
-          <BaseInput
-            label='Email'
-            inputRef={inputRef}
+          <EmailInput
             className={classes.bottomPadding}
+            variant='filled'
+            inputRef={emailInputRef}
+            setValidator={(validator: () => boolean) => {
+              validateEmailRef.current = validator;
+            }}
           />
           <Button
             variant='contained'

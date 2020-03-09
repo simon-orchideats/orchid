@@ -15,6 +15,7 @@ import { useUpdateCartEmail } from '../client/global/state/cartState';
 import { useAddConsumerEmail } from '../consumer/consumerService';
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
+import { analyticsService } from '../client/utils/analyticsService';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -127,6 +128,9 @@ const Welcome = withClientApollo(() => {
   const onClick = () => {
     if (!validateEmailRef.current!()) return;
     const email = emailInputRef.current!.value;
+    analyticsService.setUserProperties({
+      email
+    });
     addEmail(email);
     updateCartEmail(email);
     Router.push(menuRoute);

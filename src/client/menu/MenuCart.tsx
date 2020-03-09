@@ -9,6 +9,7 @@ import Router from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
 import { ApolloError } from "apollo-client";
 import { Rest } from "../../rest/restModel";
+import { interestedRoute } from "../../pages/interested";
 
 export const getSuggestion = (currCount: number, fixedMealCount: number | null) => {
   if (fixedMealCount) {
@@ -47,7 +48,11 @@ const MenuCart: React.FC<{
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
   const onNext = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId');
-    Router.push(signUpRoute);
+    if (cart && cart.Email) {
+      Router.push(interestedRoute);
+    } else {
+      Router.push(signUpRoute);
+    }
     sendCartMenuMetrics(
       stripePlanId,
       sortedPlans.data,

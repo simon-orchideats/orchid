@@ -1,6 +1,8 @@
 import { Container, makeStyles, Typography } from "@material-ui/core";
 import Faq from "../client/general/Faq";
 import withClientApollo from "../client/utils/withClientApollo";
+import { useEffect } from "react";
+import { analyticsService, events } from "../client/utils/analyticsService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -19,6 +21,9 @@ const useStyles = makeStyles(theme => ({
 
 const interested = () => {
   const classes = useStyles();
+  useEffect(() => {
+    analyticsService.trackEvent(events.INTERESTED);
+  }, []);
   return (
     <>
       <Container className={classes.container}>
