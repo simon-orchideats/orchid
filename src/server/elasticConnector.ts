@@ -40,8 +40,8 @@ export interface SearchResponse<T> {
   _shards: ShardsResponse;
   hits: {
     total: {
-      value: number,
-      relation: string,
+      value: number;
+      relation: string;
     };
     max_score: number;
     hits: Array<{
