@@ -6,6 +6,7 @@ import PersonIcon from '@material-ui/icons/Person';
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
 import { profileRoute } from '../../pages/consumer/profile';
 import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
+import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
 
 const useStyles = makeStyles(theme => ({
@@ -59,7 +60,10 @@ const ConsumerPopper: React.FC<{
             Profile
           </Typography>
         </div>
-        <div className={classes.row}>
+        <div className={classes.row} onClick={() => {
+          Router.push(myPlanRoute);
+          onClose();
+        }}>
           <RestaurantMenuIcon fontSize='large' />
           <Typography variant='h6'>
             My plan

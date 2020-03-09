@@ -1,17 +1,16 @@
-import { Container, makeStyles, Typography, FormControl, InputLabel, Select, MenuItem, Button } from "@material-ui/core";
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import { Container, makeStyles, Typography, Button } from "@material-ui/core";
 import Faq from "../client/general/Faq";
-import { useState, useRef, useEffect } from "react";
-import { useUpdateDeliveryDay, useGetCart } from "../client/global/state/cartState";
-import { deliveryDay } from "../consumer/consumerModel";
-import { getNextDeliveryDate } from '../order/utils';
+import { useGetCart, useUpdateDeliveryDay } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import Link from "next/link";
-import { checkoutRoute } from "./checkout";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
+import DeliveryDateChooser from '../client/general/DeliveryDateChooser'
+import { getNextDeliveryDate } from '../order/utils';
+import { checkoutRoute } from "./checkout";
+import { useState } from "react";
+import { deliveryDay } from "../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -22,9 +21,6 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(4),
   },
   header: {
-    paddingBottom: theme.spacing(4),
-  },
-  largePaddingBottom: {
     paddingBottom: theme.spacing(4),
   },
   smallPaddingBottom: {
@@ -44,14 +40,9 @@ const useStyles = makeStyles(theme => ({
 
 const delivery = () => {
   const classes = useStyles();
-  const [day, setDay] = useState<deliveryDay>(0);
-  const inputLabel = useRef<HTMLLabelElement>(null);
-  const [labelWidth, setLabelWidth] = useState(0);
-  const updateDeliveryDay = useUpdateDeliveryDay();
-  useEffect(() => {
-    setLabelWidth(inputLabel.current!.offsetWidth);
-  }, []);
   const cart = useGetCart();
+  const [day, setDay] = useState<deliveryDay>(0);
+  const updateDeliveryDay = useUpdateDeliveryDay();
   if (!cart && !isServer()) Router.replace(`${menuRoute}`);
   return (
     <>
@@ -63,41 +54,7 @@ const delivery = () => {
         >
           Choose a repeat delivery day
         </Typography>
-        <ToggleButtonGroup
-          className={classes.toggleButtonGroup}
-          exclusive
-          value={day}
-          onChange={(_, d: deliveryDay) => {
-            // d === null when selecting same day
-            if (d === null) return;
-            setDay(d)
-          }}
-        >
-          <ToggleButton value={0}>
-            Sun
-          </ToggleButton>
-          <ToggleButton value={3}>
-            Wed
-          </ToggleButton>
-          <ToggleButton value={5}>
-            Fri
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-          <InputLabel ref={inputLabel}>
-            Another day
-          </InputLabel>
-          <Select
-            labelWidth={labelWidth}
-            value={day === 0 || day === 3 || day === 5 ? '' : day}
-            onChange={e => setDay(e.target.value as deliveryDay)}
-          >
-            <MenuItem value={1}>Mon</MenuItem>
-            <MenuItem value={2}>Tue</MenuItem>
-            <MenuItem value={4}>Thur</MenuItem>
-            <MenuItem value={6}>Sat</MenuItem>
-          </Select>
-        </FormControl>
+        <DeliveryDateChooser day={day} onDayChange={day => setDay(day)}/>
         <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
           <Typography variant='subtitle1'>
             First delivery:&nbsp;
