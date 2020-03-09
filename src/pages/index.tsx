@@ -132,7 +132,7 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Chef-cooked healthy meals delivered from local restaurants to you
+          Chef-cooked healthy meals delivered from local restaurants every week
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
           Offering meals starting at $9.99
@@ -210,7 +210,7 @@ const Plans = () => {
           Flexible plans
         </Typography>
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Each Sauté delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
+          Each Orchid delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
         <PlanCards />
         <Link href={menuRoute}>
