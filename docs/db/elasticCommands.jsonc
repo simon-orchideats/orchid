@@ -50,6 +50,13 @@ DELETE rests
 DELETE orders
 DELETE consumers
 
+POST orders/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
+
 ############################
 
 ######### MAPPING ##########
@@ -416,6 +423,10 @@ PUT /consumers/
   "mappings": {
     "dynamic": false,
     "properties": {
+      "createdDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
       "stripeCustomerId": {
         "type": "keyword"
       },
@@ -424,6 +435,12 @@ PUT /consumers/
       },
       "profile": {
         "properties": {
+          "name": {
+            "type": "keyword"
+          },
+          "email": {
+            "type": "keyword"
+          },
           "phone": {
             "type": "keyword"
           },

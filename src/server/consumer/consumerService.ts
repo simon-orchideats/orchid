@@ -1,6 +1,7 @@
+import { MutationBoolRes } from './../../utils/mutationResModel';
 import { EConsumer, IConsumer } from './../../consumer/consumerModel';
-import { initElastic } from './../elasticConnector';
-import { Client } from '@elastic/elasticsearch';
+import { initElastic, SearchResponse } from './../elasticConnector';
+import { Client, ApiResponse } from '@elastic/elasticsearch';
 
 const CONSUMER_INDEX = 'consumers';
 
@@ -11,8 +12,9 @@ class ConsumerService {
     this.elastic = elastic;
   }
 
-  async insertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
-    // left off here: make sure repeat userId fails
+  async upsertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+    // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
+    // dupe entries.
     try {
       await this.elastic.index({
         index: CONSUMER_INDEX,
@@ -25,6 +27,49 @@ class ConsumerService {
       }
     } catch (e) {
       console.error(`[ConsumerService] failed to upsert consumer '${userId}', '${JSON.stringify(consumer)}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async insertEmail(email: string): Promise<MutationBoolRes> {
+    try {
+      let res: ApiResponse<SearchResponse<any>>
+      try {
+        res = await this.elastic.search({
+          index: CONSUMER_INDEX,
+          size: 1000,
+          _source: 'false',
+          body: {
+            query: {
+              bool: {
+                filter: {
+                  term: {
+                    'profile.email': email
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        throw new Error(`Coudln't seach for consumer email ${email}. ${e.stack}`);
+      }
+      if (res.body.hits.total.value > 0) throw new Error('Email already exists');
+      await this.elastic.index({
+        index: CONSUMER_INDEX,
+        body: {
+          createdDate: Date.now(),
+          profile: {
+            email,
+          }
+        }
+      });
+      return {
+        res: true,
+        error: null,
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to insert email '${email}'`, e.stack);
       throw e;
     }
   }

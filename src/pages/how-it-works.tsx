@@ -1,5 +1,7 @@
 import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper } from '@material-ui/core';
 import Faq from '../client/general/Faq';
+import Link from 'next/link';
+import { menuRoute } from './menu';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -290,7 +292,9 @@ const HowItWorks = () => {
       </Grid>
       <Faq />
       <Paper elevation={0} className={`${classes.largeBottomPadding} ${classes.centered} ${classes.footer}`}>
-        <Button variant='contained' color='primary'>GET STARTED</Button>
+        <Link href={menuRoute}>
+          <Button variant='contained' color='primary'>GET STARTED</Button>
+        </Link>
       </Paper>
     </>
   )

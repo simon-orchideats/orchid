@@ -6,6 +6,15 @@ import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
 import StoreIcon from '@material-ui/icons/Storefront';
+import EmailInput from '../client/general/inputs/EmailInput';
+import { useRef, createRef } from 'react';
+import Router from 'next/router';
+import { howItWorksRoute } from './how-it-works';
+import withClientApollo from '../client/utils/withClientApollo';
+import { useUpdateCartEmail } from '../client/global/state/cartState';
+import { useAddConsumerEmail } from '../consumer/consumerService';
+import { Plan } from "../plan/planModel";
+import { useUpdateCartPlanId } from '../client/global/state/cartState';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -14,6 +23,9 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  input: {
+    marginBottom: theme.spacing(2),
   },
   verticalCenter: {
     display: 'flex',
@@ -106,26 +118,43 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const Welcome = () => {
+const Welcome = withClientApollo(() => {
   const classes = useStyles();
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
+  const updateCartEmail = useUpdateCartEmail();
+  const [addEmail] = useAddConsumerEmail();
+  const onClick = () => {
+    if (!validateEmailRef.current!()) return;
+    const email = emailInputRef.current!.value;
+    addEmail(email);
+    updateCartEmail(email);
+    Router.push(menuRoute);
+  }
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Chef-cooked healthy meals delivered from local restaurants to you
+          Chef-cooked healthy meals delivered from local restaurants weekly
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
           Offering meals starting at $9.99
         </Typography>
-        <Link href={plansRoute}>
-          <Button variant='contained' color='primary'>
-            SEE PLANS
-          </Button>
-        </Link>
+        <EmailInput
+          className={classes.input}
+          variant='filled'
+          inputRef={emailInputRef}
+          setValidator={(validator: () => boolean) => {
+            validateEmailRef.current = validator;
+          }}
+        />
+        <Button variant='contained' color='primary' onClick={() => onClick()}>
+          GET STARTED
+        </Button>
       </div>
     </div>
   );
-};
+});
 
 const HowItWorks = () => {
   const classes = useStyles();
@@ -168,14 +197,19 @@ const HowItWorks = () => {
         <Content description='Local restaurants cook, we deliver' icon={<StoreIcon className={classes.howIcon} />} />
         <Content description='Enjoy immediately' img='home/microwave.png'/>
       </Grid>
-      <Link href={menuRoute}>
-        <Button variant='outlined' color='primary'>GET STARTED</Button>
+      <Link href={howItWorksRoute}>
+        <Button variant='outlined' color='primary'>SEE DETAILS</Button>
       </Link>
     </div>
   );
 };
 
-const Plans = () => {
+const Plans = withClientApollo(() => {
+  const setCartStripePlanId = useUpdateCartPlanId();
+  const onClick = (plan: Plan) => {
+    Router.push(menuRoute);
+    setCartStripePlanId(plan.stripeId);
+  };
   const classes = useStyles();
   return (
     <div className={`${classes.plans}`}>
@@ -184,9 +218,9 @@ const Plans = () => {
           Flexible plans
         </Typography>
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Each Sauté delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
+          Each Orchid delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
-        <PlanCards />
+        <PlanCards onClickCard={onClick}/>
         <Link href={menuRoute}>
           <Button
             variant='contained'
@@ -199,7 +233,7 @@ const Plans = () => {
       </Paper>
     </div>
   )
-}
+})
 
 const Benefits = () => {
   const classes = useStyles();
@@ -318,13 +352,13 @@ const Benefits = () => {
               imgLeft={false}
             />
           </Grid>
-          <Link href={menuRoute}>
+          <Link href={plansRoute}>
             <Button
               variant='outlined'
               color='primary'
               className={classes.largeVerticalMargin}
             >
-              SEE MENU
+              SEE PLANS
             </Button>
           </Link>
         </Container>
@@ -347,13 +381,13 @@ const Benefits = () => {
             title='Affordable'
             description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
           />
-          <Link href={menuRoute}>
+          <Link href={plansRoute}>
             <Button
               variant='outlined'
               color='primary'
               className={classes.largeBottomMargin}
             >
-              SEE MENU
+              SEE PLANS
             </Button>
           </Link>
         </Container>

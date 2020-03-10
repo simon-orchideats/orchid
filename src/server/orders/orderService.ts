@@ -172,21 +172,6 @@ class OrderService {
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
       let subscription: Stripe.Subscription;
-      let eConsumer = {
-        plan: {
-          stripePlanId,
-          deliveryDay,
-          renewal,
-          cuisines,
-        },
-        profile: {
-          name: signedInUser.profile.name,
-          email: signedInUser.profile.email,
-          phone: cart.phone,
-          card: cart.card,
-          destination: cart.destination,
-        }
-      };
 
       if (signedInUser.stripeSubscriptionId) {
         const msg = `Subscription '${signedInUser.stripeSubscriptionId}' already exists`;
@@ -237,10 +222,23 @@ class OrderService {
         index: ORDER_INDEX,
         body: order
       })
-      const consumerInserter = getConsumerService().insertConsumer(signedInUser.userId, {
+      const consumerUpserter = getConsumerService().upsertConsumer(signedInUser.userId, {
+        createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
-        ...eConsumer
+        plan: {
+          stripePlanId,
+          deliveryDay,
+          renewal,
+          cuisines,
+        },
+        profile: {
+          name: signedInUser.profile.name,
+          email: signedInUser.profile.email,
+          phone: cart.phone,
+          card: cart.card,
+          destination: cart.destination,
+        }
       });
 
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
@@ -276,7 +274,7 @@ class OrderService {
           })
       }
 
-      await Promise.all([consumerInserter, indexer]);
+      await Promise.all([consumerUpserter, indexer]);
 
       return {
         res: true,

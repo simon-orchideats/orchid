@@ -17,8 +17,8 @@ import { menuRoute } from "../menu";
 import withApollo from "../../client/utils/withPageApollo";
 import { useRequireConsumer } from "../../consumer/consumerService";
 import StickyDrawer from "../../client/general/StickyDrawer";
-import MenuCart from "../../client/menu/MenuCart";
 import { deliveryRoute } from "../delivery";
+import SideMenuCart from "../../client/menu/SideMenuCart";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -320,7 +320,7 @@ const UpcomingDeliveries = () => {
               lg={4}
             >
               <StickyDrawer>
-                <MenuCart hideNext />
+                <SideMenuCart hideNext />
               </StickyDrawer>
             </Grid>
           }
