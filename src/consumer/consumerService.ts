@@ -78,7 +78,7 @@ export const useRequireConsumer = (url: string) => {
 
   return {
     loading: res!.loading,
-    error: res!.error,
+    error: res?.error,
     data: consumer
   }
 }

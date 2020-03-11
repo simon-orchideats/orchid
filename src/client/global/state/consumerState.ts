@@ -1,8 +1,8 @@
-import { ApolloCache } from 'apollo-cache';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+
+import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Consumer } from '../../../consumer/consumerModel';
-import { ClientResolver } from './localState';
+
 import { consumerFragment } from '../../../consumer/consumerFragment';
 
 type consumerQueryRes = {
@@ -17,9 +17,6 @@ export const consumerQL = gql`
   }
   extend type Query {
     myConsumer: ConsumerState
-  }
-  extend type Mutation {
-    setConsumerState(consumer: ConsumerState!): ConsumerState!
   }
 `
 
@@ -37,32 +34,3 @@ export const useGetConsumer = () => {
   return queryRes.data ? queryRes : null
 }
 
-export const useSetConsumerState = (): (consumer: Consumer) => void => {
-  type vars = { consumer: Consumer };
-  const [mutate] = useMutation<any, vars>(gql`
-    mutation setConsumerState($consumer: Consumer!) {
-      setConsumerState(consumer: $consumer) @client
-    }
-  `);
-  return (consumer: Consumer) => {
-    mutate({ variables: { consumer } })
-  }
-}
-
-type consumerMutationResolvers = {
-  setConsumerState: ClientResolver<{consumer:Consumer}, Consumer | null>
-}
-
-const updateConsumerCache = (cache: ApolloCache<any>, consumer: Consumer): Consumer | null => {
-  cache.writeQuery({
-    query: CONSUMER_QUERY,
-    data: { consumer }
-  });
-  return consumer;
-}
-
-export const consumerMutationResolvers: consumerMutationResolvers = {
-  setConsumerState: (_, { consumer }, { cache }) => {
-    return updateConsumerCache(cache, consumer);
-  },
-}
