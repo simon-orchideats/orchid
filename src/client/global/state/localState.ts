@@ -1,5 +1,4 @@
 import { 
-  consumerInitialState,
   consumerQL,
   consumerMutationResolvers,
  } from './consumerState';
@@ -39,7 +38,6 @@ const clientResolvers: ClientResolvers = {
 const clientInitialState = {
   cart: cartInitialState,
   notification: notificationInitialState,
-  consumer: consumerInitialState,
 }
 
 const clientTypeDefs = [

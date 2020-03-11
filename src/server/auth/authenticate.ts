@@ -18,52 +18,52 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
   const access = cookie.parse(req.headers.cookie ?? '')[ACCESS_TOKEN_NAME];
   if (!access) return null;
 
-  if(access) {
-    let authData;
-    try {
-      const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
-      method: 'GET',
-      // mode:'cors',
-      headers: {'Authorization':`Bearer ${access}`},
-    })
+  // Grab userInfo with accessToken
+  let authData;
+  try {
+    const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
+    method: 'GET',
+    // mode:'cors',
+    headers: {'Authorization':`Bearer ${access}`},
+  })
     authData = await authRes.json()
-    } catch (e) {
-        console.log(e);
-      }
-   
-    const consumerService = getConsumerService();
-      try {
-        let getConsumer: SearchResponse<IConsumer> = await consumerService.getConsumerProfile(authData.sub);
-        if (getConsumer.hits.total.value === 0) {
-          const insertConsumer: MutationBoolRes  = await consumerService.insertConsumerProfile(
-            authData.sub,
-            authData.name,
-            authData.email
-            );
-          if (insertConsumer.res) {
-            try {
-              getConsumer = await consumerService.getConsumerProfile(authData.sub);
-            } catch (e) {
-                console.log(`After inserting, attempted to grab ConsumerProfile${e}`);
-              }
-            const data = getConsumer.hits.hits[0];
-            return {
-              _id: data._id,
-              profile: data._source.profile,
-              plan: data._source.plan
-            }
-          }
-        } else {
-            const data = getConsumer.hits.hits[0];
-            return {
-              _id: data._id,
-              profile: data._source.profile,
-              plan: data._source.plan
-            }
-          }
-      } catch (e) {
-          console.log(`From getConsumerProfile first try: ${e}`);
+  } catch (e) {
+    console.error(`[Authenticate] Failed to get userInfo from accessToken, could be expired: ${e}`)
+  }
+
+  // If user doesn't exist insert consumer and return new consumer
+  try {
+    let getConsumer: SearchResponse<IConsumer> = await getConsumerService().getConsumerInfo(authData.sub);
+    if (getConsumer.hits.total.value === 0) {
+      const insertConsumer: MutationBoolRes  = await getConsumerService().insertConsumerInfo(
+        authData.sub,
+        authData.name,
+        authData.email
+        );
+      if (insertConsumer.res) {
+        try {
+          getConsumer = await getConsumerService().getConsumerInfo(authData.sub);
+        } catch (e) {
+          console.error(`[Authenticate] After insertion, getConsumerInfo failed: ${e}`);
+          throw e;
         }
+        return {
+          _id: getConsumer.hits.hits[0]._id,
+          profile: getConsumer.hits.hits[0]._source.profile,
+          plan: getConsumer.hits.hits[0]._source.plan
+        }
+      } else {
+        throw new Error("[Authenticate] Failed inserting new Consumer")
+      }
+    } else {
+        return {
+          _id: getConsumer.hits.hits[0]._id,
+          profile: getConsumer.hits.hits[0]._source.profile,
+          plan: getConsumer.hits.hits[0]._source.plan
+        }
+      }
+  } catch (e) {
+    console.error(`[Authenticate] getConsumerInfo failed: ${e}`);
   }
 }
 

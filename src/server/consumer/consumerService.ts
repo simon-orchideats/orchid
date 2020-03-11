@@ -34,7 +34,7 @@ class ConsumerService {
     }
   }
 
-  async insertConsumerProfile(userId: string,name: string, email: string): Promise<MutationBoolRes> {
+  async insertConsumerInfo(userId: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
       try {
@@ -51,7 +51,8 @@ class ConsumerService {
           }
         });
       } catch (e) {
-        throw new Error(`Coudln't search for userId ${userId}. ${e.stack}`);
+        console.error(`[ConsumerService] failed to find consumer ${userId}. ${e.stack}`);
+        throw e;
       }
       if (res.body.hits.total.value > 0) throw new Error('userId already exists');
       await this.elastic.index({
@@ -93,12 +94,12 @@ class ConsumerService {
         error: null,
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to insert email '${userId}'`, e.stack);
+      console.error(`[ConsumerService] couldn't insert consumer '${userId}'`, e.stack);
       throw e;
     }
   }
 
-  async getConsumerProfile(userId: string): Promise<any> {
+  async getConsumerInfo(userId: string): Promise<SearchResponse<any>> {
     let res: ApiResponse<SearchResponse<any>>
     try {
       res = await this.elastic.search({
@@ -118,9 +119,9 @@ class ConsumerService {
       });
       return res.body;
     } catch (e) {
-      throw new Error("Couldn't get consumer Profile");
-    }
-   
+      console.error(`[ConsumerService] couldn't search for consumer '${userId}'`, e.stack)
+      throw e;
+    } 
   }
 
   async insertEmail(email: string): Promise<MutationBoolRes> {

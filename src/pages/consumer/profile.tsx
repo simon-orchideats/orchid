@@ -1,9 +1,8 @@
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
-import { useState, useRef, createRef, useEffect } from "react";
+import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
 import  { useRequireConsumer } from '../../consumer/consumerService';
 import withApollo from "../../client/utils/withPageApollo";
-import { useSetConsumerState } from "../../client/global/state/consumerState";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -60,13 +59,7 @@ const profile = () => {
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
-  console.log('profile');
   console.log(consumer.data);
-  // let cache = useSetConsumerState(); 
-  // console.log("cache");
-  // if(consumer.data)
-  // cache(consumer.data);
-  
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);

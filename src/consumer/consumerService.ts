@@ -2,11 +2,13 @@ import { MutationBoolRes } from './../utils/mutationResModel';
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { IConsumer, Consumer } from './consumerModel';
+import { Consumer } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useMemo } from 'react';
 import { activeConfig } from '../config';
+import { useGetConsumer } from '../client/global/state/consumerState'
+import { QueryResult } from '@apollo/react-common';
 
 export const useAddConsumerEmail = (): [
   (email: string) => void,
@@ -39,43 +41,44 @@ export const useAddConsumerEmail = (): [
 
 export const useRequireConsumer = (url: string) => {
   type res = {
-    myConsumer: IConsumer | null
+    myConsumer: Consumer | null
   }
-  console.log('useRedquireConsumer')
-  const res = useQuery<res>(
-    gql`
-      query myConsumer {
-        myConsumer {
-          ...consumerFragment
+  let res:QueryResult<res, Record<string, any>> | null;
+  if (useGetConsumer()) {
+    res = useGetConsumer();
+  } else {
+      res = useQuery<res>(gql`
+        query myConsumer {
+          myConsumer {
+            ...consumerFragment
+          }
         }
-      }
-      ${consumerFragment}
-    `,
-  );
- 
-  console.log(`USED REQUIRED RESULTS FROM ${JSON.stringify(res.data)}`);
-  if(res.data?.myConsumer) {
-    // @ts-ignore
-  Object.defineProperty(res.data.myConsumer, 'userId', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id')); 
-    // delete res.data.['_id'];  
-                }              // delete old key
-  const consumer = useMemo<Consumer | null>(() => (
-    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
-  ), [res.data]);
+        ${consumerFragment}
+      `,
+    );
+  }
+  
+  const consumer = useMemo<Consumer | null>(() => {
+    if (res?.data && res.data.myConsumer) {
+      // Creates userId as property and adds value from _id to userId property
+      Object.defineProperty(res.data.myConsumer, 'userId', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id') as PropertyDescriptor );
+      return new Consumer(res.data.myConsumer)
+    } 
+      return null
+  }, [res?.data]);
 
- 
-  if (!consumer && !res.loading && !res.error) {
+  if (!consumer && !res?.loading && !res?.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {
-      loading: res.loading,
-      error: res.error,
+      loading: res!.loading,
+      error: res!.error,
       data: consumer
     }
   }
 
   return {
-    loading: res.loading,
-    error: res.error,
+    loading: res!.loading,
+    error: res!.error,
     data: consumer
   }
 }

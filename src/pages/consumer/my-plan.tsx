@@ -5,6 +5,8 @@ import { CuisineType, RenewalType,RenewalTypes, deliveryDay } from '../../consum
 import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
+import { useRequireConsumer } from "../../consumer/consumerService";
+import withApollo from "../../client/utils/withPageApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -35,6 +37,8 @@ const myPlan = () => {
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [day, setDay] = useState<deliveryDay>(0);
   const validateCuisineRef= useRef<() => boolean>();
+  const consumer = useRequireConsumer(myPlanRoute);
+  console.log("MY CONOSUMER",consumer)
   return (
     <Container maxWidth='lg' className={classes.container}>
       <Typography variant='h3'>
@@ -78,6 +82,6 @@ const myPlan = () => {
   );
 }
 
-export default myPlan; 
+export default withApollo(myPlan); 
 
 export const myPlanRoute = '/consumer/my-plan';
