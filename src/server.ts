@@ -1,14 +1,16 @@
+import { initConsumerService, getConsumerService } from './server/consumer/consumerService';
+import { initGeoService, getGeoService } from './server/place/geoService';
 import { getContext } from './server/utils/apolloUtils';
 import { initOrderService } from './server/orders/orderService';
 import express from 'express';
 import next from 'next';
 import { initElastic } from './server/elasticConnector';
-import { initPlanService } from './server/plans/planService';
+import { initPlanService, getPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './schema';
-import { initRestService } from './server/rests/restService';
+import { initRestService, getRestService } from './server/rests/restService';
 import Stripe from 'stripe';
 import cookieParser from "cookie-parser";
 import { handleLoginRoute, handleAuthCallback } from './server/auth/authenticate';
@@ -56,9 +58,19 @@ const start = async () => {
   const stripe = new Stripe(activeConfig.server.stripe.key, {
     apiVersion: '2019-12-03',
   });
+
+  initGeoService();
   initPlanService(stripe);
-  initRestService(elastic);
-  initOrderService(elastic, stripe);
+  initConsumerService(elastic);
+  initRestService(elastic, getGeoService());
+  initOrderService(
+    elastic,
+    stripe,
+    getGeoService(),
+    getPlanService(),
+    getConsumerService(),
+    getRestService()
+  );
 
   const apolloServer = new ApolloServer({
     schema,

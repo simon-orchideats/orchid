@@ -5,7 +5,12 @@ import { Client, ApiResponse } from '@elastic/elasticsearch';
 
 const CONSUMER_INDEX = 'consumers';
 
-class ConsumerService {
+export interface IConsumerService {
+  upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  insertEmail: (email: string) => Promise<MutationBoolRes>
+}
+
+class ConsumerService implements IConsumerService {
   private readonly elastic: Client
 
   public constructor(elastic: Client) {

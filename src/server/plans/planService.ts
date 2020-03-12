@@ -2,7 +2,12 @@ import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
-class PlanService {
+export interface IPlanService {
+  getAvailablePlans: () => Promise<IPlan[]>
+  getPlan: (planId: string) => Promise<IPlan | null>
+}
+
+class PlanService implements IPlanService {
   private readonly stripe: Stripe
 
   public constructor(stripe: Stripe) {

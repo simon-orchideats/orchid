@@ -1,4 +1,4 @@
-import { getGeoService } from './../place/geoService';
+import { getGeoService, IGeoService } from './../place/geoService';
 import { CuisineType } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
@@ -6,16 +6,24 @@ import { ERest, IRest } from './../../rest/restModel';
 
 const REST_INDEX = 'rests';
 
-class RestService {
-  private readonly elastic: Client
+export interface IRestService {
+  getNearbyRests: (zip: string) => Promise<IRest[]>
+  getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
+  getRestsByCuisines: (cuisines: CuisineType[], fields?: string[]) => Promise<IRest[]>
+}
 
-  public constructor(elastic: Client) {
+class RestService implements IRestService {
+  private readonly elastic: Client
+  private readonly geoService: IGeoService
+
+  public constructor(elastic: Client, geoService: IGeoService) {
     this.elastic = elastic;
+    this.geoService = geoService;
   }
 
-  async getNearbyRests(zip: string) {
+  async getNearbyRests(zip: string): Promise<IRest[]> {
     try {
-      const geo = await getGeoService().getCityState(zip);
+      const geo = await this.geoService.getCityState(zip);
       if (!geo) return [];
       const { city, state } = geo;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
@@ -39,7 +47,7 @@ class RestService {
     }
   }
 
-  async getRest(restId: string, fields?: string[]) {
+  async getRest(restId: string, fields?: string[]): Promise<IRest | null> {
     const options: any = {
       index: REST_INDEX,
       id: restId,
@@ -88,13 +96,16 @@ class RestService {
 
 let restService: RestService;
 
-export const initRestService = (elastic: Client) => {
+export const initRestService = (elastic: Client, geoService: IGeoService) => {
   if (restService) throw new Error('[RestService] already initialized.');
-  restService = new RestService(elastic);
+  restService = new RestService(elastic, geoService);
 };
 
 export const getRestService = () => {
   if (restService) return restService;
-  initRestService(initElastic());
+  initRestService(
+    initElastic(),
+    getGeoService(),
+  );
   return restService;
 }
