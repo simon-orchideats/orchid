@@ -36,6 +36,14 @@ export const _OrderQL = gql`
     destination: DestinationInput!
     deliveryDate: Float!
   }
+  input UpdateOrderInput {
+    restId: ID!
+    stripePlanId: ID #null for skip order
+    meals: [CartMealInput!]!
+    phone: String!
+    destination: DestinationInput!
+    deliveryDate: Float!
+  }
   type Order {
     _id: ID!
     deliveryDate: Float!

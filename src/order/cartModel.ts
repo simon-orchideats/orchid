@@ -46,7 +46,7 @@ export interface ICartInput {
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
   readonly meals: ICartMeal[]
-  readonly phone: string
+  readonly phone: string//shared
   readonly destination: IDestination
   readonly deliveryDate: number
 };

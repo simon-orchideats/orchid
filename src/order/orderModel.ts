@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IRest, Rest } from './../rest/restModel';
 import { IConsumerProfile } from './../consumer/consumerModel';
@@ -14,6 +15,7 @@ export interface EOrder {
   },
   readonly costs: ICost
   readonly createdDate: number
+  readonly invoiceDate: number
   readonly deliveryDate: number
   readonly rest: {
     readonly restId: string
@@ -32,6 +34,15 @@ export interface IOrder {
   readonly phone: string
   readonly rest: IRest
   readonly status: OrderStatus
+}
+
+export interface IUpdateOrderInput {
+  readonly restId: string
+  readonly stripePlanId: string | null
+  readonly meals: ICartMeal[]
+  readonly phone: string
+  readonly destination: IDestination
+  readonly deliveryDate: number
 }
 
 export class Order implements IOrder{
@@ -80,11 +91,12 @@ export class Order implements IOrder{
   static getNewOrderFromCartInput(
     signedInUser: any,
     cart: ICartInput,
+    invoiceDate: number,
     subscriptionId: string,
     mealPrice: number,
     total: number,
   ): EOrder {
-    const now = Date.now();
+    const now = moment();
     return {
       rest: {
         restId: cart.restId,
@@ -102,8 +114,9 @@ export class Order implements IOrder{
         }
       },
       stripeSubscriptionId: subscriptionId,
-      cartUpdatedDate: now,
-      createdDate: now,
+      cartUpdatedDate: now.valueOf(),
+      createdDate: now.valueOf(),
+      invoiceDate,
       costs: {
         tax: 0,
         tip: 0,

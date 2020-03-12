@@ -2,11 +2,12 @@ import { SignedInUser } from './../utils/models';
 import { ICartInput } from '../../order/cartModel';
 import { ServerResolovers } from '../utils/models';
 import { getOrderService } from './orderService';
+import { IUpdateOrderInput } from '../../order/orderModel';
 
 const signedInUser: SignedInUser = {
   userId: '123',
-  // stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
-  // stripeCustomerId : "cus_GjlPTWyWniuNPa",
+  stripeSubscriptionId: 'sub_Gt0wBGMCLHNJFk',
+  stripeCustomerId : "cus_Gt0wmLBLfKKw7s",
   profile: {
     name: 'name',
     email: 'email@email.com',
@@ -29,8 +30,8 @@ export const OrderMutationResolvers: ServerResolovers = {
 
   updateOrder: async (
     _root,
-    { cart, orderId }: { cart: ICartInput, orderId: string },
+    { updateOptions, orderId }: { updateOptions: IUpdateOrderInput, orderId: string },
   ) => {
-    return await getOrderService().updateOrder(signedInUser, orderId, cart);
+    return await getOrderService().updateOrder(signedInUser, orderId, updateOptions);
   },
 }
