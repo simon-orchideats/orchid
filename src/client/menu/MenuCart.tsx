@@ -1,3 +1,4 @@
+//@ts-ignore
 import { useGetCart } from "../global/state/cartState";
 import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";

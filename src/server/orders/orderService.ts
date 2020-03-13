@@ -48,9 +48,8 @@ const validatePhone = (phone: string) => {
 
 const validateDeliveryDate = (date: number, now = Date.now()) => {
   if (!isDate2DaysLater(date, now)) {
-    const msg = `Delivery date '${date}' is not 2 days in advance`;
-    console.warn('[OrderService]', msg);
-    return msg;
+    console.warn('[OrderService]', `Delivery date '${date}' is not 2 days in advance`);
+    return `Delivery date '${moment(date).format('M/D/YY')}' is not 2 days in advance`;
   }
 }
 
@@ -503,14 +502,18 @@ class OrderService {
       }
 
       const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format('M/D/YY');
-      let futureLineItems;
+      let pendingLineItems;
       try {
-        futureLineItems = await this.stripe.invoiceItems.list({ limit: 50, pending: true });
+        pendingLineItems = await this.stripe.invoiceItems.list({
+          limit: 50,
+          pending: true,
+          customer: stripeCustomerId,
+        });
       } catch (e) {
         throw new Error(`Couldn't get future line items'. ${e.stack}`)
       }
 
-      const targetAdjustment = futureLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      const targetAdjustment = pendingLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
       if (targetAdjustment) {
         try {
           await this.stripe.invoiceItems.del(targetAdjustment.id);
@@ -529,12 +532,17 @@ class OrderService {
       } catch (e) {
         throw new Error (`Couldn't get previous invoices for consumer '${stripeCustomerId}'. ${e.stack}`)
       }
-      const prevInvoice = prevInvoices.data[0]; 
-      const prevAdjustmentLine = prevInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      const prevInvoice = prevInvoices.data[0];
+      let prevAdjustmentLine;
+      // no prev invoice if it's a new subscription
+      if (prevInvoice) {
+        prevAdjustmentLine = prevInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      } 
       const prevAdjustment = prevAdjustmentLine ? prevAdjustmentLine.amount : 0;
       // is the consumer updating an unpaid week?
       if (now < targetOrderInvoiceDate) {
-        const upcomingPlan = futureLineItems.data.find(line => !!line.plan);
+        const upcomingLineItems = await this.stripe.invoices.listUpcomingLineItems({ subscription: subscriptionId });
+        const upcomingPlan = upcomingLineItems.data.find(line => !!line.plan);
         if (!upcomingPlan) throw new Error (`Could not find plan in future line items for consumer '${stripeCustomerId}'`);
         originalPrice = upcomingPlan.amount + prevAdjustment;
       } else {
@@ -552,7 +560,6 @@ class OrderService {
       } else {
         amount = 0 - originalPrice;
       }
-
       if (amount !== 0) {
         try {
           await this.stripe.invoiceItems.create({

@@ -147,6 +147,13 @@ const getStripe = (
           ]
         }
       }]
+    })),
+    listUpcomingLineItems: jest.fn(() => ({
+      data: [{
+        id: 'upcomingPlanLineItem',
+        amount: 4000,
+        plan: {},
+      }]
     }))
   },
   invoiceItems: {

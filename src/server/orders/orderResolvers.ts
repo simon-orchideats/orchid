@@ -6,8 +6,8 @@ import { IUpdateOrderInput } from '../../order/orderModel';
 
 const signedInUser: SignedInUser = {
   userId: '123',
-  stripeSubscriptionId: 'sub_Gt0wBGMCLHNJFk',
-  stripeCustomerId : "cus_Gt0wmLBLfKKw7s",
+  stripeSubscriptionId: 'sub_Gu8thU86pieDAB',
+  stripeCustomerId : "cus_Gu8tefqciK74mK",
   profile: {
     name: 'name',
     email: 'email@email.com',
