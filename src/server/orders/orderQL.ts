@@ -48,7 +48,7 @@ export const _OrderQL = gql`
     _id: ID!
     deliveryDate: Float!
     destination: Destination!
-    mealPrice: Float!
+    mealPrice: Float
     meals: [CartMeal!]!
     phone: String!
     rest: Rest!

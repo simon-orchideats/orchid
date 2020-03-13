@@ -2,7 +2,6 @@ import { IRestService } from './../../rests/restService';
 import { IConsumerService } from './../../consumer/consumerService';
 import { IPlanService } from './../../plans/planService';
 import { IGeoService } from './../../place/geoService';
-import { ICartMeal } from './../../../order/cartModel';
 import moment from 'moment';
 import { EOrder, IUpdateOrderInput } from './../../../order/orderModel';
 import { Client } from '@elastic/elasticsearch';
@@ -40,7 +39,7 @@ const getTargetorder = (invoiceDate: number, deliveryDate: number): EOrder  => (
     tax: 123,
     tip: 123,
     mealPrice: 123,
-    total: 123,
+    total: 4000,
     percentFee: 123,
     flatRateFee: 123,
   },
@@ -69,6 +68,7 @@ const signedInUser: SignedInUser = {
 const getDesc = (dateStr: string) => `Plan Adjustment for payment on ${dateStr}`
 
 const getExpectedInvoice = (amount: number, description: string) => ({
+  currency: 'usd',
   customer: signedInUser.stripeCustomerId,
   amount,
   description,
@@ -77,12 +77,15 @@ const getExpectedInvoice = (amount: number, description: string) => ({
 
 const getUpdateOptions = (
   deliveryDate: number,
-  meals: ICartMeal[],
-  newPlanPriceStr: string | null
+  mealCount: number,
 ): IUpdateOrderInput => ({
   restId: 'restId',
-  stripePlanId: newPlanPriceStr,
-  meals,
+  meals: [{
+    mealId: 'mealId',
+    name: 'name',
+    img: 'img',
+    quantity: mealCount
+  }],
   phone: 'phone',
   destination: {
     name: 'name',
@@ -104,36 +107,23 @@ const upcomingLineIdCurrAdjustment = 'upcomingLineId';
 const prevPlanLineId = 'prevPlanLineId';
 const prevAdjustmentLineId = 'prevAdjustmentLineId';
 
-
 const getElastic = () => ({
-  getSource: jest.fn(() => Promise.resolve({
+  getSource: jest.fn(() => ({
     body: getTargetorder(
       originalInvoiceDate3DaysBeforeDDate,
       originalDeliveryDate3DaysAfterIDate,
     )
-  }))
+  })),
+  update: jest.fn(),
 } as unknown as Client);
 
 const getStripe = (
-  upcomingPlanAmountCents: number,
   currAdjustmentDesc?: string,
   finalizedAdjustmentDesc?: string,
   oldCurrPlanAmountCents?: number,
   oldCurrAdjustmentCents?: number,
 ) => ({
   invoices: {
-    retrieveUpcoming: jest.fn(() => Promise.resolve({
-      lines: {
-        data: [
-          {
-            id: upcomingLineIdCurrAdjustment,
-            amount: upcomingPlanAmountCents,
-            plan: {},
-            description: currAdjustmentDesc
-          },
-        ]
-      }
-    })),
     list: jest.fn(() => ({
       data: [{
         lines: {
@@ -147,7 +137,7 @@ const getStripe = (
             {
               id: prevAdjustmentLineId,
               amount: oldCurrAdjustmentCents,
-              description: currAdjustmentDesc
+              description: oldCurrAdjustmentCents ? currAdjustmentDesc : undefined
             },
             {
               id: 'finalizedAdjustment',
@@ -161,7 +151,17 @@ const getStripe = (
   },
   invoiceItems: {
     create: jest.fn(),
-    del: jest.fn()
+    del: jest.fn(),
+    list: jest.fn(() => ({
+      data: [
+        {
+          id: upcomingLineIdCurrAdjustment,
+          plan: {},
+          amount: 4000,
+          description: currAdjustmentDesc
+        },
+      ]
+    }))
   }
 } as unknown as Stripe)
 
@@ -171,17 +171,39 @@ const getGeoService = () => ({
 } as unknown as IGeoService);
 
 const getPlanService = () => ({
-  getPlan: jest.fn((plan: string) => Promise.resolve(({
-    weekPrice: Number.parseInt(plan),
-    mealCount: 0,
-  })))
+  getPlanByCount: jest.fn((count: number) => {
+    let weekPrice;
+    let mealPrice;
+    switch (count) {
+      case 4:
+        weekPrice = 40;
+        mealPrice = 11.5;
+        break;
+      case 8:
+        weekPrice = 80
+        mealPrice = 10.99
+        break;
+      case 12:
+        weekPrice = 150
+        mealPrice = 9.99
+        break;
+    }
+    return Promise.resolve({
+      weekPrice,
+      mealPrice,
+    })
+  })
 } as unknown as IPlanService);
 
 const getConsumerService = () => ({} as unknown as IConsumerService)
 
 const getRestService = () => ({
   getRest: jest.fn(() => Promise.resolve({
-    menu: [],
+    menu: [{
+      _id: 'mealId',
+      name: 'name',
+      img: 'img',
+    }],
   }))
 } as unknown as IRestService);
 
@@ -197,7 +219,7 @@ const initOrderServiceWithMocks = (stripe: Stripe) => initOrderService(
 describe('OrderService', () => {
   describe('UpdateOrder', () => {
     it('Can\'t set delivery date to more than 8 days after payment', async () => {
-      const stripe = getStripe(4000);
+      const stripe = getStripe();
       initOrderServiceWithMocks(stripe);
       const res = await Promise.all([
         getOrderService().updateOrder(
@@ -205,8 +227,7 @@ describe('OrderService', () => {
           'orderId',
           getUpdateOptions(
             moment(originalDeliveryDate3DaysAfterIDate).add(4, 'd').valueOf(),
-            [],
-            '150',
+            12,
           ),
           originalInvoiceDate3DaysBeforeDDate,
         ),
@@ -215,8 +236,7 @@ describe('OrderService', () => {
           'orderId',
           getUpdateOptions(
             moment(originalDeliveryDate3DaysAfterIDate).add(5, 'd').valueOf(),
-            [],
-            '150'
+            12
           ),
           originalInvoiceDate3DaysBeforeDDate,
         ),
@@ -225,8 +245,7 @@ describe('OrderService', () => {
           'orderId',
           getUpdateOptions(
             moment(originalDeliveryDate3DaysAfterIDate).add(6, 'd').valueOf(),
-            [],
-            '150'
+            12
           ),
           originalInvoiceDate3DaysBeforeDDate,
         ),
@@ -299,7 +318,18 @@ describe('OrderService', () => {
      * 
      */
     describe('Update current week', () => {
-      // possible immediately after sign-up where delivery date is next week or right after a delivery
+      /**
+       * possible immediately after sign-up where delivery date is next week or today is right after a delivery. ex:
+       * 
+       * it's mar 10
+       * 1st delivery mar 19
+       * 1st bill mar 17
+       * 2nd delivery mar 26
+       * 2nd bill mar 24
+       * 
+       * on mar 20, consumer did not pay 2nd bill yet but the 2nd delivery is now the current week
+       * 
+       */ 
       it(
         `
           before having paid for current week, consumer updates $40 plan to $150 to $40 to skip to $80 to create
@@ -309,31 +339,31 @@ describe('OrderService', () => {
           const newDDate = moment(originalDeliveryDate3DaysAfterIDate).add(4, 'd').valueOf();
           const now = moment(originalInvoiceDate3DaysBeforeDDate).subtract(1, 'd').valueOf();
           const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'));
-          const stripe = getStripe(4000, desc);
+          const stripe = getStripe(desc, undefined, 0);
           initOrderServiceWithMocks(stripe);
           await Promise.all([
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '150'),
+              getUpdateOptions(newDDate, 12),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '40'),
+              getUpdateOptions(newDDate, 4),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], null),
+              getUpdateOptions(newDDate, 0),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '80'),
+              getUpdateOptions(newDDate, 8),
               now
             )
           ]);
@@ -357,7 +387,6 @@ describe('OrderService', () => {
           const newDDate = moment(originalDeliveryDate3DaysAfterIDate).add(2, 'd').valueOf();
           const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'));
           const stripe = getStripe(
-            4000,
             desc,
             undefined,
             4000,
@@ -368,25 +397,25 @@ describe('OrderService', () => {
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '150'),
+              getUpdateOptions(newDDate, 12),
               originalInvoiceDate3DaysBeforeDDate
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '80'),
+              getUpdateOptions(newDDate, 8),
               originalInvoiceDate3DaysBeforeDDate
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '40'),
+              getUpdateOptions(newDDate, 4),
               originalInvoiceDate3DaysBeforeDDate
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], null),
+              getUpdateOptions(newDDate, 0),
               originalInvoiceDate3DaysBeforeDDate
             ),
           ]);
@@ -412,7 +441,6 @@ describe('OrderService', () => {
           const now = moment(newDDate).subtract(3, 'd').valueOf();
           const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'));
           const stripe = getStripe(
-            4000,
             desc,
             getDesc(moment(originalInvoiceDate3DaysBeforeDDate).subtract(7, 'd').format('M/D/YY')),
             4000,
@@ -423,13 +451,13 @@ describe('OrderService', () => {
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], null),
+              getUpdateOptions(newDDate, 0),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(newDDate, [], '40'),
+              getUpdateOptions(newDDate, 4),
               now
             ),
           ]);
@@ -440,17 +468,17 @@ describe('OrderService', () => {
       )
     });
 
-    describe('Update next week. Consumer updates $40 plan to $150 to $40 to skip to $80', () => {
+    describe('Update next week', () => {
       it(
         `
-          Next week already has adjustment invoices from current week. 
-          Creates replacement invoices of $110, $0 (no invoice), $-40, $40 to be paid with next week.
+          Next week is the upcoming invoice. Such as when the current week's been paid but not delivered.
+          Consumer updates $40 plan to $150 to $40 to skip to $80.
+          Creates replacement invoices of $110, $0 (no invoice), $-40, $40 to be paid with next invoice.
         `,
         async () => {
           const now = moment(originalInvoiceDate3DaysBeforeDDate).subtract(7, 'd').valueOf();
           const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'));
           const stripe = getStripe(
-            4000,
             desc,
             `Plan Adjustment for payment on ${moment(now).format('M/D/YY')}`,
           );
@@ -459,25 +487,25 @@ describe('OrderService', () => {
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '150'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 12),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '40'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 4),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], null),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 0),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '80'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 8),
               now
             ),
           ]);
@@ -489,42 +517,55 @@ describe('OrderService', () => {
         }
       );
 
+      /**
+       * Why is it okay to pay for next week's change with current week's invoice? See scenario below.
+       * 
+       * given week, modify week
+       * 
+       * w1, w2 - update w2 40 -> 80, so gets INVOICED for w2 in w1 of (newPlan - originalPlan) = (80 - 40) = $40
+       * w1, w2 - update w2 to 150, remove w2 adjustment within w1 invoice. invoice for w2 in w1 of (newPlan - originalPlan) = (150 - 40) = $110
+       * 
+       * ------------ W1 IS INVOICED. Consumer paid for w1 costs C, and w2 adjustments of $110 ------------
+       * 
+       * Now upcoming invoice is w2.
+       * w2, w2 - update w2 to skip, so invoice w2 in w2 of (newPlan - (originalPlan + prevAdjustment)) = (0 - (40 + 110) = $-150
+       * 
+       */
       it(
         `
-          Next week doesn't have adjustments from current week
-          Creates replacement invoices of $110, $0 (no invoice), $-40, $40 to be paid with next week.
+          Next week is NOT the upcoming invoice. Such as when today is immediately after a delivery. After a delivery,
+          current week is the upcoming invoice and next week is the upcoming-upcoming delivery.
+          Consumer updates $40 plan to $150 to $40 to skip to $80.
+          Creates replacement invoices of $110, $0 (no invoice), $-40, $40 to be paid with next invoice.
         `,
         async () => {
           const now = moment(originalDeliveryDate3DaysAfterIDate).subtract(9, 'd').valueOf();
           const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'))
-          const stripe = getStripe(
-            4000,
-            desc
-            );
+          const stripe = getStripe(desc);
           initOrderServiceWithMocks(stripe);
           await Promise.all([
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '150'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 12),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '40'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 4),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], null),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 0),
               now
             ),
             getOrderService().updateOrder(
               signedInUser,
               'orderId',
-              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, [], '80'),
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 8),
               now
             ),
           ]);
@@ -533,6 +574,41 @@ describe('OrderService', () => {
           expect(stripe.invoiceItems.create).toHaveBeenCalledWith(getExpectedInvoice(4000, desc));
           expect(stripe.invoiceItems.create).toHaveBeenCalledTimes(3);
           expect(stripe.invoiceItems.del).toHaveBeenCalledTimes(4);
+        }
+      )
+      it(
+        `
+          Next week is the upcoming invoice and was previously adjusted for $110.
+          Consumer updates from $40 to skip to $40. Creates invoices of $-150, $-110
+        `,
+        async () => {
+          const now = moment(originalDeliveryDate3DaysAfterIDate).subtract(9, 'd').valueOf();
+          const desc = getDesc(moment(originalInvoiceDate3DaysBeforeDDate).format('M/D/YY'))
+          const stripe = getStripe(
+            desc,
+            undefined,
+            4000,
+            11000,
+          );
+          initOrderServiceWithMocks(stripe);
+          await Promise.all([
+            getOrderService().updateOrder(
+              signedInUser,
+              'orderId',
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 0),
+              now
+            ),
+            getOrderService().updateOrder(
+              signedInUser,
+              'orderId',
+              getUpdateOptions(originalDeliveryDate3DaysAfterIDate, 4),
+              now
+            ),
+          ]);
+          expect(stripe.invoiceItems.create).toHaveBeenCalledWith(getExpectedInvoice(-15000, desc));
+          expect(stripe.invoiceItems.create).toHaveBeenCalledWith(getExpectedInvoice(-11000, desc));
+          expect(stripe.invoiceItems.create).toHaveBeenCalledTimes(2);
+          expect(stripe.invoiceItems.del).toHaveBeenCalledTimes(2);
         }
       )
     })

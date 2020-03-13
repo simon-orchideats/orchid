@@ -3,7 +3,7 @@ import { IDestination, Destination } from './../place/destinationModel';
 import { IRest, Rest } from './../rest/restModel';
 import { IConsumerProfile } from './../consumer/consumerModel';
 import { ICost } from './costModel';
-import { ICartInput, ICartMeal, CartMeal } from './cartModel';
+import { ICartInput, ICartMeal, CartMeal, Cart } from './cartModel';
 
 type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned';
 
@@ -29,7 +29,7 @@ export interface IOrder {
   readonly _id: string
   readonly deliveryDate: number
   readonly destination: IDestination
-  readonly mealPrice: number
+  readonly mealPrice: number | null
   readonly meals: ICartMeal[]
   readonly phone: string
   readonly rest: IRest
@@ -38,7 +38,6 @@ export interface IOrder {
 
 export interface IUpdateOrderInput {
   readonly restId: string
-  readonly stripePlanId: string | null
   readonly meals: ICartMeal[]
   readonly phone: string
   readonly destination: IDestination
@@ -49,7 +48,7 @@ export class Order implements IOrder{
   readonly _id: string
   readonly deliveryDate: number
   readonly destination: Destination
-  readonly mealPrice: number
+  readonly mealPrice: number | null
   readonly meals: CartMeal[]
   readonly phone: string
   readonly rest: Rest
@@ -85,6 +84,60 @@ export class Order implements IOrder{
       phone: order.consumer.profile.phone,
       rest,
       status: order.status,
+    }
+  }
+
+  static getUpdatedOrderInput(order: Order, cart?: Cart): IUpdateOrderInput {
+    if (cart && !cart.RestId) throw new Error('Cart missing restId');
+    if (cart && !cart.Meals) throw new Error('Cart missing meals');
+    return {
+      restId: cart && cart.RestId ? cart.RestId : order.Rest.Id,
+      meals: cart ? cart.Meals : order.Meals,
+      phone: order.Phone,
+      destination: order.Destination,
+      deliveryDate: order.DeliveryDate,
+    }
+  }
+
+  static getEOrderFromUpdatedOrder(
+    {
+      consumer
+    }: EOrder,
+    mealPrice: number | null,
+    total: number,
+    {
+      restId,
+      meals,
+      phone,
+      destination,
+      deliveryDate,
+    }: IUpdateOrderInput
+  ): Partial<EOrder> {
+    return {
+      rest: {
+        restId,
+        meals,
+      },
+      cartUpdatedDate: Date.now(),
+      costs: {
+        tax: 0,
+        tip: 0,
+        mealPrice,
+        total,
+        percentFee: 123,
+        flatRateFee: 123,
+      },
+      deliveryDate,
+      consumer: {
+        userId: consumer.userId,
+        profile: {
+          name: consumer.profile.name,
+          email: consumer.profile.email,
+          phone,
+          card: consumer.profile.card,
+          destination,
+        }
+      }
     }
   }
 

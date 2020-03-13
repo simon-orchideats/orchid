@@ -1,4 +1,4 @@
-import { IOrder, Order } from './../../order/orderModel';
+import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
 import { MutationBoolRes } from '../../utils/mutationResModel';
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
@@ -40,7 +40,6 @@ const MY_UPCOMING_ORDERS = gql`
   ${restFragment}
 `
 
-
 export const usePlaceOrder = (): [
   (cart: ICartInput) => void,
   {
@@ -66,6 +65,38 @@ export const usePlaceOrder = (): [
     {
       error: mutation.error,
       data: mutation.data ? mutation.data.placeOrder : undefined,
+    }
+  ], [mutation]);
+}
+
+export const useUpdateOrder = (): [
+  (orderId: string, updateOptions: IUpdateOrderInput) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { updateOrder: MutationBoolRes };
+  type vars = { orderId: string, updateOptions: IUpdateOrderInput }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation updateOrder($orderId: ID!, $updateOptions: UpdateOrderInput!) {
+      updateOrder(orderId: $orderId, updateOptions: $updateOptions) {
+        res
+        error
+      }
+    }
+  `);
+  const updateOrder = (orderId: string, updateOptions: IUpdateOrderInput) => {
+    mutate({ variables: {
+      orderId,
+      updateOptions
+    }})
+  }
+  return useMemo(() => [
+    updateOrder,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.updateOrder : undefined,
     }
   ], [mutation]);
 }

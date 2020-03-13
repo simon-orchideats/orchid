@@ -118,24 +118,24 @@ class OrderService {
 
   private validatePlan(planId: string, cartMealCount: number) {
     return this.planService.getPlan(planId)
-    .then(stripePlan => {
-      if (!stripePlan) {
-        const msg = `Can't find plan '${planId}'`
-        console.warn('[OrderService]', msg);
+      .then(stripePlan => {
+        if (!stripePlan) {
+          const msg = `Can't find plan '${planId}'`
+          console.warn('[OrderService]', msg);
+          return msg;
+        }
+        if (cartMealCount !== stripePlan.mealCount) {
+          const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
+          console.warn('[OrderService]', msg);
+          return msg;
+        }
+        return '';
+      })
+      .catch(e => {
+        const msg = `Couldn't verify plan '${planId}'`
+        console.warn('[OrderService]', msg, e.stack);
         return msg;
-      }
-      if (cartMealCount !== stripePlan.mealCount) {
-        const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
-        console.warn('[OrderService]', msg);
-        return msg;
-      }
-      return '';
-    })
-    .catch(e => {
-      const msg = `Couldn't verify plan '${planId}'`
-      console.warn('[OrderService]', msg, e.stack);
-      return msg;
-    })
+      })
   }
 
   private async validateCart(cart: ICartInput) {
@@ -188,8 +188,22 @@ class OrderService {
     const p1 = this.validateRest(updateOptions.restId, updateOptions.meals);
     const p2 = this.validateAddress(updateOptions.destination.address);
     let p3;
-    if (updateOptions.stripePlanId) {
-      p3 = this.validatePlan(updateOptions.stripePlanId, Cart.getMealCount(updateOptions.meals));
+    const mealCount = Cart.getMealCount(updateOptions.meals);
+    if (mealCount > 0) {
+      p3 = this.planService.getPlanByCount(mealCount)
+        .then(plan => {
+          if (!plan) {
+            const msg = `Can't find plan with meal count '${mealCount}'`
+            console.warn('[OrderService]', msg);
+            return msg;
+          }
+          return '';
+        })
+        .catch(e => {
+          const msg = `Failed getPlanByCount with meal count '${mealCount}'`;
+          console.warn('[OrderService]', msg, e.stack);
+          return msg;
+        });
     } else {
       p3 = Promise.resolve('');
     }
@@ -465,6 +479,19 @@ class OrderService {
   
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
+
+      if (targetOrder.consumer.userId !== signedInUser.userId) {
+        const msg = 'Can only update your own orders';
+        console.warn(
+          '[OrderService]',
+          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser.userId}'`
+        )
+        return {
+          res: false,
+          error: msg
+        }
+      }
+
       const targetOrderInvoiceDate = targetOrder.invoiceDate
       if (updateOptions.deliveryDate > moment(targetOrderInvoiceDate).add(8, 'd').valueOf()) {
         const msg = 'Delivery date cannot exceed 8 days after the payment';
@@ -476,8 +503,14 @@ class OrderService {
       }
 
       const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format('M/D/YY');
-      const nextInvoice = await this.stripe.invoices.retrieveUpcoming({ customer: stripeCustomerId });
-      const targetAdjustment = nextInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      let futureLineItems;
+      try {
+        futureLineItems = await this.stripe.invoiceItems.list({ limit: 50, pending: true });
+      } catch (e) {
+        throw new Error(`Couldn't get future line items'. ${e.stack}`)
+      }
+
+      const targetAdjustment = futureLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
       if (targetAdjustment) {
         try {
           await this.stripe.invoiceItems.del(targetAdjustment.id);
@@ -487,44 +520,72 @@ class OrderService {
       }
 
       let originalPrice;
+      let prevInvoices;
+      try {
+        prevInvoices = await this.stripe.invoices.list({
+          limit: 1,
+          customer: stripeCustomerId
+        });
+      } catch (e) {
+        throw new Error (`Couldn't get previous invoices for consumer '${stripeCustomerId}'. ${e.stack}`)
+      }
+      const prevInvoice = prevInvoices.data[0]; 
+      const prevAdjustmentLine = prevInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      const prevAdjustment = prevAdjustmentLine ? prevAdjustmentLine.amount : 0;
       // is the consumer updating an unpaid week?
       if (now < targetOrderInvoiceDate) {
-        const upcomingPlan = nextInvoice.lines.data.find(line => !!line.plan);
-        if (!upcomingPlan) throw new Error (`Could not find plan in invoice '${nextInvoice.id}' for consumer '${stripeCustomerId}'`);
-        originalPrice = upcomingPlan.amount;
+        const upcomingPlan = futureLineItems.data.find(line => !!line.plan);
+        if (!upcomingPlan) throw new Error (`Could not find plan in future line items for consumer '${stripeCustomerId}'`);
+        originalPrice = upcomingPlan.amount + prevAdjustment;
       } else {
-        let prevInvoices;
-        try {
-          prevInvoices = await this.stripe.invoices.list({
-            limit: 1,
-            customer: stripeCustomerId
-          });
-        } catch (e) {
-          throw new Error (`Couldn't get previous invoices for consumer '${stripeCustomerId}'. ${e.stack}`)
-        }
-        const prevInvoice = prevInvoices.data[0]; 
-        const prevAdjustmentLine = prevInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
         const prevPlanLine = prevInvoice.lines.data.find(line => !!line.plan)
         if (!prevPlanLine) throw new Error(`Couldn't get previous plan for consumer '${stripeCustomerId}' in invoice '${prevInvoice.id}'`);
-        originalPrice = (prevPlanLine.amount + (prevAdjustmentLine ? prevAdjustmentLine.amount : 0));
+        originalPrice = prevPlanLine.amount + prevAdjustment;
       }
-      const newStripePlanId = updateOptions.stripePlanId;
+      let newPlan;
       let amount;
-      if (newStripePlanId) {
-        const newPlan = await this.planService.getPlan(newStripePlanId);
-        if (!newPlan) throw new Error(`Couldn't get plan from planId '${newStripePlanId}'`);
+      const mealCount = Cart.getMealCount(updateOptions.meals);
+      if (mealCount > 0) {
+        newPlan = await this.planService.getPlanByCount(mealCount);
+        if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
         amount = newPlan.weekPrice * 100 - originalPrice;
       } else {
         amount = 0 - originalPrice;
       }
+
       if (amount !== 0) {
-        await this.stripe.invoiceItems.create({
-          customer: stripeCustomerId,
-          amount,
-          description: `Plan Adjustment for payment on ${targetOrderInvoiceDateDisplay}`,
-          subscription: subscriptionId,
-        });
+        try {
+          await this.stripe.invoiceItems.create({
+            amount,
+            currency: 'usd',
+            customer: stripeCustomerId,
+            description: `Plan Adjustment for payment on ${targetOrderInvoiceDateDisplay}`,
+            subscription: subscriptionId,
+          });
+        } catch (e) {
+          throw new Error(
+            `Couldn't create invoice item for amount '${amount}', and invoice date '${targetOrderInvoiceDateDisplay}'. ${e.stack}`
+          )
+        }
       }
+      
+      try {
+        await this.elastic.update({
+          index: ORDER_INDEX,
+          id: orderId,
+          body: {
+            doc: Order.getEOrderFromUpdatedOrder(
+              targetOrder,
+              newPlan ? newPlan.mealPrice : null,
+              newPlan ? newPlan.weekPrice : 0,
+              updateOptions
+            ),
+          }
+        })
+      } catch (e) {
+        throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
+      }
+
       return {
         res: true,
         error: null,

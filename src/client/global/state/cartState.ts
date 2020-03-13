@@ -209,10 +209,10 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const res = getCart(cache);
     if (!res || !res.cart) throw new Error('Cannot clear cart meals from null cart')
     return updateCartCache(cache, new Cart({
-      email: null,
+      email: res.cart.Email,
       meals: [],
       restId: null,
-      stripePlanId: res.cart.StripePlanId,
+      stripePlanId: null,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
     }));

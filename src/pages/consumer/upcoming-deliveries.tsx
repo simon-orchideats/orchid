@@ -5,7 +5,7 @@ import { getNextDeliveryDate } from "../../order/utils";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
 import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
 import moment from "moment";
@@ -17,8 +17,10 @@ import { menuRoute } from "../menu";
 import withApollo from "../../client/utils/withPageApollo";
 import { useRequireConsumer } from "../../consumer/consumerService";
 import StickyDrawer from "../../client/general/StickyDrawer";
-import { deliveryRoute } from "../delivery";
 import SideMenuCart from "../../client/menu/SideMenuCart";
+import Notifier from "../../client/notification/Notifier";
+import { useNotify } from "../../client/global/state/notificationState";
+import { NotificationType } from "../../client/notification/notificationModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -178,28 +180,47 @@ const DestinationPopper: React.FC<{
 }
 
 const DeliveryOverview: React.FC<{
-  order: Order,
+  cart?: Cart
+  defaultOrder: Order,
   isUpdating: boolean,
 }> = ({
-  order,
+  cart,
+  defaultOrder,
   isUpdating,
 }) => {
   const classes = useStyles();
   const setCart = useSetCart();
+  const notify = useNotify();
+  const [order] = useState<Order>(defaultOrder);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const [updateOrder, updateOrderRes] = useUpdateOrder();
+  useEffect(() => {
+    if (updateOrderRes.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    }
+    if (updateOrderRes.data !== undefined) {
+      if (updateOrderRes.data.error) {
+        notify(updateOrderRes.data.error, NotificationType.error, false);
+      } else {
+        notify('Order updated', NotificationType.success, true);
+      }
+    }
+
+  }, [updateOrderRes]);
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const onEdit = () => {
     setCart(order);
     Router.push(menuRoute);
-  }
+  };
   const onUpdateOrder = () => {
-    Router.push(deliveryRoute);
+    updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
+      <Notifier />
       <div className={`${classes.row} ${classes.overviewSection}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
@@ -213,9 +234,12 @@ const DeliveryOverview: React.FC<{
           <Typography variant='subtitle1'>
             Total
           </Typography>
-          <Typography variant='body1' className={classes.hint}>
-            {Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)
-          </Typography>
+          {
+            Cart.getMealCount(order.Meals) > 0 && order.MealPrice &&
+            <Typography variant='body1' className={classes.hint}>
+              {Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)
+            </Typography>
+          }
         </div>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
@@ -292,8 +316,9 @@ const UpcomingDeliveries = () => {
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
-        order={order}
+        defaultOrder={order}
         isUpdating={needsCart}
+        cart={cart ? cart : undefined}
       />
     )
   ), [orders.data]);
