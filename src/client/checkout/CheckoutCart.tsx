@@ -49,6 +49,7 @@ const CheckoutCart: React.FC<props> = ({
   const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
+  const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
   return (
     <>
       <Button
@@ -75,7 +76,7 @@ const CheckoutCart: React.FC<props> = ({
         <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
       ))}
       <Typography variant='body1'>
-        Deliver on {getNextDeliveryDate(cart.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
+        Deliver on {deliveryDate.format('M/D/YY')}, 6pm - 9pm
       </Typography>
       <Typography variant='body1'>
         Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}
@@ -100,15 +101,16 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <div className={classes.row}>
           <Typography variant='body1' color='primary'>
-            Today's total
+            Total
           </Typography>
           <Typography variant='body1' color='primary'>
             {price}
           </Typography>
         </div>
         <Typography variant='body2' className={classes.hint}>
-          Your plan will automatically renew every week at {price} unless you update or cancel your account
-          before the cutoff (11:59 pm EST, 2 days before delivery of next meal).
+          You will be charged {price} on {deliveryDate.subtract(2, 'd').format('M/D/YY')}. Your plan will automatically
+          renew every week unless you update or cancel your account before the cutoff
+          (11:59 pm EST, 2 days before delivery of next meal).
         </Typography>
       </div>
     </>

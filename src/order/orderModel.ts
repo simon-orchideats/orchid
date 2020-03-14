@@ -1,10 +1,11 @@
+import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IRest, Rest } from './../rest/restModel';
 import { IConsumerProfile } from './../consumer/consumerModel';
 import { ICost } from './costModel';
-import { ICartInput, ICartMeal, CartMeal } from './cartModel';
+import { ICartInput, ICartMeal, CartMeal, Cart } from './cartModel';
 
-type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned';
+type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -14,9 +15,10 @@ export interface EOrder {
   },
   readonly costs: ICost
   readonly createdDate: number
+  readonly invoiceDate: number
   readonly deliveryDate: number
   readonly rest: {
-    readonly restId: string
+    readonly restId: string | null // null for skipped order
     readonly meals: ICartMeal[]
   }
   readonly status: OrderStatus
@@ -27,21 +29,30 @@ export interface IOrder {
   readonly _id: string
   readonly deliveryDate: number
   readonly destination: IDestination
-  readonly mealPrice: number
+  readonly mealPrice: number | null
   readonly meals: ICartMeal[]
   readonly phone: string
-  readonly rest: IRest
+  readonly rest: IRest | null // null for skipped order
   readonly status: OrderStatus
+}
+
+export interface IUpdateOrderInput {
+  // nulls for skipping an order
+  readonly restId: string | null
+  readonly meals: ICartMeal[]
+  readonly phone: string
+  readonly destination: IDestination
+  readonly deliveryDate: number
 }
 
 export class Order implements IOrder{
   readonly _id: string
   readonly deliveryDate: number
   readonly destination: Destination
-  readonly mealPrice: number
+  readonly mealPrice: number | null
   readonly meals: CartMeal[]
   readonly phone: string
-  readonly rest: Rest
+  readonly rest: Rest | null
   readonly status: OrderStatus
 
   constructor(order: IOrder) {
@@ -51,7 +62,7 @@ export class Order implements IOrder{
     this.mealPrice = order.mealPrice;
     this.meals = order.meals.map(meal => new CartMeal(meal))
     this.phone = order.phone;
-    this.rest = new Rest(order.rest)
+    this.rest = order.rest ? new Rest(order.rest) : null;
     this.status = order.status
   }
 
@@ -64,7 +75,26 @@ export class Order implements IOrder{
   public get Rest() { return this.rest }
   public get Status() { return this.status }
 
-  static getIOrderFromEOrder(_id: string, order: EOrder, rest: IRest): IOrder {
+  static getIOrderFromUpdatedOrderInput(
+    _id: string,
+    order: IUpdateOrderInput,
+    mealPrice: number | null,
+    status: OrderStatus,
+    rest: IRest | null
+  ): IOrder {
+    return {
+      _id,
+      deliveryDate: order.deliveryDate,
+      destination: Destination.getICopy(order.destination),
+      mealPrice,
+      meals: order.meals.map(meal => CartMeal.getICopy(meal)),
+      phone: order.phone,
+      rest: rest ? Rest.getICopy(rest) : null,
+      status,
+    }
+  }
+
+  static getIOrderFromEOrder(_id: string, order: EOrder, rest: IRest | null): IOrder {
     return {
       _id,
       deliveryDate: order.deliveryDate,
@@ -77,14 +107,67 @@ export class Order implements IOrder{
     }
   }
 
+  static getUpdatedOrderInput(order: Order, cart?: Cart): IUpdateOrderInput {
+    return {
+      restId: cart && cart.RestId ? cart.RestId : null,
+      meals: cart && Cart.getMealCount(cart.Meals) ? cart.Meals : [],
+      phone: order.Phone,
+      destination: order.Destination,
+      deliveryDate: order.DeliveryDate,
+    }
+  }
+
+  static getEOrderFromUpdatedOrder(
+    {
+      consumer
+    }: EOrder,
+    mealPrice: number | null,
+    total: number,
+    {
+      restId,
+      meals,
+      phone,
+      destination,
+      deliveryDate,
+    }: IUpdateOrderInput
+  ): Partial<EOrder> {
+    return {
+      rest: {
+        restId,
+        meals,
+      },
+      cartUpdatedDate: Date.now(),
+      costs: {
+        tax: 0,
+        tip: 0,
+        mealPrice,
+        total,
+        percentFee: 123,
+        flatRateFee: 123,
+      },
+      deliveryDate,
+      consumer: {
+        userId: consumer.userId,
+        profile: {
+          name: consumer.profile.name,
+          email: consumer.profile.email,
+          phone,
+          card: consumer.profile.card,
+          destination,
+        }
+      }
+    }
+  }
+
   static getNewOrderFromCartInput(
     signedInUser: any,
     cart: ICartInput,
+    invoiceDate: number,
     subscriptionId: string,
     mealPrice: number,
     total: number,
   ): EOrder {
-    const now = Date.now();
+    const now = moment();
     return {
       rest: {
         restId: cart.restId,
@@ -102,8 +185,9 @@ export class Order implements IOrder{
         }
       },
       stripeSubscriptionId: subscriptionId,
-      cartUpdatedDate: now,
-      createdDate: now,
+      cartUpdatedDate: now.valueOf(),
+      createdDate: now.valueOf(),
+      invoiceDate,
       costs: {
         tax: 0,
         tip: 0,

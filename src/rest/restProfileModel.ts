@@ -14,4 +14,10 @@ export class RestProfile implements IRestProfile {
 
   public get Name() { return  this.name }
   public get Phone() { return this.phone }
+
+  static getICopy(profile: IRestProfile): IRestProfile {
+    return {
+      ...profile
+    }
+  }
 }

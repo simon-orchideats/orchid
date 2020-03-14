@@ -83,10 +83,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (placeOrderRes.data.error) {
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
-        Router.push(({
+        Router.push({
           pathname: upcomingDeliveriesRoute,
           query: { confirmation: 'true' },
-        }))
+        })
       }
     }
   }, [placeOrderRes])
@@ -135,7 +135,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       isValid = false;
     }
     if (!validateCuisineRef.current!()) {
-      console.log('inCheckout it ran invalid');
       isValid = false;
     }
     return isValid;

@@ -20,4 +20,12 @@ export class Destination implements IDestination {
   public get Address() { return this.address }
   public get Instructions() { return this.instructions }
   public get Name() { return this.name }
+
+  static getICopy(dest: IDestination): IDestination {
+    return {
+      name: dest.name,
+      instructions: dest.instructions,
+      address: Address.getICopy(dest.address)
+    }
+  }
 }

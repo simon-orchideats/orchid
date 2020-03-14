@@ -5,7 +5,12 @@ import { Client, ApiResponse } from '@elastic/elasticsearch';
 
 const CONSUMER_INDEX = 'consumers';
 
-class ConsumerService {
+export interface IConsumerService {
+  upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  insertEmail: (email: string) => Promise<MutationBoolRes>
+}
+
+class ConsumerService implements IConsumerService {
   private readonly elastic: Client
 
   public constructor(elastic: Client) {
@@ -16,13 +21,10 @@ class ConsumerService {
     // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
     // dupe entries.
     try {
-      await this.elastic.update({
+      await this.elastic.index({
         index: CONSUMER_INDEX,
         id: userId,
-        body: {
-          doc: consumer,
-          doc_as_upsert: true
-        },
+        body: consumer
       });
       return {
         userId,

@@ -1,11 +1,11 @@
-import { makeStyles, Typography, Container, Paper, Divider, Popover, Button } from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
 import { useRouter } from "next/router";
 import { useGetRest } from "../../rest/restService";
 import { getNextDeliveryDate } from "../../order/utils";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
 import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
 import moment from "moment";
@@ -16,10 +16,24 @@ import Router from 'next/router'
 import { menuRoute } from "../menu";
 import withApollo from "../../client/utils/withPageApollo";
 import { useRequireConsumer } from "../../consumer/consumerService";
+import StickyDrawer from "../../client/general/StickyDrawer";
+import SideMenuCart from "../../client/menu/SideMenuCart";
+import Notifier from "../../client/notification/Notifier";
+import { useNotify } from "../../client/global/state/notificationState";
+import { NotificationType } from "../../client/notification/notificationModel";
+import { Plan } from "../../plan/planModel";
+import { useGetAvailablePlans } from "../../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
+  },
+  needsCartContainer: {
+    background: 'none',
+    marginTop: -theme.mixins.navbar.marginBottom,
+  },
+  paddingTop: {
+    paddingTop: theme.spacing(2),
   },
   marginBottom: {
     marginBottom: theme.spacing(3),
@@ -167,20 +181,60 @@ const DestinationPopper: React.FC<{
   )
 }
 
-const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
+const DeliveryOverview: React.FC<{
+  cart?: Cart
+  defaultOrder: Order,
+  isUpdating: boolean,
+}> = ({
+  cart,
+  defaultOrder,
+  isUpdating,
+}) => {
   const classes = useStyles();
   const setCart = useSetCart();
+  const notify = useNotify();
+  const clearCartMeals = useClearCartMeals();
+  const plans = useGetAvailablePlans();
+  const [order] = useState<Order>(defaultOrder);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const [updateOrder, updateOrderRes] = useUpdateOrder();
+  useEffect(() => {
+    if (updateOrderRes.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    }
+    if (updateOrderRes.data !== undefined) {
+      if (updateOrderRes.data.error) {
+        notify(updateOrderRes.data.error, NotificationType.error, false);
+      } else {
+        Router.replace(upcomingDeliveriesRoute)
+        notify('Order updated', NotificationType.success, true);
+        clearCartMeals();
+      }
+    }
+
+  }, [updateOrderRes]);
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const onEdit = () => {
-    setCart(order);
-    Router.push(menuRoute);
+    if (order.Rest) {
+      const mealCount = Cart.getMealCount(order.Meals);
+      const planId = Plan.getPlanId(mealCount, plans.data)
+      if (!planId) throw new Error(`[Upcoming-deliveries] missing planId for mealCount ${mealCount}`);
+      setCart(order, planId);
+    }
+    Router.push({
+      pathname: menuRoute,
+      query: { updating: 'true' }
+    });
+  };
+  const onUpdateOrder = () => {
+    updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
+      <Notifier />
       <div className={`${classes.row} ${classes.overviewSection}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
@@ -195,44 +249,73 @@ const DeliveryOverview: React.FC<{ order: Order }> = ({ order }) => {
             Total
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)
+            {order.MealPrice ? `${Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
           </Typography>
         </div>
         <div className={classes.column}>
-          <Typography variant='subtitle1'>
-            Deliver to
-          </Typography>
-          <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
-            <Typography variant='body1'>
-              {order.Destination.Name}
+          {
+            order.Rest ?
+            <>
+              <Typography variant='subtitle1'>
+                Deliver to
+              </Typography>
+              <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
+                <Typography variant='body1'>
+                  {order.Destination.Name}
+                </Typography>
+                <ExpandMoreIcon />
+              </div>
+            </>
+            :
+            <Typography variant='body1' className={classes.hint}>
+              Order Skipped
             </Typography>
-            <ExpandMoreIcon />
-          </div>
+          }
         </div>
       </div>
       <Divider />
-      <div className={classes.overviewSection}>
-        <Typography variant='subtitle1'>
-          {order.Rest.Profile.Name}
-        </Typography>
-        {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
-      </div>
+      {
+        order.Rest &&
+        <div className={classes.overviewSection}>
+          <Typography variant='subtitle1'>
+            {order.Rest.Profile.Name}
+          </Typography>
+          {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
+        </div>
+      }
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
-        <Button
-          variant='outlined'
-          color='primary'
-          className={classes.skip}
-        >
-          Skip
-        </Button>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={onEdit}
-        >
-          Edit meals
-        </Button>
+        {
+          isUpdating ?
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={onUpdateOrder}
+          >
+            Update order
+          </Button>
+          :
+          <>
+            {
+              order.Rest && 
+              <Button
+                variant='outlined'
+                color='primary'
+                className={classes.skip}
+                onClick={onUpdateOrder}
+              >
+                Skip
+              </Button>
+            }
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={onEdit}
+            >
+              Edit meals
+            </Button>
+          </>
+        }
       </div>
       <DestinationPopper
         destination={order.Destination}
@@ -248,15 +331,56 @@ const UpcomingDeliveries = () => {
   const classes = useStyles();
   const needsConfirmation = useRouter().query.confirmation;
   const [showConfirmation, setShowConfirmation] = useState(true);
+  const updatingParam = useRouter().query.updating;
+  const [showCart] = useState(true);
+  const cart = useGetCart();
   const orders = useGetUpcomingOrders();
+  const theme = useTheme<Theme>();
+  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isUpdating = !!updatingParam && updatingParam === 'true'
+  const needsCart = isUpdating && showCart;
+  if (needsCart && !cart) throw new Error('Needs cart, but no cart');
   const OrderOverviews = useMemo(() => ( 
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
-        order={order}
+        defaultOrder={order}
+        isUpdating={isUpdating}
+        cart={cart ? cart : undefined}
       />
     )
-  ), [orders.data]);
+  ), [orders.data, isUpdating, cart]);
+  if (needsCart) {
+    return (
+      <Container maxWidth='lg' className={classes.needsCartContainer}>
+        <Grid container alignItems='stretch'>
+          <Grid
+            item
+            sm={12}
+            md={9}
+            lg={8}
+          >
+            <Typography variant='h3' className={`${classes.marginBottom} ${classes.paddingTop}`}>
+              Upcoming deliveries
+            </Typography>
+            {OrderOverviews}
+          </Grid>
+          {
+            isMdAndUp &&
+            <Grid
+              item
+              md={3}
+              lg={4}
+            >
+              <StickyDrawer>
+                <SideMenuCart hideNext />
+              </StickyDrawer>
+            </Grid>
+          }
+        </Grid>
+      </Container>
+    )
+  }
   return (
     <Container maxWidth='lg' className={classes.container}>
       {

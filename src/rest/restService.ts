@@ -1,3 +1,4 @@
+import { ApolloCache, DataProxy } from 'apollo-cache';
 import { IRest, Rest } from './restModel';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -34,19 +35,25 @@ const useGetNearbyRests = (zip: string) => {
   }
 }
 
-const useGetRest = (restId: string | null) => {
-  type res = {
-    rest: IRest
+const GET_REST_QUERY = gql`
+  query rest($restId: ID!) {
+    rest(restId: $restId) {
+      ...restFragment
+    }
   }
-  const res = useQuery<res>(
-    gql`
-      query rest($restId: ID!) {
-        rest(restId: $restId) {
-          ...restFragment
-        }
-      }
-      ${restFragment}
-    `, 
+  ${restFragment}
+`;
+
+type getRestQueryRes = { rest: IRest }
+
+const getRest = (cache: ApolloCache<any> | DataProxy, restId: string) => cache.readQuery<getRestQueryRes>({
+  query: GET_REST_QUERY,
+  variables: { restId }
+});
+
+const useGetRest = (restId: string | null) => {
+  const res = useQuery<getRestQueryRes>(
+    GET_REST_QUERY, 
     {
       skip: !restId,
       variables: { restId },
@@ -61,5 +68,6 @@ const useGetRest = (restId: string | null) => {
 
 export {
   useGetNearbyRests,
-  useGetRest
+  useGetRest,
+  getRest
 }
