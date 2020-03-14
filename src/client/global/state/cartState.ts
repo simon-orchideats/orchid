@@ -248,15 +248,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restId: order.Rest.Id,
       stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
-<<<<<<< HEAD
-      zip: order.Destination!.Address.Zip,
-    }
-  )),
-=======
       zip: order.Destination.Address.Zip,
     }));
   },
->>>>>>> 9177f59d72a234fb5a1cde42f48482cf1cfb0758
 
   updateCartEmail: (_, { email }, { cache }) => {
     const res = getCart(cache);

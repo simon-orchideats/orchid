@@ -44,17 +44,6 @@ class PlanService implements IPlanService {
     }
   }
 
-  async getDefaultPlan(): Promise<any> {
-    try {
-      const plans = await this.stripe.plans.list({
-        limit: 100,
-        active: true,
-      });
-      const test  = plans.data.filter(plan => parseFloat(plan.metadata.mealCount) === 4);
-      console.log(test);
-    }
-  }
-
   async getPlan(planId: string): Promise<IPlan | null> {
     try {
       const plan = await this.stripe.plans.retrieve(planId);

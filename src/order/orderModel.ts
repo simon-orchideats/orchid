@@ -147,7 +147,7 @@ export class Order implements IOrder{
       },
       deliveryDate,
       consumer: {
-        userId: consumer.userId,
+        _id: consumer._id,
         profile: {
           name: consumer.profile.name,
           email: consumer.profile.email,

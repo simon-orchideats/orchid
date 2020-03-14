@@ -2,7 +2,8 @@ import { MutationBoolRes } from './../../utils/mutationResModel';
 import { EConsumer, IConsumer} from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-
+import { getPlanService } from '../plans/planService';
+import { CuisineTypes, RenewalTypes } from '../../consumer/consumerModel'
 const CONSUMER_INDEX = 'consumers';
 
 export interface IConsumerService {
@@ -57,6 +58,7 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
       if (res.body.hits.total.value > 0) throw new Error('_id already exists');
+      const defaultPlan = await getPlanService().getPlanByCount(4);
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
@@ -67,22 +69,13 @@ class ConsumerService implements IConsumerService {
              name,
              email,
             phone: '',
-            destination: {
-              name: '',
-              instructions: '',
-              address: {
-                address1: '',
-                city: '',
-                state: null,
-                zip: ''
-              }
-            }
+
           },
           plan: {
-            stripePlanId: '',
+            stripePlanId: defaultPlan?.stripeId,
             deliveryDay: 0,
-            rewnewal: '',
-            cuisines: []
+            rewnewal: RenewalTypes.Auto,
+            cuisines: CuisineTypes
           }, 
         }
       });
