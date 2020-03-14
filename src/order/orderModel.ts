@@ -9,7 +9,7 @@ type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned';
 export interface EOrder {
   readonly cartUpdatedDate: number
   readonly consumer: {
-    readonly userId: string
+    readonly _id: string
     readonly profile: IConsumerProfile
   },
   readonly costs: ICost
@@ -26,10 +26,10 @@ export interface EOrder {
 export interface IOrder {
   readonly _id: string
   readonly deliveryDate: number
-  readonly destination: IDestination
+  readonly destination?: IDestination
   readonly mealPrice: number
   readonly meals: ICartMeal[]
-  readonly phone: string
+  readonly phone?: string
   readonly rest: IRest
   readonly status: OrderStatus
 }
@@ -37,17 +37,17 @@ export interface IOrder {
 export class Order implements IOrder{
   readonly _id: string
   readonly deliveryDate: number
-  readonly destination: Destination
+  readonly destination?: Destination
   readonly mealPrice: number
   readonly meals: CartMeal[]
-  readonly phone: string
+  readonly phone?: string
   readonly rest: Rest
   readonly status: OrderStatus
 
   constructor(order: IOrder) {
     this._id = order._id;
     this.deliveryDate = order.deliveryDate;
-    this.destination = new Destination(order.destination);
+    this.destination = order.destination && new Destination(order.destination);
     this.mealPrice = order.mealPrice;
     this.meals = order.meals.map(meal => new CartMeal(meal))
     this.phone = order.phone;
@@ -92,7 +92,7 @@ export class Order implements IOrder{
       },
       status: 'Open',
       consumer: {
-        userId: signedInUser.userId,
+        _id: signedInUser._id,
         profile: {
           name: signedInUser.name,
           email: signedInUser.email,

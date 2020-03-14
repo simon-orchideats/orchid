@@ -243,7 +243,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restId: order.Rest.Id,
       stripePlanId: null,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
-      zip: order.Destination.Address.Zip,
+      zip: order.Destination?.Address.Zip,
     }
   )),
 

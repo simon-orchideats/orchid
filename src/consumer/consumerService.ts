@@ -7,8 +7,6 @@ import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useMemo } from 'react';
 import { activeConfig } from '../config';
-import { useGetConsumer } from '../client/global/state/consumerState'
-import { QueryResult } from '@apollo/react-common';
 
 export const useAddConsumerEmail = (): [
   (email: string) => void,
@@ -43,11 +41,8 @@ export const useRequireConsumer = (url: string) => {
   type res = {
     myConsumer: Consumer | null
   }
-  let res:QueryResult<res, Record<string, any>> | null;
-  if (useGetConsumer()) {
-    res = useGetConsumer();
-  } else {
-      res = useQuery<res>(gql`
+  
+      const res = useQuery<res>(gql`
         query myConsumer {
           myConsumer {
             ...consumerFragment
@@ -56,12 +51,12 @@ export const useRequireConsumer = (url: string) => {
         ${consumerFragment}
       `,
     );
-  }
+  
   
   const consumer = useMemo<Consumer | null>(() => {
-    if (res?.data && res.data.myConsumer) {
+    if (res.data && res.data.myConsumer) {
       // Creates userId as property and adds value from _id to userId property
-      Object.defineProperty(res.data.myConsumer, 'userId', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id') as PropertyDescriptor );
+      Object.defineProperty(res.data.myConsumer, '_id', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id') as PropertyDescriptor );
       return new Consumer(res.data.myConsumer)
     } 
       return null
@@ -82,3 +77,12 @@ export const useRequireConsumer = (url: string) => {
     data: consumer
   }
 }
+
+
+
+/**
+ *  make class fields optional 
+ * card optional, profile,  think about the rest
+ */
+
+

@@ -4,7 +4,7 @@ import { ServerResolovers } from '../utils/models';
 import { getOrderService } from './orderService';
 
 const signedInUser: SignedInUser = {
-  userId: '123',
+  _id: '123',
   stripeSubscriptionId: 'sub_GjlPo5G3Q8Ty88',
   stripeCustomerId : "cus_GjlPTWyWniuNPa",
   profile: {

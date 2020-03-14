@@ -1,18 +1,18 @@
 export interface ICard {
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
+  readonly last4?: string
+  readonly expMonth?: number
+  readonly expYear?: number
 }
 
 export class Card implements ICard {
-  readonly last4: string
-  readonly expMonth: number
-  readonly expYear: number
+  readonly last4?: string
+  readonly expMonth?: number
+  readonly expYear?: number
 
-  constructor(card: ICard) {
-    this.last4 = card.last4;
-    this.expMonth = card.expMonth;
-    this.expYear = card.expYear;
+  constructor(card?: ICard) {
+    this.last4 = card?.last4;
+    this.expMonth = card?.expMonth;
+    this.expYear = card?.expYear;
   }
 
   public get HiddenNumber() { return `**** ${this.Last4}`}

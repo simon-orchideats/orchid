@@ -3,6 +3,7 @@ import { ServerResolovers } from '../utils/models';
 
 export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, context) => {
+    // h
     let consumer = await context.signedInUser;
     return consumer ? consumer : null;
   }

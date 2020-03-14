@@ -13,7 +13,7 @@ export type ServerResolovers = {
 }
 
 export interface SignedInUser {
-  userId: string
+  _id: string
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   profile: {

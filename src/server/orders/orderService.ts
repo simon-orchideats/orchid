@@ -210,7 +210,7 @@ class OrderService {
         index: ORDER_INDEX,
         body: order
       })
-      const consumerUpserter = getConsumerService().upsertConsumer(signedInUser.userId, {
+      const consumerUpserter = getConsumerService().upsertConsumer(signedInUser._id, {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
@@ -293,7 +293,7 @@ class OrderService {
                     },
                     {
                       term: {
-                        'consumer.userId': signedInUser.userId
+                        'consumer._id': signedInUser._id
                       }
                     }
                   ]
@@ -316,7 +316,7 @@ class OrderService {
         return Order.getIOrderFromEOrder(_id, _source, rest)
       }))
     } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming orders for '${signedInUser.userId}'. '${e.stack}'`);
+      console.error(`[OrderService] couldn't get upcoming orders for '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }

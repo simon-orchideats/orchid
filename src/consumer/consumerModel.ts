@@ -5,8 +5,8 @@ export interface IConsumerProfile {
   readonly name: string
   readonly email: string
   readonly phone: string
-  readonly card: ICard
-  readonly destination: IDestination
+  readonly card?: ICard
+  readonly destination?: IDestination
 }
 
 export class ConsumerProfile implements IConsumerProfile {
@@ -14,14 +14,14 @@ export class ConsumerProfile implements IConsumerProfile {
   readonly email: string
   readonly phone: string
   readonly card: Card
-  readonly destination: Destination
+  readonly destination?: Destination
 
   constructor(consumerProfile: IConsumerProfile) {
     this.name = consumerProfile.name;
     this.email = consumerProfile.email;
     this.phone = consumerProfile.phone;
     this.card = new Card(consumerProfile.card);
-    this.destination = new Destination(consumerProfile.destination);
+    this.destination = consumerProfile.destination &&  new Destination(consumerProfile.destination);
   }
 
   public get Name() { return this.name }
@@ -117,18 +117,18 @@ export interface EConsumer {
 }
 
 export interface IConsumer extends Omit<EConsumer, 'createdDate'> {
-  readonly userId: string
+  readonly _id: string
 }
 
 export class Consumer implements IConsumer {
-  readonly userId: string
+  readonly _id: string
   readonly stripeCustomerId: string
   readonly stripeSubscriptionId: string
   readonly profile: ConsumerProfile
   readonly plan: ConsumerPlan
 
   constructor(consumer: IConsumer) {
-    this.userId = consumer.userId
+    this._id = consumer._id
     this.stripeCustomerId = consumer.stripeCustomerId;
     this.stripeSubscriptionId = consumer.stripeSubscriptionId;
     this.profile = consumer.profile && new ConsumerProfile(consumer.profile);
@@ -137,7 +137,7 @@ export class Consumer implements IConsumer {
 
   public get StripeSubscriptionId() { return this.stripeSubscriptionId }
   public get StripeCustomerId() { return this.stripeCustomerId }
-  public get UserId() { return this.userId }
+  public get UserId() { return this._id }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
 

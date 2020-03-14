@@ -12,29 +12,29 @@ class ConsumerService {
     this.elastic = elastic;
   }
 
-  async upsertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+  async upsertConsumer(_id: string, consumer: EConsumer): Promise<IConsumer> {
     // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
     // dupe entries.
     try {
       await this.elastic.update({
         index: CONSUMER_INDEX,
-        id: userId,
+        id: _id,
         body: {
           doc: consumer,
           doc_as_upsert: true
         },
       });
       return {
-        userId,
+        _id,
         ...consumer
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to upsert consumer '${userId}', '${JSON.stringify(consumer)}'`, e.stack);
+      console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
   }
 
-  async insertConsumerInfo(userId: string,name: string, email: string): Promise<MutationBoolRes> {
+  async insertConsumerInfo(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
       try {
@@ -45,30 +45,25 @@ class ConsumerService {
           body: {
             query: {
               ids: {
-                values: userId
+                values: _id
               }
             }
           }
         });
       } catch (e) {
-        console.error(`[ConsumerService] failed to find consumer ${userId}. ${e.stack}`);
+        console.error(`[ConsumerService] failed to find consumer ${_id}. ${e.stack}`);
         throw e;
       }
-      if (res.body.hits.total.value > 0) throw new Error('userId already exists');
+      if (res.body.hits.total.value > 0) throw new Error('_id already exists');
       await this.elastic.index({
         index: CONSUMER_INDEX,
-        id: userId,
+        id: _id,
         refresh: 'true', 
         body: {
           createdDate: Date.now(),
           profile: {
              name,
              email,
-             card: {
-              last4: '',
-              expMonth: 0,
-              expYear: 0
-            },
             phone: '',
             destination: {
               name: '',
@@ -94,12 +89,13 @@ class ConsumerService {
         error: null,
       }
     } catch (e) {
-      console.error(`[ConsumerService] couldn't insert consumer '${userId}'`, e.stack);
+      console.error(`[ConsumerService] couldn't insert consumer '${_id}'`, e.stack);
       throw e;
     }
   }
 
-  async getConsumerInfo(userId: string): Promise<SearchResponse<any>> {
+  async getConsumerInfo(_id: string): Promise<SearchResponse<any>> {
+    // have the logic here from authenticate but splitted in private functions probably
     let res: ApiResponse<SearchResponse<any>>
     try {
       res = await this.elastic.search({
@@ -110,7 +106,7 @@ class ConsumerService {
             bool: {
               must: [
                 {
-                  match: { _id: userId }
+                  match: { _id: _id }
                 }
               ]
             }
@@ -119,7 +115,7 @@ class ConsumerService {
       });
       return res.body;
     } catch (e) {
-      console.error(`[ConsumerService] couldn't search for consumer '${userId}'`, e.stack)
+      console.error(`[ConsumerService] couldn't search for consumer '${_id}'`, e.stack)
       throw e;
     } 
   }
