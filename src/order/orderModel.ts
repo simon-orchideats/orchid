@@ -18,7 +18,7 @@ export interface EOrder {
   readonly invoiceDate: number
   readonly deliveryDate: number
   readonly rest: {
-    readonly restId: string
+    readonly restId: string | null // null for skipped order
     readonly meals: ICartMeal[]
   }
   readonly status: OrderStatus
@@ -32,12 +32,13 @@ export interface IOrder {
   readonly mealPrice: number | null
   readonly meals: ICartMeal[]
   readonly phone: string
-  readonly rest: IRest
+  readonly rest: IRest | null // null for skipped order
   readonly status: OrderStatus
 }
 
 export interface IUpdateOrderInput {
-  readonly restId: string
+  // nulls for skipping an order
+  readonly restId: string | null
   readonly meals: ICartMeal[]
   readonly phone: string
   readonly destination: IDestination
@@ -51,7 +52,7 @@ export class Order implements IOrder{
   readonly mealPrice: number | null
   readonly meals: CartMeal[]
   readonly phone: string
-  readonly rest: Rest
+  readonly rest: Rest | null
   readonly status: OrderStatus
 
   constructor(order: IOrder) {
@@ -61,7 +62,7 @@ export class Order implements IOrder{
     this.mealPrice = order.mealPrice;
     this.meals = order.meals.map(meal => new CartMeal(meal))
     this.phone = order.phone;
-    this.rest = new Rest(order.rest)
+    this.rest = order.rest ? new Rest(order.rest) : null;
     this.status = order.status
   }
 
@@ -79,7 +80,7 @@ export class Order implements IOrder{
     order: IUpdateOrderInput,
     mealPrice: number | null,
     status: OrderStatus,
-    rest: IRest
+    rest: IRest | null
   ): IOrder {
     return {
       _id,
@@ -88,12 +89,12 @@ export class Order implements IOrder{
       mealPrice,
       meals: order.meals.map(meal => CartMeal.getICopy(meal)),
       phone: order.phone,
-      rest: Rest.getICopy(rest),
+      rest: rest ? Rest.getICopy(rest) : null,
       status,
     }
   }
 
-  static getIOrderFromEOrder(_id: string, order: EOrder, rest: IRest): IOrder {
+  static getIOrderFromEOrder(_id: string, order: EOrder, rest: IRest | null): IOrder {
     return {
       _id,
       deliveryDate: order.deliveryDate,
@@ -107,11 +108,9 @@ export class Order implements IOrder{
   }
 
   static getUpdatedOrderInput(order: Order, cart?: Cart): IUpdateOrderInput {
-    if (cart && !cart.RestId) throw new Error('Cart missing restId');
-    if (cart && !cart.Meals) throw new Error('Cart missing meals');
     return {
-      restId: cart && cart.RestId ? cart.RestId : order.Rest.Id,
-      meals: cart ? cart.Meals : order.Meals,
+      restId: cart && cart.RestId ? cart.RestId : null,
+      meals: cart && Cart.getMealCount(cart.Meals) ? cart.Meals : [],
       phone: order.Phone,
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,

@@ -38,8 +38,7 @@ export const _OrderQL = gql`
     deliveryDate: Float!
   }
   input UpdateOrderInput {
-    restId: ID!
-    stripePlanId: ID #null for skip order
+    restId: ID # null for skip order
     meals: [CartMealInput!]!
     phone: String!
     destination: DestinationInput!
@@ -52,7 +51,7 @@ export const _OrderQL = gql`
     mealPrice: Float
     meals: [CartMeal!]!
     phone: String!
-    rest: Rest!
+    rest: Rest
     status: OrderStatus!
   }
 `;

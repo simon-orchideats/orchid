@@ -207,7 +207,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   clearCartMeals: (_, _args, { cache }) => {
     const res = getCart(cache);
-    if (!res || !res.cart) throw new Error('Cannot clear cart meals from null cart')
+    if (!res || !res.cart) {
+      // possible when you skip an order and there is no cart
+      console.warn('Cannot clear cart meals from null cart');
+      return null;
+    }
     return updateCartCache(cache, new Cart({
       email: res.cart.Email,
       meals: [],
@@ -236,16 +240,17 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setCart: (_, { order, planId }, { cache }) =>
-    updateCartCache(cache, new Cart({
+  setCart: (_, { order, planId }, { cache }) => {
+    if (!order.Rest) throw new Error('Setting cart with null rest')
+    return updateCartCache(cache, new Cart({
       email: null,
       meals: order.Meals,
       restId: order.Rest.Id,
       stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
       zip: order.Destination.Address.Zip,
-    }
-  )),
+    }));
+  },
 
   updateCartEmail: (_, { email }, { cache }) => {
     const res = getCart(cache);

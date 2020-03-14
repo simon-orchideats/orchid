@@ -184,9 +184,12 @@ class OrderService {
     const deliveryDateValidation = validateDeliveryDate(updateOptions.deliveryDate, now);
     if (deliveryDateValidation) return deliveryDateValidation;
 
-    const p1 = this.validateRest(updateOptions.restId, updateOptions.meals);
+    let p1 = Promise.resolve('');
+    if (updateOptions.restId) {
+      p1 = this.validateRest(updateOptions.restId, updateOptions.meals);
+    }
     const p2 = this.validateAddress(updateOptions.destination.address);
-    let p3;
+    let p3 = Promise.resolve('');
     const mealCount = Cart.getMealCount(updateOptions.meals);
     if (mealCount > 0) {
       p3 = this.planService.getPlanByCount(mealCount)
@@ -203,9 +206,8 @@ class OrderService {
           console.warn('[OrderService]', msg, e.stack);
           return msg;
         });
-    } else {
-      p3 = Promise.resolve('');
     }
+
     const messages = await Promise.all([p1, p2, p3]);
     if (messages[0]) {
       return messages[0]
@@ -402,12 +404,15 @@ class OrderService {
         }
       });
       return await Promise.all(res.body.hits.hits.map(async ({ _id, _source }) => {
-        const rest = await this.restService.getRest(_source.rest.restId)
-        if (!rest) throw Error(`Couldn't get rest ${_source.rest.restId}`);
-        return Order.getIOrderFromEOrder(_id, _source, rest)
+        if (_source.rest.restId) {
+          const rest = await this.restService.getRest(_source.rest.restId)
+          if (!rest) throw Error(`Couldn't get rest ${_source.rest.restId}`);
+          return Order.getIOrderFromEOrder(_id, _source, rest);
+        }
+        return Order.getIOrderFromEOrder(_id, _source, null)
       }))
     } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming orders for '${signedInUser.userId}'. '${e.stack}'`);
+      console.error(`[OrderService] couldn't get upcoming orders for consumer '${signedInUser.userId}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }

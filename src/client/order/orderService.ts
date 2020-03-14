@@ -1,7 +1,7 @@
+import { IRest } from './../../rest/restModel';
 import { Cart } from './../../order/cartModel';
 import { getAvailablePlans } from './../../plan/planService';
 import { Plan } from './../../plan/planModel';
-import LogRocket from 'logrocket';
 import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
 import { MutationBoolRes } from '../../utils/mutationResModel';
 import { ICartInput } from '../../order/cartModel';
@@ -108,23 +108,18 @@ export const useUpdateOrder = (): [
       update: (cache, { data }) => {
         if (data && data.updateOrder.res) {
           const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-          if (!upcomingOrders) {
-            LogRocket.captureException(new Error('Couldn\'t get upcoming orders for cache update'));
-            return;
-          }
-          const rest = getRest(cache, updateOptions.restId)
-          if (!rest) {
-            LogRocket.captureException(new Error('Couldn\'t get rest for cache update'));
-            return;
+          if (!upcomingOrders) throw new Error('Couldn\'t get upcoming orders for cache update');
+          let rest: IRest | null = null;
+          if (updateOptions.restId) {
+            const restRes = getRest(cache, updateOptions.restId)
+            if (!restRes) throw new Error('Couldn\'t get rest for cache update');
+            rest = restRes.rest;
           }
           let mealPrice: number | null = null;
           const mealCount = Cart.getMealCount(updateOptions.meals);
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
-            if (!plans) {
-              LogRocket.captureException(new Error('Couldn\'t get plan for cache update'));
-              return;
-            }
+            if (!plans) throw new Error('Couldn\'t get plan for cache update');
             mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals), plans.availablePlans);
           }
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
@@ -134,7 +129,7 @@ export const useUpdateOrder = (): [
                 updateOptions,
                 mealPrice,
                 mealCount > 0 ? order.status : 'Skipped',
-                rest.rest
+                rest
               );
               //@ts-ignore
               newOrder.destination.address.__typename = 'Address';
@@ -142,14 +137,16 @@ export const useUpdateOrder = (): [
               newOrder.destination.__typename = 'Destination';
               //@ts-ignore
               newOrder.meals.forEach(meal => meal.__typename = 'CartMeal');
-              //@ts-ignore
-              newOrder.rest.location.address.__typename = 'Address';
-              //@ts-ignore
-              newOrder.rest.location.__typename = 'Location';
-              //@ts-ignore
-              newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
-              //@ts-ignore
-              newOrder.rest.profile.__typename = 'Rest';
+              if (rest !== null) {
+                //@ts-ignore
+                newOrder.rest.location.address.__typename = 'Address';
+                //@ts-ignore
+                newOrder.rest.location.__typename = 'Location';
+                //@ts-ignore
+                newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
+                //@ts-ignore
+                newOrder.rest.profile.__typename = 'Rest';
+              }
               //@ts-ignore
               newOrder.__typename = 'Order';
               return newOrder;

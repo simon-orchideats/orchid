@@ -23,7 +23,6 @@ import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
-import LogRocket from "logrocket";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -218,14 +217,16 @@ const DeliveryOverview: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const onEdit = () => {
-    const mealCount = Cart.getMealCount(order.Meals);
-    const planId = Plan.getPlanId(mealCount, plans.data)
-    if (!planId) {
-      LogRocket.captureException(new Error(`[Upcoming-deliveries] missing planId for mealCount ${mealCount}`));
-      return;
+    if (order.Rest) {
+      const mealCount = Cart.getMealCount(order.Meals);
+      const planId = Plan.getPlanId(mealCount, plans.data)
+      if (!planId) throw new Error(`[Upcoming-deliveries] missing planId for mealCount ${mealCount}`);
+      setCart(order, planId);
     }
-    setCart(order, planId);
-    Router.push(menuRoute);
+    Router.push({
+      pathname: menuRoute,
+      query: { updating: 'true' }
+    });
   };
   const onUpdateOrder = () => {
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
@@ -247,32 +248,41 @@ const DeliveryOverview: React.FC<{
           <Typography variant='subtitle1'>
             Total
           </Typography>
+          <Typography variant='body1' className={classes.hint}>
+            {order.MealPrice ? `${Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
+          </Typography>
+        </div>
+        <div className={classes.column}>
           {
-            Cart.getMealCount(order.Meals) > 0 && order.MealPrice &&
+            order.Rest ?
+            <>
+              <Typography variant='subtitle1'>
+                Deliver to
+              </Typography>
+              <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
+                <Typography variant='body1'>
+                  {order.Destination.Name}
+                </Typography>
+                <ExpandMoreIcon />
+              </div>
+            </>
+            :
             <Typography variant='body1' className={classes.hint}>
-              {Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)
+              Order Skipped
             </Typography>
           }
         </div>
-        <div className={classes.column}>
-          <Typography variant='subtitle1'>
-            Deliver to
-          </Typography>
-          <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
-            <Typography variant='body1'>
-              {order.Destination.Name}
-            </Typography>
-            <ExpandMoreIcon />
-          </div>
-        </div>
       </div>
       <Divider />
-      <div className={classes.overviewSection}>
-        <Typography variant='subtitle1'>
-          {order.Rest.Profile.Name}
-        </Typography>
-        {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
-      </div>
+      {
+        order.Rest &&
+        <div className={classes.overviewSection}>
+          <Typography variant='subtitle1'>
+            {order.Rest.Profile.Name}
+          </Typography>
+          {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
+        </div>
+      }
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
         {
@@ -286,13 +296,17 @@ const DeliveryOverview: React.FC<{
           </Button>
           :
           <>
-            <Button
-              variant='outlined'
-              color='primary'
-              className={classes.skip}
-            >
-              Skip
-            </Button>
+            {
+              order.Rest && 
+              <Button
+                variant='outlined'
+                color='primary'
+                className={classes.skip}
+                onClick={onUpdateOrder}
+              >
+                Skip
+              </Button>
+            }
             <Button
               variant='contained'
               color='primary'
