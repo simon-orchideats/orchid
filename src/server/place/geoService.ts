@@ -3,7 +3,22 @@ import { activeConfig } from '../../config';
 import querystring from 'querystring';
 import { state } from '../../place/addressModel';
 
-class GeoService {
+
+export interface IGeoService {
+  getGeocode: (street: string, city: string, state: state, zip: string) => Promise<{
+    geo: {
+      lat: string,
+      lon: string,
+    }
+  }>
+
+  getCityState: (zip: string) => Promise<{
+    city: string
+    state: state
+  } | null>
+}
+
+class GeoService implements IGeoService{
   async getGeocode(street: string, city: string, state: state, zip: string) {
     try {
       const query = `street=${querystring.escape(street)}`
@@ -51,7 +66,7 @@ class GeoService {
 
   async getCityState(zip: string): Promise<{
     city: string
-    state: string
+    state: state
   } | null> {
     try {
       const query = `postal_code=${querystring.escape(zip)}&api_key=${activeConfig.server.geo.key}`;

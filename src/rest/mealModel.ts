@@ -26,4 +26,10 @@ export class Meal implements IMeal {
   public get Name() { return this.name }
   public get Description() { return this.description }
   public get OriginalPrice() { return this.originalPrice }
+
+  static getICopy(meal: IMeal): IMeal {
+    return {
+      ...meal
+    }
+  }
 }

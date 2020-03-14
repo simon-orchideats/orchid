@@ -22,6 +22,7 @@ export const OrderStatus = gql`
     Confirmed
     Open
     Returned
+    Skipped
   }
 `
 
@@ -36,14 +37,21 @@ export const _OrderQL = gql`
     destination: DestinationInput!
     deliveryDate: Float!
   }
+  input UpdateOrderInput {
+    restId: ID # null for skip order
+    meals: [CartMealInput!]!
+    phone: String!
+    destination: DestinationInput!
+    deliveryDate: Float!
+  }
   type Order {
     _id: ID!
     deliveryDate: Float!
     destination: Destination!
-    mealPrice: Float!
+    mealPrice: Float
     meals: [CartMeal!]!
     phone: String!
-    rest: Rest!
+    rest: Rest
     status: OrderStatus!
   }
 `;

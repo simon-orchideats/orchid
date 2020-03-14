@@ -38,6 +38,12 @@ export class CartMeal implements ICartMeal {
       quantity,
     });
   }
+
+  static getICopy(meal: ICartMeal): ICartMeal {
+    return {
+      ...meal
+    }
+  }
 }
 
 export interface ICartInput {
@@ -46,7 +52,7 @@ export interface ICartInput {
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
   readonly meals: ICartMeal[]
-  readonly phone: string
+  readonly phone: string//shared
   readonly destination: IDestination
   readonly deliveryDate: number
 };

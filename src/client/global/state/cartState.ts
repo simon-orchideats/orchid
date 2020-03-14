@@ -84,15 +84,15 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
   }
 }
 
-export const useSetCart = (): (order: Order) => void => {
-  type vars = { order: Order };
+export const useSetCart = (): (order: Order, planId: string) => void => {
+  type vars = { order: Order, planId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setCart($order: Order!) {
-      setCart(order: $order) @client
+    mutation setCart($order: Order!, $planId: ID!) {
+      setCart(order: $order, planId: $planId) @client
     }
   `);
-  return (order: Order) => {
-    mutate({ variables: { order } })
+  return (order: Order, planId: string) => {
+    mutate({ variables: { order, planId } })
   }
 }
 
@@ -148,7 +148,7 @@ type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
-  setCart: ClientResolver<{ order: Order }, Cart | null>
+  setCart: ClientResolver<{ order: Order, planId: string }, Cart | null>
   updateCartEmail: ClientResolver<{ email: string }, Cart | null>
   updateCartPlanId: ClientResolver<{ id: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
@@ -207,12 +207,16 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   clearCartMeals: (_, _args, { cache }) => {
     const res = getCart(cache);
-    if (!res || !res.cart) throw new Error('Cannot clear cart meals from null cart')
+    if (!res || !res.cart) {
+      // possible when you skip an order and there is no cart
+      console.warn('Cannot clear cart meals from null cart');
+      return null;
+    }
     return updateCartCache(cache, new Cart({
-      email: null,
+      email: res.cart.Email,
       meals: [],
       restId: null,
-      stripePlanId: res.cart.StripePlanId,
+      stripePlanId: null,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
     }));
@@ -236,16 +240,17 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setCart: (_, { order }, { cache }) =>
-    updateCartCache(cache, new Cart({
+  setCart: (_, { order, planId }, { cache }) => {
+    if (!order.Rest) throw new Error('Setting cart with null rest')
+    return updateCartCache(cache, new Cart({
       email: null,
       meals: order.Meals,
       restId: order.Rest.Id,
-      stripePlanId: null,
+      stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
       zip: order.Destination.Address.Zip,
-    }
-  )),
+    }));
+  },
 
   updateCartEmail: (_, { email }, { cache }) => {
     const res = getCart(cache);

@@ -3,10 +3,11 @@ import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { Plan } from "../../plan/planModel";
-import { deliveryRoute } from "../../pages/delivery";
+// import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
-import Router from 'next/router'
+import Router, { useRouter } from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
+import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { ApolloError } from "apollo-client";
 import { Rest } from "../../rest/restModel";
 
@@ -41,13 +42,25 @@ const MenuCart: React.FC<{
 }) => {
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
+  const updatingParam = useRouter().query.updating;
+  const isUpdating = !!updatingParam && updatingParam === 'true'
   const rest = useGetRest(cart ? cart.RestId : null);
   const fixedMealCount = (cart && cart.StripePlanId) ? Plan.getPlanCount(cart.StripePlanId, sortedPlans.data || []) : null;
   const mealCount = cart ? Cart.getMealCount(cart.Meals) : 0;
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
+  const upcomingDeliveriesPath = {
+    pathname: upcomingDeliveriesRoute,
+    query: { updating: 'true' }
+  }
   const onNext = () => {
     if (!stripePlanId) throw new Error('Missing stripePlanId')
-    Router.push(deliveryRoute);
+    if (isUpdating) {
+      Router.push(upcomingDeliveriesPath);
+    } else {
+      // todo: add a check here to see if user consumer is signed in
+      // Router.push(deliveryRoute);
+      Router.push(upcomingDeliveriesPath);
+    }
     sendCartMenuMetrics(
       stripePlanId,
       sortedPlans.data,

@@ -82,6 +82,12 @@ export class Address implements IAddress {
   public getAddrStr() {
     return `${this.address1} ${this.address2 ? this.address2 + ' ' : ''}${this.city}, ${this.state} ${this.zip}`
   }
+
+  static getICopy(addr: IAddress): IAddress {
+    return {
+      ...addr
+    }
+  }
 }
 
 type states = {

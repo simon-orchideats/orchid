@@ -1,4 +1,4 @@
-import { ApolloCache } from 'apollo-cache';
+import { ApolloCache, DataProxy } from 'apollo-cache';
 import { isServer } from './../client/utils/isServer';
 import gql from 'graphql-tag';
 import { IPlan, Plan } from './planModel';
@@ -18,7 +18,7 @@ const AVAILABLE_PLANS_QUERY = gql`
 
 type availablePlansQueryRes = { availablePlans: IPlan[] }
 
-export const getAvailablePlans = (cache: ApolloCache<any>) => cache.readQuery<availablePlansQueryRes>({
+export const getAvailablePlans = (cache: ApolloCache<any> | DataProxy) => cache.readQuery<availablePlansQueryRes>({
   query: AVAILABLE_PLANS_QUERY
 });
 
