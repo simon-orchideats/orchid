@@ -11,7 +11,9 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
+import { onError } from 'apollo-link-error';
 import { SchemaLink } from 'apollo-link-schema';
+import { ApolloLink } from 'apollo-link';
 import {
   clientTypeDefs,
   clientResolvers,
@@ -19,6 +21,7 @@ import {
 } from '../global/state/localState'
 import { isServer } from './isServer';
 import { getContext } from '../../server/utils/apolloUtils';
+import LogRocket from 'logrocket';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 
@@ -183,9 +186,29 @@ function createIsomorphLink(context: object) {
     return new SchemaLink({ schema, context })
   } else {
     // const { HttpLink } = require('./node_modules/apollo-link-http')
-    return new HttpLink({
+    const httpLink = new HttpLink({
       uri: '/api/graphql',
       credentials: 'same-origin',
-    })
+    });
+    const errorLink = onError(e => {
+      const { graphQLErrors, networkError, operation } = e;
+      const { variables, operationName } = operation;
+      let msg = '';
+      if (graphQLErrors) {
+        graphQLErrors.forEach(({ message, path }) => {
+          msg = msg + '\n' +`[GraphQL error]: Message: '${message}', Path: '${path}', variables: '${JSON.stringify(variables)}'`
+        });
+      }
+  
+      if (networkError) {
+        msg = `[Network error]: '${networkError}', Operation: '${operationName}', variables: '${JSON.stringify(variables)}`;
+      }
+      console.error(JSON.stringify(e));
+      LogRocket.captureException(new Error(msg));
+    });
+    return ApolloLink.from([
+      errorLink,
+      httpLink,
+    ])
   }
 }

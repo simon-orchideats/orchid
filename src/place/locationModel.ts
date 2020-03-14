@@ -12,4 +12,10 @@ export class Location implements ILocation {
   }
 
   public get Address() { return this.address }
+
+  static getICopy(location: ILocation): ILocation {
+    return {
+      address: Address.getICopy(location.address)
+    }
+  }
 }

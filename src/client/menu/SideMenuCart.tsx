@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const SideMenuCart: React.FC = () => {
+const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
   return (
     <MenuCart
@@ -52,24 +52,27 @@ const SideMenuCart: React.FC = () => {
         {cart && cart.Meals && cart.Meals.map(mealGroup => (
           <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
         ))}
-        <div className={classes.bottom}>
-          <Typography variant='body1' className={classes.suggestion}>
-            {suggestion}
-          </Typography>
-          <Typography variant='body1' className={classes.suggestion}>
-            {cart && cart.Zip ? null : 'Enter zip to continue'}
-          </Typography>
-          <Button
-            disabled={disabled}
-            variant='contained'
-            color='primary'
-            className={classes.button}
-            fullWidth
-            onClick={onNext}
-          >
-            Next
-          </Button>
-        </div>
+        {
+          !hideNext &&
+          <div className={classes.bottom}>
+            <Typography variant='body1' className={classes.suggestion}>
+              {suggestion}
+            </Typography>
+            <Typography variant='body1' className={classes.suggestion}>
+              {cart && cart.Zip ? null : 'Enter zip to continue'}
+            </Typography>
+            <Button
+              disabled={disabled}
+              variant='contained'
+              color='primary'
+              className={classes.button}
+              fullWidth
+              onClick={onNext}
+            >
+              Next
+            </Button>
+          </div>
+        }
       </>
     )} />
   )

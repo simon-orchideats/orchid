@@ -2,7 +2,13 @@ import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
-class PlanService {
+export interface IPlanService {
+  getAvailablePlans(): Promise<IPlan[]>
+  getPlan(planId: string): Promise<IPlan | null>
+  getPlanByCount(count: number): Promise<IPlan | null> 
+}
+
+class PlanService implements IPlanService {
   private readonly stripe: Stripe
 
   public constructor(stripe: Stripe) {
@@ -27,6 +33,17 @@ class PlanService {
     }
   }
 
+  async getPlanByCount(count: number): Promise<IPlan | null> {
+    try {
+      const plans = await this.getAvailablePlans();
+      const target = plans.find(plan => plan.mealCount === count);
+      return target ? target : null;
+    } catch (e) {
+      console.error(`[PlanService] could not get plans. '${e.message}'`);
+      throw e;
+    }
+  }
+
   async getDefaultPlan(): Promise<any> {
     try {
       const plans = await this.stripe.plans.list({
@@ -35,9 +52,6 @@ class PlanService {
       });
       const test  = plans.data.filter(plan => parseFloat(plan.metadata.mealCount) === 4);
       console.log(test);
-    } catch (e) {
-      console.error(`[PlanService] could not get plans. '${e.message}'`);
-      throw e;
     }
   }
 

@@ -50,6 +50,13 @@ DELETE rests
 DELETE orders
 DELETE consumers
 
+POST orders/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
+
 ############################
 
 ######### MAPPING ##########

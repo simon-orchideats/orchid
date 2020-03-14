@@ -17,8 +17,9 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const MenuMiniCart: React.FC = () => {
+const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
+  if (hideNext) return null;
   return (
     <MenuCart
       render={(
