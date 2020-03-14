@@ -39,7 +39,6 @@ export class Plan implements IPlan {
     }, [plans])
   }
 
-  
   public static getPlanCount(stripePlanId: string, plans: Plan[]) {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].StripeId === stripePlanId) return plans[i].MealCount;
@@ -59,5 +58,13 @@ export class Plan implements IPlan {
       if (plans[i].StripeId === stripePlanId) return plans[i].MealPrice;
     }
     throw new Error(`No plan found for stripePlanId '${stripePlanId}'`)
+  }
+
+  public static getMealPriceFromCount(count: number, plans: IPlan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      console.log(plans[i]);
+      if (plans[i].mealCount === count) return plans[i].mealPrice;
+    }
+    throw new Error(`No plan found for count '${count}'`)
   }
 }

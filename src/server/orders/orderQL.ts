@@ -22,6 +22,7 @@ export const OrderStatus = gql`
     Confirmed
     Open
     Returned
+    Skipped
   }
 `
 

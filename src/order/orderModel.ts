@@ -5,7 +5,7 @@ import { IConsumerProfile } from './../consumer/consumerModel';
 import { ICost } from './costModel';
 import { ICartInput, ICartMeal, CartMeal, Cart } from './cartModel';
 
-type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned';
+type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -73,6 +73,25 @@ export class Order implements IOrder{
   public get Phone() { return this.phone }
   public get Rest() { return this.rest }
   public get Status() { return this.status }
+
+  static getIOrderFromUpdatedOrderInput(
+    _id: string,
+    order: IUpdateOrderInput,
+    mealPrice: number | null,
+    status: OrderStatus,
+    rest: IRest
+  ): IOrder {
+    return {
+      _id,
+      deliveryDate: order.deliveryDate,
+      destination: Destination.getICopy(order.destination),
+      mealPrice,
+      meals: order.meals.map(meal => CartMeal.getICopy(meal)),
+      phone: order.phone,
+      rest: Rest.getICopy(rest),
+      status,
+    }
+  }
 
   static getIOrderFromEOrder(_id: string, order: EOrder, rest: IRest): IOrder {
     return {

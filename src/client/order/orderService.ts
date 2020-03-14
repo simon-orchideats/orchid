@@ -1,3 +1,7 @@
+import { Cart } from './../../order/cartModel';
+import { getAvailablePlans } from './../../plan/planService';
+import { Plan } from './../../plan/planModel';
+import LogRocket from 'logrocket';
 import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
 import { MutationBoolRes } from '../../utils/mutationResModel';
 import { ICartInput } from '../../order/cartModel';
@@ -6,8 +10,9 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { restFragment } from '../../rest/restFragment';
+import { getRest } from '../../rest/restService';
 
-const MY_UPCOMING_ORDERS = gql`
+const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
     myUpcomingOrders {
       _id
@@ -87,10 +92,79 @@ export const useUpdateOrder = (): [
     }
   `);
   const updateOrder = (orderId: string, updateOptions: IUpdateOrderInput) => {
-    mutate({ variables: {
-      orderId,
-      updateOptions
-    }})
+    mutate({ 
+      variables: {
+        orderId,
+        updateOptions
+      },
+      optimisticResponse: {
+        updateOrder: {
+          res: true,
+          error: null,
+          //@ts-ignore
+          __typename: "BoolRes",
+        }
+      },
+      update: (cache, { data }) => {
+        if (data && data.updateOrder.res) {
+          const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+          if (!upcomingOrders) {
+            LogRocket.captureException(new Error('Couldn\'t get upcoming orders for cache update'));
+            return;
+          }
+          const rest = getRest(cache, updateOptions.restId)
+          if (!rest) {
+            LogRocket.captureException(new Error('Couldn\'t get rest for cache update'));
+            return;
+          }
+          let mealPrice: number | null = null;
+          const mealCount = Cart.getMealCount(updateOptions.meals);
+          if (mealCount > 0) {
+            const plans = getAvailablePlans(cache);
+            if (!plans) {
+              LogRocket.captureException(new Error('Couldn\'t get plan for cache update'));
+              return;
+            }
+            mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals), plans.availablePlans);
+          }
+          const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
+            if (order._id === orderId) {
+              const newOrder = Order.getIOrderFromUpdatedOrderInput(
+                orderId,
+                updateOptions,
+                mealPrice,
+                mealCount > 0 ? order.status : 'Skipped',
+                rest.rest
+              );
+              //@ts-ignore
+              newOrder.destination.address.__typename = 'Address';
+              //@ts-ignore
+              newOrder.destination.__typename = 'Destination';
+              //@ts-ignore
+              newOrder.meals.forEach(meal => meal.__typename = 'CartMeal');
+              //@ts-ignore
+              newOrder.rest.location.address.__typename = 'Address';
+              //@ts-ignore
+              newOrder.rest.location.__typename = 'Location';
+              //@ts-ignore
+              newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
+              //@ts-ignore
+              newOrder.rest.profile.__typename = 'Rest';
+              //@ts-ignore
+              newOrder.__typename = 'Order';
+              return newOrder;
+            }
+            return order;
+          });
+          cache.writeQuery({
+            query: MY_UPCOMING_ORDERS_QUERY,
+            data: {
+              myUpcomingOrders: newUpcomingOrders,
+            }
+          })
+        }
+      }
+    })
   }
   return useMemo(() => [
     updateOrder,
@@ -101,9 +175,9 @@ export const useUpdateOrder = (): [
   ], [mutation]);
 }
 
+type upcomingOrdersRes = { myUpcomingOrders: IOrder[] }
 export const useGetUpcomingOrders = () => {
-  type res = { myUpcomingOrders: IOrder[] }
-  const res = useQuery<res>(MY_UPCOMING_ORDERS);
+  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
   ), [res.data]);

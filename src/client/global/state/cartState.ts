@@ -84,15 +84,15 @@ export const useRemoveMealFromCart = (): (mealId: string) => void => {
   }
 }
 
-export const useSetCart = (): (order: Order) => void => {
-  type vars = { order: Order };
+export const useSetCart = (): (order: Order, planId: string) => void => {
+  type vars = { order: Order, planId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setCart($order: Order!) {
-      setCart(order: $order) @client
+    mutation setCart($order: Order!, $planId: ID!) {
+      setCart(order: $order, planId: $planId) @client
     }
   `);
-  return (order: Order) => {
-    mutate({ variables: { order } })
+  return (order: Order, planId: string) => {
+    mutate({ variables: { order, planId } })
   }
 }
 
@@ -148,7 +148,7 @@ type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
-  setCart: ClientResolver<{ order: Order }, Cart | null>
+  setCart: ClientResolver<{ order: Order, planId: string }, Cart | null>
   updateCartEmail: ClientResolver<{ email: string }, Cart | null>
   updateCartPlanId: ClientResolver<{ id: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
@@ -236,12 +236,12 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setCart: (_, { order }, { cache }) =>
+  setCart: (_, { order, planId }, { cache }) =>
     updateCartCache(cache, new Cart({
       email: null,
       meals: order.Meals,
       restId: order.Rest.Id,
-      stripePlanId: null,
+      stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
       zip: order.Destination.Address.Zip,
     }

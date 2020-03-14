@@ -21,6 +21,9 @@ import SideMenuCart from "../../client/menu/SideMenuCart";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
+import { Plan } from "../../plan/planModel";
+import { useGetAvailablePlans } from "../../plan/planService";
+import LogRocket from "logrocket";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -191,6 +194,8 @@ const DeliveryOverview: React.FC<{
   const classes = useStyles();
   const setCart = useSetCart();
   const notify = useNotify();
+  const clearCartMeals = useClearCartMeals();
+  const plans = useGetAvailablePlans();
   const [order] = useState<Order>(defaultOrder);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
@@ -202,7 +207,9 @@ const DeliveryOverview: React.FC<{
       if (updateOrderRes.data.error) {
         notify(updateOrderRes.data.error, NotificationType.error, false);
       } else {
+        Router.replace(upcomingDeliveriesRoute)
         notify('Order updated', NotificationType.success, true);
+        clearCartMeals();
       }
     }
 
@@ -211,7 +218,13 @@ const DeliveryOverview: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const onEdit = () => {
-    setCart(order);
+    const mealCount = Cart.getMealCount(order.Meals);
+    const planId = Plan.getPlanId(mealCount, plans.data)
+    if (!planId) {
+      LogRocket.captureException(new Error(`[Upcoming-deliveries] missing planId for mealCount ${mealCount}`));
+      return;
+    }
+    setCart(order, planId);
     Router.push(menuRoute);
   };
   const onUpdateOrder = () => {
@@ -304,24 +317,25 @@ const UpcomingDeliveries = () => {
   const classes = useStyles();
   const needsConfirmation = useRouter().query.confirmation;
   const [showConfirmation, setShowConfirmation] = useState(true);
-  const isUpdating = useRouter().query.updating;
+  const updatingParam = useRouter().query.updating;
   const [showCart] = useState(true);
   const cart = useGetCart();
   const orders = useGetUpcomingOrders();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
-  const needsCart = !!isUpdating && isUpdating === 'true' && !!showCart;
+  const isUpdating = !!updatingParam && updatingParam === 'true'
+  const needsCart = isUpdating && showCart;
   if (needsCart && !cart) throw new Error('Needs cart, but no cart');
   const OrderOverviews = useMemo(() => ( 
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
         defaultOrder={order}
-        isUpdating={needsCart}
+        isUpdating={isUpdating}
         cart={cart ? cart : undefined}
       />
     )
-  ), [orders.data]);
+  ), [orders.data, isUpdating, cart]);
   if (needsCart) {
     return (
       <Container maxWidth='lg' className={classes.needsCartContainer}>
