@@ -1,19 +1,19 @@
 import { IAddress, Address } from './addressModel';
 
 export interface IDestination {
-  readonly name?: string
+  readonly name: string
   readonly address: IAddress
-  readonly instructions?: string
+  readonly instructions: string
 }
 
 export class Destination implements IDestination {
-  readonly name?: string
+  readonly name: string
   readonly address: Address
-  readonly instructions?: string
+  readonly instructions: string
 
   constructor(destination: IDestination) {
     this.name = destination.name;
-    this.address =destination.address && new Address(destination.address);
+    this.address = new Address(destination.address);
     this.instructions = destination.instructions;
   }
 

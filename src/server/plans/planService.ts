@@ -27,6 +27,20 @@ class PlanService {
     }
   }
 
+  async getDefaultPlan(): Promise<any> {
+    try {
+      const plans = await this.stripe.plans.list({
+        limit: 100,
+        active: true,
+      });
+      const test  = plans.data.filter(plan => parseFloat(plan.metadata.mealCount) === 4);
+      console.log(test);
+    } catch (e) {
+      console.error(`[PlanService] could not get plans. '${e.message}'`);
+      throw e;
+    }
+  }
+
   async getPlan(planId: string): Promise<IPlan | null> {
     try {
       const plan = await this.stripe.plans.retrieve(planId);

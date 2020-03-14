@@ -2,26 +2,26 @@ import { IDestination, Destination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 
 export interface IConsumerProfile {
-  readonly name: string
+  readonly name: string | null
   readonly email: string
-  readonly phone: string
-  readonly card?: ICard
-  readonly destination?: IDestination
+  readonly phone: string | null
+  readonly card: ICard | null
+  readonly destination: IDestination | null
 }
 
 export class ConsumerProfile implements IConsumerProfile {
-  readonly name: string
+  readonly name: string | null
   readonly email: string
-  readonly phone: string
-  readonly card: Card
-  readonly destination?: Destination
+  readonly phone: string | null
+  readonly card: Card | null
+  readonly destination: Destination | null
 
   constructor(consumerProfile: IConsumerProfile) {
     this.name = consumerProfile.name;
     this.email = consumerProfile.email;
     this.phone = consumerProfile.phone;
-    this.card = new Card(consumerProfile.card);
-    this.destination = consumerProfile.destination &&  new Destination(consumerProfile.destination);
+    this.card = consumerProfile.card && new Card(consumerProfile.card);
+    this.destination = consumerProfile.destination && new Destination(consumerProfile.destination);
   }
 
   public get Name() { return this.name }

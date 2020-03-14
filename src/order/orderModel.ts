@@ -26,10 +26,10 @@ export interface EOrder {
 export interface IOrder {
   readonly _id: string
   readonly deliveryDate: number
-  readonly destination?: IDestination
+  readonly destination: IDestination
   readonly mealPrice: number
   readonly meals: ICartMeal[]
-  readonly phone?: string
+  readonly phone: string
   readonly rest: IRest
   readonly status: OrderStatus
 }
@@ -37,17 +37,17 @@ export interface IOrder {
 export class Order implements IOrder{
   readonly _id: string
   readonly deliveryDate: number
-  readonly destination?: Destination
+  readonly destination: Destination
   readonly mealPrice: number
   readonly meals: CartMeal[]
-  readonly phone?: string
+  readonly phone: string
   readonly rest: Rest
   readonly status: OrderStatus
 
   constructor(order: IOrder) {
     this._id = order._id;
     this.deliveryDate = order.deliveryDate;
-    this.destination = order.destination && new Destination(order.destination);
+    this.destination = new Destination(order.destination);
     this.mealPrice = order.mealPrice;
     this.meals = order.meals.map(meal => new CartMeal(meal))
     this.phone = order.phone;
@@ -68,10 +68,10 @@ export class Order implements IOrder{
     return {
       _id,
       deliveryDate: order.deliveryDate,
-      destination: order.consumer.profile.destination,
+      destination: order.consumer.profile.destination!,
       mealPrice: order.costs.mealPrice,
       meals: order.rest.meals,
-      phone: order.consumer.profile.phone,
+      phone: order.consumer.profile.phone!,
       rest,
       status: order.status,
     }

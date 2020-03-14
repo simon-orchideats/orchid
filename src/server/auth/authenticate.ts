@@ -8,7 +8,7 @@ import { getConsumerService } from '../consumer/consumerService'
 import { SearchResponse } from '../elasticConnector';
 import { MutationBoolRes } from '../../utils/mutationResModel';
 import { IConsumer } from '../../consumer/consumerModel';
-
+import {getPlanService} from '../plans/planService'
 const STATE_COOKIE_NAME = 'orchid_state';
 const ACCESS_TOKEN_NAME = 'orchid_access';
 const REFRESH_TOKEN_NAME = 'orchid_refresh';
@@ -17,7 +17,8 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[ACCESS_TOKEN_NAME];
   if (!access) return null;
-
+  
+  getPlanService().getDefaultPlan();
   // Grab userInfo with accessToken
   let authData;
   try {

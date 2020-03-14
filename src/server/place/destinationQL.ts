@@ -3,7 +3,7 @@ import { gql } from 'apollo-server';
 const destinationQL = gql`
   type Destination {
     name: String!
-    address: Address!
+    address: Address
     instructions: String!
   }
 

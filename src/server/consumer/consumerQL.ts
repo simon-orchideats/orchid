@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 const _ConsumerQL = gql`
   type Consumer {
     _id: ID!
-    plan: ConsumerPlan
+    plan: ConsumerPlan!
     profile: ConsumerProfile!
   }
   type ConsumerProfile {
