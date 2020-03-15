@@ -3,7 +3,7 @@ import { EConsumer, IConsumer} from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { getPlanService, IPlanService } from '../plans/planService';
-import { CuisineTypes, RenewalTypes } from '../../consumer/consumerModel'
+import {  RenewalTypes } from '../../consumer/consumerModel'
 const CONSUMER_INDEX = 'consumers';
 
 export interface IConsumerService {
@@ -61,7 +61,13 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
       if (res.body.hits.total.value > 0) throw new Error('_id already exists');
-      const defaultPlan = await this.planService.getPlanByCount(4);
+      let defaultPlan
+      try{
+        defaultPlan = await this.planService.getPlanByCount(4);
+        console.log(defaultPlan);
+      } catch(e) {
+        console.error(`InsertConsumer: Failed to get planByCount: ${e}`)
+      }
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
@@ -75,10 +81,10 @@ class ConsumerService implements IConsumerService {
 
           },
           plan: {
-            stripePlanId: defaultPlan,
+            stripePlanId: defaultPlan?.stripeId,
             deliveryDay: 0,
             rewnewal: RenewalTypes.Auto,
-            cuisines: CuisineTypes
+            cuisines: []
           }, 
         }
       });
