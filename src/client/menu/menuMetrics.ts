@@ -10,11 +10,31 @@ export const sendCartMenuMetrics = (
   rest: Rest | undefined,
   mealCount: number,
 ) => {
-  if (!stripePlanId) throw new Error('Missing stripePlanId');
-  if (!plans) throw new Error('Missing plans');
-  if (!cart) throw new Error('Missing cart');
-  if (!rest) throw new Error('Missing rest');
-  if (!stripePlanId) throw new Error('Missing stripePlanId');
+  if (!stripePlanId) {
+    const err = new Error('Missing stripePlanId');
+    console.error(err.stack);
+    throw err;
+  }
+  if (!plans) {
+    const err = new Error('Missing plans');
+    console.error(err.stack);
+    throw err;
+  }
+  if (!cart) {
+    const err = new Error('Missing cart');
+    console.error(err.stack);
+    throw err;
+  }
+  if (!rest) {
+    const err = new Error('Missing rest');
+    console.error(err.stack);
+    throw err;
+  }
+  if (!stripePlanId) {
+    const err = new Error('Missing stripePlanId');
+    console.error(err.stack);
+    throw err;
+  }
   analyticsService.trackEvent(events.FILLED_CART, {
     count: mealCount,
     stripePlanId,

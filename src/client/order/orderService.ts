@@ -108,18 +108,30 @@ export const useUpdateOrder = (): [
       update: (cache, { data }) => {
         if (data && data.updateOrder.res) {
           const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-          if (!upcomingOrders) throw new Error('Couldn\'t get upcoming orders for cache update');
+          if (!upcomingOrders) {
+            const err = new Error('Couldn\'t get upcoming orders for cache update');
+            console.error(err.stack);
+            throw err;
+          }
           let rest: IRest | null = null;
           if (updateOptions.restId) {
             const restRes = getRest(cache, updateOptions.restId)
-            if (!restRes) throw new Error('Couldn\'t get rest for cache update');
+            if (!restRes) {
+              const err = new Error('Couldn\'t get rest for cache update');
+              console.error(err.stack);
+              throw err;
+            }
             rest = restRes.rest;
           }
           let mealPrice: number | null = null;
           const mealCount = Cart.getMealCount(updateOptions.meals);
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
-            if (!plans) throw new Error('Couldn\'t get plan for cache update');
+            if (!plans) {
+              const err = new Error('Couldn\'t get plan for cache update');
+              console.error(err.stack);
+              throw err;
+            }
             mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals), plans.availablePlans);
           }
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {

@@ -94,7 +94,11 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
-  if (!cartRef.current) throw new Error('Cart is null');
+  if (!cartRef.current) {
+    const err = Error('Cart is null');
+    console.error(err.stack);
+    throw err;
+  }
   const res = useGetRest(cartRef.current.RestId);
   const groupedMeals = cartRef.current.Meals;
   const classes = useStyles();
@@ -220,7 +224,11 @@ const DeliveryOverview: React.FC<{
     if (order.Rest) {
       const mealCount = Cart.getMealCount(order.Meals);
       const planId = Plan.getPlanId(mealCount, plans.data)
-      if (!planId) throw new Error(`[Upcoming-deliveries] missing planId for mealCount ${mealCount}`);
+      if (!planId) {
+        const err = new Error(`Missing planId for mealCount ${mealCount}`);
+        console.error(err.stack);
+        throw err;
+      }
       setCart(order, planId);
     }
     Router.push({
@@ -339,7 +347,11 @@ const UpcomingDeliveries = () => {
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
-  if (needsCart && !cart) throw new Error('Needs cart, but no cart');
+  if (needsCart && !cart) {
+    const err = new Error('Needs cart, but no cart');
+    console.error(err.stack);
+    throw err;
+  }
   const OrderOverviews = useMemo(() => ( 
     orders.data && orders.data.map(order => 
       <DeliveryOverview

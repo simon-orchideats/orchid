@@ -1,3 +1,5 @@
+import { init } from '@sentry/node';
+import { CaptureConsole } from '@sentry/integrations';
 import { initConsumerService, getConsumerService } from './server/consumer/consumerService';
 import { initGeoService, getGeoService } from './server/place/geoService';
 import { getContext } from './server/utils/apolloUtils';
@@ -32,10 +34,19 @@ import { handleLoginRoute, handleAuthCallback } from './server/auth/authenticate
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
+init({
+  dsn: activeConfig.server.sentry.dsn,
+  integrations: [
+    new CaptureConsole({
+      levels: ['error', 'warn']
+    })
+  ],
+});
+
 const start = async () => {
   const ssr = next({
     dev: !isProd
-  })
+  });
 
   const ssrHandler = ssr.getRequestHandler()
   await ssr.prepare();

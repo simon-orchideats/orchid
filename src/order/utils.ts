@@ -2,7 +2,11 @@ import { deliveryDay } from './../consumer/consumerModel';
 import moment from 'moment';
 
 export const getNextDeliveryDate = (day: deliveryDay | null) => {
-  if (day === null) throw new Error("Cannot get delivery date for 'null' date");
+  if (day === null) {
+    const err = new Error("Cannot get delivery date for 'null' date");
+    console.error(err.stack);
+    throw err;
+  }
   const date = moment().day(day);
   const twoDaysAfterToday = moment().add(2, 'd');
   if (date.isAfter(twoDaysAfterToday)) return date;

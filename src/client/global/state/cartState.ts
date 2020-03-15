@@ -182,7 +182,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     if (res.cart.restId && res.cart.restId !== restId) {
-      throw new Error(`Cannot add meals from new restId ${restId} since cart already holds items from ${res.cart.restId}`);
+      const err = new Error(`Cannot add meals from new restId '${restId}' since cart already holds items from '${res.cart.restId}'`);
+      console.error(err.stack);
+      throw err;
     }
     if (Cart.getMealCount(res.cart.Meals) === 0) {
       return updateCartCache(cache, new Cart({
@@ -224,7 +226,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   removeMealFromCart: (_, { mealId }, { cache }) => {
     const res = getCart(cache);
-    if (!res || !res.cart) throw new Error(`Cannot remove mealId '${mealId}' from null cart`)
+    if (!res || !res.cart) {
+      const err = new Error(`Cannot remove mealId '${mealId}' from null cart`);
+      console.error(err.stack);
+      throw err;
+    }
     let newCart = res.cart.removeMeal(mealId);
     const mealCount = Cart.getMealCount(newCart.Meals);
     if (mealCount === 0) {
@@ -241,7 +247,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
   },
 
   setCart: (_, { order, planId }, { cache }) => {
-    if (!order.Rest) throw new Error('Setting cart with null rest')
+    if (!order.Rest) {
+      const err = new Error('Setting cart with null rest');
+      console.error(err.stack);
+      throw err;
+    }
     return updateCartCache(cache, new Cart({
       email: null,
       meals: order.Meals,
@@ -298,7 +308,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
 
   updateDeliveryDay: (_, { day }, { cache }) => {
     const res = getCart(cache);
-    if (!res || !res.cart) throw new Error('Cannot update delivery day since cart is empty')
+    if (!res || !res.cart) {
+      const err = new Error('Cannot update delivery day since cart is empty');
+      console.error(err.stack);
+      throw err;
+    }
     return updateCartCache(cache, new Cart({
       email: res.cart.Email,
       meals: res.cart.Meals,

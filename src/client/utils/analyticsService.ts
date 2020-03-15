@@ -24,7 +24,11 @@ class AnalyticsService {
   }
 
   public async init(): Promise<void> {
-    if (this.didInit) throw new Error('AnalyticsService aleady initialized');
+    if (this.didInit) {
+      const err = new Error('AnalyticsService aleady initialized');
+      console.error(err.stack);
+      throw err;
+    }
     await amplitude.getInstance().init(activeConfig.client.analytics.amplitude.key, undefined, {
       includeUtm: true,
       includeReferrer: true,
@@ -79,7 +83,11 @@ class AnalyticsService {
   // }
 
   private throwIfNoInit() {
-    if (!this.didInit) throw new Error('AnalyiticsService not initialized. Initialize first with .init()');
+    if (!this.didInit) {
+      const err = new Error('AnalyiticsService not initialized. Initialize first with .init()');
+      console.error(err.stack);
+      throw err;
+    }
   }
 }
 

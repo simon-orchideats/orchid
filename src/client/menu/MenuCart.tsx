@@ -53,7 +53,11 @@ const MenuCart: React.FC<{
     query: { updating: 'true' }
   }
   const onNext = () => {
-    if (!stripePlanId) throw new Error('Missing stripePlanId')
+    if (!stripePlanId) {
+      const err = new Error('Missing stripePlanId');
+      console.error(err.stack);
+      throw err;
+    }
     if (isUpdating) {
       Router.push(upcomingDeliveriesPath);
     } else {

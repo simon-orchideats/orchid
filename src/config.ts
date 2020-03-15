@@ -39,12 +39,15 @@ type config = {
         password?: string,
       }
     },
+    geo: {
+      key: string
+    },
+    sentry: {
+      dsn: string,
+    },
     stripe: {
       key: string
     },
-    geo: {
-      key: string
-    }
   }
 }
 
@@ -57,7 +60,7 @@ const development: config = {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
     logRocket: {
-      key: '',
+      key: 'ugxrrj/orchid-dev',
     },
     analytics: {
       amplitude: {
@@ -91,6 +94,9 @@ const development: config = {
     },
     stripe: {
       key: process.env.STRIPE_KEY!
+    },
+    sentry: {
+      dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
     },
     geo: {
       key: process.env.GEO_KEY!
@@ -139,6 +145,9 @@ const production: config = {
     },
     stripe: {
       key: process.env.STRIPE_KEY!
+    },
+    sentry: {
+      dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',
     },
     geo: {
       key: process.env.GEO_KEY!
