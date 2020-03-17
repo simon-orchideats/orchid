@@ -4,10 +4,8 @@ import cookie from 'cookie'
 import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
-import { getConsumerService } from '../consumer/consumerService'
-import { SearchResponse } from '../elasticConnector';
-import { MutationBoolRes } from '../../utils/mutationResModel';
-import { IConsumer } from '../../consumer/consumerModel';
+import jwt from 'jsonwebtoken';
+
 const STATE_COOKIE_NAME = 'orchid_state';
 const ACCESS_TOKEN_NAME = 'orchid_access';
 const REFRESH_TOKEN_NAME = 'orchid_refresh';
@@ -17,53 +15,14 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
   const access = cookie.parse(req.headers.cookie ?? '')[ACCESS_TOKEN_NAME];
   if (!access) return null;
 
-  
-  // Grab userInfo with accessToken
-  let authData;
   try {
-    const authRes = await fetch(`${activeConfig.server.auth.domain}/userinfo`, {
-    method: 'GET',
-    // mode:'cors',
-    headers: {'Authorization':`Bearer ${access}`},
-  })
-    authData = await authRes.json()
-  } catch (e) {
-    console.error(`[Authenticate] Failed to get userInfo from accessToken, could be expired: ${e}`)
-  }
-
-  // If user doesn't exist insert consumer and return new consumer
-  try {
-    let getConsumer: SearchResponse<IConsumer> = await getConsumerService().getConsumerInfo(authData.sub);
-    if (getConsumer.hits.total.value === 0) {
-      const insertConsumer: MutationBoolRes  = await getConsumerService().insertConsumerInfo(
-        authData.sub,
-        authData.name,
-        authData.email
-        );
-      if (insertConsumer.res) {
-        try {
-          getConsumer = await getConsumerService().getConsumerInfo(authData.sub);
-        } catch (e) {
-          console.error(`[Authenticate] After insertion, getConsumerInfo failed: ${e}`);
-          throw e;
-        }
-        return {
-          _id: getConsumer.hits.hits[0]._id,
-          profile: getConsumer.hits.hits[0]._source.profile,
-          plan: getConsumer.hits.hits[0]._source.plan
-        }
-      } else {
-        throw new Error("[Authenticate] Failed inserting new Consumer")
-      }
-    } else {
-        return {
-          _id: getConsumer.hits.hits[0]._id,
-          profile: getConsumer.hits.hits[0]._source.profile,
-          plan: getConsumer.hits.hits[0]._source.plan
-        }
-      }
-  } catch (e) {
-    console.error(`[Authenticate] getConsumerInfo failed: ${e}`);
+    console.log(access);
+    const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'], audience: 'https://foodflick.auth0.com/userinfo' });
+    // @ts-ignore
+    console.log(decoded['https://foodflick.com/testing'])
+    return decoded;
+  } catch(e) {
+    console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
   }
 }
 

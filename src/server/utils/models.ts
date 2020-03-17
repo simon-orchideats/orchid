@@ -1,7 +1,12 @@
-import { IConsumer } from './../../consumer/consumerModel';
+// import { IConsumer } from './../../consumer/consumerModel';
 
+type decodedToken = {
+  sub:string
+  name: string
+  email: string
+}
 export type Context = {
-  signedInUser: IConsumer
+  signedInUser: decodedToken
 };
 
 export type ServerResolovers = {

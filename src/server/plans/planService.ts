@@ -71,7 +71,7 @@ export const initPlanService = (stripe: Stripe) => {
 export const getPlanService = () => {
   if (planService) return planService;
   initPlanService(new Stripe(activeConfig.server.stripe.key, {
-    apiVersion: '2019-12-03',
+    apiVersion: '2020-03-02',
   }));
   return planService;
 }

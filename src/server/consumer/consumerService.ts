@@ -40,7 +40,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async insertConsumerInfo(_id: string,name: string, email: string): Promise<MutationBoolRes> {
+  private async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
       try {
@@ -98,8 +98,50 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumerInfo(_id: string): Promise<SearchResponse<any>> {
+  async getConsumer({sub, name, email}:{sub:string, name:string, email:string}): Promise<IConsumer | undefined> {
     // have the logic here from authenticate but splitted in private functions probably
+    // let authData;
+  // If user doesn't exist insert consumer and return new consumer
+  try {
+    let getConsumer: SearchResponse<IConsumer> = await this.searchConsumer(sub);
+    if (getConsumer.hits.total.value === 0) {
+      const insertConsumer: MutationBoolRes  = await this.insertConsumer(
+        sub,
+        name,
+        email
+        );
+      if (insertConsumer.res) {
+        try {
+          getConsumer = await this.searchConsumer(sub);
+        } catch (e) {
+          console.error(`[Authenticate] After insertion, getConsumerInfo failed: ${e}`);
+          throw e;
+        }
+        return {
+          _id: getConsumer.hits.hits[0]._id,
+          profile: getConsumer.hits.hits[0]._source.profile,
+          plan: getConsumer.hits.hits[0]._source.plan,
+          stripeCustomerId: getConsumer.hits.hits[0]._source.stripeCustomerId,
+          stripeSubscriptionId: getConsumer.hits.hits[0]._source.stripeSubscriptionId
+        }
+      } else {
+        throw new Error("[Authenticate] Failed inserting new Consumer")
+      }
+    } else {
+        return {
+          _id: getConsumer.hits.hits[0]._id,
+          profile: getConsumer.hits.hits[0]._source.profile,
+          plan: getConsumer.hits.hits[0]._source.plan,
+          stripeCustomerId: getConsumer.hits.hits[0]._source.stripeCustomerId,
+          stripeSubscriptionId: getConsumer.hits.hits[0]._source.stripeSubscriptionId
+        }
+      }
+  } catch (e) {
+    console.error(`[Authenticate] getConsumerInfo failed: ${e}`);
+  }
+  }
+
+  private async searchConsumer(_id: string) {
     let res: ApiResponse<SearchResponse<any>>
     try {
       res = await this.elastic.search({
