@@ -5,9 +5,9 @@ import { IGeoService } from './../../place/geoService';
 import moment from 'moment';
 import { EOrder, IUpdateOrderInput } from './../../../order/orderModel';
 import { Client } from '@elastic/elasticsearch';
-import { SignedInUser } from '../../utils/models';
 import { initOrderService, getOrderService } from '../orderService';
 import Stripe from 'stripe';
+import { SignedInUser } from '../../../utils/apolloUtils';
 
 const getTargetorder = (invoiceDate: number, deliveryDate: number): EOrder  => ({
   cartUpdatedDate: 123,

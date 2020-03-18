@@ -20,7 +20,7 @@ import {
   clientInitialState
 } from '../global/state/localState'
 import { isServer } from './isServer';
-import { getContext } from '../../server/utils/apolloUtils';
+import { getContext } from '../../utils/apolloUtils';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 

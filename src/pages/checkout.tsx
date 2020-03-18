@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme, Button } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import withClientApollo from "../client/utils/withClientApollo";
@@ -23,6 +23,9 @@ import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
+import auth0 from 'auth0-js';
+import GLogo from "../client/checkout/GLogo";
+import { checkoutSocialAuthCB } from "../utils/auth";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -139,6 +142,28 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
     return isValid;
   }
+  
+  const webAuth = new auth0.WebAuth({
+    domain: activeConfig.client.auth.domain,
+    clientID: activeConfig.client.auth.clientId
+  });
+  const google = () => {
+    webAuth.popup.authorize({
+      domain: activeConfig.client.auth.domain,
+      clientId: activeConfig.client.auth.clientId,
+      audience: activeConfig.client.auth.audience,
+      redirectUri: `${activeConfig.client.app.url}${checkoutSocialAuthCB}`,
+      connection: 'google-oauth2',
+      responseType: 'code',
+      scope: 'openid profile email offline_access',
+    }, (err: auth0.Auth0Error | null) => {
+      if (err) {
+        console.error(`Could not social auth. '${JSON.stringify(err)}'`);
+        throw err;
+      }
+    });
+  }
+
   const onClickPlaceOrder = async () => {
     if (!stripe) {
       const err = new Error('Stripe not initialized');
@@ -417,6 +442,20 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   if (passwordError) setPasswordError('');
                 }}
               />
+            </Grid>
+            <Grid xs={12} item>
+              <Typography color='textSecondary' align='center'>
+                or
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant='outlined'
+                onClick={() => google()}
+                startIcon={<GLogo />}
+              >
+                Sign up with google
+              </Button>
             </Grid>
           </Grid>
           <Typography

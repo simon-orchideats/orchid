@@ -3,7 +3,7 @@ import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { RenewalTypes } from './../../consumer/consumerModel';
-import { SignedInUser } from './../utils/models';
+import { SignedInUser } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';

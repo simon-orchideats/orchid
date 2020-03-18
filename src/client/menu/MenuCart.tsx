@@ -3,7 +3,7 @@ import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { Plan } from "../../plan/planModel";
-// import { deliveryRoute } from "../../pages/delivery";
+import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
 import Router, { useRouter } from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
@@ -62,8 +62,8 @@ const MenuCart: React.FC<{
       Router.push(upcomingDeliveriesPath);
     } else {
       // todo: add a check here to see if user consumer is signed in
-      // Router.push(deliveryRoute);
-      Router.push(upcomingDeliveriesPath);
+      Router.push(deliveryRoute);
+      // Router.push(upcomingDeliveriesPath);
     }
     sendCartMenuMetrics(
       stripePlanId,
