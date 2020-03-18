@@ -50,10 +50,15 @@ const storeTokensInCookies = async (req: express.Request, res: express.Response,
         code,
         redirect_uri: `${activeConfig.server.app.url}${checkoutSocialAuthCB}`
       }),
-    })
+    });
     // todo alvin, decode access and insert consumer here
     console.log(getConsumerService);
     const data =  await authRes.json();
+    if (!authRes.ok) {
+      const msg = `Token retrieval failed. '${JSON.stringify(data)}'`;
+      console.error(msg);
+      throw new Error(msg)
+    }
     res.cookie(accessTokenCookie, data.access_token, {
       httpOnly: true,
       // secure: true,
@@ -153,8 +158,9 @@ export const signUp = async (
 
   const authJson = await signInRes.json();
   if (!signInRes.ok) {
-    console.error(`Sign in failed. '${JSON.stringify(authJson)}'`);
-    throw json;
+    const msg = `Sign in failed. '${JSON.stringify(authJson)}'`;
+    console.error(msg);
+    throw new Error(msg);
   }
   res.cookie(accessTokenCookie, authJson.access_token, {
     httpOnly: true,
