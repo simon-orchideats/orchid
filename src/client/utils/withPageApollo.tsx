@@ -75,7 +75,7 @@ export default function withApollo(
 
       // Initialize ApolloClient, add it to the ctx object so
       // we can use it in `PageComponent.getInitialProp`.
-      const apolloClient = (ctx.apolloClient = initApolloClient(getContext(ctx.req)))
+      const apolloClient = (ctx.apolloClient = initApolloClient(getContext(ctx.req, ctx.res)))
 
       // Run wrapped getInitialProps methods
       let pageProps = {}

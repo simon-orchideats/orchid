@@ -89,3 +89,83 @@ export const handleCheckoutSocialAuth = async (req: express.Request, res: expres
     res.status(500).send('Could not log you in');
   }
 }
+
+export const signUp = async (
+  email: string,
+  name: string,
+  password: string,
+  res: express.Response
+) => {
+  const signUpRes = await fetch(`https://${activeConfig.server.auth.domain}/dbconnections/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+      audience: activeConfig.server.auth.audience,
+      connection: 'Username-Password-Authentication',
+      client_id: activeConfig.server.auth.clientId,
+    }),
+  });
+  const json = await signUpRes.json();
+  if (!signUpRes.ok) {
+    console.log(json);
+    if (json.name === 'PasswordStrengthError') {
+      const warn: string = json.message + '\n' + json.policy;
+      console.warn(warn);
+      return {
+        res: null,
+        error: warn,
+      }
+    }
+    if (json.code === 'user_exists') {
+      const warn: string = json.description;
+      console.warn(warn);
+      return {
+        res: null,
+        error: warn,
+      }
+    }
+    const err = `Sign up failed. '${JSON.stringify(json)}'`;
+    console.error(err);
+    throw new Error(err);
+  }
+
+  const signInRes = await fetch(`https://${activeConfig.server.auth.domain}/oauth/token`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      grant_type: 'password',
+      username: email,
+      password,
+      audience: activeConfig.server.auth.audience,
+      connection: 'Username-Password-Authentication',
+      scope: 'openid email profile offline_access',
+      client_id: activeConfig.server.auth.clientId,
+    }),
+  })
+
+  const authJson = await signInRes.json();
+  if (!signInRes.ok) {
+    console.error(`Sign in failed. '${JSON.stringify(authJson)}'`);
+    throw json;
+  }
+  res.cookie(accessTokenCookie, authJson.access_token, {
+    httpOnly: true,
+    // secure: true,
+  })
+  res.cookie(refreshTokenCookie, authJson.refresh_token, {
+    httpOnly: true,
+    // secure: true,
+  })
+  return {
+    res: {}, // todo alvin: decode access for signed in user,
+    error: null,
+  };
+}

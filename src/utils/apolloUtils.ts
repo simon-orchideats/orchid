@@ -1,11 +1,12 @@
 import { accessTokenCookie } from './auth';
 import { IConsumer } from './../consumer/consumerModel';
+import express from 'express';
 import { IncomingMessage, OutgoingMessage } from "http"
 import cookie from 'cookie'
 
 export type Context = {
   signedInUser: IConsumer,
-  res: OutgoingMessage,
+  res: express.Response,
 };
 
 export type ServerResolovers = {
@@ -59,7 +60,7 @@ const getSignedInUser = (req?: IncomingMessage) => {
 }
 
 // todo alvin should be getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ...
-export const getContext = (req?: IncomingMessage, res?: OutgoingMessage) => ({
+export const getContext = (req?: IncomingMessage, res?: OutgoingMessage | express.Response) => ({
   signedInUser: getSignedInUser(req),
   res,
 })

@@ -55,7 +55,6 @@ export const useRequireConsumer = (url: string) => {
   const consumer = useMemo<Consumer | null>(() => (
     res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
   ), [res.data]);
-
   if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {
@@ -70,4 +69,33 @@ export const useRequireConsumer = (url: string) => {
     error: res.error,
     data: consumer
   }
+}
+
+export const useSignUp = (): [
+  (email: string, name: string, pass: string) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { signUp: MutationBoolRes };
+  type vars = { email: string, name: string, pass: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation signUp($email: String!, $name: String!, $pass: String!) {
+      signUp(email: $email, name: $name, pass: $pass) {
+        res
+        error
+      }
+    }
+  `);
+  const signUp = (email: string, name: string, pass: string) => {
+    mutate({ variables: { email, name, pass } })
+  }
+  return useMemo(() => [
+    signUp,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.signUp : undefined,
+    }
+  ], [mutation]);
 }

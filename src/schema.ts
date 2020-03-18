@@ -31,7 +31,7 @@ const mutation = gql`
   }
   type Mutation {
     insertEmail(email: String!): BoolRes!
-    insertConsumer(userId: ID! email: String, name: String): BoolRes!
+    signUp(email: String!, name: String!, pass: String!): BoolRes!
     placeOrder(cart: CartInput!): BoolRes!
     updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
   }

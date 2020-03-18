@@ -1,8 +1,10 @@
+import { signUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
 import { EConsumer, IConsumer, RenewalTypes } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
+import express from 'express';
 
 const CONSUMER_INDEX = 'consumers';
 
@@ -39,7 +41,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
+  public async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
       try {
@@ -137,6 +139,20 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] failed to insert email '${email}'`, e.stack);
       throw e;
+    }
+  }
+
+  async signUp(email: string, name: string, pass: string, res: express.Response) {
+    try {
+      const signedUp = await signUp(email, name, pass, res);
+      // todo alvin: insert consumer here using results from signUp
+      return {
+        res: signedUp.res ? true : false,
+        error: signedUp.error ? signedUp.error : null,
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to signup '${email}'`, e.stack);
+      throw new Error('Internal Server Error');
     }
   }
 }

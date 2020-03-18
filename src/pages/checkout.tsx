@@ -26,6 +26,7 @@ import EmailInput from "../client/general/inputs/EmailInput";
 import auth0 from 'auth0-js';
 import GLogo from "../client/checkout/GLogo";
 import { checkoutSocialAuthCB } from "../utils/auth";
+import { useSignUp } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -44,6 +45,8 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
   },
 }));
+
+// todo: make this mobile friendly
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   stripe,
@@ -76,7 +79,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [password, setPassword] = useState<string>('password');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
+  const [signUp, signUpRes] = useSignUp();
   const validateCuisineRef= useRef<() => boolean>();
+  const theme = useTheme<Theme>();
+  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const pm = useRef<stripe.PaymentMethodResponse>();
 
   useEffect(() => {
     if (placeOrderRes.error) {
@@ -92,9 +99,40 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         })
       }
     }
-  }, [placeOrderRes])
-  const theme = useTheme<Theme>();
-  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  }, [placeOrderRes]);
+
+  useEffect(() => {
+    if (signUpRes.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    }
+    if (signUpRes.data !== undefined) {
+      if (signUpRes.data.error) {
+        notify(signUpRes.data.error, NotificationType.error, false);
+      } else {
+        if (!cart || !pm.current) {
+          const err = new Error(`Cart or paymentMethod empty cart '${cart}' pm '${pm.current}'`);
+          console.error(err.stack)
+          throw err;
+        }
+        placeOrder(cart.getCartInput(
+          deliveryName,
+          addr1,
+          addr2,
+          city,
+          state as state,
+          zip,
+          phoneInputRef.current!.value,
+          Card.getCardFromStripe(pm.current.paymentMethod!.card),
+          pm.current.paymentMethod!.id,
+          deliveryInstructions,
+          renewal,
+          cuisines,
+        ));
+      }
+    }
+  }, [signUpRes]);
+
+
   if (isServer()) {
     return <Typography>Redirecting...</Typography>
   } else if (!cart) {
@@ -156,11 +194,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       connection: 'google-oauth2',
       responseType: 'code',
       scope: 'openid profile email offline_access',
-    }, (err: auth0.Auth0Error | null) => {
+    }, (err: auth0.Auth0Error | null, res: auth0.Auth0Result) => {
       if (err) {
         console.error(`Could not social auth. '${JSON.stringify(err)}'`);
         throw err;
       }
+      console.log(res);
     });
   }
 
@@ -186,9 +225,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    let pm;
     try {
-      pm = await stripe.createPaymentMethod({
+      pm.current = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
         billing_details: { name: accountName },
@@ -198,21 +236,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!validate() || pm.error) return;
-    placeOrder(cart.getCartInput(
-      deliveryName,
-      addr1,
-      addr2,
-      city,
-      state as state,
-      zip,
-      phoneInputRef.current!.value,
-      Card.getCardFromStripe(pm.paymentMethod!.card),
-      pm.paymentMethod!.id,
-      deliveryInstructions,
-      renewal,
-      cuisines,
-    ));
+    if (!validate() || pm.current.error) return;
+    signUp(emailInputRef.current!.value, accountName, password);
   }
   return (
     <Container

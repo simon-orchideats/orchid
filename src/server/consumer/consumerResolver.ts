@@ -15,10 +15,11 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().insertEmail(email);
   },
 
-  insertConsumer: async (
+  signUp: async (
     _root,
-    { userId, email, name }: { userId: string,  email: string, name: string },
+    { email, name, pass }: { email: string, name: string, pass: string, },
+    { res }
   ) => {
-    return await getConsumerService().insertConsumer(userId, name, email);
+    return await getConsumerService().signUp(email, name, pass, res);
   },
 }
