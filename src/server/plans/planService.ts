@@ -1,13 +1,14 @@
-//@ts-nocheck
-
 import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
+const DEFAULT_PLAN_COUNT = 4;
+
 export interface IPlanService {
   getAvailablePlans(): Promise<IPlan[]>
+  getDefaultPlan(): Promise<IPlan>
   getPlan(planId: string): Promise<IPlan | null>
-  getPlanByCount(count: number): Promise<IPlan | null> 
+  getPlanByCount(count: number): Promise<IPlan | null>
 }
 
 class PlanService implements IPlanService {
@@ -31,6 +32,17 @@ class PlanService implements IPlanService {
       }))
     } catch (e) {
       console.error(`[PlanService] could not get plans. '${e.stack}'`);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getDefaultPlan(): Promise<IPlan> {
+    try {
+      const plan = await this.getPlanByCount(4);
+      if (!plan) throw new Error(`Default plan of count ${DEFAULT_PLAN_COUNT} not found`);
+      return plan;
+    } catch (e) {
+      console.error(`[PlanService] could not get default plan. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }

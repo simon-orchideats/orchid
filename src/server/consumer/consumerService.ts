@@ -1,9 +1,8 @@
+import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer} from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { getPlanService, IPlanService } from '../plans/planService';
-import {  RenewalTypes } from '../../consumer/consumerModel'
 const CONSUMER_INDEX = 'consumers';
 
 export interface IConsumerService {
@@ -40,7 +39,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  private async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
+  async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
       try {
@@ -57,17 +56,17 @@ class ConsumerService implements IConsumerService {
           }
         });
       } catch (e) {
-        console.error(`[ConsumerService] failed to find consumer ${_id}. ${e.stack}`);
+        console.error(`[ConsumerService] Couldn't search for consumer ${_id}. ${e.stack}`);
         throw e;
       }
-      if (res.body.hits.total.value > 0) throw new Error('_id already exists');
+      if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
       let defaultPlan
       try{
-        defaultPlan = await this.planService.getPlanByCount(4);
-        console.log(defaultPlan);
+        defaultPlan = await this.planService.getDefaultPlan();
       } catch(e) {
-        console.error(`InsertConsumer: Failed to get planByCount: ${e}`)
+        throw new Error(`Failed to get default plan. ${e}`)
       }
+      if (!defaultPlan) throw new Error('Could\'t get default plan');
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
@@ -75,15 +74,15 @@ class ConsumerService implements IConsumerService {
         body: {
           createdDate: Date.now(),
           profile: {
-             name,
-             email,
+            name,
+            email,
           },
           plan: {
-            stripePlanId: defaultPlan?.stripeId,
+            stripePlanId: defaultPlan.stripeId,
             deliveryDay: 0,
             rewnewal: RenewalTypes.Auto,
             cuisines: []
-          }, 
+          }, // todo alvin add this, "as EConsumer"
         }
       });
       return {
@@ -185,7 +184,7 @@ class ConsumerService implements IConsumerService {
           }
         });
       } catch (e) {
-        throw new Error(`Coudln't seach for consumer email ${email}. ${e.stack}`);
+        throw new Error(`Couldn't seach for consumer email ${email}. ${e.stack}`);
       }
       if (res.body.hits.total.value > 0) throw new Error('Email already exists');
       await this.elastic.index({
@@ -210,9 +209,9 @@ class ConsumerService implements IConsumerService {
 
 let consumerService: ConsumerService;
 
-export const initConsumerService = (elastic: Client, PlanService: IPlanService) => {
+export const initConsumerService = (elastic: Client, planService: IPlanService) => {
   if (consumerService) throw new Error('[ConsumerService] already initialized.');
-  consumerService = new ConsumerService(elastic,PlanService);
+  consumerService = new ConsumerService(elastic, planService);
 };
 
 export const getConsumerService = () => {

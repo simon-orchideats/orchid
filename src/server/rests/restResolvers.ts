@@ -1,4 +1,4 @@
-import { ServerResolovers } from '../utils/models';
+import { ServerResolovers } from '../../utils/apolloUtils';
 import { getRestService } from './restService';
 
 export const RestQueryResolvers: ServerResolovers = {

@@ -1,3 +1,4 @@
+import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IRest, Rest } from './../rest/restModel';
@@ -160,7 +161,7 @@ export class Order implements IOrder{
   }
 
   static getNewOrderFromCartInput(
-    signedInUser: any,
+    signedInUser: SignedInUser,
     cart: ICartInput,
     invoiceDate: number,
     subscriptionId: string,
@@ -177,8 +178,8 @@ export class Order implements IOrder{
       consumer: {
         _id: signedInUser._id,
         profile: {
-          name: signedInUser.name,
-          email: signedInUser.email,
+          name: signedInUser.profile.name,
+          email: signedInUser.profile.email,
           phone: cart.phone,
           card: cart.card,
           destination: cart.destination,

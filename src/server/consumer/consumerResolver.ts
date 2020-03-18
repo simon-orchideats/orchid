@@ -1,5 +1,5 @@
 import { getConsumerService } from './consumerService';
-import { ServerResolovers } from '../utils/models';
+import { ServerResolovers } from '../../utils/apolloUtils';
 
 export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, context) => {
@@ -20,5 +20,12 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     { email }: { email: string },
   ) => {
     return await getConsumerService().insertEmail(email);
+  },
+
+  insertConsumer: async (
+    _root,
+    { userId, email, name }: { userId: string,  email: string, name: string },
+  ) => {
+    return await getConsumerService().insertConsumer(userId, name, email);
   },
 }

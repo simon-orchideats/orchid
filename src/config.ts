@@ -5,6 +5,11 @@ type config = {
     app: {
       url: string,
     },
+    auth: {
+      domain: string,
+      clientId: string,
+      audience: string,
+    },
     stripe: {
       key: string,
     },
@@ -22,8 +27,8 @@ type config = {
   },
   server: {
     app: {
-      port: number
-      url: string
+      port: number,
+      url: string,
     },
     auth: {
       domain: string,
@@ -52,10 +57,18 @@ type config = {
   }
 }
 
+const devUrl = 'http://localhost:8443';
+const prodUrl = 'https://orchideats.com';
+
 const development: config = {
   client: {
     app: {
-      url: 'http://localhost:8443',
+      url: devUrl,
+    },
+    auth: {
+      domain: 'orchideats-dev.auth0.com',
+      clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
+      audience: 'https://orchideats.com',
     },
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
@@ -77,13 +90,13 @@ const development: config = {
   server: {
     app: {
       port: 8443,
-      url: 'http://localhost:8443',
+      url: devUrl,
     },
     auth: {
-      domain: 'https://orchideats-dev.auth0.com',
+      domain: 'orchideats-dev.auth0.com',
       clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
-      audience: 'https://orchideats.com',
       redirect: 'http://localhost:8443/auth-callback',
+      audience: 'https://orchideats.com',
       secret: process.env.AUTH_SECRET!,
       public: `-----BEGIN CERTIFICATE-----
 MIIDCzCCAfOgAwIBAgIJIvWpk3ZK/P/hMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNV
@@ -128,7 +141,12 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 const production: config = {
   client: {
     app: {
-      url: 'https://orchideats.com',
+      url: prodUrl,
+    },
+    auth: {
+      domain: 'foodflick.auth0.com',
+      clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+      audience: 'https://saute.com',
     },
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
@@ -151,7 +169,7 @@ const production: config = {
       url: 'https://orchideats.com',
     },
     auth: {
-      domain: 'https://foodflick.auth0.com',
+      domain: 'foodflick.auth0.com',
       clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
       audience: 'https://saute.com',
       redirect: 'https://orchideats.com/auth-callback',

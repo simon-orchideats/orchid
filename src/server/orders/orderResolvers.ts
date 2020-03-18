@@ -1,6 +1,5 @@
-import { SignedInUser } from './../utils/models';
 import { ICartInput } from '../../order/cartModel';
-import { ServerResolovers } from '../utils/models';
+import { ServerResolovers, SignedInUser } from '../../utils/apolloUtils';
 import { getOrderService } from './orderService';
 import { IUpdateOrderInput } from '../../order/orderModel';
 
