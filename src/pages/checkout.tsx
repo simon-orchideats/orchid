@@ -520,6 +520,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </StickyDrawer>
           </Grid>
         }
+        {
+          !isMdAndUp &&
+          <Grid
+            item
+            sm={12}
+            className={`${classes.inputs} ${classes.title}`}
+          >
+            <CheckoutCart buttonBottom onPlaceOrder={onClickPlaceOrder} />
+          </Grid>
+        }
       </Grid>
     </Container>
   )

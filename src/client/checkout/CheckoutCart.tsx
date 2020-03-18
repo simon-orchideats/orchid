@@ -11,10 +11,9 @@ import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
-    paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(1),
   },
-  restName: {
+  paddingBottom: {
     paddingBottom: theme.spacing(2),
   },
   summary: {
@@ -31,16 +30,20 @@ const useStyles = makeStyles(theme => ({
   },
   hint: {
     color: theme.palette.text.hint,
-    paddingTop: theme.spacing(1),
   },
+  button: {
+    marginBottom: theme.spacing(2),
+  }
 }));
 
 type props = {
   onPlaceOrder: () => void
+  buttonBottom?: boolean
 }
 
 const CheckoutCart: React.FC<props> = ({
   onPlaceOrder,
+  buttonBottom = false,
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
@@ -50,15 +53,19 @@ const CheckoutCart: React.FC<props> = ({
   const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
+  const button = (
+    <Button
+      variant='contained'
+      color='primary'
+      onClick={onPlaceOrder}
+      className={classes.button}
+    >
+      Place order
+    </Button>
+  )
   return (
     <>
-      <Button
-        variant='contained'
-        color='primary'
-        onClick={onPlaceOrder}
-      >
-        Place order
-      </Button>
+      {!buttonBottom && button}
       <Typography
         variant='h6'
         color='primary'
@@ -68,7 +75,7 @@ const CheckoutCart: React.FC<props> = ({
       </Typography>
       <Typography
         variant='h6'
-        className={classes.restName}
+        className={classes.paddingBottom}
       >
         {rest.data ? rest.data.Profile.Name : ''}
       </Typography>
@@ -99,7 +106,7 @@ const CheckoutCart: React.FC<props> = ({
             <b>FREE</b>
           </Typography>
         </div>
-        <div className={classes.row}>
+        <div className={`${classes.row} ${classes.paddingBottom}`} >
           <Typography variant='body1' color='primary'>
             Total
           </Typography>
@@ -107,6 +114,7 @@ const CheckoutCart: React.FC<props> = ({
             {price}
           </Typography>
         </div>
+        {buttonBottom && button}
         <Typography variant='body2' className={classes.hint}>
           You will be charged {price} on {deliveryDate.subtract(2, 'd').format('M/D/YY')}. Your plan will automatically
           renew every week unless you update or cancel your account before the cutoff
