@@ -112,7 +112,6 @@ export const signUp = async (
   });
   const json = await signUpRes.json();
   if (!signUpRes.ok) {
-    console.log(json);
     if (json.name === 'PasswordStrengthError') {
       const warn: string = json.message + '\n' + json.policy;
       console.warn(warn);

@@ -1,5 +1,5 @@
 
-import { makeStyles, Typography, Container, Paper} from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useState, useRef } from 'react';
 import { CuisineType, RenewalType,RenewalTypes, deliveryDay } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
@@ -23,9 +23,12 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),
   },
-  header: {
+  verticalPadding: {
     paddingBottom: theme.spacing(2),
     paddingTop: theme.spacing(2),
+  },
+  cancel: {
+    marginTop: theme.spacing(3),
   },
 }));
 
@@ -44,7 +47,7 @@ const myPlan = () => {
         <Typography
           variant='h6'
           color='primary'
-          className={classes.header}
+          className={classes.verticalPadding}
         >
           Preferred meal plan
         </Typography>
@@ -52,7 +55,7 @@ const myPlan = () => {
         <Typography
           variant='h6'
           color='primary'
-          className={classes.header}
+          className={classes.verticalPadding}
         >
           Preferred delivery day
         </Typography>
@@ -60,7 +63,7 @@ const myPlan = () => {
         <Typography
           variant='h6'
           color='primary'
-          className={classes.header}
+          className={classes.verticalPadding}
         >
           Next Week
         </Typography>
@@ -73,6 +76,9 @@ const myPlan = () => {
             validateCuisineRef.current = validateCuisine;
           }}
         />
+        <Button variant='outlined' className={classes.cancel}>
+          Cancel subscription
+        </Button>
       </Paper>
     </Container>
   );

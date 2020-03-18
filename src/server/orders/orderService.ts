@@ -20,6 +20,7 @@ import moment from 'moment';
 import { MutationBoolRes } from '../../utils/mutationResModel';
 
 const ORDER_INDEX = 'orders';
+export const adjustmentDescHeader = 'Plan Adjustment for week of ';
 
 /**
  * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
@@ -571,7 +572,7 @@ class OrderService {
             amount,
             currency: 'usd',
             customer: stripeCustomerId,
-            description: `Plan Adjustment for payment on ${targetOrderInvoiceDateDisplay}`,
+            description: `${adjustmentDescHeader}${targetOrderInvoiceDateDisplay}`,
             subscription: subscriptionId,
           });
         } catch (e) {

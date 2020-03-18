@@ -74,7 +74,7 @@ const start = async () => {
 
   initGeoService();
   initPlanService(stripe);
-  initConsumerService(elastic, getPlanService());
+  initConsumerService(elastic, stripe, getPlanService());
   initRestService(elastic, getGeoService());
   initOrderService(
     elastic,

@@ -30,9 +30,10 @@ const mutation = gql`
     error: String
   }
   type Mutation {
+    cancelSubscription: BoolRes!
     insertEmail(email: String!): BoolRes!
-    signUp(email: String!, name: String!, pass: String!): BoolRes!
     placeOrder(cart: CartInput!): BoolRes!
+    signUp(email: String!, name: String!, pass: String!): BoolRes!
     updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
   }
 `
