@@ -20,7 +20,11 @@ export default class MyApp extends App {
     if (jssStyles) jssStyles.parentElement!.removeChild(jssStyles);
     if (!isServer()) {
       analyticsService.init();
-      LogRocket.init(activeConfig.client.logRocket.key);
+      LogRocket.init(activeConfig.client.logRocket.key, {
+        console: {
+          shouldAggregateConsoleErrors: true,
+        }
+      });
     }
   }
 

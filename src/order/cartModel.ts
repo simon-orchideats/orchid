@@ -124,7 +124,9 @@ export class Cart implements ICart {
     const newCart = new Cart(this);
     const index = newCart.Meals.findIndex(meal => meal.MealId === mealId);
     if (index === -1) {
-      throw new Error(`MealId '${mealId}' not found in cart`);
+      const err = new Error(`MealId '${mealId}' not found in cart`);
+      console.error(err.stack);
+      throw err;
     }
     const targetMeal = newCart.Meals[index];
     if (targetMeal.Quantity === 1) {
@@ -153,7 +155,9 @@ export class Cart implements ICart {
     cuisines: CuisineType[],
   ): ICartInput {
     if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
-      throw new Error(`Cart is missing property '${JSON.stringify(this)}' `)
+      const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
+      console.error(err.stack);
+      throw err;
     }
     return {
       restId: this.RestId,

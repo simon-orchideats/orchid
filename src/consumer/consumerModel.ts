@@ -174,7 +174,10 @@ export class Consumer implements IConsumer {
       case 4: return 'Thursday'
       case 5: return 'Friday'
       case 6: return 'Saturday'
-      default: throw new Error(`Invalid day '${d}'`);
+      default:
+        const err = new Error(`Invalid day '${d}'`);
+        console.error(err.stack);
+        throw err;
     }
   }
 

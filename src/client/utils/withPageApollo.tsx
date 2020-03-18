@@ -21,7 +21,6 @@ import {
 } from '../global/state/localState'
 import { isServer } from './isServer';
 import { getContext } from '../../server/utils/apolloUtils';
-import LogRocket from 'logrocket';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 
@@ -203,8 +202,8 @@ function createIsomorphLink(context: object) {
       if (networkError) {
         msg = `[Network error]: '${networkError}', Operation: '${operationName}', variables: '${JSON.stringify(variables)}`;
       }
+      
       console.error(JSON.stringify(e));
-      LogRocket.captureException(new Error(msg));
     });
     return ApolloLink.from([
       errorLink,

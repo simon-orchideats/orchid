@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
@@ -28,8 +30,8 @@ class PlanService implements IPlanService {
         weekPrice: plan.amount! / 100,
       }))
     } catch (e) {
-      console.error(`[PlanService] could not get plans. '${e.message}'`);
-      throw e;
+      console.error(`[PlanService] could not get plans. '${e.stack}'`);
+      throw new Error('Internal Server Error');
     }
   }
 
@@ -39,8 +41,8 @@ class PlanService implements IPlanService {
       const target = plans.find(plan => plan.mealCount === count);
       return target ? target : null;
     } catch (e) {
-      console.error(`[PlanService] could not get plans. '${e.message}'`);
-      throw e;
+      console.error(`[PlanService] could not get plans. '${e.stack}'`);
+      throw new Error('Internal Server Error');
     }
   }
 
@@ -55,7 +57,7 @@ class PlanService implements IPlanService {
         weekPrice: plan.amount! / 100,
       }
     } catch (e) {
-      console.error(`[PlanService] could not get plan '${planId}'. ${e.message}'`);
+      console.error(`[PlanService] could not get plan '${planId}'. ${e.stack}'`);
       return null;
     }
   }

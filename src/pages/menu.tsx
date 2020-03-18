@@ -74,7 +74,7 @@ const menu = () => {
     if ((!cart || !cart.StripePlanId) && sortedPlans.data) {
       updatePlanId(sortedPlans.data[0].StripeId);
     }
-  }, [sortedPlans.data])
+  }, [sortedPlans.data]);
   const cartRestId = cart ? cart.RestId : null;
   const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';

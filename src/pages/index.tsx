@@ -135,7 +135,7 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Chef-cooked healthy meals delivered from local restaurants weekly
+          Chef-cooked healthy meals delivered weekly from local restaurants
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
           Offering meals starting at $9.99
@@ -253,7 +253,6 @@ const Benefits = () => {
   );
   const MobileBlock: React.FC<{title: string, description: string}> = ({ title, description }) => (
     <div className={`${classes.centered} ${classes.largeBottomMargin}`}>
-      <img src='/placeholder.jpg' alt='logo' />
       <div className={classes.verticalMargin}>
         <TextBlock
           title={title}
@@ -317,6 +316,12 @@ const Benefits = () => {
       </>
     )
   }
+  const sustainableDescription = `No cross-country shipments. No ice packs. No warehouses. Food is delievered fresh from down
+                                  the street in eco-friendly, compostable containers.`
+  const sameDayDescription = 'Every meal is same-day fresh. Enjoy your meal as the chef intended.';
+  const faveRestsDescription = 'Support your local favorites. Change places and flavors every week for infinite variety.'
+  const afordableDescription = `Restaurant quality, without restaurant prices. Restaurants save when you buy ahead in bulk
+                                and we pass those savings to you.`;
   return (
     <>
       <Hidden xsDown implementation='js'>
@@ -324,30 +329,28 @@ const Benefits = () => {
           <Grid container>
             <Explanation 
               title='Sustainable'
-              description='No cross-country shipments. No ice packs. No warehouses. Food is delievered fresh from down
-              the street in eco-friendly, compostable containers.'
+              description={sustainableDescription}
               img='home/sustainable.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Same day cooking'
-              description='Every meal is same-day fresh. Enjoy your meal as the chef intended.'
+              description={sameDayDescription}
               img='home/fresh.jpeg'
               imgLeft={false}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Favorite restaurants'
-              description='Support your local favorites. Change places and flavors every week for infinite variety.'
+              description={faveRestsDescription}
               img='home/rest.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
             <Explanation 
               title='Affordable'
-              description='Restaurant quality, without restaurant prices. Restaurants save when you buy ahead in bulk
-              and we pass those savings to you.'
+              description={afordableDescription}
               img='home/chicken.jpeg'
               imgLeft={false}
             />
@@ -367,19 +370,19 @@ const Benefits = () => {
         <Container maxWidth='xs' className={`${classes.centered} ${classes.reasons} ${classes.largeVerticalMargin}`}>
           <MobileBlock
             title='Sustainable'
-            description='yada yada, local. never frozen. not some warehouse accross the country. no more icepacks'
+            description={sustainableDescription}
           />
           <MobileBlock
             title='Same day cooking'
-            description='freshest. yada yada YADA yda yda yda yda yada YADA yda yda yda yda yada YADA yda yda yda'
+            description={sameDayDescription}
           />
           <MobileBlock
             title='Favorite restaurants'
-            description='Support your local favorites. Change places and flavors every week for infinite variety.'
+            description={faveRestsDescription}
           />
           <MobileBlock
             title='Affordable'
-            description='Cancel anytime. Restaurant quality, without restaurant costs. cuz fixed plans. yada yda yda'
+            description={afordableDescription}
           />
           <Link href={plansRoute}>
             <Button

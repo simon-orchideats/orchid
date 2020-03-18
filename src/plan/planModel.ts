@@ -43,27 +43,35 @@ export class Plan implements IPlan {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].StripeId === stripePlanId) return plans[i].MealCount;
     }
-    throw new Error(`No count found for stripePlanId '${stripePlanId}'`)
+    const err = new Error(`No count found for stripePlanId '${stripePlanId}'`);
+    console.error(err.stack);
+    throw err;
   }
 
   public static getPlanPrice(stripePlanId: string | null, plans: Plan[]) {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].StripeId === stripePlanId) return plans[i].WeekPrice;
     }
-    throw new Error(`No plan found for stripePlanId '${stripePlanId}'`)
+    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
+    console.error(err.stack);
+    throw err;
   }
 
   public static getMealPrice(stripePlanId: string | null, plans: Plan[]) {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].StripeId === stripePlanId) return plans[i].MealPrice;
     }
-    throw new Error(`No plan found for stripePlanId '${stripePlanId}'`)
+    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
+    console.error(err.stack);
+    throw err;
   }
 
   public static getMealPriceFromCount(count: number, plans: IPlan[]) {
     for (let i = 0; i < plans.length; i++) {
       if (plans[i].mealCount === count) return plans[i].mealPrice;
     }
-    throw new Error(`No plan found for count '${count}'`)
+    const err = new Error(`No plan found for count '${count}'`);
+    console.error(err.stack);
+    throw err;
   }
 }

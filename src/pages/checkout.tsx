@@ -140,16 +140,39 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return isValid;
   }
   const onClickPlaceOrder = async () => {
-    if (!stripe) throw new Error('Stripe not initialized');
-    if (!cart) throw new Error('Cart is null');
-    if (!elements) throw new Error('No elements');
+    if (!stripe) {
+      const err = new Error('Stripe not initialized');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!cart) {
+      const err =  new Error('Cart is null');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!elements) {
+      const err =  new Error('No elements');
+      console.error(err.stack);
+      throw err;
+    }
     const cardElement = elements.getElement('cardNumber');
-    if (!cardElement) throw new Error('No card element');
-    const pm = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-      billing_details: { name: accountName },
-    });
+    if (!cardElement) {
+      const err =  new Error('No card element');
+      console.error(err.stack);
+      throw err;
+    }
+    let pm;
+    try {
+      pm = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: { name: accountName },
+      });
+    } catch (e) {
+      const err =  new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
+      console.error(err.stack);
+      throw err;
+    }
     if (!validate() || pm.error) return;
     placeOrder(cart.getCartInput(
       deliveryName,

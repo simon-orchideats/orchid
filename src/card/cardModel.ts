@@ -21,7 +21,11 @@ export class Card implements ICard {
   public get ExpYear() { return this.expYear };
 
   static getCardFromStripe(card?: stripe.paymentMethod.PaymentMethodCard) {
-    if (!card) throw new Error('No card');
+    if (!card) {
+      const err = new Error('No card');
+      console.error(err.stack);
+      throw err;
+    }
     return new Card({
       last4: card.last4,
       expMonth: card.exp_month,
