@@ -77,8 +77,6 @@ class ConsumerService implements IConsumerService {
           profile: {
              name,
              email,
-            phone: '',
-
           },
           plan: {
             stripePlanId: defaultPlan?.stripeId,
@@ -98,21 +96,21 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumer({sub, name, email}:{sub:string, name:string, email:string}): Promise<IConsumer | undefined> {
+  async getConsumer(decodedToken:any): Promise<IConsumer | undefined> {
     // have the logic here from authenticate but splitted in private functions probably
     // let authData;
   // If user doesn't exist insert consumer and return new consumer
   try {
-    let getConsumer: SearchResponse<IConsumer> = await this.searchConsumer(sub);
+    let getConsumer: SearchResponse<IConsumer> = await this.searchConsumer(decodedToken.sub);
     if (getConsumer.hits.total.value === 0) {
       const insertConsumer: MutationBoolRes  = await this.insertConsumer(
-        sub,
-        name,
-        email
+        decodedToken.sub,
+        decodedToken['https://orchideats.com/name'],
+        decodedToken['https://orchideats.com/email']
         );
       if (insertConsumer.res) {
         try {
-          getConsumer = await this.searchConsumer(sub);
+          getConsumer = await this.searchConsumer(decodedToken.sub);
         } catch (e) {
           console.error(`[Authenticate] After insertion, getConsumerInfo failed: ${e}`);
           throw e;

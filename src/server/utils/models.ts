@@ -1,12 +1,7 @@
 // import { IConsumer } from './../../consumer/consumerModel';
 
-type decodedToken = {
-  sub:string
-  name: string
-  email: string
-}
 export type Context = {
-  signedInUser: decodedToken
+  signedInUser: string | object
 };
 
 export type ServerResolovers = {

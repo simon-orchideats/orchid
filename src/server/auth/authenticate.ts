@@ -17,9 +17,8 @@ export const getSignedInUser = async (req?: IncomingMessage) => {
 
   try {
     console.log(access);
-    const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'], audience: 'https://foodflick.auth0.com/userinfo' });
-    // @ts-ignore
-    console.log(decoded['https://foodflick.com/testing'])
+    const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'] });
+    console.log(decoded);
     return decoded;
   } catch(e) {
     console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
