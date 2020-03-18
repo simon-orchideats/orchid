@@ -7,7 +7,7 @@ const _ConsumerQL = gql`
     profile: ConsumerProfile!
   }
   type ConsumerProfile {
-    name: String
+    name: String!
     email: String!
     card: Card
     phone: String

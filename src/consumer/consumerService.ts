@@ -55,13 +55,11 @@ export const useRequireConsumer = (url: string) => {
   
   const consumer = useMemo<Consumer | null>(() => {
     if (res.data && res.data.myConsumer) {
-      // Creates userId as property and adds value from _id to userId property
-      Object.defineProperty(res.data.myConsumer, '_id', Object.getOwnPropertyDescriptor(res.data.myConsumer, '_id') as PropertyDescriptor );
       return new Consumer(res.data.myConsumer)
     } 
       return null
   }, [res?.data]);
-
+  console.log('CONSUMER TEST', consumer);
   if (!consumer && !res?.loading && !res?.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {

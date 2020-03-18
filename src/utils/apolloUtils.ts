@@ -34,9 +34,8 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   try {
-    console.log(access);
     const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'] }) as any;
-    console.log(decoded);
+    console.log(`decooded from getSignedInUser`)
     return {
       _id: decoded.sub,
       stripeCustomerId: decoded['https://orchideats.com/stripeCustomerId'],
@@ -47,7 +46,7 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
       }   
     };
   } catch(e) {
-    console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
+    console.error(`[getSignedInUser] Error in verifying accessToken: ${e}`)
     throw (e)
   }
 }

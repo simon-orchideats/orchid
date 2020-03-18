@@ -41,25 +41,6 @@ class ConsumerService implements IConsumerService {
 
   async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
-      let res: ApiResponse<SearchResponse<any>>
-      try {
-        res = await this.elastic.search({
-          index: CONSUMER_INDEX,
-          size: 1000,
-          _source: 'false',
-          body: {
-            query: {
-              ids: {
-                values: _id
-              }
-            }
-          }
-        });
-      } catch (e) {
-        console.error(`[ConsumerService] Couldn't search for consumer ${_id}. ${e.stack}`);
-        throw e;
-      }
-      if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
       let defaultPlan
       try{
         defaultPlan = await this.planService.getDefaultPlan();
@@ -80,7 +61,7 @@ class ConsumerService implements IConsumerService {
           plan: {
             stripePlanId: defaultPlan.stripeId,
             deliveryDay: 0,
-            rewnewal: RenewalTypes.Auto,
+            renewal: RenewalTypes.Auto,
             cuisines: []
           }, // todo alvin add this, "as EConsumer"
         }
@@ -138,7 +119,8 @@ class ConsumerService implements IConsumerService {
   }
   }
 
-  private async searchConsumer(_id: string) {
+  async searchConsumer(_id: string) {
+    console.log('IN SEARCH: ', _id)
     let res: ApiResponse<SearchResponse<any>>
     try {
       res = await this.elastic.search({

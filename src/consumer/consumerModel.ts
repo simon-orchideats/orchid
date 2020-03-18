@@ -2,7 +2,7 @@ import { IDestination, Destination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 
 export interface IConsumerProfile {
-  readonly name: string | null
+  readonly name: string
   readonly email: string
   readonly phone: string | null
   readonly card: ICard | null
@@ -10,7 +10,7 @@ export interface IConsumerProfile {
 }
 
 export class ConsumerProfile implements IConsumerProfile {
-  readonly name: string | null
+  readonly name: string
   readonly email: string
   readonly phone: string | null
   readonly card: Card | null
@@ -131,7 +131,7 @@ export class Consumer implements IConsumer {
     this._id = consumer._id
     this.stripeCustomerId = consumer.stripeCustomerId;
     this.stripeSubscriptionId = consumer.stripeSubscriptionId;
-    this.profile = consumer.profile && new ConsumerProfile(consumer.profile);
+    this.profile = new ConsumerProfile(consumer.profile);
     this.plan = new ConsumerPlan(consumer.plan)
   }
 
