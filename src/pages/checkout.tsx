@@ -1,13 +1,12 @@
 import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme, Button } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
 import { useState, useEffect, useRef, createRef } from "react";
-import { state, States } from "../place/addressModel";
+import { state } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
@@ -23,6 +22,7 @@ import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
+import AddressForm from "../client/general/inputs/AddressForm";
 import auth0 from 'auth0-js';
 import GLogo from "../client/checkout/GLogo";
 import { checkoutSocialAuthCB } from "../utils/auth";
@@ -46,8 +46,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-// todo: make this mobile friendly
-
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   stripe,
   elements
@@ -57,15 +55,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const notify = useNotify();
   const [deliveryName, setDeliveryName] = useState<string>('namename');
   const [deliveryNameError, setDeliveryNameError] = useState<string>('');
-  const [addr1, setAddr1] = useState<string>('19 middle st');
-  const [addr1Error, setAddr1Error] = useState<string>('');
-  const [addr2, setAddr2] = useState<string>('');
-  const [city, setCity] = useState<string>('Boston');
-  const [cityError, setCityError] = useState<string>('');
-  const [state, setState] = useState<state | ''>('MA');
-  const [stateError,setStateError] = useState<string>('');
-  const [zip, setZip] = useState<string>(cart && cart.Zip ? cart.Zip : '02127');
-  const [zipError, setZipError] = useState<string>('');
+  const validateAddressRef = useRef<() => boolean>();
+  const addr1InputRef = createRef<HTMLInputElement>();
+  const addr2InputRef = createRef<HTMLInputElement>();
+  const cityInputRef = createRef<HTMLInputElement>();
+  const zipInputRef = createRef<HTMLInputElement>();
+  const [state, setState] = useState<state | ''>('');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
@@ -116,11 +111,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         }
         placeOrder(cart.getCartInput(
           deliveryName,
-          addr1,
-          addr2,
-          city,
+          addr1InputRef.current!.value,
+          addr2InputRef.current!.value,
+          cityInputRef.current!.value,
           state as state,
-          zip,
+          zipInputRef.current!.value,
           phoneInputRef.current!.value,
           Card.getCardFromStripe(pm.current.paymentMethod!.card),
           pm.current.paymentMethod!.id,
@@ -145,23 +140,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDeliveryNameError('Your name is incomplete');
       isValid = false;
     }
-    if (!addr1) {
-      setAddr1Error('Your address is incomplete');
-      isValid = false;
-    }
-    if (!city) {
-      setCityError('Your city is incomplete');
-      isValid = false;
-    }
-    if (!zip) {
-      setZipError('Your zip is incomplete');
-      isValid = false;
-    }
     if (!validatePhoneRef.current!()) {
       isValid = false;
     }
-    if (!state) {
-      setStateError('Your state is incomplete');
+    if (!validateAddressRef.current!()) {
       isValid = false;
     }
     if (!accountName) {
@@ -292,100 +274,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 label='Delivery name is same as account name'
               />
             </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
-              <TextField
-                label='Address'
-                variant='outlined'
-                size='small'
-                error={!!addr1Error}
-                helperText={addr1Error}
-                fullWidth
-                value={addr1}
-                onChange={e => {
-                  setAddr1(e.target.value);
-                  if (addr1Error) setAddr1Error('')
+            <Grid item xs={12}>
+              <AddressForm
+                setValidator={(validator: () => boolean) => {
+                  validateAddressRef.current = validator;
                 }}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
-              <TextField
-                label='Apt, suite, floor'
-                variant='outlined'
-                size='small'
-                fullWidth
-                value={addr2}
-                onChange={e => setAddr2(e.target.value)}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
-              <TextField
-                label='City'
-                variant='outlined'
-                size='small'
-                error={!!cityError}
-                helperText={cityError}
-                fullWidth
-                value={city}
-                onChange={e => {
-                  setCity(e.target.value);
-                  if (cityError) setCityError('');
-                }}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={3}
-            >
-              <Autocomplete
-                options={Object.values<state>(States)}
-                value={state || '' as state}
-                onChange={(_e: any, value: state | null) => {
-                  setState(value ? value : '');
-                  if (stateError) setStateError('');
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    size='small'
-                    label='State'
-                    variant='outlined'
-                    error={!!stateError}
-                    helperText={stateError}
-                    fullWidth
-                  />
-                )}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={3}
-            >
-              <TextField
-                label='Zip'
-                variant='outlined'
-                size='small'
-                error={!!zipError}
-                helperText={zipError}
-                fullWidth
-                value={zip}
-                onChange={e => {
-                  setZip(e.target.value);
-                  if (zipError) setZipError('');
-                }}
+                addr1InputRef={addr1InputRef}
+                addr2InputRef={addr2InputRef}
+                cityInputRef={cityInputRef}
+                zipInputRef={zipInputRef}
+                state={state}
+                setState={setState}
               />
             </Grid>
             <Grid
