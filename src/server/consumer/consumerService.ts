@@ -1,4 +1,5 @@
-import { fetch } from 'node-fetch';
+import { getAuth0Header } from './../auth/auth0Management';
+import fetch from 'node-fetch';
 import { adjustmentDescHeader } from './../orders/orderService';
 import { signUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
@@ -15,8 +16,11 @@ import moment from 'moment';
 const CONSUMER_INDEX = 'consumers';
 
 export interface IConsumerService {
-  upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
+  signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationBoolRes>
+  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) => Promise<void>
+  upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
 }
 
 class ConsumerService implements IConsumerService {
@@ -62,7 +66,8 @@ class ConsumerService implements IConsumerService {
         throw new Error(`Couldn't get future line items'. ${e.stack}`)
       }
       const today = moment();
-      const deletions = await Promise.all(pendingLineItems.data.map(async line => {
+
+      const p1 = Promise.all(pendingLineItems.data.map(async line => {
         if (line.description && line.description.includes(adjustmentDescHeader)) {
           const adjustmentForDate = moment(line.description.substring(adjustmentDescHeader.length), 'MM/DD/YYYY');
           if (adjustmentForDate.isAfter(today)) {
@@ -75,23 +80,69 @@ class ConsumerService implements IConsumerService {
             }
           }
         }
-      }));
+      })).catch(e => {
+        const msg = `Couldn't remove all adjustments targeting future weeks. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });;
 
-      const p1 = this.stripe.subscriptions.del(subscriptionId);
-      const p2 = fetch(MANAGEMENT_URL + 'users/' + signedInUser._id, {
+      const p2 = this.stripe.subscriptions.del(subscriptionId).catch(e => {
+        const msg = `Failed to delete subscription '${subscriptionId}' from stripe from elastic for user '${signedInUser.userId}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });;
+      const p3 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser.userId}`, {
         headers: await getAuth0Header(),
         method: 'PATCH',
         body: JSON.stringify({
           app_metadata: {
-            card: hiddenCard,
+            stripeSubscriptionId: null,
           },
         })
-      }).catch(e => console.error(e));
+      }).catch(e => {
+        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser.userId}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+      const p4 = this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: signedInUser.userId,
+        body: {
+          doc: {
+            stripeSubscriptionId: null,
+          }
+        }
+      }).catch(e => {
+        const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser.userId}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
 
-      
-
+      await Promise.all([p1, p2, p3, p4]);
+      return {
+        res: true,
+        error: null,
+      };
     } catch (e) {
       console.error(`[ConsumerService] couldn't cancel subscription for user '${JSON.stringify(signedInUser)}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string, stripeCustomerId: string) {
+    try {
+      await fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${userId}`, {
+        headers: await getAuth0Header(),
+        method: 'PATCH',
+        body: JSON.stringify({
+          app_metadata: {
+            stripeSubscriptionId,
+            stripeCustomerId,
+          },
+        })
+      });
+    } catch (e) {
+      console.error(`[ConsumerService] couldn't add stripeSubscriptionId for user '${userId}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }

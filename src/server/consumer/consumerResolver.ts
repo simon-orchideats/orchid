@@ -1,3 +1,4 @@
+import { SignedInUser } from './../../utils/apolloUtils';
 import { getConsumerService } from './consumerService';
 import { ServerResolovers } from '../../utils/apolloUtils';
 
@@ -9,7 +10,8 @@ export const ConsumerQueryResolvers: ServerResolovers = {
 
 export const ConsumerMutationResolvers: ServerResolovers = {
   cancelSubscription: async (_root, _vars, { signedInUser }) => {
-    return await getConsumerService().cancelSubscription(signedInUser);
+    // todo alvin: remove this "type cast"
+    return await getConsumerService().cancelSubscription(signedInUser as SignedInUser);
   },
 
   insertEmail: async (

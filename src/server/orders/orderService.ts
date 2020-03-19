@@ -318,6 +318,7 @@ class OrderService {
           destination: cart.destination,
         }
       });
+      const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser.userId, subscription.id, stripeCustomerId);
 
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
         this.restService.getRestsByCuisines(cart.consumerPlan.cuisines, ['menu'])
@@ -355,7 +356,7 @@ class OrderService {
           })
       }
 
-      await Promise.all([consumerUpserter, indexer]);
+      await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
 
       return {
         res: true,

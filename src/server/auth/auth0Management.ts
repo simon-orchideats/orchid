@@ -1,5 +1,6 @@
 import { activeConfig } from "../../config";
 import jwtUtil from 'jsonwebtoken';
+import fetch from 'node-fetch';
 
 let auth0ManagementToken: string | null = null;
 let tokenType: string | null = null;
