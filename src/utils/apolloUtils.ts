@@ -1,5 +1,4 @@
 import { accessTokenCookie } from './auth';
-import express from 'express';
 import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
 import { activeConfig } from '../config'
@@ -7,7 +6,7 @@ import cookie from 'cookie'
 
 export type Context = {
   signedInUser: SignedInUser | null,
-  res?: express.Response | OutgoingMessage ,
+  res?: OutgoingMessage,
 };
 
 export type ServerResolovers = {
@@ -35,14 +34,13 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
   if (!access) return null;
   try {
     const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'] }) as any;
-    console.log(`decooded from getSignedInUser`)
     return {
       _id: decoded.sub,
-      stripeCustomerId: decoded['https://orchideats.com/stripeCustomerId'],
-      stripeSubscriptionId: decoded['https://orchideats.com/stripeSubId'],
+      stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
+      stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubId`],
       profile: {
-        name: decoded['https://orchideats.com/name'],
-        email: decoded['https://orchideats.com/email']
+        name: decoded[`${activeConfig.server.auth.audience}/name`],
+        email: decoded[`${activeConfig.server.auth.audience}/email`]
       }   
     };
   } catch(e) {
@@ -52,7 +50,7 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
 }
 
 // todo alvin should be getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ...
-export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage | express.Response): Promise<Context> => ({
+export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => ({
   signedInUser: await getSignedInUser(req),
   res,
 })

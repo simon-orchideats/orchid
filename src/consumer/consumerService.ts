@@ -2,7 +2,7 @@ import { MutationBoolRes } from './../utils/mutationResModel';
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer } from './consumerModel';
+import { Consumer, IConsumer } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -39,14 +39,15 @@ export const useAddConsumerEmail = (): [
 
 export const useRequireConsumer = (url: string) => {
   type res = {
-    myConsumer: Consumer | null
+    myConsumer: IConsumer | null
   }
-  const res = useQuery<res>(gql`
-    query myConsumer {
-      myConsumer {
-        ...consumerFragment
+  const res = useQuery<res>(
+    gql`
+      query myConsumer {
+        myConsumer {
+          ...consumerFragment
+        }
       }
-    }
       ${consumerFragment}
     `,
   );
@@ -57,15 +58,15 @@ export const useRequireConsumer = (url: string) => {
   if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {
-      loading: res!.loading,
-      error: res!.error,
+      loading: res.loading,
+      error: res.error,
       data: consumer
     }
   }
 
   return {
-    loading: res!.loading,
-    error: res?.error,
+    loading: res.loading,
+    error: res.error,
     data: consumer
   }
 }

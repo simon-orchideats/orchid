@@ -9,26 +9,26 @@ export const consumerFragment = gql`
       renewal
       cuisines
     }
-    profile{
+    profile {
       name
       email
-    card {
-      last4
-      expMonth
-      expYear
-    }
-    phone
-    destination {
-      name
-      instructions
-      address {
-        address1
-        address2
-        city
-        state
-        zip
+      card {
+        last4
+        expMonth
+        expYear
       }
-    }
+      phone
+      destination {
+        name
+        instructions
+        address {
+          address1
+          address2
+          city
+          state
+          zip
+        }
+      }
     }
   }
 `

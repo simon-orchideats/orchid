@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 const CuisineTypeQL = gql`
   enum CuisineType {
     American
-    BBQ
+    Bbq
     Chinese
     Indian
     Italian

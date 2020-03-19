@@ -57,11 +57,11 @@ const StateQL =  gql`
 
 const _AddressQL = gql`
   type Address {
-    address1: String
+    address1: String!
     address2: String
-    city: String
-    state: State
-    zip: String
+    city: String!
+    state: State!
+    zip: String!
   }
 
   input AddressInput {

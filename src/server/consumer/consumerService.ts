@@ -1,13 +1,12 @@
 import { signUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer, RenewalTypes } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes, CuisineTypes } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import express from 'express';
+import { OutgoingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
-
 export interface IConsumerService {
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   insertEmail: (email: string) => Promise<MutationBoolRes>
@@ -45,10 +44,10 @@ class ConsumerService implements IConsumerService {
   public async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
       let defaultPlan
-      try{
+      try {
         defaultPlan = await this.planService.getDefaultPlan();
-      } catch(e) {
-        throw new Error(`Failed to get default plan. ${e}`)
+      } catch (e) {
+        throw new Error (`Failed to get default plan. ${e}`)
       }
       if (!defaultPlan) throw new Error('Could\'t get default plan');
       await this.elastic.index({
@@ -65,7 +64,7 @@ class ConsumerService implements IConsumerService {
             stripePlanId: defaultPlan.stripeId,
             deliveryDay: 0,
             renewal: RenewalTypes.Auto,
-            cuisines: []
+            cuisines: Object.values(CuisineTypes)
           }, // todo alvin add this, "as EConsumer"
         }
       });
@@ -79,51 +78,22 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumer(decodedToken:any): Promise<IConsumer | undefined> {
-    // have the logic here from authenticate but splitted in private functions probably
-    // let authData;
-  // If user doesn't exist insert consumer and return new consumer
-  try {
-    let getConsumer: SearchResponse<IConsumer> = await this.searchConsumer(decodedToken.sub);
-    if (getConsumer.hits.total.value === 0) {
-      const insertConsumer: MutationBoolRes  = await this.insertConsumer(
-        decodedToken.sub,
-        decodedToken['https://orchideats.com/name'],
-        decodedToken['https://orchideats.com/email']
-        );
-      if (insertConsumer.res) {
-        try {
-          getConsumer = await this.searchConsumer(decodedToken.sub);
-        } catch (e) {
-          console.error(`[Authenticate] After insertion, getConsumerInfo failed: ${e}`);
-          throw e;
-        }
-        return {
-          _id: getConsumer.hits.hits[0]._id,
-          profile: getConsumer.hits.hits[0]._source.profile,
-          plan: getConsumer.hits.hits[0]._source.plan,
-          stripeCustomerId: getConsumer.hits.hits[0]._source.stripeCustomerId,
-          stripeSubscriptionId: getConsumer.hits.hits[0]._source.stripeSubscriptionId
-        }
-      } else {
-        throw new Error("[Authenticate] Failed inserting new Consumer")
-      }
-    } else {
-        return {
-          _id: getConsumer.hits.hits[0]._id,
-          profile: getConsumer.hits.hits[0]._source.profile,
-          plan: getConsumer.hits.hits[0]._source.plan,
-          stripeCustomerId: getConsumer.hits.hits[0]._source.stripeCustomerId,
-          stripeSubscriptionId: getConsumer.hits.hits[0]._source.stripeSubscriptionId
-        }
-      }
-  } catch (e) {
-    console.error(`[Authenticate] getConsumerInfo failed: ${e}`);
-  }
+  async getConsumer(_id: string) {
+   const consumerExists = await this.hasConsumer(_id);
+   if (consumerExists) {
+    const consumer = await this.searchConsumer(_id);
+    return {
+      _id: consumer.hits.hits[0]._id,
+      stripeCustomerId: consumer.hits.hits[0]._source.stripeCustomerId,
+      stripeSubscriptionId: consumer.hits.hits[0]._source.stripeSubscriptionId,
+      profile: consumer.hits.hits[0]._source.profile,
+      plan: consumer.hits.hits[0]._source.plan
+    }
+   }
+   return null;
   }
 
   async searchConsumer(_id: string) {
-    console.log('IN SEARCH: ', _id)
     let res: ApiResponse<SearchResponse<any>>
     try {
       res = await this.elastic.search({
@@ -142,6 +112,32 @@ class ConsumerService implements IConsumerService {
         }
       });
       return res.body;
+    } catch (e) {
+      console.error(`[ConsumerService] couldn't search for consumer '${_id}'`, e.stack)
+      throw e;
+    } 
+  }
+
+  async hasConsumer(_id: string) {
+    let res: ApiResponse<SearchResponse<any>>
+    try {
+      res = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: { _id: _id }
+                }
+              ]
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value > 0 ) return true;
+      return false
     } catch (e) {
       console.error(`[ConsumerService] couldn't search for consumer '${_id}'`, e.stack)
       throw e;
@@ -191,8 +187,9 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async signUp(email: string, name: string, pass: string, res: express.Response) {
+  async signUp(email: string, name: string, pass: string, res?: OutgoingMessage) {
     try {
+      if (!res) throw new Error('Res is undefined');
       const signedUp = await signUp(email, name, pass, res);
       // todo alvin: insert consumer here using results from signUp
       return {

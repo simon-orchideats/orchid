@@ -5,8 +5,7 @@ import express, { NextFunction } from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
 import jwt from 'jsonwebtoken';
-import { SearchResponse } from '../elasticConnector';
-import { IConsumer } from '../../consumer/consumerModel';
+import { OutgoingMessage } from 'http';
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
   try {
@@ -36,7 +35,7 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
 
 const storeTokensInCookies = async (
   req: express.Request,
-  res: express.Response,
+  res: OutgoingMessage,
   stateRedirectCookie: string,
   redirect_uri: string
 ) => {
@@ -66,33 +65,39 @@ const storeTokensInCookies = async (
       console.error(msg);
       throw new Error(msg)
     }
+    
     let decodedToken: any;
     try {
       decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.public, { algorithms: ['RS256'] });
-    } catch(e) {
+    } catch (e) {
       console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
     }
     try {
-      let searchConsumer: SearchResponse<IConsumer>= await getConsumerService().searchConsumer(decodedToken.sub)
-      if (searchConsumer.hits.total.value === 0) {
+      let consumerExists = await getConsumerService().hasConsumer(decodedToken.sub)
+      if (!consumerExists) {
         await getConsumerService().insertConsumer(
           decodedToken.sub,
-          decodedToken['https://orchideats.com/name'],
-          decodedToken['https://orchideats.com/email']
+          decodedToken[`${activeConfig.server.auth.audience}/name`],
+          decodedToken[`${activeConfig.server.auth.audience}/email`]
         );
       };
-    } catch(e) {
+    } catch (e) {
       console.error(`[Authenticate]: ${e}`);
       throw e;
     }
-    res.cookie(accessTokenCookie, data.access_token, {
-      httpOnly: true,
-      // secure: true,
-    });
-    res.cookie(refreshTokenCookie, data.refresh_token, {
-      httpOnly: true,
-      // secure: true,
-    });
+    
+    res.setHeader('Set-Cookie', [
+      `${accessTokenCookie}=${data.access_token}; HttpOnly`,
+      `${refreshTokenCookie}=${data.refresh_token}; HttpOnly`
+    ])
+    // res.cookie(accessTokenCookie, data.access_token, {
+    //   httpOnly: true,
+    //   // secure: true,
+    // });
+    // res.cookie(refreshTokenCookie, data.refresh_token, {
+    //   httpOnly: true,
+    //   // secure: true,
+    // });
   } catch (e) {
     console.error(`[Authenticate] Couldn't get auth tokens`, e.stack);
     throw e;
@@ -125,7 +130,7 @@ export const signUp = async (
   email: string,
   name: string,
   password: string,
-  res: express.Response
+  res: OutgoingMessage
 ) => {
   const signUpRes = await fetch(`https://${activeConfig.server.auth.domain}/dbconnections/signup`, {
     method: 'POST',
@@ -143,7 +148,6 @@ export const signUp = async (
   });
   const json = await signUpRes.json();
   if (!signUpRes.ok) {
-    console.log(json);
     if (json.name === 'PasswordStrengthError') {
       const warn: string = json.message + '\n' + json.policy;
       console.warn(warn);
@@ -188,14 +192,10 @@ export const signUp = async (
     console.error(msg);
     throw new Error(msg);
   }
-  res.cookie(accessTokenCookie, authJson.access_token, {
-    httpOnly: true,
-    // secure: true,
-  })
-  res.cookie(refreshTokenCookie, authJson.refresh_token, {
-    httpOnly: true,
-    // secure: true,
-  })
+  res.setHeader('Set-Coookie', [
+    `${accessTokenCookie}=${authJson.access_token}; HttpOnly`,
+    `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
+  ]);
   return {
     res: {}, // todo alvin: decode access for signed in user,
     error: null,

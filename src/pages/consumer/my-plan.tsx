@@ -38,7 +38,10 @@ const myPlan = () => {
   const [day, setDay] = useState<deliveryDay>(0);
   const validateCuisineRef= useRef<() => boolean>();
   const consumer = useRequireConsumer(myPlanRoute);
-  console.log("MY CONOSUMER",consumer)
+  console.log(consumer);
+  if (!consumer.data && !consumer.loading && !consumer.error) {
+    return <Typography>Logging you in...</Typography>
+  }
   return (
     <Container maxWidth='lg' className={classes.container}>
       <Typography variant='h3'>

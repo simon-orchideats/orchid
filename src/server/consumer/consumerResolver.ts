@@ -5,23 +5,15 @@ export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, context) => {
     const decodedToken = context.signedInUser;
     if (decodedToken) {
-      const consumer = await getConsumerService().searchConsumer(decodedToken._id);
-        if (consumer.hits.total.value > 0) {
-          return {
-            _id: consumer.hits.hits[0]._id,
-            stripeCustomerId: consumer.hits.hits[0]._source.stripeCustomerId,
-            stripeSubscriptionId: consumer.hits.hits[0]._source.stripeSubscriptionId,
-            profile: consumer.hits.hits[0]._source.profile,
-            plan: consumer.hits.hits[0]._source.plan
-          }
-        } else {
-          // if there isnt an existing user return null
-          return null
-        }
-    } else {
-      // if no access token or req
-      return null;
-    }  
+      try {
+        const consumer = await getConsumerService().getConsumer(decodedToken._id)
+        return consumer
+      } catch (e) {
+        console.error(`[myConsumer Resolver]: ${e}`);
+        throw e
+      }  
+    } 
+    return null;
   }
 }
 
