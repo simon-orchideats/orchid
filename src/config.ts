@@ -34,7 +34,9 @@ type config = {
       domain: string,
       clientId: string,
       audience: string,
-      secret: string
+      secret: string,
+      managementSecret: string,
+      managementClientId: string,
     },
     elastic: {
       node: string,
@@ -95,6 +97,8 @@ const development: config = {
       clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
       audience: 'https://orchideats.com',
       secret: process.env.AUTH_SECRET!,
+      managementClientId: 'xofNOKgLq75hICbjLJHOhFJhP0E33tS5',
+      managementSecret: process.env.AUTH_MANAGEMENT_SECRET!,
     },
     elastic: {
       node: 'http://localhost:9200',
@@ -150,6 +154,8 @@ const production: config = {
       clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
       audience: 'https://saute.com',
       secret: process.env.AUTH_SECRET!,
+      managementClientId: 'xofNOKgLq75hICbjLJHOhFJhP0E33tS5',
+      managementSecret: process.env.AUTH_MANAGEMENT_SECRET!,
     },
     elastic: {
       node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',

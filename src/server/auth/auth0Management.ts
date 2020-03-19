@@ -13,8 +13,8 @@ const autoSetAuth0ManagementToken = async () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        client_id: activeConfig.server.auth.clientId,
-        client_secret: activeConfig.server.auth.secret,
+        client_id: activeConfig.server.auth.managementClientId,
+        client_secret: activeConfig.server.auth.managementSecret,
         audience: `https://${activeConfig.server.auth.domain}/api/v2/`,
         grant_type: 'client_credentials',
       }),
