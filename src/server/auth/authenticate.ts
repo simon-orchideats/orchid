@@ -42,7 +42,6 @@ const storeTokensInCookies = async (
 ) => {
   try {
     const code = req.query.code;
-    console.log('Code',code)
     const state = req.query.state;
     if (state !== stateRedirectCookie) throw new Error(`Bad nonce '${state}'`);
     const authRes = await fetch(`https://${activeConfig.server.auth.domain}/oauth/token`, {
@@ -61,39 +60,27 @@ const storeTokensInCookies = async (
       }),
     })
     // todo alvin, decode access and insert consumer here
-    
     const data =  await authRes.json();
-    console.log(data);
-    console.log(authRes);
     let decodedToken: any;
     try {
       decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.public, { algorithms: ['RS256'] });
-      console.log(`decoded from authenticate ${JSON.stringify(decodedToken)}`);
-      
-     
     } catch(e) {
       console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
     }
-   
     try {
-      console.log('decoded id',decodedToken.sub)
-      
-    let searchConsumer: SearchResponse<IConsumer>= await getConsumerService().searchConsumer(decodedToken.sub)
-
-    
-    if (searchConsumer.hits.total.value === 0) {
-      await getConsumerService().insertConsumer(
-        decodedToken.sub,
-        decodedToken['https://orchideats.com/name'],
-        decodedToken['https://orchideats.com/email']
-      );
-    };
+      let searchConsumer: SearchResponse<IConsumer>= await getConsumerService().searchConsumer(decodedToken.sub)
+      if (searchConsumer.hits.total.value === 0) {
+        await getConsumerService().insertConsumer(
+          decodedToken.sub,
+          decodedToken['https://orchideats.com/name'],
+          decodedToken['https://orchideats.com/email']
+        );
+      };
     } catch(e) {
       console.error(`[Authenticate]: ${e}`);
       throw e;
     }
     
-
     res.cookie(accessTokenCookie, data.access_token, {
       httpOnly: true,
       // secure: true,
