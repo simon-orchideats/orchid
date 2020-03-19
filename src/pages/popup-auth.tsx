@@ -16,4 +16,3 @@ const CheckoutSocialAuth = () => {
 }
 
 export default CheckoutSocialAuth;
-
