@@ -38,7 +38,6 @@ const myPlan = () => {
   const [day, setDay] = useState<deliveryDay>(0);
   const validateCuisineRef= useRef<() => boolean>();
   const consumer = useRequireConsumer(myPlanRoute);
-  console.log(consumer);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }

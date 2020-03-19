@@ -56,7 +56,6 @@ const profile = () => {
   const [phoneLabel, setPhoneLabel] = useState<string>('609-513-8166')
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const consumer = useRequireConsumer(profileRoute);
-  console.log(consumer);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
