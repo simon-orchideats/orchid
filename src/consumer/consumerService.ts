@@ -41,26 +41,20 @@ export const useRequireConsumer = (url: string) => {
   type res = {
     myConsumer: Consumer | null
   }
-  
-      const res = useQuery<res>(gql`
-        query myConsumer {
-          myConsumer {
-            ...consumerFragment
-          }
-        }
-        ${consumerFragment}
-      `,
-    );
-  
-  
-  const consumer = useMemo<Consumer | null>(() => {
-    if (res.data && res.data.myConsumer) {
-      return new Consumer(res.data.myConsumer)
-    } 
-      return null
-  }, [res?.data]);
-  console.log('CONSUMER TEST', consumer);
-  if (!consumer && !res?.loading && !res?.error) {
+  const res = useQuery<res>(gql`
+    query myConsumer {
+      myConsumer {
+        ...consumerFragment
+      }
+    }
+      ${consumerFragment}
+    `,
+  );
+
+  const consumer = useMemo<Consumer | null>(() => (
+    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
+  ), [res.data]);
+  if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
     return {
       loading: res!.loading,
@@ -76,11 +70,31 @@ export const useRequireConsumer = (url: string) => {
   }
 }
 
-
-
-/**
- *  make class fields optional 
- * card optional, profile,  think about the rest
- */
-
-
+export const useSignUp = (): [
+  (email: string, name: string, pass: string) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { signUp: MutationBoolRes };
+  type vars = { email: string, name: string, pass: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation signUp($email: String!, $name: String!, $pass: String!) {
+      signUp(email: $email, name: $name, pass: $pass) {
+        res
+        error
+      }
+    }
+  `);
+  const signUp = (email: string, name: string, pass: string) => {
+    mutate({ variables: { email, name, pass } })
+  }
+  return useMemo(() => [
+    signUp,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.signUp : undefined,
+    }
+  ], [mutation]);
+}

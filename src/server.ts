@@ -87,7 +87,7 @@ const start = async () => {
 
   const apolloServer = new ApolloServer({
     schema,
-    context: async ({ req }) => await getContext(req),
+    context: async ({ req, res }) => await getContext(req, res),
   });
 
   apolloServer.applyMiddleware({

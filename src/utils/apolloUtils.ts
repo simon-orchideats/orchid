@@ -1,5 +1,5 @@
 import { accessTokenCookie } from './auth';
-// import { IConsumer } from './../consumer/consumerModel';
+import express from 'express';
 import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
 import { activeConfig } from '../config'
@@ -7,7 +7,7 @@ import cookie from 'cookie'
 
 export type Context = {
   signedInUser: SignedInUser | null,
-  res?: OutgoingMessage,
+  res?: express.Response | OutgoingMessage ,
 };
 
 export type ServerResolovers = {
@@ -52,7 +52,7 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
 }
 
 // todo alvin should be getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ...
-export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => ({
+export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage | express.Response): Promise<Context> => ({
   signedInUser: await getSignedInUser(req),
   res,
 })
