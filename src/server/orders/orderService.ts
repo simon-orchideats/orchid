@@ -300,7 +300,7 @@ class OrderService {
         index: ORDER_INDEX,
         body: order
       })
-      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser.userId, {
+      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
@@ -318,7 +318,7 @@ class OrderService {
           destination: cart.destination,
         }
       });
-      const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser.userId, subscription.id, stripeCustomerId);
+      const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
         this.restService.getRestsByCuisines(cart.consumerPlan.cuisines, ['menu'])
@@ -388,7 +388,7 @@ class OrderService {
                     },
                     {
                       term: {
-                        'consumer.userId': signedInUser.userId
+                        'consumer._id': signedInUser._id
                       }
                     }
                   ]
@@ -414,7 +414,7 @@ class OrderService {
         return Order.getIOrderFromEOrder(_id, _source, null)
       }))
     } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming orders for consumer '${signedInUser.userId}'. '${e.stack}'`);
+      console.error(`[OrderService] couldn't get upcoming orders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }
@@ -486,11 +486,11 @@ class OrderService {
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
 
-      if (targetOrder.consumer.userId !== signedInUser.userId) {
+      if (targetOrder.consumer._id !== signedInUser._id) {
         const msg = 'Can only update your own orders';
         console.warn(
           '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser.userId}'`
+          `${msg}. targerOrder consonsumer '${targetOrder.consumer._id}', signedInUser '${signedInUser._id}'`
         )
         return {
           res: false,
@@ -637,7 +637,7 @@ export const getOrderService = () => {
   initOrderService(
     initElastic(),
     new Stripe(activeConfig.server.stripe.key, {
-      apiVersion: '2019-12-03',
+      apiVersion: '2020-03-02',
     }),
     getGeoService(),
     getPlanService(),

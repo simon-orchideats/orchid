@@ -11,7 +11,7 @@ type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
 export interface EOrder {
   readonly cartUpdatedDate: number
   readonly consumer: {
-    readonly userId: string
+    readonly _id: string
     readonly profile: IConsumerProfile
   },
   readonly costs: ICost
@@ -99,10 +99,10 @@ export class Order implements IOrder{
     return {
       _id,
       deliveryDate: order.deliveryDate,
-      destination: order.consumer.profile.destination,
+      destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
       mealPrice: order.costs.mealPrice,
       meals: order.rest.meals,
-      phone: order.consumer.profile.phone,
+      phone: order.consumer.profile.phone!,
       rest,
       status: order.status,
     }
@@ -148,7 +148,7 @@ export class Order implements IOrder{
       },
       deliveryDate,
       consumer: {
-        userId: consumer.userId,
+        _id: consumer._id,
         profile: {
           name: consumer.profile.name,
           email: consumer.profile.email,
@@ -176,7 +176,7 @@ export class Order implements IOrder{
       },
       status: 'Open',
       consumer: {
-        userId: signedInUser.userId,
+        _id: signedInUser._id,
         profile: {
           name: signedInUser.profile.name,
           email: signedInUser.profile.email,

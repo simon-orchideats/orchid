@@ -4,6 +4,8 @@ import { randomString } from './utils';
 import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
+import jwt from 'jsonwebtoken';
+import { OutgoingMessage } from 'http';
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
   try {
@@ -21,7 +23,7 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
       response_type: 'code',
       redirect_uri: `${activeConfig.server.app.url}${universalAuthCB}`,
       client_id: activeConfig.server.auth.clientId,
-      scope: 'offline_access',
+      scope: 'offline_access openid profile email',
       state,
     }).toString();
     res.redirect(authorizationEndpointUrl.toString());
@@ -31,7 +33,12 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
   }
 }
 
-const storeTokensInCookies = async (req: express.Request, res: express.Response, stateRedirectCookie: string) => {
+const redirectedSignIn = async (
+  req: express.Request,
+  res: OutgoingMessage,
+  stateRedirectCookie: string,
+  redirect_uri: string
+) => {
   try {
     const code = req.query.code;
     const state = req.query.state;
@@ -48,25 +55,46 @@ const storeTokensInCookies = async (req: express.Request, res: express.Response,
         client_id: activeConfig.server.auth.clientId,
         client_secret: activeConfig.server.auth.secret,
         code,
-        redirect_uri: `${activeConfig.server.app.url}${popupSocialAuthCB}`
+        redirect_uri,
       }),
     });
-    // todo alvin, decode access and insert consumer here
-    console.log(getConsumerService);
+
     const data =  await authRes.json();
     if (!authRes.ok) {
       const msg = `Token retrieval failed. '${JSON.stringify(data)}'`;
       console.error(msg);
       throw new Error(msg)
     }
-    res.cookie(accessTokenCookie, data.access_token, {
-      httpOnly: true,
-      // secure: true,
-    });
-    res.cookie(refreshTokenCookie, data.refresh_token, {
-      httpOnly: true,
-      // secure: true,
-    });
+    
+    let decodedToken: any;
+    try {
+      decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] });
+    } catch (e) {
+      console.error(`Error in verifying accessToken: ${e.stack}`)
+      throw e
+    }
+    let consumer;
+    try {
+      consumer = await getConsumerService().getConsumer(decodedToken.sub)
+    } catch (e) {
+      console.error(`Error in getting Consumer: ${e.stack}`);
+      throw e;
+    }
+
+    if (!consumer) {
+      getConsumerService().insertConsumer(
+        decodedToken.sub,
+        decodedToken[`${activeConfig.server.auth.audience}/name`],
+        decodedToken[`${activeConfig.server.auth.audience}/email`]
+      ).catch(e => {
+        console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
+      })
+    };
+    
+    res.setHeader('Set-Cookie', [
+      `${accessTokenCookie}=${data.access_token}; HttpOnly`,
+      `${refreshTokenCookie}=${data.refresh_token}; HttpOnly`
+    ])
     return data
   } catch (e) {
     console.error(`[Authenticate] Couldn't get auth tokens`, e.stack);
@@ -77,7 +105,7 @@ const storeTokensInCookies = async (req: express.Request, res: express.Response,
 export const handleAuthCallback = async (req: express.Request, res: express.Response) => {
   try {
     const state = req.cookies[stateRedirectCookie];
-    await storeTokensInCookies(req, res, state);
+    await redirectedSignIn(req, res, state, `${activeConfig.server.app.url}${universalAuthCB}`);
     res.redirect(`${activeConfig.server.app.url}${state.split('_')[1]}`);
   } catch (e) {
     console.error(`[Authenticate] Couldn't handle auth callback`, e.stack);
@@ -87,14 +115,14 @@ export const handleAuthCallback = async (req: express.Request, res: express.Resp
 
 export const handlePopupSocialAuth = async (req: express.Request, res: express.Response) => {
   try {
-    const state = JSON.parse(decodeURI(req.cookies[`com.auth0.auth.${req.query.state}`])).state;
+    const state = JSON.parse(req.cookies[`com.auth0.auth.${req.query.state}`]).state;
     const {
       access_token,
       id_token,
       scope,
       expires_in,
       token_type,
-    } = await storeTokensInCookies(req, res, state);
+    } = await redirectedSignIn(req, res, state, `${activeConfig.server.app.url}${popupSocialAuthCB}`);
 
     // redirect so popup window has data in url to pass back to parent window
     res.redirect(`${activeConfig.server.app.url}/popup-auth`
@@ -111,11 +139,11 @@ export const handlePopupSocialAuth = async (req: express.Request, res: express.R
   }
 }
 
-export const signUp = async (
+export const manualAuthSignUp = async (
   email: string,
   name: string,
   password: string,
-  res: express.Response
+  res: OutgoingMessage
 ) => {
   const signUpRes = await fetch(`https://${activeConfig.server.auth.domain}/dbconnections/signup`, {
     method: 'POST',
@@ -177,16 +205,12 @@ export const signUp = async (
     console.error(msg);
     throw new Error(msg);
   }
-  res.cookie(accessTokenCookie, authJson.access_token, {
-    httpOnly: true,
-    // secure: true,
-  })
-  res.cookie(refreshTokenCookie, authJson.refresh_token, {
-    httpOnly: true,
-    // secure: true,
-  })
+  res.setHeader('Set-Cookie', [
+    `${accessTokenCookie}=${authJson.access_token}; HttpOnly`,
+    `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
+  ]);
   return {
-    res: {}, // todo alvin: decode access for signed in user,
+    res: await jwt.verify(authJson.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }),
     error: null,
   };
 }

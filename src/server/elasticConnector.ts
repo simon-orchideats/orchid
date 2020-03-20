@@ -42,7 +42,7 @@ export interface SearchResponse<T> {
     total: {
       value: number;
       relation: string;
-    };
+    },
     max_score: number;
     hits: Array<{
       _index: string;

@@ -1,10 +1,10 @@
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch from 'node-fetch';
 import { adjustmentDescHeader } from './../orders/orderService';
-import { signUp } from './../auth/authenticate';
+import { manualAuthSignUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer, RenewalTypes } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes, CuisineTypes } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -12,9 +12,9 @@ import { SignedInUser } from '../../utils/apolloUtils';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import moment from 'moment';
+import { OutgoingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
-
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
@@ -34,8 +34,15 @@ class ConsumerService implements IConsumerService {
     this.planService = planService;
   }
 
-  public async cancelSubscription(signedInUser: SignedInUser) {
+  public async cancelSubscription(signedInUser: SignedInUser | null) {
     try {
+      if (!signedInUser) {
+        console.warn('No signedInUser for subscription cancel');
+        return {
+          res: false,
+          error: 'Need a signed in user'
+        }
+      }
       const stripeCustomerId = signedInUser.stripeCustomerId;
       const subscriptionId = signedInUser.stripeSubscriptionId;
       if (!stripeCustomerId) {
@@ -87,11 +94,11 @@ class ConsumerService implements IConsumerService {
       });;
 
       const p2 = this.stripe.subscriptions.del(subscriptionId).catch(e => {
-        const msg = `Failed to delete subscription '${subscriptionId}' from stripe from elastic for user '${signedInUser.userId}'. ${e.stack}`;
+        const msg = `Failed to delete subscription '${subscriptionId}' from stripe from elastic for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
         throw e;
       });;
-      const p3 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser.userId}`, {
+      const p3 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
         headers: await getAuth0Header(),
         method: 'PATCH',
         body: JSON.stringify({
@@ -100,20 +107,20 @@ class ConsumerService implements IConsumerService {
           },
         })
       }).catch(e => {
-        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser.userId}'. ${e.stack}`;
+        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
         throw e;
       });
       const p4 = this.elastic.update({
         index: CONSUMER_INDEX,
-        id: signedInUser.userId,
+        id: signedInUser._id,
         body: {
           doc: {
             stripeSubscriptionId: null,
           }
         }
       }).catch(e => {
-        const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser.userId}'. ${e.stack}`;
+        const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
         throw e;
       });
@@ -149,50 +156,36 @@ class ConsumerService implements IConsumerService {
 
   public async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
-      let res: ApiResponse<SearchResponse<any>>
-      try {
-        res = await this.elastic.search({
-          index: CONSUMER_INDEX,
-          size: 1000,
-          _source: 'false',
-          body: {
-            query: {
-              ids: {
-                values: _id
-              }
-            }
-          }
-        });
-      } catch (e) {
-        console.error(`[ConsumerService] Couldn't search for consumer ${_id}. ${e.stack}`);
-        throw e;
-      }
-      if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
       let defaultPlan
-      try{
+      try {
         defaultPlan = await this.planService.getDefaultPlan();
-      } catch(e) {
-        throw new Error(`Failed to get default plan. ${e}`)
+      } catch (e) {
+        throw new Error (`Failed to get default plan. ${e.stack}`)
       }
       if (!defaultPlan) throw new Error('Could\'t get default plan');
+      const body: EConsumer = {
+        createdDate: Date.now(),
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        profile: {
+          name,
+          email,
+          phone: null,
+          card: null,
+          destination: null,
+        },
+        plan: {
+          stripePlanId: defaultPlan.stripeId,
+          deliveryDay: 0,
+          renewal: RenewalTypes.Auto,
+          cuisines: Object.values(CuisineTypes)
+        },
+      }
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
         refresh: 'true', 
-        body: {
-          createdDate: Date.now(),
-          profile: {
-            name,
-            email,
-            phone: null,
-          },
-          plan: {
-            stripePlanId: defaultPlan.stripeId,
-            deliveryDay: 0,
-            rewnewal: RenewalTypes.Auto,
-            cuisines: []
-          }, // todo alvin add this, "as EConsumer"
-        }
+        body
       });
       return {
         res: true,
@@ -204,6 +197,21 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  async getConsumer(_id: string): Promise<IConsumer | null> {
+    try {
+      const consumer = await this.elastic.getSource({ index: CONSUMER_INDEX, id: _id });
+      return {
+        _id,
+        stripeCustomerId: consumer.body.stripeCustomerId,
+        stripeSubscriptionId: consumer.body.stripeSubscriptionId,
+        profile: consumer.body.profile,
+        plan: consumer.body.plan
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to get consumer ${_id}: ${e.stack}`)
+      return null;
+    }
+  }
 
   async insertEmail(email: string): Promise<MutationBoolRes> {
     try {
@@ -248,9 +256,10 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async signUp(email: string, name: string, pass: string, res: express.Response) {
+  async signUp(email: string, name: string, pass: string, res?: OutgoingMessage) {
     try {
-      const signedUp = await signUp(email, name, pass, res);
+      if (!res) throw new Error('Res is undefined');
+      const signedUp = await manualAuthSignUp(email, name, pass, res);
       // todo alvin: insert consumer here using results from signUp
       return {
         res: signedUp.res ? true : false,
@@ -262,21 +271,21 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async upsertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+  async upsertConsumer(_id: string, consumer: EConsumer): Promise<IConsumer> {
     // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
     // dupe entries.
     try {
       await this.elastic.index({
         index: CONSUMER_INDEX,
-        id: userId,
+        id: _id,
         body: consumer
       });
       return {
-        userId,
+        _id,
         ...consumer
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to upsert consumer '${userId}', '${JSON.stringify(consumer)}'`, e.stack);
+      console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
   }
@@ -294,7 +303,7 @@ export const getConsumerService = () => {
   initConsumerService(
     initElastic(),
     new Stripe(activeConfig.server.stripe.key, {
-      apiVersion: '2019-12-03',
+      apiVersion: '2020-03-02',
     }),
     getPlanService()
   );
