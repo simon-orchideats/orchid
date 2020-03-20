@@ -210,7 +210,7 @@ export const manualAuthSignUp = async (
     `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
   ]);
   return {
-    res: {},
+    res: await jwt.verify(authJson.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }),
     error: null,
   };
 }

@@ -50,25 +50,29 @@ class ConsumerService implements IConsumerService {
         throw new Error (`Failed to get default plan. ${e.stack}`)
       }
       if (!defaultPlan) throw new Error('Could\'t get default plan');
+      const body: EConsumer = {
+        createdDate: Date.now(),
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        profile: {
+          name,
+          email,
+          phone: null,
+          card: null,
+          destination: null,
+        },
+        plan: {
+          stripePlanId: defaultPlan.stripeId,
+          deliveryDay: 0,
+          renewal: RenewalTypes.Auto,
+          cuisines: Object.values(CuisineTypes)
+        },
+      }
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
         refresh: 'true', 
-        body: {
-          createdDate: Date.now(),
-          stripeCustomerId: null,
-          stripeSubscriptionId: null,
-          profile: {
-            name,
-            email,
-          },
-          plan: {
-            stripePlanId: defaultPlan.stripeId,
-            deliveryDay: 0,
-            renewal: RenewalTypes.Auto,
-            cuisines: Object.values(CuisineTypes)
-          },
-        }
+        body
       });
       return {
         res: true,
@@ -81,41 +85,18 @@ class ConsumerService implements IConsumerService {
   }
 
   async getConsumer(_id: string): Promise<IConsumer | null> {
-    let res: ApiResponse<SearchResponse<any>>
     try {
-      res = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  match: { _id: _id }
-                }
-              ]
-            }
-          }
-        }
-      });
-      if (res.body.hits.total.value > 0 ) {
-        const options: any = {
-          index: CONSUMER_INDEX,
-          id:_id
-        }
-        const consumer = await this.elastic.getSource(options);
-        return {
-          _id,
-          stripeCustomerId: consumer.body.stripeCustomerId,
-          stripeSubscriptionId: consumer.body.stripeSubscriptionId,
-          profile: consumer.body.profile,
-          plan: consumer.body.plan
-        }
+      const consumer = await this.elastic.getSource({ index: CONSUMER_INDEX, id: _id });
+      return {
+        _id,
+        stripeCustomerId: consumer.body.stripeCustomerId,
+        stripeSubscriptionId: consumer.body.stripeSubscriptionId,
+        profile: consumer.body.profile,
+        plan: consumer.body.plan
       }
-        return null
     } catch (e) {
-      console.error(`[ConsumerService]: ${e.stack}`)
-      throw e
+      console.error(`[ConsumerService] Failed to get consumer ${_id}: ${e.stack}`)
+      return null;
     }
   }
 
