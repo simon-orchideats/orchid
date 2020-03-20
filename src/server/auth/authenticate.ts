@@ -1,3 +1,4 @@
+import { decodeToSignedInUser } from './../../utils/apolloUtils';
 import { universalAuthCB, popupSocialAuthCB, stateRedirectCookie, accessTokenCookie, refreshTokenCookie } from './../../utils/auth';
 import { getConsumerService } from './../consumer/consumerService';
 import { randomString } from './utils';
@@ -210,7 +211,7 @@ export const manualAuthSignUp = async (
     `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
   ]);
   return {
-    res: await jwt.verify(authJson.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }),
+    res: decodeToSignedInUser(authJson.access_token),
     error: null,
   };
 }

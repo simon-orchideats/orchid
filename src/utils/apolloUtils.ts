@@ -27,25 +27,29 @@ export interface SignedInUser {
   }
 }
 
-const getSignedInUser =  (req?: IncomingMessage): SignedInUser | null => {
-  if (!req) return null;
-  const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
-  if (!access) return null;
+export const decodeToSignedInUser = (access: string): SignedInUser => {
   try {
     const decoded = jwt.verify(access, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }) as any;
     return {
       _id: decoded.sub,
       stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
-      stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubId`],
+      stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubscriptionId`],
       profile: {
         name: decoded[`${activeConfig.server.auth.audience}/name`],
         email: decoded[`${activeConfig.server.auth.audience}/email`]
       }   
     };
-  } catch(e) {
+  } catch (e) {
     console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
     throw (e)
   }
+}
+
+const getSignedInUser = (req?: IncomingMessage): SignedInUser | null => {
+  if (!req) return null;
+  const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
+  if (!access) return null;
+  return decodeToSignedInUser(access);
 }
 
 export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({

@@ -8,7 +8,7 @@ import { getConsumerService, IConsumerService } from './../consumer/consumerServ
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
-import { getCannotBeEmptyError } from './../utils/error';
+import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
 import { isDate2DaysLater } from './../../order/utils';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
@@ -21,6 +21,8 @@ import { MutationBoolRes } from '../../utils/mutationResModel';
 
 const ORDER_INDEX = 'orders';
 export const adjustmentDescHeader = 'Plan Adjustment for week of ';
+export const getAdjustmentDesc = (fromPlanName: string, toPlanName: string, date: string) =>
+  `Plan adjustment from '${fromPlanName}' to '${toPlanName}' for week of ${date}`
 
 /**
  * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
@@ -54,31 +56,50 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
   }
 }
 
+export interface IOrderService {
+  placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationBoolRes>
+  getMyUpcomingOrders(signedInUser: SignedInUser | null): Promise<IOrder[]>
+  updateOrder(
+    signedInUser: SignedInUser | null,
+    orderId: string,
+    updateOptions: IUpdateOrderInput,
+    now: number,
+  ): Promise<MutationBoolRes>
+}
+
 class OrderService {
   private readonly elastic: Client
   private readonly stripe: Stripe
-  private readonly geoService: IGeoService;
-  private readonly planService: IPlanService;
-  private readonly consumerService: IConsumerService;
-  private readonly restService: IRestService;
+  private geoService?: IGeoService;
+  private planService?: IPlanService;
+  private consumerService?: IConsumerService;
+  private restService?: IRestService;
 
   public constructor(
     elastic: Client,
     stripe: Stripe,
-    geoService: IGeoService,
-    planService: IPlanService,
-    consumerService: IConsumerService,
-    restService: IRestService
   ) {
     this.elastic = elastic;
     this.stripe = stripe;
+  }
+
+  public setGeoService(geoService: IGeoService) {
     this.geoService = geoService;
+  }
+  public setPlanService(planService: IPlanService) {
     this.planService = planService;
+  }
+
+  public setConsumerService(consumerService: IConsumerService) {
     this.consumerService = consumerService;
+  }
+
+  public setRestService(restService: IRestService) {
     this.restService = restService;
   }
 
   private validateRest(restId: string, meals: ICartMeal[]) {
+    if (!this.restService) return Promise.reject('RestService not set');
     return this.restService.getRest(restId, ['menu'])
       .then(rest => {
         if (!rest) {
@@ -107,6 +128,7 @@ class OrderService {
     state,
     zip,
   }: IAddress) {
+    if (!this.geoService) return Promise.reject('GeoService not set');
     return this.geoService.getGeocode(address1, city, state, zip)
     .then(() => '')  
     .catch(e => {
@@ -117,6 +139,7 @@ class OrderService {
   } 
 
   private validatePlan(planId: string, cartMealCount: number) {
+    if (!this.planService) return Promise.reject('PlanService not set');
     return this.planService.getPlan(planId)
       .then(stripePlan => {
         if (!stripePlan) {
@@ -180,6 +203,7 @@ class OrderService {
   }
 
   private async validateUpdateOrder(updateOptions: IUpdateOrderInput, now: number) {
+    if (!this.planService) return Promise.reject('PlanService not set');
     const phoneValidation = validatePhone(updateOptions.phone);
     if (phoneValidation) return phoneValidation;
     const deliveryDateValidation = validateDeliveryDate(updateOptions.deliveryDate, now);
@@ -221,8 +245,27 @@ class OrderService {
     }
   }
 
-  async placeOrder(signedInUser: SignedInUser, cart: ICartInput): Promise<MutationBoolRes> {
+  private async getOrder(orderId: string, fields?: string[]) {
+    const options: any = {
+      index: ORDER_INDEX,
+      id: orderId,
+    };
+    if (fields) options._source = fields;
     try {
+      const res: ApiResponse<EOrder> = await this.elastic.getSource(options);
+      return res.body;
+    } catch (e) {
+      console.error(`[OrderService] failed to get order '${orderId}'`, e.stack);
+      return null;
+    }
+  }
+
+  async placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationBoolRes> {
+    if (!signedInUser) throw getNotSignedInErr()
+    try {
+      if (!this.consumerService) throw new Error ('ConsumerService not set');
+      if (!this.restService) throw new Error ('RestService not set');
+
       const validation = await this.validateCart(cart);
       if (validation) {
         return {
@@ -368,7 +411,8 @@ class OrderService {
     }
   }
 
-  async getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+  async getMyUpcomingOrders(signedInUser: SignedInUser | null): Promise<IOrder[]> {
+    if (!signedInUser) throw getNotSignedInErr()
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
         index: ORDER_INDEX,
@@ -388,7 +432,7 @@ class OrderService {
                     },
                     {
                       term: {
-                        'consumer._id': signedInUser._id
+                        'consumer.userId': signedInUser._id
                       }
                     }
                   ]
@@ -406,6 +450,7 @@ class OrderService {
         }
       });
       return await Promise.all(res.body.hits.hits.map(async ({ _id, _source }) => {
+        if (!this.restService) throw new Error ('RestService not set');
         if (_source.rest.restId) {
           const rest = await this.restService.getRest(_source.rest.restId)
           if (!rest) throw Error(`Couldn't get rest ${_source.rest.restId}`);
@@ -419,27 +464,14 @@ class OrderService {
     }
   }
 
-  private async getOrder(orderId: string, fields?: string[]) {
-    const options: any = {
-      index: ORDER_INDEX,
-      id: orderId,
-    };
-    if (fields) options._source = fields;
-    try {
-      const res: ApiResponse<EOrder> = await this.elastic.getSource(options);
-      return res.body;
-    } catch (e) {
-      console.error(`[OrderService] failed to get order '${orderId}'`, e.stack);
-      return null;
-    }
-  }
-
   async updateOrder(
-    signedInUser: SignedInUser,
+    signedInUser: SignedInUser | null,
     orderId: string,
     updateOptions: IUpdateOrderInput,
     now = Date.now(),
   ): Promise<MutationBoolRes> {
+    if (!signedInUser) throw getNotSignedInErr()
+    if (!this.planService) throw new Error ('RestService not set');
     try {
       const validation = await this.validateUpdateOrder(updateOptions, now);
       if (validation) {
@@ -486,11 +518,11 @@ class OrderService {
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
 
-      if (targetOrder.consumer._id !== signedInUser._id) {
+      if (targetOrder.consumer.userId !== signedInUser._id) {
         const msg = 'Can only update your own orders';
         console.warn(
           '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer._id}', signedInUser '${signedInUser._id}'`
+          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
         )
         return {
           res: false,
@@ -616,20 +648,13 @@ let orderService: OrderService;
 export const initOrderService = (
   elastic: Client,
   stripe: Stripe,
-  geoService: IGeoService,
-  planService: IPlanService,
-  consumerService: IConsumerService,
-  restService: IRestService,
 ) => {
   if (orderService && process.env.NODE_ENV !== 'test') throw new Error('[OrderService] already initialized.');
   orderService = new OrderService(
     elastic,
     stripe,
-    geoService,
-    planService,
-    consumerService,
-    restService,
   );
+  return orderService;
 };
 
 export const getOrderService = () => {
@@ -638,11 +663,11 @@ export const getOrderService = () => {
     initElastic(),
     new Stripe(activeConfig.server.stripe.key, {
       apiVersion: '2020-03-02',
-    }),
-    getGeoService(),
-    getPlanService(),
-    getConsumerService(),
-    getRestService(),
+    })
   );
+  orderService!.setConsumerService(getConsumerService());
+  orderService!.setGeoService(getGeoService());
+  orderService!.setPlanService(getPlanService());
+  orderService!.setRestService(getRestService());
   return orderService;
 }

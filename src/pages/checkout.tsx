@@ -78,6 +78,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validateCuisineRef= useRef<() => boolean>();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const [consumer, setConsumer] = useState<{ name: string, email: string }>();
   const pm = useRef<stripe.PaymentMethodResponse>();
 
   useEffect(() => {
@@ -146,14 +147,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validateAddressRef.current!()) {
       isValid = false;
     }
-    if (!accountName) {
+    if (!consumer && !accountName) {
       setAccountNameError('Your name is incomplete');
       isValid = false;
     }
-    if (!validateEmailRef.current!()) {
+    if (!consumer && !validateEmailRef.current!()) {
       isValid = false;
     }
-    if (!password) {
+    if (!consumer && !password) {
       setPasswordError('Your password is incomplete');
       isValid = false;
     }
@@ -176,12 +177,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       connection: 'google-oauth2',
       responseType: 'code',
       scope: 'openid profile email offline_access',
-    }, (err: auth0.Auth0Error | null, res: auth0.Auth0Result) => {
+    }, (err: auth0.Auth0Error | null, res: any) => {
       if (err) {
         console.error(`Could not social auth. '${JSON.stringify(err)}'`);
         throw err;
       }
-      console.log(res);
+      setConsumer({
+        name: res.idTokenPayload.name,
+        email: res.idTokenPayload.email,
+      });
+      if (!deliveryName && oneName) {
+        setDeliveryName(res.idTokenPayload.name);
+      }
     });
   }
 
@@ -219,7 +226,24 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
     if (!validate() || pm.current.error) return;
-    signUp(emailInputRef.current!.value, accountName, password);
+    if (!consumer) {
+      signUp(emailInputRef.current!.value, accountName, password);
+    } else {
+      placeOrder(cart.getCartInput(
+        deliveryName,
+        addr1InputRef.current!.value,
+        addr2InputRef.current!.value,
+        cityInputRef.current!.value,
+        state as state,
+        zipInputRef.current!.value,
+        phoneInputRef.current!.value,
+        Card.getCardFromStripe(pm.current.paymentMethod!.card),
+        pm.current.paymentMethod!.id,
+        deliveryInstructions,
+        renewal,
+        cuisines,
+      ));
+    }
   }
   return (
     <Container
@@ -322,66 +346,82 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           >
             Account
           </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label='Name'
-                variant='outlined'
-                size='small'
-                fullWidth
-                error={!!accountNameError}
-                helperText={accountNameError}
-                value={accountName}
-                onChange={e => {
-                  if (oneName) {
-                    setDeliveryName(e.target.value);
-                    if (deliveryNameError) setDeliveryNameError('');
-                  }
-                  setAccountName(e.target.value);
-                  if (accountNameError) setAccountNameError('');
-                }}
-              />
+          {
+            consumer ?
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant='body1'>
+                  {consumer.name}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant='body1'>
+                  {consumer.email}
+                </Typography>
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <EmailInput
-                inputRef={emailInputRef}
-                defaultValue={cart.Email ? cart.Email : ''}
-                setValidator={(validator: () => boolean) => {
-                  validateEmailRef.current = validator;
-                }}
-              />
+            :
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  label='Name'
+                  variant='outlined'
+                  size='small'
+                  fullWidth
+                  error={!!accountNameError}
+                  helperText={accountNameError}
+                  value={accountName}
+                  onChange={e => {
+                    if (oneName) {
+                      setDeliveryName(e.target.value);
+                      if (deliveryNameError) setDeliveryNameError('');
+                    }
+                    setAccountName(e.target.value);
+                    if (accountNameError) setAccountNameError('');
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <EmailInput
+                  inputRef={emailInputRef}
+                  defaultValue={cart.Email ? cart.Email : ''}
+                  setValidator={(validator: () => boolean) => {
+                    validateEmailRef.current = validator;
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label='Password'
+                  type='password'
+                  variant='outlined'
+                  size='small'
+                  error={!!passwordError}
+                  helperText={passwordError}
+                  fullWidth
+                  value={password}
+                  onChange={e => {
+                    setPassword(e.target.value);
+                    if (passwordError) setPasswordError('');
+                  }}
+                />
+              </Grid>
+              <Grid xs={12} item>
+                <Typography color='textSecondary' align='center'>
+                  or
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  variant='outlined'
+                  onClick={() => google()}
+                  startIcon={<GLogo />}
+                >
+                  Sign up with google
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label='Password'
-                type='password'
-                variant='outlined'
-                size='small'
-                error={!!passwordError}
-                helperText={passwordError}
-                fullWidth
-                value={password}
-                onChange={e => {
-                  setPassword(e.target.value);
-                  if (passwordError) setPasswordError('');
-                }}
-              />
-            </Grid>
-            <Grid xs={12} item>
-              <Typography color='textSecondary' align='center'>
-                or
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                variant='outlined'
-                onClick={() => google()}
-                startIcon={<GLogo />}
-              >
-                Sign up with google
-              </Button>
-            </Grid>
-          </Grid>
+          }
           <Typography
             variant='h6'
             color='primary'

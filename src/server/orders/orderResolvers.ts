@@ -1,20 +1,10 @@
 import { ICartInput } from '../../order/cartModel';
-import { ServerResolovers, SignedInUser } from '../../utils/apolloUtils';
+import { ServerResolovers } from '../../utils/apolloUtils';
 import { getOrderService } from './orderService';
 import { IUpdateOrderInput } from '../../order/orderModel';
 
-const signedInUser: SignedInUser = {
-  _id: '123',
-  stripeSubscriptionId: 'sub_Gu8thU86pieDAB',
-  stripeCustomerId : "cus_Gu8tefqciK74mK",
-  profile: {
-    name: 'name',
-    email: 'email@email.com',
-  },
-}
-
 export const OrderQueryResolvers: ServerResolovers = {
-  myUpcomingOrders: async() => {
+  myUpcomingOrders: async(_root, _args, { signedInUser }) => {
     return await getOrderService().getMyUpcomingOrders(signedInUser);
   }
 }
@@ -23,6 +13,7 @@ export const OrderMutationResolvers: ServerResolovers = {
   placeOrder: async (
     _root,
     { cart }: { cart: ICartInput },
+    { signedInUser },
   ) => {
     return await getOrderService().placeOrder(signedInUser, cart);
   },
@@ -30,6 +21,7 @@ export const OrderMutationResolvers: ServerResolovers = {
   updateOrder: async (
     _root,
     { updateOptions, orderId }: { updateOptions: IUpdateOrderInput, orderId: string },
+    { signedInUser },
   ) => {
     return await getOrderService().updateOrder(signedInUser, orderId, updateOptions);
   },

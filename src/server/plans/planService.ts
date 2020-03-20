@@ -80,6 +80,7 @@ let planService: PlanService;
 export const initPlanService = (stripe: Stripe) => {
   if (planService) throw new Error('[PlanService] already initialized.');
   planService = new PlanService(stripe);
+  return planService;
 };
 
 export const getPlanService = () => {

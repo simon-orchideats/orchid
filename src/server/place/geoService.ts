@@ -105,6 +105,7 @@ let geoService: GeoService;
 export const initGeoService = () => {
   if (geoService) throw new Error('[GeoService] already initialized.');
   geoService = new GeoService();
+  return geoService;
 };
 
 export const getGeoService = () => {

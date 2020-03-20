@@ -20,7 +20,7 @@ import {
   clientInitialState
 } from '../global/state/localState'
 import { isServer } from './isServer';
-import { getContext } from '../../utils/apolloUtils';
+import { getContext, Context } from '../../utils/apolloUtils';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 
@@ -49,7 +49,7 @@ export default function withApollo(
     apolloState,
     ...pageProps
   }: InitialProps) => {
-    const client = apolloClient || initApolloClient(apolloState)
+    const client = apolloClient || initApolloClient(getContext(), apolloState)
     return (
       <ApolloProvider client={client}>
         <PageComponent {...pageProps} />
@@ -135,7 +135,7 @@ export default function withApollo(
  * Creates or reuses apollo client in the browser.
  * @param  {Object} initialState
  */
-export function initApolloClient(ctx: object, initialState?: any) {
+export function initApolloClient(ctx: Context, initialState?: any) {
   // Make sure to create a new client for every server-side request so that data
   // isn't shared between connections (which would be bad)
   if (isServer()) {
@@ -154,7 +154,7 @@ export function initApolloClient(ctx: object, initialState?: any) {
  * Creates and configures the ApolloClient
  * @param  {Object} [initialState={}]
  */
-function createApolloClient(ctx = {}, initialState = {}) {
+function createApolloClient(ctx: Context, initialState = {}) {
   const ssrMode = isServer();
   const cache = new InMemoryCache({
     cacheRedirects: {
@@ -176,7 +176,7 @@ function createApolloClient(ctx = {}, initialState = {}) {
   })
 }
 
-function createIsomorphLink(context: object) {
+function createIsomorphLink(context: Context) {
   // can't do isServer() here, not sure why
   if (typeof window === 'undefined') {
     // not sure why i had to do import instead of require which the example...

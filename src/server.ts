@@ -1,20 +1,20 @@
 import { universalAuthCB, popupSocialAuthCB } from './utils/auth';
 import { init } from '@sentry/node';
 import { CaptureConsole } from '@sentry/integrations';
-import { initConsumerService, getConsumerService } from './server/consumer/consumerService';
-import { initGeoService, getGeoService } from './server/place/geoService';
+import { initConsumerService } from './server/consumer/consumerService';
+import { initGeoService } from './server/place/geoService';
 import { getContext } from './utils/apolloUtils';
 import { initOrderService } from './server/orders/orderService';
 import express from 'express';
 import path from 'path';
 import next from 'next';
 import { initElastic } from './server/elasticConnector';
-import { initPlanService, getPlanService } from './server/plans/planService';
+import { initPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { activeConfig, isProd } from './config';
 import { schema } from './schema';
-import { initRestService, getRestService } from './server/rests/restService';
+import { initRestService } from './server/rests/restService';
 import Stripe from 'stripe';
 import cookieParser from "cookie-parser";
 import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './server/auth/authenticate';
@@ -35,6 +35,22 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * hurt us very much and since we need to check for `req.header('x-forwarded-proto') !== 'https'` for heroku,
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
+
+// todo: listen for stripe event of payment and then create the next order
+// todo: use refresh token...
+// todo logout
+// todo when signign myConsumer run again to reset the navbar
+// todo navbar needs to represent the actual signed in user
+// todo cancel subscription
+// todo update profile
+// todo update plan
+// todo on checkout with skip renewal, create nextnext that's a skip
+// todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
+// todo upcoming-dceliveries after ordering is empty
+// todo in checkout, i could login via google, then go back to menu then go back to checkout, i have to log in again which is bad
+// todo use getAdjustmentDesc
+// todo test for consumerServiceTest
+
 
 init({
   dsn: activeConfig.server.sentry.dsn,
@@ -72,22 +88,23 @@ const start = async () => {
     apiVersion: '2020-03-02',
   });
 
-  initGeoService();
-  initPlanService(stripe);
-  initConsumerService(elastic, stripe, getPlanService());
-  initRestService(elastic, getGeoService());
-  initOrderService(
-    elastic,
-    stripe,
-    getGeoService(),
-    getPlanService(),
-    getConsumerService(),
-    getRestService()
-  );
+  const geoService = initGeoService();
+  const planService = initPlanService(stripe);
+  const consumerService = initConsumerService(elastic, stripe);
+  const restService = initRestService(elastic);
+  const orderService = initOrderService(elastic, stripe);
+
+  restService.setGeoService(geoService);
+  consumerService.setOrderService(orderService);
+  consumerService.setPlanService(planService);
+  orderService.setConsumerService(consumerService);
+  orderService.setGeoService(geoService);
+  orderService.setPlanService(planService);
+  orderService.setRestService(restService);
 
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, res }) => getContext(req, res),
+    context: ({ req, res }) => getContext(req, res)
   });
 
   apolloServer.applyMiddleware({

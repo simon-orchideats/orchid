@@ -11,7 +11,7 @@ type OrderStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
 export interface EOrder {
   readonly cartUpdatedDate: number
   readonly consumer: {
-    readonly _id: string
+    readonly userId: string
     readonly profile: IConsumerProfile
   },
   readonly costs: ICost
@@ -148,7 +148,7 @@ export class Order implements IOrder{
       },
       deliveryDate,
       consumer: {
-        _id: consumer._id,
+        userId: consumer.userId,
         profile: {
           name: consumer.profile.name,
           email: consumer.profile.email,
@@ -176,7 +176,7 @@ export class Order implements IOrder{
       },
       status: 'Open',
       consumer: {
-        _id: signedInUser._id,
+        userId: signedInUser._id,
         profile: {
           name: signedInUser.profile.name,
           email: signedInUser.profile.email,

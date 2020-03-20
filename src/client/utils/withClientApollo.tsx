@@ -1,6 +1,7 @@
 import React from 'react'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { initApolloClient } from './withPageApollo';
+import { getContext } from '../../utils/apolloUtils';
 // import { isServer } from './isServer';
 
 /**
@@ -10,7 +11,7 @@ import { initApolloClient } from './withPageApollo';
  */
 export default function withClientApollo<T>(Component: React.ComponentType<T>) {
   const WithClientApollo = (props: T) => {
-    const client = initApolloClient({})
+    const client = initApolloClient(getContext(), {})
     return (
       <ApolloProvider client={client}>
         <Component {...props} />

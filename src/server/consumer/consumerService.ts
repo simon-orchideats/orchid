@@ -1,10 +1,10 @@
 import { getAuth0Header } from './../auth/auth0Management';
-import fetch from 'node-fetch';
-import { adjustmentDescHeader } from './../orders/orderService';
+import fetch, { Response } from 'node-fetch';
+import { adjustmentDescHeader, IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer, RenewalTypes, CuisineTypes } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes, CuisineTypes, IConsumerPlan } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -19,22 +19,32 @@ export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationBoolRes>
-  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) => Promise<void>
+  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationBoolRes>
 }
 
 class ConsumerService implements IConsumerService {
   private readonly elastic: Client
   private readonly stripe: Stripe
-  private readonly planService: IPlanService
+  private planService?: IPlanService
+  private orderService?: IOrderService
 
-  public constructor(elastic: Client, stripe: Stripe, planService: IPlanService) {
+  public constructor(elastic: Client, stripe: Stripe) {
     this.elastic = elastic;
     this.stripe = stripe;
+  }
+
+  public setPlanService(planService: IPlanService) {
     this.planService = planService;
   }
 
+  public setOrderService(orderService: IOrderService) {
+    this.orderService = orderService;
+  }
+
   public async cancelSubscription(signedInUser: SignedInUser | null) {
+    // todo simon: finish this. test this.
     try {
       if (!signedInUser) {
         console.warn('No signedInUser for subscription cancel');
@@ -136,26 +146,28 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string, stripeCustomerId: string) {
+  public async insertConsumer(_id: string, name: string, email: string): Promise<MutationBoolRes> {
     try {
-      await fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${userId}`, {
-        headers: await getAuth0Header(),
-        method: 'PATCH',
-        body: JSON.stringify({
-          app_metadata: {
-            stripeSubscriptionId,
-            stripeCustomerId,
-          },
-        })
-      });
-    } catch (e) {
-      console.error(`[ConsumerService] couldn't add stripeSubscriptionId for user '${userId}'`, e.stack);
-      throw new Error('Internal Server Error');
-    }
-  }
-
-  public async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
-    try {
+      if (!this.planService) throw new Error('PlanService not set');
+      let res: ApiResponse<SearchResponse<any>>
+      try {
+        res = await this.elastic.search({
+          index: CONSUMER_INDEX,
+          size: 1000,
+          _source: 'false',
+          body: {
+            query: {
+              ids: {
+                values: _id
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error(`[ConsumerService] Couldn't search for consumer ${_id}. ${e.stack}`);
+        throw e;
+      }
+      if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
       let defaultPlan
       try {
         defaultPlan = await this.planService.getDefaultPlan();
@@ -199,7 +211,10 @@ class ConsumerService implements IConsumerService {
 
   async getConsumer(_id: string): Promise<IConsumer | null> {
     try {
-      const consumer = await this.elastic.getSource({ index: CONSUMER_INDEX, id: _id });
+      const consumer = await this.elastic.getSource({
+        index: CONSUMER_INDEX,
+        id: _id
+      });
       return {
         _id,
         stripeCustomerId: consumer.body.stripeCustomerId,
@@ -260,15 +275,38 @@ class ConsumerService implements IConsumerService {
     try {
       if (!res) throw new Error('Res is undefined');
       const signedUp = await manualAuthSignUp(email, name, pass, res);
-      // todo alvin: insert consumer here using results from signUp
+      if (signedUp.res === null || signedUp.error) {
+        return {
+          res: false,
+          error: signedUp.error,
+        }
+      }
+      await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
       return {
-        res: signedUp.res ? true : false,
-        error: signedUp.error ? signedUp.error : null,
+        res: true,
+        error: null,
       }
     } catch (e) {
       console.error(`[ConsumerService] failed to signup '${email}'`, e.stack);
       throw new Error('Internal Server Error');
     }
+  }
+
+  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string, stripeCustomerId: string): Promise<Response> {
+    return fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${userId}`, {
+      headers: await getAuth0Header(),
+      method: 'PATCH',
+      body: JSON.stringify({
+        app_metadata: {
+          stripeSubscriptionId,
+          stripeCustomerId,
+        },
+      })
+    }).catch(e => {
+      const msg = `[ConsumerService] couldn't add stripeSubscriptionId for user '${userId}'`
+      console.error(msg, e.stack);
+      throw e;
+    });
   }
 
   async upsertConsumer(_id: string, consumer: EConsumer): Promise<IConsumer> {
@@ -289,13 +327,80 @@ class ConsumerService implements IConsumerService {
       throw e;
     }
   }
+
+  
+  async updateMyPlan(signedInUser: SignedInUser | null, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
+    // todo simon: finish this
+    if (!signedInUser) {
+      console.warn('No signedInUser for plan update');
+      return {
+        res: false,
+        error: 'Need a signed in user'
+      }
+    }
+    try {
+      if (!this.orderService) throw new Error('OrderService not set');
+      /**
+       * update....
+       * - consumer plan in elastic
+       * - consumer's upcoming orders, adjust the meals and price
+       *    - update cartUpdatedDate, costs, rest.meals
+       * 
+       * stripe subscription, change the plan
+       *  - get the upcoming invoice.
+       *  - find 
+       */
+      //@ts-ignore
+      const profileUpdater = this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: signedInUser._id,
+        body: {
+          doc: {
+            plan: newPlan,
+          }
+        }
+      }).catch(e => {
+        const msg = 'Failed to update elastic consumer plan for consumer'
+                    + ` '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+      // left off here
+      return {
+        res: true,
+        error: null,
+      }
+      //
+      // const upcomingOrdersUpdater = this.elastic.updateByQuery({
+      //   index: CONSUMER_INDEX,
+      //   body: {
+      //     script: {
+      //       lang: 'painless',
+      //       source: 'ctx._source["house"] = "stark"'
+      //     },
+      //     query: {
+      //       match: {
+      //         character: 'stark'
+      //       }
+      //     }
+      //   }
+      // })
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to update plan for user '${signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`);
+      throw new Error('Internal Server Error');
+    }
+  }
 }
 
 let consumerService: ConsumerService;
 
-export const initConsumerService = (elastic: Client,  stripe: Stripe, planService: IPlanService) => {
+export const initConsumerService = (
+  elastic: Client,
+  stripe: Stripe,
+) => {
   if (consumerService) throw new Error('[ConsumerService] already initialized.');
-  consumerService = new ConsumerService(elastic, stripe, planService);
+  consumerService = new ConsumerService(elastic, stripe);
+  return consumerService;
 };
 
 export const getConsumerService = () => {
@@ -305,7 +410,8 @@ export const getConsumerService = () => {
     new Stripe(activeConfig.server.stripe.key, {
       apiVersion: '2020-03-02',
     }),
-    getPlanService()
   );
+  consumerService!.setOrderService(getOrderService());
+  consumerService!.setPlanService(getPlanService());
   return consumerService;
 }

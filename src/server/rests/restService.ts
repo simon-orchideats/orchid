@@ -14,15 +14,19 @@ export interface IRestService {
 
 class RestService implements IRestService {
   private readonly elastic: Client
-  private readonly geoService: IGeoService
+  private geoService?: IGeoService
 
-  public constructor(elastic: Client, geoService: IGeoService) {
+  public constructor(elastic: Client) {
     this.elastic = elastic;
+  }
+
+  public setGeoService(geoService: IGeoService) {
     this.geoService = geoService;
   }
 
   async getNearbyRests(zip: string): Promise<IRest[]> {
     try {
+      if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getCityState(zip);
       if (!geo) return [];
       const { city, state } = geo;
@@ -96,16 +100,15 @@ class RestService implements IRestService {
 
 let restService: RestService;
 
-export const initRestService = (elastic: Client, geoService: IGeoService) => {
+export const initRestService = (elastic: Client) => {
   if (restService) throw new Error('[RestService] already initialized.');
-  restService = new RestService(elastic, geoService);
+  restService = new RestService(elastic);
+  return restService;
 };
 
 export const getRestService = () => {
   if (restService) return restService;
-  initRestService(
-    initElastic(),
-    getGeoService(),
-  );
+  initRestService(initElastic());
+  restService!.setGeoService(getGeoService())
   return restService;
 }
