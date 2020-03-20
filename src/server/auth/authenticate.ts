@@ -1,7 +1,7 @@
-import { universalAuthCB, checkoutSocialAuthCB, stateRedirectCookie, accessTokenCookie, refreshTokenCookie } from './../../utils/auth';
+import { universalAuthCB, popupSocialAuthCB, stateRedirectCookie, accessTokenCookie, refreshTokenCookie } from './../../utils/auth';
 import { getConsumerService } from './../consumer/consumerService';
 import { randomString } from './utils';
-import express, { NextFunction } from 'express';
+import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
 import jwt from 'jsonwebtoken';
@@ -33,7 +33,7 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
   }
 }
 
-const storeTokensInCookies = async (
+const redirectedSignIn = async (
   req: express.Request,
   res: OutgoingMessage,
   stateRedirectCookie: string,
@@ -58,7 +58,7 @@ const storeTokensInCookies = async (
         redirect_uri,
       }),
     });
-    // todo alvin, decode access and insert consumer here
+
     const data =  await authRes.json();
     if (!authRes.ok) {
       const msg = `Token retrieval failed. '${JSON.stringify(data)}'`;
@@ -70,32 +70,32 @@ const storeTokensInCookies = async (
     try {
       decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] });
     } catch (e) {
-      console.error(`[Authenticate] Error in verifying accessToken: ${e.stack}`)
+      console.error(`Error in verifying accessToken: ${e.stack}`)
       throw e
     }
+    let consumer;
     try {
-      let consumerExists = await getConsumerService().getConsumer(decodedToken.sub)
-      if (!consumerExists) {
-        try {
-          getConsumerService().insertConsumer(
-            decodedToken.sub,
-            decodedToken[`${activeConfig.server.auth.audience}/name`],
-            decodedToken[`${activeConfig.server.auth.audience}/email`]
-          );
-        } catch(e) {
-          console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
-          throw e;
-        }
-      };
+      consumer = await getConsumerService().getConsumer(decodedToken.sub)
     } catch (e) {
-      console.error(`[Authenticate] Error in getting Consumer: ${e.stack}`);
+      console.error(`Error in getting Consumer: ${e.stack}`);
       throw e;
     }
+
+    if (!consumer) {
+      getConsumerService().insertConsumer(
+        decodedToken.sub,
+        decodedToken[`${activeConfig.server.auth.audience}/name`],
+        decodedToken[`${activeConfig.server.auth.audience}/email`]
+      ).catch(e => {
+        console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
+      })
+    };
     
     res.setHeader('Set-Cookie', [
       `${accessTokenCookie}=${data.access_token}; HttpOnly`,
       `${refreshTokenCookie}=${data.refresh_token}; HttpOnly`
     ])
+    return data
   } catch (e) {
     console.error(`[Authenticate] Couldn't get auth tokens`, e.stack);
     throw e;
@@ -105,7 +105,7 @@ const storeTokensInCookies = async (
 export const handleAuthCallback = async (req: express.Request, res: express.Response) => {
   try {
     const state = req.cookies[stateRedirectCookie];
-    await storeTokensInCookies(req, res, state, `${activeConfig.server.app.url}${universalAuthCB}`);
+    await redirectedSignIn(req, res, state, `${activeConfig.server.app.url}${universalAuthCB}`);
     res.redirect(`${activeConfig.server.app.url}${state.split('_')[1]}`);
   } catch (e) {
     console.error(`[Authenticate] Couldn't handle auth callback`, e.stack);
@@ -113,18 +113,33 @@ export const handleAuthCallback = async (req: express.Request, res: express.Resp
   }
 }
 
-export const handleCheckoutSocialAuth = async (req: express.Request, res: express.Response, next: NextFunction) => {
+export const handlePopupSocialAuth = async (req: express.Request, res: express.Response) => {
   try {
     const state = JSON.parse(req.cookies[`com.auth0.auth.${req.query.state}`]).state;
-    await storeTokensInCookies(req, res, state, `${activeConfig.server.app.url}${checkoutSocialAuthCB}`);
-    next();
+    const {
+      access_token,
+      id_token,
+      scope,
+      expires_in,
+      token_type,
+    } = await redirectedSignIn(req, res, state, `${activeConfig.server.app.url}${popupSocialAuthCB}`);
+
+    // redirect so popup window has data in url to pass back to parent window
+    res.redirect(`${activeConfig.server.app.url}/popup-auth`
+      + `#access_token=${access_token}`
+      + `&scope=${scope}`
+      + `&expires_in=${expires_in}`
+      + `&token_type=${token_type}`
+      + `&state=${state}`
+      + `&id_token=${id_token}`
+    );
   } catch (e) {
-    console.error(`[Authenticate] Couldn't handle checkout auth callback`, e.stack);
+    console.error(`[Authenticate] Couldn't handle popup auth callback`, e.stack);
     res.status(500).send('Could not log you in');
   }
 }
 
-export const signUp = async (
+export const manualAuthSignUp = async (
   email: string,
   name: string,
   password: string,

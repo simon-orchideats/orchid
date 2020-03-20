@@ -1,4 +1,4 @@
-import { signUp } from './../auth/authenticate';
+import { manualAuthSignUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
 import { EConsumer, IConsumer, RenewalTypes, CuisineTypes } from './../../consumer/consumerModel';
@@ -118,7 +118,7 @@ class ConsumerService implements IConsumerService {
       throw e
     }
   }
-  
+
   async insertEmail(email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
@@ -165,7 +165,7 @@ class ConsumerService implements IConsumerService {
   async signUp(email: string, name: string, pass: string, res?: OutgoingMessage) {
     try {
       if (!res) throw new Error('Res is undefined');
-      const signedUp = await signUp(email, name, pass, res);
+      const signedUp = await manualAuthSignUp(email, name, pass, res);
       // todo alvin: insert consumer here using results from signUp
       return {
         res: signedUp.res ? true : false,

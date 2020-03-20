@@ -25,7 +25,7 @@ import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
 import auth0 from 'auth0-js';
 import GLogo from "../client/checkout/GLogo";
-import { checkoutSocialAuthCB } from "../utils/auth";
+import { popupSocialAuthCB } from "../utils/auth";
 import { useSignUp } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
@@ -190,7 +190,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       domain: activeConfig.client.auth.domain,
       clientId: activeConfig.client.auth.clientId,
       audience: activeConfig.client.auth.audience,
-      redirectUri: `${activeConfig.client.app.url}${checkoutSocialAuthCB}`,
+      redirectUri: `${activeConfig.client.app.url}${popupSocialAuthCB}`,
       connection: 'google-oauth2',
       responseType: 'code',
       scope: 'openid profile email offline_access',

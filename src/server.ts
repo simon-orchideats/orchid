@@ -1,4 +1,4 @@
-import { universalAuthCB, checkoutSocialAuthCB } from './utils/auth';
+import { universalAuthCB, popupSocialAuthCB } from './utils/auth';
 import { init } from '@sentry/node';
 import { CaptureConsole } from '@sentry/integrations';
 import { initConsumerService, getConsumerService } from './server/consumer/consumerService';
@@ -17,7 +17,7 @@ import { schema } from './schema';
 import { initRestService, getRestService } from './server/rests/restService';
 import Stripe from 'stripe';
 import cookieParser from "cookie-parser";
-import { handleLoginRoute, handleAuthCallback, handleCheckoutSocialAuth } from './server/auth/authenticate';
+import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './server/auth/authenticate';
 
 /**
  * Next.js can automatically set up our web server. By default it serves html pages under /pages and sets up api
@@ -97,7 +97,7 @@ const start = async () => {
 
   app.use('/login', handleLoginRoute);
   app.use(universalAuthCB, handleAuthCallback);
-  app.use(checkoutSocialAuthCB, handleCheckoutSocialAuth)
+  app.use(popupSocialAuthCB, handlePopupSocialAuth);
   app.use('/privacy', (_req, res) => {
     res.sendFile(path.join(__dirname, '../public/html', 'privacy.html'));
   })
