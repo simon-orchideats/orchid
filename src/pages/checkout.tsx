@@ -24,7 +24,7 @@ import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
 import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
-import { useSignUp, useGoogleSignIn, useGetLazyConsumer } from "../consumer/consumerService";
+import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -53,6 +53,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const signInGoogle = useGoogleSignIn();
   const notify = useNotify();
   const [getConsumer] = useGetLazyConsumer();
+  const consumer = useGetConsumer();
   const [deliveryName, setDeliveryName] = useState<string>('');
   const [deliveryNameError, setDeliveryNameError] = useState<string>('');
   const validateAddressRef = useRef<() => boolean>();
@@ -78,7 +79,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validateCuisineRef= useRef<() => boolean>();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
-  const [consumer, setConsumer] = useState<{ name: string, email: string }>();
   const pm = useRef<stripe.PaymentMethodResponse>();
 
   useEffect(() => {
@@ -128,13 +128,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }, [signUpRes]);
 
-
   if (isServer()) {
     return <Typography>Redirecting...</Typography>
   } else if (!cart) {
     Router.replace(`${menuRoute}`);
     return <Typography>Redirecting...</Typography>
   }
+
+  if (consumer && consumer.data && !deliveryName && oneName) {
+    setDeliveryName(consumer.data.Profile.Name);
+  }
+
   const validate = () => {
     let isValid = true;
     if (!deliveryName) {
@@ -166,9 +170,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   
   const onClickGoogle = async () => {
     try {
-      const res = await signInGoogle();
-      setConsumer(res);
-      if (!deliveryName && oneName) setDeliveryName(res.name);
+      await signInGoogle();
       getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with google`);
@@ -211,7 +213,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
     if (!validate() || pm.current.error) return;
-    if (!consumer) {
+    if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {
       placeOrder(cart.getCartInput(
@@ -332,16 +334,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Account
           </Typography>
           {
-            consumer ?
+            consumer && consumer.data ?
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography variant='body1'>
-                  {consumer.name}
+                  {consumer.data.Profile.Name}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant='body1'>
-                  {consumer.email}
+                  {consumer.data.Profile.Email}
                 </Typography>
               </Grid>
             </Grid>
