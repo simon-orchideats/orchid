@@ -3,13 +3,14 @@ import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { Plan } from "../../plan/planModel";
-import { deliveryRoute } from "../../pages/delivery";
 import { Cart } from "../../order/cartModel";
 import Router, { useRouter } from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { ApolloError } from "apollo-client";
 import { Rest } from "../../rest/restModel";
+import { deliveryRoute } from "../../pages/delivery";
+import { useGetConsumer } from "../../consumer/consumerService";
 
 export const getSuggestion = (currCount: number, fixedMealCount: number | null) => {
   if (fixedMealCount) {
@@ -42,6 +43,7 @@ const MenuCart: React.FC<{
 }) => {
   const cart = useGetCart();
   const sortedPlans = useGetAvailablePlans();
+  const consumer = useGetConsumer();
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const rest = useGetRest(cart ? cart.RestId : null);
@@ -61,9 +63,11 @@ const MenuCart: React.FC<{
     if (isUpdating) {
       Router.push(upcomingDeliveriesPath);
     } else {
-      // todo: add a check here to see if user consumer is signed in
-      Router.push(deliveryRoute);
-      // Router.push(upcomingDeliveriesPath);
+      if (consumer && consumer.data && consumer.data.Plan.StripePlanId) {
+        Router.push(upcomingDeliveriesPath);
+      } else {
+        Router.push(deliveryRoute);
+      }
     }
     sendCartMenuMetrics(
       stripePlanId,

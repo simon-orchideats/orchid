@@ -2,9 +2,11 @@ import { makeStyles, Typography, Button, Paper } from "@material-ui/core";
 import Faq from "../client/general/Faq";
 import Router from "next/router";
 import { interestedRoute } from "./interested";
-import { createRef } from "react";
-import BaseInput from "../client/general/inputs/BaseInput";
-import { analyticsService, events } from "../client/utils/analyticsService";
+import { createRef, useRef } from "react";
+import { analyticsService } from "../client/utils/analyticsService";
+import EmailInput from "../client/general/inputs/EmailInput";
+import { useAddConsumerEmail } from "../consumer/consumerService";
+import withClientApollo from "../client/utils/withClientApollo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -31,11 +33,16 @@ const useStyles = makeStyles(theme => ({
 
 const signUp = () => {
   const classes = useStyles();
-  const inputRef = createRef<HTMLInputElement>();
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
+  const [addEmail] = useAddConsumerEmail()
   const onNext = () => {
-    analyticsService.trackEvent(events.INTERESTED, {
-      email: inputRef!.current!.value
+    if (!validateEmailRef.current!()) return;
+    const email = emailInputRef.current!.value;
+    analyticsService.setUserProperties({
+      email
     });
+    addEmail(email);
     Router.push(interestedRoute);
   }
   return (
@@ -49,10 +56,13 @@ const signUp = () => {
           >
             Sign up
           </Typography>
-          <BaseInput
-            label='Email'
-            inputRef={inputRef}
+          <EmailInput
             className={classes.bottomPadding}
+            variant='filled'
+            inputRef={emailInputRef}
+            setValidator={(validator: () => boolean) => {
+              validateEmailRef.current = validator;
+            }}
           />
           <Button
             variant='contained'
@@ -69,6 +79,6 @@ const signUp = () => {
   )
 }
 
-export default signUp;
+export default withClientApollo(signUp);
 
 export const signUpRoute = '/sign-up';
