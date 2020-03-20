@@ -23,10 +23,8 @@ import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
 import AddressForm from "../client/general/inputs/AddressForm";
-import auth0 from 'auth0-js';
 import GLogo from "../client/checkout/GLogo";
-import { popupSocialAuthCB } from "../utils/auth";
-import { useSignUp } from "../consumer/consumerService";
+import { useSignUp, useGoogleSignIn, useGetLazyConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -52,8 +50,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
+  const signInGoogle = useGoogleSignIn();
   const notify = useNotify();
-  const [deliveryName, setDeliveryName] = useState<string>('namename');
+  const [getConsumer] = useGetLazyConsumer();
+  const [deliveryName, setDeliveryName] = useState<string>('');
   const [deliveryNameError, setDeliveryNameError] = useState<string>('');
   const validateAddressRef = useRef<() => boolean>();
   const addr1InputRef = createRef<HTMLInputElement>();
@@ -63,15 +63,15 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [state, setState] = useState<state | ''>('');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  const [deliveryInstructions, setDliveryInstructions] = useState<string>('to my door')
+  const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
   const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
-  const [accountName, setAccountName] = useState<string>('simon vuong');
+  const [accountName, setAccountName] = useState<string>('');
   const [accountNameError, setAccountNameError] = useState<string>('');
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
-  const [password, setPassword] = useState<string>('password');
+  const [password, setPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useSignUp();
@@ -164,32 +164,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return isValid;
   }
   
-  const webAuth = new auth0.WebAuth({
-    domain: activeConfig.client.auth.domain,
-    clientID: activeConfig.client.auth.clientId
-  });
-  const google = () => {
-    webAuth.popup.authorize({
-      domain: activeConfig.client.auth.domain,
-      clientId: activeConfig.client.auth.clientId,
-      audience: activeConfig.client.auth.audience,
-      redirectUri: `${activeConfig.client.app.url}${popupSocialAuthCB}`,
-      connection: 'google-oauth2',
-      responseType: 'code',
-      scope: 'openid profile email offline_access',
-    }, (err: auth0.Auth0Error | null, res: any) => {
-      if (err) {
-        console.error(`Could not social auth. '${JSON.stringify(err)}'`);
-        throw err;
-      }
-      setConsumer({
-        name: res.idTokenPayload.name,
-        email: res.idTokenPayload.email,
-      });
-      if (!deliveryName && oneName) {
-        setDeliveryName(res.idTokenPayload.name);
-      }
-    });
+  const onClickGoogle = async () => {
+    try {
+      const res = await signInGoogle();
+      setConsumer(res);
+      if (!deliveryName && oneName) setDeliveryName(res.name);
+      getConsumer();
+    } catch (e) {
+      const err = new Error(`Failed to sign in with google`);
+      console.error(err.stack);
+      throw err;
+    }
   }
 
   const onClickPlaceOrder = async () => {
@@ -221,7 +206,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         billing_details: { name: accountName },
       });
     } catch (e) {
-      const err =  new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
+      const err = new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
       console.error(err.stack);
       throw err;
     }
@@ -414,7 +399,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <Grid item xs={12}>
                 <Button
                   variant='outlined'
-                  onClick={() => google()}
+                  onClick={onClickGoogle}
                   startIcon={<GLogo />}
                 >
                   Sign up with google

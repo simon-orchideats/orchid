@@ -208,10 +208,14 @@ class ConsumerService implements IConsumerService {
 
   async getConsumer(_id: string): Promise<IConsumer | null> {
     try {
-      const consumer = await this.elastic.getSource({
-        index: CONSUMER_INDEX,
-        id: _id
-      });
+      const consumer = await this.elastic.getSource(
+        {
+          index: CONSUMER_INDEX,
+          id: _id,
+        },
+        { ignore: [404] }
+      );
+      if (consumer.statusCode === 404) return null;
       return {
         _id,
         stripeCustomerId: consumer.body.stripeCustomerId,
@@ -396,6 +400,7 @@ export const initConsumerService = (
 ) => {
   if (consumerService) throw new Error('[ConsumerService] already initialized.');
   consumerService = new ConsumerService(elastic, stripe);
+  consumerService.getConsumer('123');
   return consumerService;
 };
 

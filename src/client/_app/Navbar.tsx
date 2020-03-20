@@ -4,7 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
-import { Container, Typography, useMediaQuery } from '@material-ui/core';
+import { Container, Typography, useMediaQuery, Button } from '@material-ui/core';
 import { howItWorksRoute } from '../../pages/how-it-works';
 import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
@@ -15,6 +15,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
 import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
+import withClientApollo from '../utils/withClientApollo';
+import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -82,13 +84,13 @@ const Navbar: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
-  
+  const consumer = useGetConsumer();
+  const signIn = useSignIn();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const open = !!anchorEl;
-
   const currRoute = useRouter().pathname;
   const menuStep = (
     <Link href={menuRoute}>
@@ -151,6 +153,28 @@ const Navbar: React.FC = () => {
       </>
     )
   }
+  const account = consumer.data ?
+    <div className={classes.account} onClick={onClickUser}>
+      {
+        isMdAndUp ?
+        <>
+          <Typography variant='body1'>
+            Hi, Simon
+          </Typography>
+          <ExpandMoreIcon />
+        </>
+        :
+        <AccountCircleIcon />
+      }
+    </div>
+  :
+    <Button
+      variant='text'
+      className={classes.account}
+      onClick={() => signIn()}
+    >
+      Login
+    </Button>
   return (
     <>
       <AppBar
@@ -164,19 +188,7 @@ const Navbar: React.FC = () => {
               <img src='/logo.png' alt='logo' className={classes.logo} />
             </Link>
             {bar}
-            <div className={classes.account} onClick={onClickUser}>
-              {
-                isMdAndUp ?
-                <>
-                  <Typography variant='body1'>
-                    Hi, Simon
-                  </Typography>
-                  <ExpandMoreIcon />
-                </>
-                :
-                <AccountCircleIcon />
-              }
-            </div>
+            {account}
           </Toolbar>
           <ConsumerPopper
             open={open}
@@ -191,4 +203,4 @@ const Navbar: React.FC = () => {
   );
 }
 
-export default Navbar;
+export default withClientApollo(Navbar);

@@ -84,10 +84,7 @@ export const usePlaceOrder = (): [
               destination: {
                 name: cart.destination.name,
                 instructions: cart.destination.instructions,
-                address: {
-                  ...cart.destination.address,
-                  address2: cart.destination.address.address2 || undefined,
-                }
+                address: cart.destination.address,
               },
             },
             plan: cart.consumerPlan
