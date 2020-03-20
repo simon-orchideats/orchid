@@ -102,7 +102,7 @@ const Navbar: React.FC = () => {
     </Link>
   );
   let bar;
-  if (currRoute === `/${deliveryRoute}`) {
+  if (currRoute === `${deliveryRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
@@ -118,7 +118,7 @@ const Navbar: React.FC = () => {
         </div>
       </div>
     )
-  } else if (currRoute === `/${checkoutRoute}`) {
+  } else if (currRoute === `${checkoutRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>

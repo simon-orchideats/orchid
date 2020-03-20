@@ -1,6 +1,10 @@
 import gql from 'graphql-tag';
 
 const _ConsumerQL = gql`
+  type ConsumerRes {
+    res: Consumer
+    error: String
+  }
   type Consumer {
     _id: ID!
     plan: ConsumerPlan!

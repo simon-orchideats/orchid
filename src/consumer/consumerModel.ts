@@ -148,6 +148,16 @@ export class Consumer implements IConsumer {
     return true;
   }
 
+  static getIConsumerFromEConsumer(_id: string, econsumer: EConsumer): IConsumer {
+    return {
+      _id,
+      plan: econsumer.plan,
+      profile: econsumer.profile,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+    }
+  }
+
   static isDeliveryDayValid(d: number) {
     if (
       d === 0

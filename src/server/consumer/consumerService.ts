@@ -1,14 +1,14 @@
+import { MutationConsumerRes } from './../../utils/apolloUtils';
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch, { Response } from 'node-fetch';
 import { adjustmentDescHeader, IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer, RenewalTypes, CuisineTypes, IConsumerPlan } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes, CuisineTypes, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
-import { SignedInUser } from '../../utils/apolloUtils';
+import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import moment from 'moment';
@@ -18,7 +18,7 @@ const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
-  signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationBoolRes>
+  signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationBoolRes>
@@ -146,7 +146,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async insertConsumer(_id: string, name: string, email: string): Promise<MutationBoolRes> {
+  public async insertConsumer(_id: string, name: string, email: string): Promise<IConsumer> {
     try {
       if (!this.planService) throw new Error('PlanService not set');
       let res: ApiResponse<SearchResponse<any>>
@@ -199,10 +199,7 @@ class ConsumerService implements IConsumerService {
         refresh: 'true', 
         body
       });
-      return {
-        res: true,
-        error: null,
-      }
+      return Consumer.getIConsumerFromEConsumer(_id, body);
     } catch (e) {
       console.error(`[ConsumerService] couldn't insert consumer '${_id}'`, e.stack);
       throw e;
@@ -277,13 +274,13 @@ class ConsumerService implements IConsumerService {
       const signedUp = await manualAuthSignUp(email, name, pass, res);
       if (signedUp.res === null || signedUp.error) {
         return {
-          res: false,
+          res: null,
           error: signedUp.error,
         }
       }
-      await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
+      const consumer = await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
       return {
-        res: true,
+        res: consumer,
         error: null,
       }
     } catch (e) {
@@ -365,7 +362,6 @@ class ConsumerService implements IConsumerService {
         console.error(msg)
         throw e;
       });
-      // left off here
       return {
         res: true,
         error: null,

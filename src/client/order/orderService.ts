@@ -3,7 +3,7 @@ import { Cart } from './../../order/cartModel';
 import { getAvailablePlans } from './../../plan/planService';
 import { Plan } from './../../plan/planModel';
 import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
-import { MutationBoolRes } from '../../utils/mutationResModel';
+import { MutationBoolRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -11,6 +11,7 @@ import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { restFragment } from '../../rest/restFragment';
 import { getRest } from '../../rest/restService';
+import { getMyConsumer, updateMyConsumer } from '../../consumer/consumerService';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -63,7 +64,37 @@ export const usePlaceOrder = (): [
     }
   `);
   const placeOrder = (cart: ICartInput) => {
-    mutate({ variables: { cart } })
+    mutate({
+      variables: { cart },
+      update: (cache, { data }) => {
+        if (data && data.placeOrder.res) {
+          const consumer = getMyConsumer(cache);
+          if (!consumer || !consumer.myConsumer) {
+            const err = new Error('Failed to get myConsumer for cache update');
+            console.error(err.stack);
+            throw err;
+          }
+          updateMyConsumer(cache, {
+            ...consumer.myConsumer,
+            profile: {
+              name: consumer.myConsumer.profile.name,
+              email: consumer.myConsumer.profile.email,
+              phone: cart.phone,
+              card: cart.card,
+              destination: {
+                name: cart.destination.name,
+                instructions: cart.destination.instructions,
+                address: {
+                  ...cart.destination.address,
+                  address2: cart.destination.address.address2 || undefined,
+                }
+              },
+            },
+            plan: cart.consumerPlan
+          })
+        }
+      }
+    })
   }
   return useMemo(() => [
     placeOrder,

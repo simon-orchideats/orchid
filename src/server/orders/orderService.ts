@@ -3,7 +3,7 @@ import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { RenewalTypes } from './../../consumer/consumerModel';
-import { SignedInUser } from '../../utils/apolloUtils';
+import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
@@ -17,7 +17,6 @@ import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer } from '../../consumer/consumerModel';
 import moment from 'moment';
-import { MutationBoolRes } from '../../utils/mutationResModel';
 
 const ORDER_INDEX = 'orders';
 export const adjustmentDescHeader = 'Plan Adjustment for week of ';

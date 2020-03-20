@@ -490,4 +490,4 @@ export default () => {
   )
 }
 
-export const checkoutRoute = 'checkout';
+export const checkoutRoute = '/checkout';

@@ -46,7 +46,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo update plan
 // todo on checkout with skip renewal, create nextnext that's a skip
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
-// todo upcoming-dceliveries after ordering is empty
 // todo in checkout, i could login via google, then go back to menu then go back to checkout, i have to log in again which is bad
 // todo use getAdjustmentDesc
 // todo test for consumerServiceTest

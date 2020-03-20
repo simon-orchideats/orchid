@@ -1,3 +1,4 @@
+import { IConsumer } from './../consumer/consumerModel';
 import { accessTokenCookie } from './auth';
 import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
@@ -7,6 +8,16 @@ import cookie from 'cookie'
 export type Context = {
   signedInUser: SignedInUser | null,
   res?: OutgoingMessage,
+};
+
+export type MutationBoolRes = {
+  res: boolean;
+  error: string | null;
+};
+
+export type MutationConsumerRes = {
+  res: IConsumer | null;
+  error: string | null;
 };
 
 export type ServerResolovers = {

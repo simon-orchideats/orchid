@@ -33,7 +33,7 @@ const mutation = gql`
     cancelSubscription: BoolRes!
     insertEmail(email: String!): BoolRes!
     placeOrder(cart: CartInput!): BoolRes!
-    signUp(email: String!, name: String!, pass: String!): BoolRes!
+    signUp(email: String!, name: String!, pass: String!): ConsumerRes!
     updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
     updateMyPlan(plan: ConsumerPlanInput!): BoolRes!
   }
