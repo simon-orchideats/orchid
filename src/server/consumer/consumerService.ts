@@ -1,13 +1,12 @@
-import { signUp } from './../auth/authenticate';
+import { manualAuthSignUp } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { MutationBoolRes } from './../../utils/mutationResModel';
-import { EConsumer, IConsumer, RenewalTypes } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, RenewalTypes, CuisineTypes } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import express from 'express';
+import { OutgoingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
-
 export interface IConsumerService {
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   insertEmail: (email: string) => Promise<MutationBoolRes>
@@ -22,71 +21,58 @@ class ConsumerService implements IConsumerService {
     this.planService = planService;
   }
 
-  async upsertConsumer(userId: string, consumer: EConsumer): Promise<IConsumer> {
+  async upsertConsumer(_id: string, consumer: EConsumer): Promise<IConsumer> {
+ 
     // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
     // dupe entries.
     try {
       await this.elastic.index({
         index: CONSUMER_INDEX,
-        id: userId,
+        id: _id,
         body: consumer
       });
       return {
-        userId,
+        _id,
         ...consumer
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to upsert consumer '${userId}', '${JSON.stringify(consumer)}'`, e.stack);
+      console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
   }
 
   public async insertConsumer(_id: string,name: string, email: string): Promise<MutationBoolRes> {
     try {
-      let res: ApiResponse<SearchResponse<any>>
-      try {
-        res = await this.elastic.search({
-          index: CONSUMER_INDEX,
-          size: 1000,
-          _source: 'false',
-          body: {
-            query: {
-              ids: {
-                values: _id
-              }
-            }
-          }
-        });
-      } catch (e) {
-        console.error(`[ConsumerService] Couldn't search for consumer ${_id}. ${e.stack}`);
-        throw e;
-      }
-      if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
       let defaultPlan
-      try{
+      try {
         defaultPlan = await this.planService.getDefaultPlan();
-      } catch(e) {
-        throw new Error(`Failed to get default plan. ${e}`)
+      } catch (e) {
+        throw new Error (`Failed to get default plan. ${e.stack}`)
       }
       if (!defaultPlan) throw new Error('Could\'t get default plan');
+      const body: EConsumer = {
+        createdDate: Date.now(),
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        profile: {
+          name,
+          email,
+          phone: null,
+          card: null,
+          destination: null,
+        },
+        plan: {
+          stripePlanId: defaultPlan.stripeId,
+          deliveryDay: 0,
+          renewal: RenewalTypes.Auto,
+          cuisines: Object.values(CuisineTypes)
+        },
+      }
       await this.elastic.index({
         index: CONSUMER_INDEX,
         id: _id,
         refresh: 'true', 
-        body: {
-          createdDate: Date.now(),
-          profile: {
-            name,
-            email,
-            phone: null,
-          },
-          plan: {
-            stripePlanId: defaultPlan.stripeId,
-            deliveryDay: 0,
-            rewnewal: RenewalTypes.Auto,
-            cuisines: []
-          }, // todo alvin add this, "as EConsumer"
-        }
+        body
       });
       return {
         res: true,
@@ -98,6 +84,21 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  async getConsumer(_id: string): Promise<IConsumer | null> {
+    try {
+      const consumer = await this.elastic.getSource({ index: CONSUMER_INDEX, id: _id });
+      return {
+        _id,
+        stripeCustomerId: consumer.body.stripeCustomerId,
+        stripeSubscriptionId: consumer.body.stripeSubscriptionId,
+        profile: consumer.body.profile,
+        plan: consumer.body.plan
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to get consumer ${_id}: ${e.stack}`)
+      return null;
+    }
+  }
 
   async insertEmail(email: string): Promise<MutationBoolRes> {
     try {
@@ -142,9 +143,10 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async signUp(email: string, name: string, pass: string, res: express.Response) {
+  async signUp(email: string, name: string, pass: string, res?: OutgoingMessage) {
     try {
-      const signedUp = await signUp(email, name, pass, res);
+      if (!res) throw new Error('Res is undefined');
+      const signedUp = await manualAuthSignUp(email, name, pass, res);
       // todo alvin: insert consumer here using results from signUp
       return {
         res: signedUp.res ? true : false,

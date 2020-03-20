@@ -2,10 +2,10 @@ import { getConsumerService } from './consumerService';
 import { ServerResolovers } from '../../utils/apolloUtils';
 
 export const ConsumerQueryResolvers: ServerResolovers = {
-  myConsumer: async(_, _args, context) => {
-    return context.signedInUser ? context.signedInUser : null;
+  myConsumer: async (_, _args, { signedInUser }) => {
+    return signedInUser && await getConsumerService().getConsumer(signedInUser._id)  
+    } 
   }
-}
 
 export const ConsumerMutationResolvers: ServerResolovers = {
   insertEmail: async (

@@ -1,5 +1,3 @@
-//@ts-nocheck
-
 import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
@@ -42,6 +40,7 @@ class PlanService implements IPlanService {
     try {
       const plan = await this.getPlanByCount(4);
       if (!plan) throw new Error(`Default plan of count ${DEFAULT_PLAN_COUNT} not found`);
+      return plan;
     } catch (e) {
       console.error(`[PlanService] could not get default plan. '${e.stack}'`);
       throw new Error('Internal Server Error');
@@ -86,7 +85,7 @@ export const initPlanService = (stripe: Stripe) => {
 export const getPlanService = () => {
   if (planService) return planService;
   initPlanService(new Stripe(activeConfig.server.stripe.key, {
-    apiVersion: '2019-12-03',
+    apiVersion: '2020-03-02',
   }));
   return planService;
 }

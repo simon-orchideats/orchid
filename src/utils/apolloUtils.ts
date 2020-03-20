@@ -1,12 +1,12 @@
 import { accessTokenCookie } from './auth';
-import { IConsumer } from './../consumer/consumerModel';
-import express from 'express';
 import { IncomingMessage, OutgoingMessage } from "http"
+import jwt from 'jsonwebtoken';
+import { activeConfig } from '../config'
 import cookie from 'cookie'
 
 export type Context = {
-  signedInUser: IConsumer,
-  res: express.Response,
+  signedInUser: SignedInUser | null,
+  res?: OutgoingMessage,
 };
 
 export type ServerResolovers = {
@@ -18,7 +18,7 @@ export type ServerResolovers = {
 }
 
 export interface SignedInUser {
-  userId: string
+  _id: string
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   profile: {
@@ -27,40 +27,28 @@ export interface SignedInUser {
   }
 }
 
-//todo alvin should be getSignedInUser = (req?: IncomingMessage): SignedInUser => { ... }
-const getSignedInUser = (req?: IncomingMessage) => {
+const getSignedInUser =  (req?: IncomingMessage): SignedInUser | null => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
-  return {
-    _id: '123',
-    plan: {
-      stripePlanId: 'plan123',
-      deliveryDay: 0,
-      rewnewal: 'Skip',
-      cuisines: []
-    },
-    card: {
-      last4: '1234',
-      expMonth: 12,
-      expYear: 2004
-    },
-    phone: '6095138166',
-    destination: {
-      name: 'name',
-      instructions: 'to door',
-      address: {
-        address1: '1',
-        city: 'boston',
-        state: 'MA',
-        zip: '02127'
-      }
-    }
+  try {
+    const decoded = jwt.verify(access, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }) as any;
+    return {
+      _id: decoded.sub,
+      stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
+      stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubId`],
+      profile: {
+        name: decoded[`${activeConfig.server.auth.audience}/name`],
+        email: decoded[`${activeConfig.server.auth.audience}/email`]
+      }   
+    };
+  } catch(e) {
+    console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
+    throw (e)
   }
 }
 
-// todo alvin should be getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ...
-export const getContext = (req?: IncomingMessage, res?: OutgoingMessage | express.Response) => ({
+export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({
   signedInUser: getSignedInUser(req),
   res,
 })

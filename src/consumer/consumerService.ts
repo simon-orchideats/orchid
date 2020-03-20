@@ -2,7 +2,7 @@ import { MutationBoolRes } from './../utils/mutationResModel';
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { IConsumer, Consumer } from './consumerModel';
+import { Consumer, IConsumer } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useMemo } from 'react';

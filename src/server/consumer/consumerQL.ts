@@ -4,9 +4,14 @@ const _ConsumerQL = gql`
   type Consumer {
     _id: ID!
     plan: ConsumerPlan!
-    card: Card!
-    phone: String!
-    destination: Destination!
+    profile: ConsumerProfile!
+  }
+  type ConsumerProfile {
+    name: String!
+    email: String!
+    card: Card
+    phone: String
+    destination: Destination
   }
 `
 

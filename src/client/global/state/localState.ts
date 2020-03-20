@@ -1,4 +1,3 @@
-import { consumerInitialState } from './consumerState';
 import { Resolvers } from 'apollo-client';
 import { ApolloCache } from 'apollo-cache';
 import {
@@ -34,12 +33,11 @@ const clientResolvers: ClientResolvers = {
 const clientInitialState = {
   cart: cartInitialState,
   notification: notificationInitialState,
-  consumer: consumerInitialState,
 }
 
 const clientTypeDefs = [
   cartQL,
-  notificationQL
+  notificationQL,
 ]
 
 export {
