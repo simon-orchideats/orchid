@@ -27,13 +27,12 @@ export interface SignedInUser {
   }
 }
 
-//todo alvin should be getSignedInUser = (req?: IncomingMessage): SignedInUser => { ... }
-const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | null> => {
+const getSignedInUser =  (req?: IncomingMessage): SignedInUser | null => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   try {
-    const decoded = await jwt.verify(access, activeConfig.server.auth.public, { algorithms: ['RS256'] }) as any;
+    const decoded = jwt.verify(access, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }) as any;
     return {
       _id: decoded.sub,
       stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
@@ -44,13 +43,12 @@ const getSignedInUser = async (req?: IncomingMessage): Promise<SignedInUser | nu
       }   
     };
   } catch(e) {
-    console.error(`[getSignedInUser] Error in verifying accessToken: ${e}`)
+    console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
     throw (e)
   }
 }
 
-// todo alvin should be getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ...
-export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => ({
-  signedInUser: await getSignedInUser(req),
+export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({
+  signedInUser: getSignedInUser(req),
   res,
 })

@@ -68,21 +68,27 @@ const storeTokensInCookies = async (
     
     let decodedToken: any;
     try {
-      decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.public, { algorithms: ['RS256'] });
+      decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] });
     } catch (e) {
-      console.error(`[Authenticate] Error in verifying accessToken: ${e}`)
+      console.error(`[Authenticate] Error in verifying accessToken: ${e.stack}`)
+      throw e
     }
     try {
-      let consumerExists = await getConsumerService().hasConsumer(decodedToken.sub)
+      let consumerExists = await getConsumerService().getConsumer(decodedToken.sub)
       if (!consumerExists) {
-        await getConsumerService().insertConsumer(
-          decodedToken.sub,
-          decodedToken[`${activeConfig.server.auth.audience}/name`],
-          decodedToken[`${activeConfig.server.auth.audience}/email`]
-        );
+        try {
+          getConsumerService().insertConsumer(
+            decodedToken.sub,
+            decodedToken[`${activeConfig.server.auth.audience}/name`],
+            decodedToken[`${activeConfig.server.auth.audience}/email`]
+          );
+        } catch(e) {
+          console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
+          throw e;
+        }
       };
     } catch (e) {
-      console.error(`[Authenticate]: ${e}`);
+      console.error(`[Authenticate] Error in getting Consumer: ${e.stack}`);
       throw e;
     }
     
@@ -90,14 +96,6 @@ const storeTokensInCookies = async (
       `${accessTokenCookie}=${data.access_token}; HttpOnly`,
       `${refreshTokenCookie}=${data.refresh_token}; HttpOnly`
     ])
-    // res.cookie(accessTokenCookie, data.access_token, {
-    //   httpOnly: true,
-    //   // secure: true,
-    // });
-    // res.cookie(refreshTokenCookie, data.refresh_token, {
-    //   httpOnly: true,
-    //   // secure: true,
-    // });
   } catch (e) {
     console.error(`[Authenticate] Couldn't get auth tokens`, e.stack);
     throw e;
@@ -192,12 +190,12 @@ export const signUp = async (
     console.error(msg);
     throw new Error(msg);
   }
-  res.setHeader('Set-Coookie', [
+  res.setHeader('Set-Cookie', [
     `${accessTokenCookie}=${authJson.access_token}; HttpOnly`,
     `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
   ]);
   return {
-    res: {}, // todo alvin: decode access for signed in user,
+    res: {},
     error: null,
   };
 }

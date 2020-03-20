@@ -2,20 +2,10 @@ import { getConsumerService } from './consumerService';
 import { ServerResolovers } from '../../utils/apolloUtils';
 
 export const ConsumerQueryResolvers: ServerResolovers = {
-  myConsumer: async (_, _args, context) => {
-    const decodedToken = context.signedInUser;
-    if (decodedToken) {
-      try {
-        const consumer = await getConsumerService().getConsumer(decodedToken._id)
-        return consumer
-      } catch (e) {
-        console.error(`[myConsumer Resolver]: ${e}`);
-        throw e
-      }  
+  myConsumer: async (_, _args, { signedInUser }) => {
+    return signedInUser && await getConsumerService().getConsumer(signedInUser._id)  
     } 
-    return null;
   }
-}
 
 export const ConsumerMutationResolvers: ServerResolovers = {
   insertEmail: async (

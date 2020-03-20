@@ -47,7 +47,7 @@ class ConsumerService implements IConsumerService {
       try {
         defaultPlan = await this.planService.getDefaultPlan();
       } catch (e) {
-        throw new Error (`Failed to get default plan. ${e}`)
+        throw new Error (`Failed to get default plan. ${e.stack}`)
       }
       if (!defaultPlan) throw new Error('Could\'t get default plan');
       await this.elastic.index({
@@ -56,6 +56,8 @@ class ConsumerService implements IConsumerService {
         refresh: 'true', 
         body: {
           createdDate: Date.now(),
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
           profile: {
             name,
             email,
@@ -65,7 +67,7 @@ class ConsumerService implements IConsumerService {
             deliveryDay: 0,
             renewal: RenewalTypes.Auto,
             cuisines: Object.values(CuisineTypes)
-          }, // todo alvin add this, "as EConsumer"
+          },
         }
       });
       return {
@@ -78,72 +80,45 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumer(_id: string) {
-   const consumerExists = await this.hasConsumer(_id);
-   if (consumerExists) {
-    const consumer = await this.searchConsumer(_id);
-    return {
-      _id: consumer.hits.hits[0]._id,
-      stripeCustomerId: consumer.hits.hits[0]._source.stripeCustomerId,
-      stripeSubscriptionId: consumer.hits.hits[0]._source.stripeSubscriptionId,
-      profile: consumer.hits.hits[0]._source.profile,
-      plan: consumer.hits.hits[0]._source.plan
+  async getConsumer(_id: string): Promise<IConsumer | null> {
+    let res: ApiResponse<SearchResponse<any>>
+    try {
+      res = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: { _id: _id }
+                }
+              ]
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value > 0 ) {
+        const options: any = {
+          index: CONSUMER_INDEX,
+          id:_id
+        }
+        const consumer = await this.elastic.getSource(options);
+        return {
+          _id,
+          stripeCustomerId: consumer.body.stripeCustomerId,
+          stripeSubscriptionId: consumer.body.stripeSubscriptionId,
+          profile: consumer.body.profile,
+          plan: consumer.body.plan
+        }
+      }
+        return null
+    } catch (e) {
+      console.error(`[ConsumerService]: ${e.stack}`)
+      throw e
     }
-   }
-   return null;
   }
-
-  async searchConsumer(_id: string) {
-    let res: ApiResponse<SearchResponse<any>>
-    try {
-      res = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  match: { _id: _id }
-                }
-              ]
-            }
-          }
-        }
-      });
-      return res.body;
-    } catch (e) {
-      console.error(`[ConsumerService] couldn't search for consumer '${_id}'`, e.stack)
-      throw e;
-    } 
-  }
-
-  async hasConsumer(_id: string) {
-    let res: ApiResponse<SearchResponse<any>>
-    try {
-      res = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  match: { _id: _id }
-                }
-              ]
-            }
-          }
-        }
-      });
-      if (res.body.hits.total.value > 0 ) return true;
-      return false
-    } catch (e) {
-      console.error(`[ConsumerService] couldn't search for consumer '${_id}'`, e.stack)
-      throw e;
-    } 
-  }
-
+  
   async insertEmail(email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>

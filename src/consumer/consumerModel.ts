@@ -137,7 +137,7 @@ export class Consumer implements IConsumer {
 
   public get StripeSubscriptionId() { return this.stripeSubscriptionId }
   public get StripeCustomerId() { return this.stripeCustomerId }
-  public get UserId() { return this._id }
+  public get Id() { return this._id }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
 

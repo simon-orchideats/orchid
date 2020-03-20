@@ -34,9 +34,8 @@ type config = {
       domain: string,
       clientId: string,
       audience: string,
-      redirect: string,
       secret: string,
-      public: string,
+      publicKey: string,
     },
     elastic: {
       node: string,
@@ -95,10 +94,9 @@ const development: config = {
     auth: {
       domain: 'orchideats-dev.auth0.com',
       clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
-      redirect: 'http://localhost:8443/auth-callback',
       audience: 'https://orchideats.com',
       secret: process.env.AUTH_SECRET!,
-      public: `-----BEGIN CERTIFICATE-----
+      publicKey: `-----BEGIN CERTIFICATE-----
 MIIDCzCCAfOgAwIBAgIJIvWpk3ZK/P/hMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNV
 BAMTGG9yY2hpZGVhdHMtZGV2LmF1dGgwLmNvbTAeFw0yMDAzMTUxNjUzNTBaFw0z
 MzExMjIxNjUzNTBaMCMxITAfBgNVBAMTGG9yY2hpZGVhdHMtZGV2LmF1dGgwLmNv
@@ -171,10 +169,9 @@ const production: config = {
     auth: {
       domain: 'foodflick.auth0.com',
       clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
-      audience: 'https://saute.com',
-      redirect: 'https://orchideats.com/auth-callback',
+      audience: 'https://orchideats.com',
       secret: process.env.AUTH_SECRET!,
-      public: `-----BEGIN CERTIFICATE-----
+      publicKey: `-----BEGIN CERTIFICATE-----
       MIIDATCCAemgAwIBAgIJLREMbwE8DeepMA0GCSqGSIb3DQEBCwUAMB4xHDAaBgNV
       BAMTE2Zvb2RmbGljay5hdXRoMC5jb20wHhcNMTgwMjAyMjIzMjA0WhcNMzExMDEy
       MjIzMjA0WjAeMRwwGgYDVQQDExNmb29kZmxpY2suYXV0aDAuY29tMIIBIjANBgkq

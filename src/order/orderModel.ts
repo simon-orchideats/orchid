@@ -99,7 +99,7 @@ export class Order implements IOrder{
     return {
       _id,
       deliveryDate: order.deliveryDate,
-      destination: order.consumer.profile.destination!,
+      destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
       mealPrice: order.costs.mealPrice,
       meals: order.rest.meals,
       phone: order.consumer.profile.phone!,
