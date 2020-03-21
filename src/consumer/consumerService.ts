@@ -55,26 +55,32 @@ export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.read
   query: MY_CONSUMER_QUERY
 });
 export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: IConsumer) => {
-  //@ts-ignore
-  consumer.plan.__typename = 'ConsumerPlan';
-  //@ts-ignore
-  consumer.profile.__typename = 'ConsumerProfile';
-  //@ts-ignore
-  consumer.profile.card.__typename = 'Card';
-  //@ts-ignore
-  consumer.profile.destination.address.__typename  = 'Address'
-  //@ts-ignore
-  consumer.profile.destination.__typename = 'Destination'
-  //@ts-ignore
-  consumer.__typename = 'Consumer';
-  //@ts-ignore
-  if (!consumer.profile.destination.address.address2) consumer.profile.destination.address.address2 = null;
+  const newConsumer = copyWithTypenames(consumer);
   cache.writeQuery<myConsumerRes>({
     query: MY_CONSUMER_QUERY,
     data: {
-      myConsumer: consumer
+      myConsumer: newConsumer
     }
   });
+}
+
+export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
+  const newConsumer = Consumer.getICopy(consumer);
+  //@ts-ignore
+  newConsumer.plan.__typename = 'ConsumerPlan';
+  //@ts-ignore
+  newConsumer.profile.__typename = 'ConsumerProfile';
+  //@ts-ignore
+  newConsumer.profile.card.__typename = 'Card';
+  //@ts-ignore
+  newConsumer.profile.destination.address.__typename  = 'Address'
+  //@ts-ignore
+  newConsumer.profile.destination.__typename = 'Destination'
+  //@ts-ignore
+  newConsumer.__typename = 'Consumer';
+  //@ts-ignore
+  if (!newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
+  return newConsumer
 }
 
 export const useRequireConsumer = (url: string) => {
@@ -160,7 +166,10 @@ export const useSignUp = (): [
   (email: string, name: string, pass: string) => void,
   {
     error?: ApolloError 
-    data?: MutationConsumerRes
+    data?: {
+      res: Consumer | null,
+      error: string | null
+    }
   }
 ] => {
   type res = { signUp: MutationConsumerRes };
@@ -191,11 +200,17 @@ export const useSignUp = (): [
       }
     })
   }
-  return useMemo(() => [
-    signUp,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.signUp : undefined,
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.signUp.res && new Consumer(mutation.data.signUp.res),
+      error: mutation.data.signUp.error
     }
-  ], [mutation]);
+    return [
+      signUp,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
 }

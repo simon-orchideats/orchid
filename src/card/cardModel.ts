@@ -32,4 +32,12 @@ export class Card implements ICard {
       expYear: card.exp_year,
     });
   }
+
+  static getICopy(card: ICard): ICard {
+    return {
+      last4: card.last4,
+      expMonth: card.expMonth,
+      expYear: card.expYear,
+    }
+  }
 }

@@ -1,9 +1,11 @@
+import { Consumer } from './../../consumer/consumerModel';
+import { consumerFragment } from './../../consumer/consumerFragment';
 import { IRest } from './../../rest/restModel';
 import { Cart } from './../../order/cartModel';
 import { getAvailablePlans } from './../../plan/planService';
 import { Plan } from './../../plan/planModel';
 import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
-import { MutationBoolRes } from "../../utils/apolloUtils";
+import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -11,7 +13,7 @@ import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { restFragment } from '../../rest/restFragment';
 import { getRest } from '../../rest/restService';
-import { getMyConsumer, updateMyConsumer } from '../../consumer/consumerService';
+import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -46,39 +48,46 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
   ${restFragment}
 `
 
+type newConsumer = {
+  _id: string,
+  name: string,
+  email: string
+};
 export const usePlaceOrder = (): [
-  (cart: ICartInput) => void,
+  (newConsumer: newConsumer, cart: ICartInput) => void,
   {
     error?: ApolloError 
-    data?: MutationBoolRes
+    data?: {
+      res: Consumer | null,
+      error: string | null
+    }
   }
 ] => {
-  type res = { placeOrder: MutationBoolRes };
+  type res = { placeOrder: MutationConsumerRes };
   type vars = { cart: ICartInput }
   const [mutate, mutation] = useMutation<res,vars>(gql`
     mutation placeOrder($cart: CartInput!) {
       placeOrder(cart: $cart) {
-        res
+        res {
+          ...consumerFragment
+        }
         error
       }
     }
+    ${consumerFragment}
   `);
-  const placeOrder = (cart: ICartInput) => {
+  const placeOrder = (newConsumer: newConsumer, cart: ICartInput) => {
     mutate({
       variables: { cart },
-      update: (cache, { data }) => {
-        if (data && data.placeOrder.res) {
-          const consumer = getMyConsumer(cache);
-          if (!consumer || !consumer.myConsumer) {
-            const err = new Error('Failed to get myConsumer for cache update');
-            console.error(err.stack);
-            throw err;
-          }
-          updateMyConsumer(cache, {
-            ...consumer.myConsumer,
+      optimisticResponse: {
+        placeOrder: { 
+          res: copyWithTypenames({
+            _id: newConsumer._id,
+            stripeSubscriptionId: null,
+            stripeCustomerId: null,
             profile: {
-              name: consumer.myConsumer.profile.name,
-              email: consumer.myConsumer.profile.email,
+              name: newConsumer.name,
+              email: newConsumer.email,
               phone: cart.phone,
               card: cart.card,
               destination: {
@@ -88,18 +97,30 @@ export const usePlaceOrder = (): [
               },
             },
             plan: cart.consumerPlan
-          })
+          }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
         }
+      },
+      update: (cache, { data }) => {
+        if (data && data.placeOrder.res) updateMyConsumer(cache, data.placeOrder.res)
       }
     })
   }
-  return useMemo(() => [
-    placeOrder,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.placeOrder : undefined,
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.placeOrder.res && new Consumer(mutation.data.placeOrder.res),
+      error: mutation.data.placeOrder.error
     }
-  ], [mutation]);
+    return [
+      placeOrder,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
 }
 
 export const useUpdateOrder = (): [

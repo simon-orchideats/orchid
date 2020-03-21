@@ -63,7 +63,7 @@ const MenuCart: React.FC<{
     if (isUpdating) {
       Router.push(upcomingDeliveriesPath);
     } else {
-      if (consumer && consumer.data && consumer.data.Plan.StripePlanId) {
+      if (consumer && consumer.data && consumer.data.StripeSubscriptionId) {
         Router.push(upcomingDeliveriesPath);
       } else {
         Router.push(deliveryRoute);

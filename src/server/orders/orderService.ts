@@ -2,8 +2,8 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { RenewalTypes } from './../../consumer/consumerModel';
-import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
+import { RenewalTypes, EConsumer } from './../../consumer/consumerModel';
+import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
@@ -56,7 +56,7 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
 }
 
 export interface IOrderService {
-  placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationBoolRes>
+  placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationConsumerRes>
   getMyUpcomingOrders(signedInUser: SignedInUser | null): Promise<IOrder[]>
   updateOrder(
     signedInUser: SignedInUser | null,
@@ -259,7 +259,7 @@ class OrderService {
     }
   }
 
-  async placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationBoolRes> {
+  async placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
@@ -268,7 +268,7 @@ class OrderService {
       const validation = await this.validateCart(cart);
       if (validation) {
         return {
-          res: false,
+          res: null,
           error: validation
         }
       }
@@ -284,7 +284,7 @@ class OrderService {
         const msg = `Cuisines cannot be empty if renewal type is '${renewal}'`;
         console.warn('[OrderService]', msg);
         return {
-          res: false,
+          res: null,
           error: msg
         }
       }
@@ -296,14 +296,14 @@ class OrderService {
         const msg = `Subscription '${signedInUser.stripeSubscriptionId}' already exists`;
         console.warn('[OrderService]', msg)
         return {
-          res: false,
+          res: null,
           error: msg
         }
       } else if (stripeCustomerId) {
         const msg = `User '${stripeCustomerId}' already exists`;
         console.warn('[OrderService]', msg)
         return {
-          res: false,
+          res: null,
           error: msg
         }
       } else {
@@ -342,7 +342,7 @@ class OrderService {
         index: ORDER_INDEX,
         body: order
       })
-      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, {
+      const consumer: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
@@ -359,7 +359,8 @@ class OrderService {
           card: cart.card,
           destination: cart.destination,
         }
-      });
+      };
+      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
@@ -401,7 +402,7 @@ class OrderService {
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
 
       return {
-        res: true,
+        res: Consumer.getIConsumerFromEConsumer(signedInUser._id, consumer),
         error: null
       };
     } catch (e) {

@@ -9,6 +9,8 @@ const _ConsumerQL = gql`
     _id: ID!
     plan: ConsumerPlan!
     profile: ConsumerProfile!
+    stripeCustomerId: ID
+    stripeSubscriptionId: ID
   }
   type ConsumerProfile {
     name: String!

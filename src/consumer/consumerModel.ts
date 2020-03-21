@@ -29,6 +29,16 @@ export class ConsumerProfile implements IConsumerProfile {
   public get Phone() { return this.phone }
   public get Card() { return this.card }
   public get Destination() { return this.destination }
+
+  static getICopy(profile: IConsumerProfile): IConsumerProfile {
+    return {
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      card: profile.card && Card.getICopy(profile.card),
+      destination: profile.destination && Destination.getICopy(profile.destination),
+    }
+  }
 }
 
 export type CuisineType =
@@ -106,6 +116,15 @@ export class ConsumerPlan implements IConsumerPlan {
   public get DeliveryDay() { return this.deliveryDay }
   public get Renewal() { return this.renewal }
   public get Cuisines() { return this.cuisines }
+
+  static getICopy(plan: IConsumerPlan): IConsumerPlan {
+    return {
+      stripePlanId: plan.stripePlanId,
+      deliveryDay: plan.deliveryDay,
+      renewal: plan.renewal,
+      cuisines: plan.cuisines.map(c => c),
+    }
+  }
 }
 
 export interface EConsumer {
@@ -155,6 +174,16 @@ export class Consumer implements IConsumer {
       profile: econsumer.profile,
       stripeCustomerId: null,
       stripeSubscriptionId: null,
+    }
+  }
+
+  static getICopy(consumer: IConsumer): IConsumer {
+    return {
+      _id: consumer._id,
+      stripeCustomerId: consumer.stripeCustomerId,
+      stripeSubscriptionId: consumer.stripeSubscriptionId,
+      profile: ConsumerProfile.getICopy(consumer.profile),
+      plan: ConsumerPlan.getICopy(consumer.plan),
     }
   }
 

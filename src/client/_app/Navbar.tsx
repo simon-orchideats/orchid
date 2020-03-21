@@ -159,7 +159,7 @@ const Navbar: React.FC = () => {
         isMdAndUp ?
         <>
           <Typography variant='body1'>
-            Hi, Simon
+            Hi, {consumer.data.Profile.Name.split(' ')[0]}
           </Typography>
           <ExpandMoreIcon />
         </>

@@ -3,6 +3,8 @@ import gql from 'graphql-tag';
 export const consumerFragment = gql`
   fragment consumerFragment on Consumer {
     _id
+    stripeCustomerId
+    stripeSubscriptionId
     plan {
       stripePlanId
       deliveryDay

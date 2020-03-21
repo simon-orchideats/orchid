@@ -110,20 +110,32 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           console.error(err.stack)
           throw err;
         }
-        placeOrder(cart.getCartInput(
-          deliveryName,
-          addr1InputRef.current!.value,
-          addr2InputRef.current!.value,
-          cityInputRef.current!.value,
-          state as state,
-          zipInputRef.current!.value,
-          phoneInputRef.current!.value,
-          Card.getCardFromStripe(pm.current.paymentMethod!.card),
-          pm.current.paymentMethod!.id,
-          deliveryInstructions,
-          renewal,
-          cuisines,
-        ));
+        if (!signUpRes.data.res) {
+          const err = new Error('Sign up res is null but has no error');
+          console.error(err.stack)
+          throw err;
+        }
+        placeOrder(
+          {
+            _id: signUpRes.data.res.Id,
+            name: signUpRes.data.res.Profile.Name,
+            email: signUpRes.data.res.Profile.Email
+          },
+          cart.getCartInput(
+            deliveryName,
+            addr1InputRef.current!.value,
+            addr2InputRef.current!.value,
+            cityInputRef.current!.value,
+            state as state,
+            zipInputRef.current!.value,
+            phoneInputRef.current!.value,
+            Card.getCardFromStripe(pm.current.paymentMethod!.card),
+            pm.current.paymentMethod!.id,
+            deliveryInstructions,
+            renewal,
+            cuisines,
+          )
+        );
       }
     }
   }, [signUpRes]);
@@ -131,12 +143,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   if (isServer()) {
     return <Typography>Redirecting...</Typography>
   } else if (!cart) {
-    Router.replace(`${menuRoute}`);
+    Router.replace(menuRoute);
     return <Typography>Redirecting...</Typography>
   }
 
-  if (consumer && consumer.data && !deliveryName && oneName) {
-    setDeliveryName(consumer.data.Profile.Name);
+  if (consumer && consumer.data) {
+    if (consumer.data.StripeSubscriptionId) {
+      Router.replace(menuRoute)
+      return <Typography>Redirecting...</Typography>
+    }
+    if (!deliveryName && oneName) {
+      setDeliveryName(consumer.data.Profile.Name);
+    }
   }
 
   const validate = () => {
@@ -216,20 +234,27 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {
-      placeOrder(cart.getCartInput(
-        deliveryName,
-        addr1InputRef.current!.value,
-        addr2InputRef.current!.value,
-        cityInputRef.current!.value,
-        state as state,
-        zipInputRef.current!.value,
-        phoneInputRef.current!.value,
-        Card.getCardFromStripe(pm.current.paymentMethod!.card),
-        pm.current.paymentMethod!.id,
-        deliveryInstructions,
-        renewal,
-        cuisines,
-      ));
+      placeOrder(
+        {
+          _id: consumer.data.Id,
+          name: consumer.data.Profile.Name,
+          email: consumer.data.Profile.Email,
+        },
+        cart.getCartInput(
+          deliveryName,
+          addr1InputRef.current!.value,
+          addr2InputRef.current!.value,
+          cityInputRef.current!.value,
+          state as state,
+          zipInputRef.current!.value,
+          phoneInputRef.current!.value,
+          Card.getCardFromStripe(pm.current.paymentMethod!.card),
+          pm.current.paymentMethod!.id,
+          deliveryInstructions,
+          renewal,
+          cuisines,
+        ),
+      );
     }
   }
   return (
