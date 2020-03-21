@@ -13,9 +13,9 @@ export const OrderMutationResolvers: ServerResolovers = {
   placeOrder: async (
     _root,
     { cart }: { cart: ICartInput },
-    { signedInUser },
+    { signedInUser, req, res },
   ) => {
-    return await getOrderService().placeOrder(signedInUser, cart);
+    return await getOrderService().placeOrder(signedInUser, cart, req, res);
   },
 
   updateOrder: async (

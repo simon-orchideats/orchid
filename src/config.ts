@@ -132,7 +132,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
       key: process.env.STRIPE_KEY!
     },
     sentry: {
-      dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
+      // dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
+      dsn: '',
     },
     geo: {
       key: process.env.GEO_KEY!

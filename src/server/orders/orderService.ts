@@ -1,3 +1,5 @@
+import { refetchAccessToken } from './../auth/authenticate';
+import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
@@ -56,10 +58,15 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
 }
 
 export interface IOrderService {
-  placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationConsumerRes>
-  getMyUpcomingOrders(signedInUser: SignedInUser | null): Promise<IOrder[]>
+  placeOrder(
+    signedInUser: SignedInUser,
+    cart: ICartInput,
+    req?: IncomingMessage,
+    res?: OutgoingMessage,
+  ): Promise<MutationConsumerRes>
+  getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   updateOrder(
-    signedInUser: SignedInUser | null,
+    signedInUser: SignedInUser,
     orderId: string,
     updateOptions: IUpdateOrderInput,
     now: number,
@@ -259,7 +266,12 @@ class OrderService {
     }
   }
 
-  async placeOrder(signedInUser: SignedInUser | null, cart: ICartInput): Promise<MutationConsumerRes> {
+  async placeOrder(
+    signedInUser: SignedInUser,
+    cart: ICartInput,
+    req?: IncomingMessage,
+    res?: OutgoingMessage,
+  ): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
@@ -363,6 +375,9 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
+      const nextDeliveryDate = moment(cart.deliveryDate).add(1, 'w').valueOf();
+      // divide by 1000, then mulitply by 1000 to keep calculation consistent
+      const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
         this.restService.getRestsByCuisines(cart.consumerPlan.cuisines, ['menu'])
           .then(rests => {
@@ -373,7 +388,6 @@ class OrderService {
             const meals: IMeal[] = [];
             for (let i = 0; i < Cart.getMealCount(cart.meals); i++) meals.push(chooseRandomly())
             const cartMeals = Cart.getCartMeals(meals);
-            const nextDeliveryDate = moment(cart.deliveryDate).add(1, 'w').valueOf();
             const newCart = {
               ...cart,
               restId: rest._id,
@@ -383,8 +397,7 @@ class OrderService {
             const order = Order.getNewOrderFromCartInput(
               signedInUser,
               newCart,
-              // divide by 1000, then mulitply by 1000 to keep calculation consistent
-              Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000,
+              nextInvoice,
               subscription.id,
               parseFloat(subscription.plan!.metadata.mealPrice),
               subscription.plan!.amount! / 100,
@@ -397,10 +410,23 @@ class OrderService {
           .catch(e => {
             console.error('[OrderService] could not auto pick rests', e.stack);
           })
+      } else {
+        this.elastic.index({
+          index: ORDER_INDEX,
+          body: Order.getNewOrderFromCartInput(
+            signedInUser,
+            { ...cart, deliveryDate: nextDeliveryDate },
+            nextInvoice,
+            subscription.id,
+            0,
+            0,
+            true
+          )
+        })
       }
 
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
-
+      if (req && res) await refetchAccessToken(req, res);
       return {
         res: Consumer.getIConsumerFromEConsumer(signedInUser._id, consumer),
         error: null
@@ -411,7 +437,7 @@ class OrderService {
     }
   }
 
-  async getMyUpcomingOrders(signedInUser: SignedInUser | null): Promise<IOrder[]> {
+  async getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
@@ -465,7 +491,7 @@ class OrderService {
   }
 
   async updateOrder(
-    signedInUser: SignedInUser | null,
+    signedInUser: SignedInUser,
     orderId: string,
     updateOptions: IUpdateOrderInput,
     now = Date.now(),

@@ -6,7 +6,8 @@ import { activeConfig } from '../config'
 import cookie from 'cookie'
 
 export type Context = {
-  signedInUser: SignedInUser | null,
+  signedInUser: SignedInUser,
+  req?: IncomingMessage,
   res?: OutgoingMessage,
 };
 
@@ -28,7 +29,7 @@ export type ServerResolovers = {
   ) => Promise<any> | any
 }
 
-export interface SignedInUser {
+export type SignedInUser = {
   _id: string
   stripeCustomerId?: string
   stripeSubscriptionId?: string
@@ -36,7 +37,7 @@ export interface SignedInUser {
     name: string
     email: string
   }
-}
+} | null
 
 export const decodeToSignedInUser = (access: string): SignedInUser => {
   try {
@@ -56,7 +57,7 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
   }
 }
 
-const getSignedInUser = (req?: IncomingMessage): SignedInUser | null => {
+const getSignedInUser = (req?: IncomingMessage): SignedInUser => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
@@ -65,5 +66,6 @@ const getSignedInUser = (req?: IncomingMessage): SignedInUser | null => {
 
 export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({
   signedInUser: getSignedInUser(req),
+  req,
   res,
 })

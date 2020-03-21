@@ -43,7 +43,7 @@ class ConsumerService implements IConsumerService {
     this.orderService = orderService;
   }
 
-  public async cancelSubscription(signedInUser: SignedInUser | null) {
+  public async cancelSubscription(signedInUser: SignedInUser) {
     // todo simon: finish this. test this.
     try {
       if (!signedInUser) {
@@ -330,7 +330,7 @@ class ConsumerService implements IConsumerService {
   }
 
   
-  async updateMyPlan(signedInUser: SignedInUser | null, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
     // todo simon: finish this
     if (!signedInUser) {
       console.warn('No signedInUser for plan update');

@@ -172,8 +172,8 @@ export class Consumer implements IConsumer {
       _id,
       plan: econsumer.plan,
       profile: econsumer.profile,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
+      stripeCustomerId: econsumer.stripeCustomerId,
+      stripeSubscriptionId: econsumer.stripeSubscriptionId,
     }
   }
 

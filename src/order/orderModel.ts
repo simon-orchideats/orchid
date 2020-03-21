@@ -167,12 +167,18 @@ export class Order implements IOrder{
     subscriptionId: string,
     mealPrice: number,
     total: number,
+    isSkipped: boolean = false,
   ): EOrder {
+    if (!signedInUser) {
+      const err = new Error ('Signed in user null');
+      console.error(err.stack)
+      throw err;
+    }
     const now = moment();
     return {
       rest: {
-        restId: cart.restId,
-        meals: cart.meals,
+        restId: isSkipped ? null : cart.restId,
+        meals: isSkipped ? [] : cart.meals,
       },
       status: 'Open',
       consumer: {
@@ -194,8 +200,8 @@ export class Order implements IOrder{
         tip: 0,
         mealPrice,
         total,
-        percentFee: 123,
-        flatRateFee: 123,
+        percentFee: 0,
+        flatRateFee: 0,
       },
       deliveryDate: cart.deliveryDate,
     }
