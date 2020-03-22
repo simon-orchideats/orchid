@@ -120,7 +120,8 @@ export class Order implements IOrder{
 
   static getEOrderFromUpdatedOrder(
     {
-      consumer
+      consumer,
+      status,
     }: EOrder,
     mealPrice: number | null,
     total: number,
@@ -156,7 +157,8 @@ export class Order implements IOrder{
           card: consumer.profile.card,
           destination,
         }
-      }
+      },
+      status: mealPrice === null ? status : 'Skipped'
     }
   }
 

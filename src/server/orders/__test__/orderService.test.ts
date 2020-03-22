@@ -101,8 +101,8 @@ const getUpdateOptions = (
   deliveryDate,
 });
 
-const originalInvoiceDate3DaysBeforeDDate = moment('3-10-2020', 'MM/DD/YYYY').valueOf();
-const originalDeliveryDate3DaysAfterIDate = moment('3-13-2020', 'MM/DD/YYYY').valueOf();
+const originalInvoiceDate3DaysBeforeDDate = moment('3-10-2020', 'M/D/YY').valueOf();
+const originalDeliveryDate3DaysAfterIDate = moment('3-13-2020', 'M/D/YY').valueOf();
 const upcomingLineIdCurrAdjustment = 'upcomingLineId';
 const prevPlanLineId = 'prevPlanLineId';
 const prevAdjustmentLineId = 'prevAdjustmentLineId';

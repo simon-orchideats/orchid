@@ -105,6 +105,8 @@ export const useCancelSubscription = (): [
         cancelSubscription: {
           res: true,
           error: null,
+          //@ts-ignore
+          __typename: "BoolRes",
         }
       },
       update: (cache, { data }) => {

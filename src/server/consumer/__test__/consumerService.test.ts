@@ -1,5 +1,51 @@
 //@ts-nocheck
 export default {};
+
+/**
+ * subscription canceling a plan
+ *  - what happens to existing orders...? and their invoices...?
+ * 
+ * cancelation occurs immediately and stops any upcoming "subscription" payments, but manually created invoice items
+ * tied to that subscription, namely adjustments, will still be charged. so we need to make sure to account for those.
+ * 
+ * there are currently 3 possible adjustment invoiceItems given current week of n1. see the subscription plan change to
+ * see why these are the only possible adjustment invoiceItems
+ * 
+ * invN0 (prev week)
+ * invN1 (this week)
+ * invN2 (next week)
+ * 
+ * let's look at each of these invidivudally and see if we need to delete them
+ * 
+ * invN0
+ *  - this exists when the previous week's plan was updated after already having paid for it. ex:
+ *  today is 3/19. payment and confirmation is 3/22. so we update delivery to 3/27. On 3/22 we pay for plan. On 3/23,
+ *  we update plan. this creates and invoice for 3/29 for to adjust the previous week's 3/22 payment.
+ * 
+ * invN1
+ *  - this exists when the current week's plan was updated before payment of this week. this can happen immediately
+ *  after another payment. ex: today is payment + confirmation date of 3/22. food arrives on 2/24. next paymentment
+ *  and confirmation is 3/29, but on 3/25, we update the plan, which creates an adjustment invoice for 3/29.
+ * 
+ * invN2
+ *  - yes. delete this because the consumer wont get food for week n2.
+ * 
+ * So simply deleting invN0 in any case will cause problems because we need, we need it to adjust for the previous payment.
+ * Say the consumer previously paid $150 in and then they cancel, they need need to be re-invoiced -150 so they
+ * get their money back. At first it may seem possible to just skip the orders and let that logic handle the adjustment
+ * invoice items THEN cancel after skpping. But this is problematic because we'll end up giving consumers money if
+ * the adjustments is for a week that hasn't been paid for yet. ex: today is 3/22 and next payment is 3/28. if consumer
+ * updates from $40 to skip, then a -$40 is created. so once we cancel, we'll pay the consumer -$40 which is bad. So
+ * the only time we want to "skip" is for when the order has already been paid for. otherwise if the order has not been
+ * paid for, then we delete the invoice item
+ * 
+ * but is it possible to have invoiceItems in the upcoming payment that are not tied to O1 or O2? let's imagine
+ * invN0 was tied to O0. this means that invN0 is tied to an order that was already delivered (since O1 and O2 are
+ * upcoming undelivered orders). and well if invN0 was tied to a delivered order and delivered orders are paid for, then
+ * invN0 wouldn't actually be invN0 since by definition invN0 is an adjustment invoiceItems for the upcoming,
+ * unpaid invoice. same logic applies to invN1.
+ */
+
 /**
  * stripe subscription, change the plan
  *  - what happens to the existing orders....? and their invoices...?

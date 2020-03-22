@@ -22,9 +22,10 @@ import moment from 'moment';
 
 const ORDER_INDEX = 'orders';
 export const adjustmentDescHeader = 'Plan Adjustment for week of ';
+//todo 0: use this
 export const getAdjustmentDesc = (fromPlanName: string, toPlanName: string, date: string) =>
   `Plan adjustment from '${fromPlanName}' to '${toPlanName}' for week of ${date}`
-
+export const adjustmentDateFormat = 'M/D/YY';
 /**
  * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
  * are returned at which point the chooser "resets". Upon a reset, Chooser returns another cycle of unique elements.
@@ -53,7 +54,7 @@ const validatePhone = (phone: string) => {
 const validateDeliveryDate = (date: number, now = Date.now()) => {
   if (!isDate2DaysLater(date, now)) {
     console.warn('[OrderService]', `Delivery date '${date}' is not 2 days in advance`);
-    return `Delivery date '${moment(date).format('M/D/YY')}' is not 2 days in advance`;
+    return `Delivery date '${moment(date).format(adjustmentDateFormat)}' is not 2 days in advance`;
   }
 }
 
@@ -64,12 +65,13 @@ export interface IOrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes>
-  getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
+  getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   updateOrder(
     signedInUser: SignedInUser,
     orderId: string,
     updateOptions: IUpdateOrderInput,
-    now: number,
+    now?: number,
   ): Promise<MutationBoolRes>
 }
 
@@ -208,7 +210,7 @@ class OrderService {
     return '';
   }
 
-  private async validateUpdateOrder(updateOptions: IUpdateOrderInput, now: number) {
+  private async validateUpdateOrderInput(updateOptions: IUpdateOrderInput, now: number) {
     if (!this.planService) return Promise.reject('PlanService not set');
     const phoneValidation = validatePhone(updateOptions.phone);
     if (phoneValidation) return phoneValidation;
@@ -311,35 +313,35 @@ class OrderService {
           res: null,
           error: msg
         }
-      } else if (stripeCustomerId) {
-        const msg = `User '${stripeCustomerId}' already exists`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: null,
-          error: msg
-        }
-      } else {
-        const stripeCustomer = await this.stripe.customers.create({
-          payment_method: cart.paymentMethodId,
-          email: signedInUser.profile.email,
-          invoice_settings: {
-            default_payment_method: cart.paymentMethodId,
-          },
-        });
-        stripeCustomerId = stripeCustomer.id;
+      }
+
+      if (!stripeCustomerId) {
         try {
-          subscription = await this.stripe.subscriptions.create({
-            proration_behavior: 'none',
-            billing_cycle_anchor: invoiceDateSeconds,
-            customer: stripeCustomerId,
-            // fails on any id that isn't an active stripe plan
-            items: [{ plan: stripePlanId }]
+          const stripeCustomer = await this.stripe.customers.create({
+            payment_method: cart.paymentMethodId,
+            email: signedInUser.profile.email,
+            invoice_settings: {
+              default_payment_method: cart.paymentMethodId,
+            },
           });
+          stripeCustomerId = stripeCustomer.id;
         } catch (e) {
-          // delete stripe customer to avoid zombie stripe customers
-          await this.stripe.customers.del(stripeCustomerId);
+          console.error(`Failed to create stripe customer for consumer '${signedInUser._id}'`, e.stack);
           throw e;
         }
+      }
+      try {
+        subscription = await this.stripe.subscriptions.create({
+          proration_behavior: 'none',
+          billing_cycle_anchor: invoiceDateSeconds,
+          customer: stripeCustomerId,
+          // fails on any id that isn't an active stripe plan
+          items: [{ plan: stripePlanId }]
+        });
+      } catch (e) {
+        console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+                      + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+        throw e;
       }
 
       const order = Order.getNewOrderFromCartInput(
@@ -437,7 +439,7 @@ class OrderService {
     }
   }
 
-  async getMyUpcomingOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+  async getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
@@ -475,17 +477,31 @@ class OrderService {
           ],
         }
       });
-      return await Promise.all(res.body.hits.hits.map(async ({ _id, _source }) => {
+      return res.body.hits.hits.map(({ _id, _source }) => ({
+        _id,
+        order: _source,
+      }));
+    } catch (e) {
+      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+    if (!signedInUser) throw getNotSignedInErr()
+    try {
+      const res = await this.getMyUpcomingEOrders(signedInUser);
+      return await Promise.all(res.map(async ({ _id, order }) => {
         if (!this.restService) throw new Error ('RestService not set');
-        if (_source.rest.restId) {
-          const rest = await this.restService.getRest(_source.rest.restId)
-          if (!rest) throw Error(`Couldn't get rest ${_source.rest.restId}`);
-          return Order.getIOrderFromEOrder(_id, _source, rest);
+        if (order.rest.restId) {
+          const rest = await this.restService.getRest(order.rest.restId)
+          if (!rest) throw Error(`Couldn't get rest ${order.rest.restId}`);
+          return Order.getIOrderFromEOrder(_id, order, rest);
         }
-        return Order.getIOrderFromEOrder(_id, _source, null)
+        return Order.getIOrderFromEOrder(_id, order, null)
       }))
     } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming orders for consumer '${signedInUser._id}'. '${e.stack}'`);
+      console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }
@@ -496,32 +512,9 @@ class OrderService {
     updateOptions: IUpdateOrderInput,
     now = Date.now(),
   ): Promise<MutationBoolRes> {
-    if (!signedInUser) throw getNotSignedInErr()
-    if (!this.planService) throw new Error ('RestService not set');
     try {
-      const validation = await this.validateUpdateOrder(updateOptions, now);
-      if (validation) {
-        return {
-          res: false,
-          error: validation
-        };
-      }
-      if (!signedInUser) {
-        const msg = `No signed-in user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!orderId) {
-        const msg = `No order id user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
+      if (!signedInUser) throw getNotSignedInErr()
+      if (!this.planService) throw new Error ('RestService not set');
       const stripeCustomerId = signedInUser.stripeCustomerId;
       const subscriptionId = signedInUser.stripeSubscriptionId
       if (!stripeCustomerId) {
@@ -540,7 +533,22 @@ class OrderService {
           error: msg
         }
       }
-  
+      if (!orderId) {
+        const msg = `No order id user`;
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      const validation = await this.validateUpdateOrderInput(updateOptions, now);
+      if (validation) {
+        return {
+          res: false,
+          error: validation
+        };
+      }
+
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
 
@@ -550,6 +558,15 @@ class OrderService {
           '[OrderService]',
           `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
         )
+        return {
+          res: false,
+          error: msg
+        }
+      }
+
+      if (targetOrder.status !== 'Open' && targetOrder.status !== 'Skipped') {
+        const msg = `Trying to update order with status '${targetOrder.status}'. Can only update 'Open' or 'Skipped' orders.`;
+        console.warn(`[OrderService] ${msg}`);
         return {
           res: false,
           error: msg
@@ -566,7 +583,7 @@ class OrderService {
         }
       }
 
-      const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format('M/D/YY');
+      const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format(adjustmentDateFormat);
       let pendingLineItems;
       try {
         pendingLineItems = await this.stripe.invoiceItems.list({

@@ -5,7 +5,7 @@ import { IUpdateOrderInput } from '../../order/orderModel';
 
 export const OrderQueryResolvers: ServerResolovers = {
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {
-    return await getOrderService().getMyUpcomingOrders(signedInUser);
+    return await getOrderService().getMyUpcomingIOrders(signedInUser);
   }
 }
 
