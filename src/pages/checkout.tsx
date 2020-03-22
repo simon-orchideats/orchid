@@ -148,7 +148,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
 
   if (consumer && consumer.data) {
-    if (consumer.data.StripeSubscriptionId) {
+    if (consumer.data.StripeSubscriptionId && !placeOrderRes.called) {
       Router.replace(menuRoute)
       return <Typography>Redirecting...</Typography>
     }

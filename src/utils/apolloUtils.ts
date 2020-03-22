@@ -1,3 +1,7 @@
+import { useNotify } from './../client/global/state/notificationState';
+import { NotificationType } from './../client/notification/notificationModel';
+import { useEffect } from 'react';
+import { ApolloError } from 'apollo-client';
 import { IConsumer } from './../consumer/consumerModel';
 import { accessTokenCookie } from './auth';
 import { IncomingMessage, OutgoingMessage } from "http"
@@ -62,6 +66,29 @@ const getSignedInUser = (req?: IncomingMessage): SignedInUser => {
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   return decodeToSignedInUser(access);
+}
+
+type handlerRes = {
+  error?: ApolloError 
+  data?: MutationBoolRes | MutationConsumerRes
+};
+export const useMutationResponseHandler:(
+  res: handlerRes,
+  cb: (variable: handlerRes) => void
+) => void = (res, cb) => {
+  const notify = useNotify();
+  useEffect(() => {
+    if (res.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    }
+    if (res.data !== undefined) {
+      if (res.data.error) {
+        notify(res.data.error, NotificationType.error, false);
+      } else {
+       cb(res);
+      }
+    }
+  }, [res]);
 }
 
 export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({

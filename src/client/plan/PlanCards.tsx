@@ -14,15 +14,17 @@ const useStyles = makeStyles(() => ({
 }));
 
 const PlanCards: React.FC <{
+  defaultPlanId?: string;
   isSelectable?: boolean;
   onClickCard?: (plan: Plan) => void
 }> = ({
+  defaultPlanId,
   isSelectable =  false,
   onClickCard = (_plan: Plan) => {}
 }) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  const [selectedPlan, setSelectedPlan] = useState<Plan>();
+  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(defaultPlanId);
  
   if (!plans.data) {
     return <div>loading</div>
@@ -32,11 +34,11 @@ const PlanCards: React.FC <{
       {plans.data.map(plan => (
         <Grid key={plan.StripeId} item sm={12} md={4} className={classes.item}>
           <PlanDetails
-            selected={isSelectable && !!selectedPlan && selectedPlan.StripeId === plan.StripeId}
+            selected={isSelectable && !!selectedPlanId && selectedPlanId === plan.StripeId}
             mealPlan={plan}
             onClick={() => {
               onClickCard(plan);
-              setSelectedPlan(plan);
+              setSelectedPlanId(plan.StripeId);
             }}
           />
         </Grid>

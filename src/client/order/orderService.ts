@@ -60,7 +60,8 @@ export const usePlaceOrder = (): [
     data?: {
       res: Consumer | null,
       error: string | null
-    }
+    },
+    called: boolean,
   }
 ] => {
   type res = { placeOrder: MutationConsumerRes };
@@ -118,6 +119,7 @@ export const usePlaceOrder = (): [
       {
         error: mutation.error,
         data,
+        called: mutation.called
       }
     ]
   }, [mutation]);

@@ -9,8 +9,8 @@ export const ConsumerQueryResolvers: ServerResolovers = {
 }
 
 export const ConsumerMutationResolvers: ServerResolovers = {
-  cancelSubscription: async (_root, _vars, { signedInUser }) => {
-    return await getConsumerService().cancelSubscription(signedInUser);
+  cancelSubscription: async (_root, _vars, { signedInUser, req, res }) => {
+    return await getConsumerService().cancelSubscription(signedInUser, req, res);
   },
 
   insertEmail: async (

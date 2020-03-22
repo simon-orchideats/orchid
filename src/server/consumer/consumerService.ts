@@ -2,9 +2,9 @@ import { MutationConsumerRes } from './../../utils/apolloUtils';
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch, { Response } from 'node-fetch';
 import { adjustmentDescHeader, IOrderService, getOrderService } from './../orders/orderService';
-import { manualAuthSignUp } from './../auth/authenticate';
+import { manualAuthSignUp, refetchAccessToken } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, RenewalTypes, CuisineTypes, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -12,11 +12,11 @@ import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import moment from 'moment';
-import { OutgoingMessage } from 'http';
+import { OutgoingMessage, IncomingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
-  cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
+  cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
@@ -43,7 +43,11 @@ class ConsumerService implements IConsumerService {
     this.orderService = orderService;
   }
 
-  public async cancelSubscription(signedInUser: SignedInUser) {
+  public async cancelSubscription(
+    signedInUser: SignedInUser,
+    req?: IncomingMessage,
+    res?: OutgoingMessage
+  ) {
     // todo simon: finish this. test this.
     try {
       if (!signedInUser) {
@@ -91,7 +95,7 @@ class ConsumerService implements IConsumerService {
             try {
               await this.stripe.invoiceItems.del(line.id);
             } catch (e) {
-              const msg = `Couldn't remove adjustment id '${line.id}'. ${e.stack}`
+              const msg = `Couldn't remove future adjustment id '${line.id}'. ${e.stack}`
               console.error(msg);
               throw new Error (msg)
             }
@@ -116,18 +120,22 @@ class ConsumerService implements IConsumerService {
             stripeSubscriptionId: null,
           },
         })
+      }).then(async () => {
+        if (req && res) await refetchAccessToken(req, res);
       }).catch(e => {
         const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
         throw e;
       });
+      const updatedConsumer: Partial<EConsumer> = {
+        stripeSubscriptionId: null,
+        plan: null,
+      }
       const p4 = this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         body: {
-          doc: {
-            stripeSubscriptionId: null,
-          }
+          doc: updatedConsumer
         }
       }).catch(e => {
         const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
@@ -168,13 +176,6 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
       if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
-      let defaultPlan
-      try {
-        defaultPlan = await this.planService.getDefaultPlan();
-      } catch (e) {
-        throw new Error (`Failed to get default plan. ${e.stack}`)
-      }
-      if (!defaultPlan) throw new Error('Could\'t get default plan');
       const body: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId: null,
@@ -186,12 +187,7 @@ class ConsumerService implements IConsumerService {
           card: null,
           destination: null,
         },
-        plan: {
-          stripePlanId: defaultPlan.stripeId,
-          deliveryDay: 0,
-          renewal: RenewalTypes.Auto,
-          cuisines: Object.values(CuisineTypes)
-        },
+        plan: null,
       }
       await this.elastic.index({
         index: CONSUMER_INDEX,
@@ -208,7 +204,7 @@ class ConsumerService implements IConsumerService {
 
   async getConsumer(_id: string): Promise<IConsumer | null> {
     try {
-      const consumer = await this.elastic.getSource(
+      const consumer: ApiResponse<EConsumer> = await this.elastic.getSource(
         {
           index: CONSUMER_INDEX,
           id: _id,

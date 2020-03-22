@@ -143,7 +143,7 @@ export class Cart implements ICart {
   public getCartInput(
     deliveryName: string,
     address1: string,
-    address2: string,
+    address2: string | null,
     city: string,
     state: state,
     zip: string,

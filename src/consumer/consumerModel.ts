@@ -129,7 +129,7 @@ export class ConsumerPlan implements IConsumerPlan {
 
 export interface EConsumer {
   readonly createdDate: number,
-  readonly plan: IConsumerPlan
+  readonly plan: IConsumerPlan | null
   readonly profile: IConsumerProfile
   readonly stripeCustomerId: string | null
   readonly stripeSubscriptionId: string | null
@@ -144,14 +144,14 @@ export class Consumer implements IConsumer {
   readonly stripeCustomerId: string | null
   readonly stripeSubscriptionId: string | null
   readonly profile: ConsumerProfile
-  readonly plan: ConsumerPlan
+  readonly plan: ConsumerPlan | null
 
   constructor(consumer: IConsumer) {
     this._id = consumer._id
     this.stripeCustomerId = consumer.stripeCustomerId;
     this.stripeSubscriptionId = consumer.stripeSubscriptionId;
     this.profile = new ConsumerProfile(consumer.profile);
-    this.plan = new ConsumerPlan(consumer.plan)
+    this.plan = consumer.plan && new ConsumerPlan(consumer.plan);
   }
 
   public get StripeSubscriptionId() { return this.stripeSubscriptionId }
@@ -183,7 +183,7 @@ export class Consumer implements IConsumer {
       stripeCustomerId: consumer.stripeCustomerId,
       stripeSubscriptionId: consumer.stripeSubscriptionId,
       profile: ConsumerProfile.getICopy(consumer.profile),
-      plan: ConsumerPlan.getICopy(consumer.plan),
+      plan: consumer.plan && ConsumerPlan.getICopy(consumer.plan),
     }
   }
 
