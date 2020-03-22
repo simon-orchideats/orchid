@@ -1,14 +1,15 @@
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
-import { useState, useRef, createRef } from "react";
+import { useState, useRef, createRef, useEffect } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
 import AddressForm from '../../client/general/inputs/AddressForm'
-import  { useRequireConsumer } from '../../consumer/consumerService';
+import  { useRequireConsumer, useUpdateConsumer } from '../../consumer/consumerService';
 import withApollo from "../../client/utils/withPageApollo";
 import { state } from "../../place/addressModel";
 import CardForm from "../../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { activeConfig } from "../../config";
 import { isServer } from "../../client/utils/isServer";
+import { IConsumer } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -65,7 +66,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const classes = useStyles();
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  const [phoneLabel, setPhoneLabel] = useState<string>('609-513-8166')
+  // const [phoneLabel, setPhoneLabel] = useState<string>('609-513-8166')
   const validateAddressRef = useRef<() => boolean>();
   const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
@@ -75,6 +76,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
+  const [updateConsumer, updateConsumerRes] = useUpdateConsumer();
   // todo: default the label based on the consumer's address data.
   // then given each part of the address data, we can set default values to the addrForm
   const [addrLabel, setAddrLabel] = useState<string>('19 Middle st boston ma 02127')
@@ -82,10 +84,26 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
+  console.log('CONSUMER',consumer)
+
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
-    setPhoneLabel(phoneInputRef.current!.value);
+    // setPhoneLabel(phoneInputRef.current!.value); //may not need this
+    const updatedConsumer: IConsumer = {
+      _id: consumer.data!._id,
+      plan: consumer.data!.plan,
+      profile: {
+        name: consumer.data!.profile.name,
+        email: consumer.data!.profile.email,
+        card: consumer.data!.profile.card,
+        destination: consumer.data!.profile.destination,
+        phone: phoneInputRef.current!.value
+      },
+      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
+      stripeCustomerId: consumer.data!.stripeCustomerId
+    }
+    updateConsumer(updatedConsumer);
   }
   const onCancelPhone = () => {
     setIsUpdatingPhone(false);
@@ -137,6 +155,23 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     setIsUpdatingCard(false);
   }
 
+  useEffect(() => {
+    console.log("UPDATED");
+    // if (placeOrderRes.error) {
+    //   notify('Sorry, something went wrong', NotificationType.error, false);
+    // }
+    // if (placeOrderRes.data !== undefined) {
+    //   if (placeOrderRes.data.error) {
+    //     notify(placeOrderRes.data.error, NotificationType.error, false);
+    //   } else {
+    //     Router.push({
+    //       pathname: upcomingDeliveriesRoute,
+    //       query: { confirmation: 'true' },
+    //     })
+    //   }
+    // }
+  }, [updateConsumerRes]);
+
   return (
     <>
       <Container maxWidth='lg' className={classes.container}>
@@ -169,7 +204,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 <PhoneInput
                   className={classes.input}
                   inputRef={phoneInputRef}
-                  defaultValue={phoneLabel}
+                  defaultValue={consumer.data?.profile.phone}
                   setValidator={(validator: () => boolean) => {
                     validatePhoneRef.current = validator;
                   }}
@@ -196,7 +231,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <>
                 <Labels
                   primary='Phone'
-                  secondary={phoneLabel}
+                  secondary={consumer.data?.profile.phone ? consumer.data?.profile.phone : '' }
                 />
                 <ListItemSecondaryAction>
                   <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>

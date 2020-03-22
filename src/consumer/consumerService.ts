@@ -64,6 +64,68 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
   });
 }
 
+export const useUpdateConsumer = (): [
+  (consumer: IConsumer) => void,
+  {
+    error?: ApolloError 
+    data?: {
+      res: Consumer | null,
+      error: string | null
+    }
+  }
+] => {
+  type res = { updateConsumer: MutationConsumerRes };
+  type vars = { consumer: IConsumer }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation updateConsumer($consumer: ConsumerInput) {
+      updateConsumer(consumer: $consumer) {
+        res {
+          ...consumerFragment
+        }
+        error
+      }
+    }
+    ${consumerFragment}
+  `);
+  const updateConsumer = (consumer: IConsumer) => {
+    mutate({
+      variables: { consumer },
+      optimisticResponse: {
+        updateConsumer: { 
+          res: copyWithTypenames({
+            _id: consumer._id,
+            stripeSubscriptionId: consumer.stripeSubscriptionId,
+            stripeCustomerId: consumer.stripeCustomerId,
+            profile: consumer.profile,
+            plan: consumer.plan,
+          }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
+        }
+      }
+    })
+  }
+  return useMemo(() => {
+    console.log('MUTATION?', mutation.data)
+    // the resolver doeesnt return anything, have it return
+    // IConsumer stuff? 
+    const data = mutation.data && {
+      res: mutation.data.updateConsumer.res && new Consumer(mutation.data.updateConsumer.res),
+      error: mutation.data.updateConsumer.error
+    }
+    console.log('RUNS?:', data?.res)
+    return [
+      updateConsumer,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
+}
+
+
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
   //@ts-ignore
@@ -71,15 +133,15 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';
   //@ts-ignore
-  newConsumer.profile.card.__typename = 'Card';
+  if (newConsumer.profile.card) newConsumer.profile.card.__typename = 'Card';
   //@ts-ignore
-  newConsumer.profile.destination.address.__typename  = 'Address'
+  if (newConsumer.profile.destination && newConsumer.profile.destination.address ) newConsumer.profile.destination.address.__typename  = 'Address'
   //@ts-ignore
-  newConsumer.profile.destination.__typename = 'Destination'
+  if (newConsumer.profile.destination) newConsumer.profile.destination.__typename = 'Destination'
   //@ts-ignore
   newConsumer.__typename = 'Consumer';
   //@ts-ignore
-  if (!newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
+  if (newConsumer.profile.destination && !newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
   return newConsumer
 }
 

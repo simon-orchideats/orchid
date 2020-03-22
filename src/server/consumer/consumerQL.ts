@@ -19,6 +19,20 @@ const _ConsumerQL = gql`
     phone: String
     destination: Destination
   }
+  input ConsumerInput {
+    _id: ID!
+    stripeCustomerId: ID
+    stripeSubscriptionId: ID
+    profile: ConsumerProfileInput
+    plan: ConsumerPlanInput
+  }
+  input ConsumerProfileInput {
+    name: String!
+    email: String!
+    card: CardInput
+    phone: String
+    destination: DestinationInput
+  }
 `
 
 export const ConsumerQL = () => [

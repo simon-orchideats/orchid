@@ -13,6 +13,7 @@ import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import moment from 'moment';
 import { OutgoingMessage } from 'http';
+import { getNotSignedInErr } from '../utils/error';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
@@ -22,6 +23,7 @@ export interface IConsumerService {
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationBoolRes>
+  updateConsumer: (signedInUser: SignedInUser, consumer: Consumer) => Promise<MutationConsumerRes>
 }
 
 class ConsumerService implements IConsumerService {
@@ -325,6 +327,37 @@ class ConsumerService implements IConsumerService {
       }
     } catch (e) {
       console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async updateConsumer (signedInUser: SignedInUser | null, consumer: Consumer): Promise<MutationConsumerRes> {
+    if (!signedInUser) throw getNotSignedInErr()
+    try {
+      await this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: consumer._id,
+        body: {doc:{
+          stripeCustomerId: consumer.stripeCustomerId,
+          stripeSubscriptionId: consumer.stripeSubscriptionId,
+          profile: consumer.profile,
+          plan: consumer.plan
+
+        }}
+      });
+
+      return {
+        res: {
+          _id: consumer._id,
+          stripeCustomerId: consumer.stripeCustomerId,
+          stripeSubscriptionId: consumer.stripeSubscriptionId,
+          profile: consumer.profile,
+          plan: consumer.plan
+        }, error:null
+
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to update consumer '${consumer._id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
   }
