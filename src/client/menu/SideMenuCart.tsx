@@ -2,6 +2,7 @@ import { makeStyles, Typography, Button } from "@material-ui/core";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
+import PlanFilter from "./PlanFilter";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -61,6 +62,9 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             <Typography variant='body1' className={classes.suggestion}>
               {cart && cart.Zip ? null : 'Enter zip to continue'}
             </Typography>
+            <div>
+              <PlanFilter />
+            </div>
             <Button
               disabled={disabled}
               variant='contained'
