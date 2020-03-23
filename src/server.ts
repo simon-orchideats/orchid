@@ -46,6 +46,12 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
 // todo use getAdjustmentDesc
 // todo test for consumerServiceTest
+// todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
+// is already confirmed. originally we were gonna listen for stripe payment event and then use that
+// to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
+// payment day if the consumer updated the delivery date. for now we'll just do it each day
+// at 12am.
+// skipping orders doenst update the ui
 
 
 init({

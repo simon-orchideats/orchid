@@ -1,3 +1,4 @@
+import { IncomingMessage, OutgoingMessage } from 'http';
 import { decodeToSignedInUser } from './../../utils/apolloUtils';
 import { universalAuthCB, popupSocialAuthCB, stateRedirectCookie, accessTokenCookie, refreshTokenCookie } from './../../utils/auth';
 import { getConsumerService } from './../consumer/consumerService';
@@ -6,7 +7,6 @@ import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
 import jwt from 'jsonwebtoken';
-import { OutgoingMessage } from 'http';
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
   try {
@@ -92,9 +92,15 @@ const redirectedSignIn = async (
       })
     };
     
-    res.setHeader('Set-Cookie', [
-      `${accessTokenCookie}=${data.access_token}; HttpOnly`,
-      `${refreshTokenCookie}=${data.refresh_token}; HttpOnly`
+    setCookie(res, [
+      {
+        name: accessTokenCookie,
+        value: data.access_token,
+      },
+      {
+        name: refreshTokenCookie,
+        value: data.refresh_token,
+      }
     ])
     return data
   } catch (e) {
@@ -206,12 +212,62 @@ export const manualAuthSignUp = async (
     console.error(msg);
     throw new Error(msg);
   }
-  res.setHeader('Set-Cookie', [
-    `${accessTokenCookie}=${authJson.access_token}; HttpOnly`,
-    `${refreshTokenCookie}=${authJson.refresh_token}; HttpOnly`
-  ]);
+  setCookie(res, [
+    {
+      name: accessTokenCookie,
+      value: authJson.access_token,
+    },
+    {
+      name: refreshTokenCookie,
+      value: authJson.refresh_token,
+    }
+  ])
   return {
     res: decodeToSignedInUser(authJson.access_token),
     error: null,
   };
+}
+
+var getCookie = (req: IncomingMessage) => {
+  const cookies: { [key: string]: string } = {};
+  req.headers && req.headers.cookie && req.headers.cookie.split(';').forEach(cookie => {
+    const parts = cookie.match(/(.*?)=(.*)$/)
+    if (!parts) return;
+    cookies[parts[1].trim()] = (parts[2] || '').trim();
+  });
+  return cookies;
+};
+
+export const refetchAccessToken = async (req: IncomingMessage, res: OutgoingMessage) => {
+  const refresh = getCookie(req)[refreshTokenCookie];
+  
+  const authRes = await fetch(`https://${activeConfig.server.auth.domain}/oauth/token`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      grant_type: 'refresh_token',
+      refresh_token: refresh,
+      client_id: activeConfig.server.auth.clientId,
+    }),
+  });
+
+  const authJson = await authRes.json();
+  if (!authRes.ok) {
+    const msg = `Failed to get access with refresh '${refresh}: ${JSON.stringify(authJson)}'`;
+    console.error(msg);
+    throw new Error(msg);
+  }
+  setCookie(res, [{
+    name: accessTokenCookie,
+    value: authJson.access_token,
+  }])
+}
+
+export const setCookie = (res: OutgoingMessage, values: { name: string, value: string }[]) => {
+  res.setHeader('Set-Cookie', values.map(({ name, value }) => (
+    `${name}=${value}; HttpOnly; path=/`
+  )))
 }

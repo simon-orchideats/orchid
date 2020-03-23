@@ -1,23 +1,23 @@
+import moment from 'moment';
+import { getNotSignedInErr } from './../utils/error';
 import { MutationConsumerRes } from './../../utils/apolloUtils';
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch, { Response } from 'node-fetch';
-import { adjustmentDescHeader, IOrderService, getOrderService } from './../orders/orderService';
-import { manualAuthSignUp } from './../auth/authenticate';
+import { IOrderService, getOrderService, adjustmentDateFormat } from './../orders/orderService';
+import { manualAuthSignUp, refetchAccessToken } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, RenewalTypes, CuisineTypes, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
 import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
-import moment from 'moment';
-import { OutgoingMessage } from 'http';
-import { getNotSignedInErr } from '../utils/error';
+import { OutgoingMessage, IncomingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
-  cancelSubscription: (signedInUser: SignedInUser) => Promise<MutationBoolRes>
+  cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
@@ -45,16 +45,14 @@ class ConsumerService implements IConsumerService {
     this.orderService = orderService;
   }
 
-  public async cancelSubscription(signedInUser: SignedInUser | null) {
-    // todo simon: finish this. test this.
+  public async cancelSubscription(
+    signedInUser: SignedInUser,
+    req?: IncomingMessage,
+    res?: OutgoingMessage
+  ) {
     try {
-      if (!signedInUser) {
-        console.warn('No signedInUser for subscription cancel');
-        return {
-          res: false,
-          error: 'Need a signed in user'
-        }
-      }
+      if (!signedInUser) throw getNotSignedInErr()
+      if (!this.orderService) throw new Error('OrderService not set');
       const stripeCustomerId = signedInUser.stripeCustomerId;
       const subscriptionId = signedInUser.stripeSubscriptionId;
       if (!stripeCustomerId) {
@@ -73,8 +71,8 @@ class ConsumerService implements IConsumerService {
           error: msg
         }
       }
-      
-      let pendingLineItems;
+
+      let pendingLineItems: Stripe.ApiList<Stripe.InvoiceItem>;
       try {
         pendingLineItems = await this.stripe.invoiceItems.list({
           limit: 50,
@@ -84,33 +82,53 @@ class ConsumerService implements IConsumerService {
       } catch (e) {
         throw new Error(`Couldn't get future line items'. ${e.stack}`)
       }
-      const today = moment();
-
-      const p1 = Promise.all(pendingLineItems.data.map(async line => {
-        if (line.description && line.description.includes(adjustmentDescHeader)) {
-          const adjustmentForDate = moment(line.description.substring(adjustmentDescHeader.length), 'MM/DD/YYYY');
-          if (adjustmentForDate.isAfter(today)) {
-            try {
-              await this.stripe.invoiceItems.del(line.id);
-            } catch (e) {
-              const msg = `Couldn't remove adjustment id '${line.id}'. ${e.stack}`
-              console.error(msg);
-              throw new Error (msg)
-            }
+      const today = moment().valueOf();
+      const p1 = this.orderService.getMyUpcomingEOrders(signedInUser)
+        .then(orders => Promise.all(orders.map(async ({ _id, order }) => {
+          if (!this.orderService) throw new Error('OrderService not set');
+          if (order.invoiceDate > today) {
+            return Promise.all(pendingLineItems.data.map(line => {
+              console.log(moment(order.invoiceDate).format(adjustmentDateFormat));
+              if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
+                try {
+                  return this.stripe.invoiceItems.del(line.id);
+                } catch (e) {
+                  const msg = `Couldn't remove future adjustment id '${line.id}'. ${e.stack}`
+                  console.error(msg);
+                  throw e;
+                }
+              }
+            }));
+          } else {
+            return this.orderService.updateOrder(signedInUser, _id, {
+              restId: null,
+              meals: [],
+              // todo 0: remove these !
+              phone: order.consumer.profile.phone!,
+              destination: order.consumer.profile.destination!,
+              deliveryDate: order.deliveryDate,
+            }).catch(e => {
+              const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}'. ${e.stack}`;
+              console.error(msg)
+              throw e;
+            })
           }
-        }
-      })).catch(e => {
-        const msg = `Couldn't remove all adjustments targeting future weeks. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });;
+        })))
+        .then(() => {
+          return this.stripe.subscriptions.del(subscriptionId, { invoice_now: true })
+            .catch(e => {
+              const msg = `Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
+              console.error(msg)
+              throw e;
+            });
+        })
+        .catch(e => {
+          const msg = `Failed to get upcomingOrders for user '${signedInUser._id}'`;
+          console.error(msg)
+          throw e;
+        });
 
-      const p2 = this.stripe.subscriptions.del(subscriptionId).catch(e => {
-        const msg = `Failed to delete subscription '${subscriptionId}' from stripe from elastic for user '${signedInUser._id}'. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });;
-      const p3 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
+      const p2 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
         headers: await getAuth0Header(),
         method: 'PATCH',
         body: JSON.stringify({
@@ -118,18 +136,22 @@ class ConsumerService implements IConsumerService {
             stripeSubscriptionId: null,
           },
         })
+      }).then(async () => {
+        if (req && res) await refetchAccessToken(req, res);
       }).catch(e => {
         const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
         throw e;
       });
-      const p4 = this.elastic.update({
+      const updatedConsumer: Partial<EConsumer> = {
+        stripeSubscriptionId: null,
+        plan: null,
+      }
+      const p3 = this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         body: {
-          doc: {
-            stripeSubscriptionId: null,
-          }
+          doc: updatedConsumer
         }
       }).catch(e => {
         const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
@@ -137,7 +159,7 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      await Promise.all([p1, p2, p3, p4]);
+      await Promise.all([p1, p2, p3]);
       return {
         res: true,
         error: null,
@@ -170,13 +192,6 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
       if (res.body.hits.total.value > 0) throw new Error(`Consumer with id '_id' ${_id} already exists`);
-      let defaultPlan
-      try {
-        defaultPlan = await this.planService.getDefaultPlan();
-      } catch (e) {
-        throw new Error (`Failed to get default plan. ${e.stack}`)
-      }
-      if (!defaultPlan) throw new Error('Could\'t get default plan');
       const body: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId: null,
@@ -188,12 +203,7 @@ class ConsumerService implements IConsumerService {
           card: null,
           destination: null,
         },
-        plan: {
-          stripePlanId: defaultPlan.stripeId,
-          deliveryDay: 0,
-          renewal: RenewalTypes.Auto,
-          cuisines: Object.values(CuisineTypes)
-        },
+        plan: null,
       }
       await this.elastic.index({
         index: CONSUMER_INDEX,
@@ -210,7 +220,7 @@ class ConsumerService implements IConsumerService {
 
   async getConsumer(_id: string): Promise<IConsumer | null> {
     try {
-      const consumer = await this.elastic.getSource(
+      const consumer: ApiResponse<EConsumer> = await this.elastic.getSource(
         {
           index: CONSUMER_INDEX,
           id: _id,
@@ -284,7 +294,7 @@ class ConsumerService implements IConsumerService {
           error: signedUp.error,
         }
       }
-      const consumer = await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
+      const consumer = await this.insertConsumer(signedUp.res!._id, signedUp.res!.profile.name,  signedUp.res!.profile.email)
       return {
         res: consumer,
         error: null,
@@ -363,16 +373,10 @@ class ConsumerService implements IConsumerService {
   }
 
   
-  async updateMyPlan(signedInUser: SignedInUser | null, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
     // todo simon: finish this
-    if (!signedInUser) {
-      console.warn('No signedInUser for plan update');
-      return {
-        res: false,
-        error: 'Need a signed in user'
-      }
-    }
     try {
+      if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       /**
        * update....
@@ -419,7 +423,10 @@ class ConsumerService implements IConsumerService {
       //   }
       // })
     } catch (e) {
-      console.error(`[ConsumerService] Failed to update plan for user '${signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`);
+      console.error(`
+        [ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
+        e.stack
+      );
       throw new Error('Internal Server Error');
     }
   }

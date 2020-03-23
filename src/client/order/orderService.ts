@@ -60,7 +60,8 @@ export const usePlaceOrder = (): [
     data?: {
       res: Consumer | null,
       error: string | null
-    }
+    },
+    called: boolean,
   }
 ] => {
   type res = { placeOrder: MutationConsumerRes };
@@ -80,7 +81,7 @@ export const usePlaceOrder = (): [
     mutate({
       variables: { cart },
       optimisticResponse: {
-        placeOrder: { 
+        placeOrder: {
           res: copyWithTypenames({
             _id: newConsumer._id,
             stripeSubscriptionId: null,
@@ -105,7 +106,7 @@ export const usePlaceOrder = (): [
       },
       update: (cache, { data }) => {
         if (data && data.placeOrder.res) updateMyConsumer(cache, data.placeOrder.res)
-      }
+      },
     })
   }
   return useMemo(() => {
@@ -118,6 +119,7 @@ export const usePlaceOrder = (): [
       {
         error: mutation.error,
         data,
+        called: mutation.called
       }
     ]
   }, [mutation]);
@@ -235,7 +237,7 @@ export const useUpdateOrder = (): [
 
 type upcomingOrdersRes = { myUpcomingOrders: IOrder[] }
 export const useGetUpcomingOrders = () => {
-  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
+  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY, { fetchPolicy: 'cache-and-network' });
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
   ), [res.data]);

@@ -5,7 +5,7 @@ import { IUpdateOrderInput } from '../../order/orderModel';
 
 export const OrderQueryResolvers: ServerResolovers = {
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {
-    return await getOrderService().getMyUpcomingOrders(signedInUser);
+    return await getOrderService().getMyUpcomingIOrders(signedInUser);
   }
 }
 
@@ -13,9 +13,9 @@ export const OrderMutationResolvers: ServerResolovers = {
   placeOrder: async (
     _root,
     { cart }: { cart: ICartInput },
-    { signedInUser },
+    { signedInUser, req, res },
   ) => {
-    return await getOrderService().placeOrder(signedInUser, cart);
+    return await getOrderService().placeOrder(signedInUser, cart, req, res);
   },
 
   updateOrder: async (

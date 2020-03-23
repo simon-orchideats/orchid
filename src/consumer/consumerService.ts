@@ -19,6 +19,40 @@ const MY_CONSUMER_QUERY = gql`
   }
   ${consumerFragment}
 `
+type myConsumerRes = { myConsumer: IConsumer | null }
+
+export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
+  const newConsumer = Consumer.getICopy(consumer);
+  //@ts-ignore
+  if (newConsumer.plan) newConsumer.plan.__typename = 'ConsumerPlan';
+  //@ts-ignore
+  newConsumer.profile.__typename = 'ConsumerProfile';
+  //@ts-ignore
+  newConsumer.profile.card.__typename = 'Card';
+  //@ts-ignore
+  newConsumer.profile.destination.address.__typename  = 'Address'
+  //@ts-ignore
+  newConsumer.profile.destination.__typename = 'Destination'
+  //@ts-ignore
+  newConsumer.__typename = 'Consumer';
+  //@ts-ignore
+  if (!newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
+  return newConsumer
+}
+
+export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.readQuery<myConsumerRes>({
+  query: MY_CONSUMER_QUERY
+});
+
+export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: IConsumer) => {
+  const newConsumer = copyWithTypenames(consumer);
+  cache.writeQuery<myConsumerRes>({
+    query: MY_CONSUMER_QUERY,
+    data: {
+      myConsumer: newConsumer
+    }
+  });
+}
 
 export const useAddConsumerEmail = (): [
   (email: string) => void,
@@ -47,21 +81,6 @@ export const useAddConsumerEmail = (): [
       data: mutation.data ? mutation.data.insertEmail : undefined,
     }
   ], [mutation]);
-}
-
-type myConsumerRes = { myConsumer: IConsumer | null}
-
-export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.readQuery<myConsumerRes>({
-  query: MY_CONSUMER_QUERY
-});
-export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: IConsumer) => {
-  const newConsumer = copyWithTypenames(consumer);
-  cache.writeQuery<myConsumerRes>({
-    query: MY_CONSUMER_QUERY,
-    data: {
-      myConsumer: newConsumer
-    }
-  });
 }
 
 export const useUpdateConsumer = (): [
@@ -121,44 +140,57 @@ export const useUpdateConsumer = (): [
   }, [mutation]);
 }
 
-
-export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
-  const newConsumer = Consumer.getICopy(consumer);
-  //@ts-ignore
-  newConsumer.plan.__typename = 'ConsumerPlan';
-  //@ts-ignore
-  newConsumer.profile.__typename = 'ConsumerProfile';
-  //@ts-ignore
-  if (newConsumer.profile.card) newConsumer.profile.card.__typename = 'Card';
-  //@ts-ignore
-  if (newConsumer.profile.destination && newConsumer.profile.destination.address ) newConsumer.profile.destination.address.__typename  = 'Address'
-  //@ts-ignore
-  if (newConsumer.profile.destination) newConsumer.profile.destination.__typename = 'Destination'
-  //@ts-ignore
-  newConsumer.__typename = 'Consumer';
-  //@ts-ignore
-  if (newConsumer.profile.destination && !newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
-  return newConsumer
-}
-
-export const useRequireConsumer = (url: string) => {
-  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
-  const consumer = useMemo<Consumer | null>(() => (
-    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
-  ), [res.data]);
-  if (!consumer && !res.loading && !res.error) {
-    if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
-    return {
-      loading: res.loading,
-      error: res.error,
-      data: consumer
+export const useCancelSubscription = (): [
+  () => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { cancelSubscription: MutationBoolRes };
+  const [mutate, mutation] = useMutation<res>(gql`
+    mutation cancelSubscription {
+      cancelSubscription {
+        res
+        error
+      }
     }
+  `);
+  const cancelSubscription = () => {
+    mutate({
+      optimisticResponse: {
+        cancelSubscription: {
+          res: true,
+          error: null,
+          //@ts-ignore
+          __typename: "BoolRes",
+        }
+      },
+      update: (cache, { data }) => {
+        if (data && data.cancelSubscription.res) {
+          const consumer = getMyConsumer(cache);
+          if (!consumer || !consumer.myConsumer) {
+            const err = new Error('No consumer found');
+            console.error(err.stack);
+            throw err;
+          }
+          const newConsumer = copyWithTypenames(consumer.myConsumer);
+          updateMyConsumer(cache, {
+            ...newConsumer,
+            stripeSubscriptionId: null,
+            plan: null,
+          });
+        }
+      }
+    })
   }
-  return {
-    loading: res.loading,
-    error: res.error,
-    data: consumer
-  }
+  return useMemo(() => [
+    cancelSubscription,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.cancelSubscription : undefined,
+    }
+  ], [mutation]);
 }
 
 export const useGetConsumer = () => {
@@ -192,9 +224,6 @@ export const useGetLazyConsumer = (): [
   ]
 }
 
-export const useSignIn = () =>
-  (url: string = '/') => window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
-
 export const useGoogleSignIn = () => () => new Promise<{ name: string, email: string }>((resolve, reject) => {
   const webAuth = new auth0.WebAuth({
     domain: activeConfig.client.auth.domain,
@@ -212,6 +241,7 @@ export const useGoogleSignIn = () => () => new Promise<{ name: string, email: st
     if (err) {
       console.error(`Could not social auth. '${JSON.stringify(err)}'`);
       reject(err);
+      return;
     }
     resolve({
       name: res.idTokenPayload.name,
@@ -219,6 +249,29 @@ export const useGoogleSignIn = () => () => new Promise<{ name: string, email: st
     });
   });
 })
+
+export const useRequireConsumer = (url: string) => {
+  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
+  const consumer = useMemo<Consumer | null>(() => (
+    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
+  ), [res.data]);
+  if (!consumer && !res.loading && !res.error) {
+    if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
+    return {
+      loading: res.loading,
+      error: res.error,
+      data: consumer
+    }
+  }
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: consumer
+  }
+}
+
+export const useSignIn = () =>
+  (url: string = '/') => window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
 
 export const useSignUp = (): [
   (email: string, name: string, pass: string) => void,

@@ -1,3 +1,7 @@
+import { useNotify } from './../client/global/state/notificationState';
+import { NotificationType } from './../client/notification/notificationModel';
+import { useEffect } from 'react';
+import { ApolloError } from 'apollo-client';
 import { IConsumer } from './../consumer/consumerModel';
 import { accessTokenCookie } from './auth';
 import { IncomingMessage, OutgoingMessage } from "http"
@@ -6,7 +10,8 @@ import { activeConfig } from '../config'
 import cookie from 'cookie'
 
 export type Context = {
-  signedInUser: SignedInUser | null,
+  signedInUser: SignedInUser,
+  req?: IncomingMessage,
   res?: OutgoingMessage,
 };
 
@@ -28,7 +33,7 @@ export type ServerResolovers = {
   ) => Promise<any> | any
 }
 
-export interface SignedInUser {
+export type SignedInUser = {
   _id: string
   stripeCustomerId?: string
   stripeSubscriptionId?: string
@@ -36,7 +41,7 @@ export interface SignedInUser {
     name: string
     email: string
   }
-}
+} | null
 
 export const decodeToSignedInUser = (access: string): SignedInUser => {
   try {
@@ -56,14 +61,38 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
   }
 }
 
-const getSignedInUser = (req?: IncomingMessage): SignedInUser | null => {
+const getSignedInUser = (req?: IncomingMessage): SignedInUser => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   return decodeToSignedInUser(access);
 }
 
+type handlerRes = {
+  error?: ApolloError 
+  data?: MutationBoolRes | MutationConsumerRes
+};
+export const useMutationResponseHandler:(
+  res: handlerRes,
+  cb: (variable: handlerRes) => void
+) => void = (res, cb) => {
+  const notify = useNotify();
+  useEffect(() => {
+    if (res.error) {
+      notify('Sorry, something went wrong', NotificationType.error, false);
+    }
+    if (res.data !== undefined) {
+      if (res.data.error) {
+        notify(res.data.error, NotificationType.error, false);
+      } else {
+       cb(res);
+      }
+    }
+  }, [res]);
+}
+
 export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({
   signedInUser: getSignedInUser(req),
+  req,
   res,
 })

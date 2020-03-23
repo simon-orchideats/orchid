@@ -1,17 +1,17 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, InputLabel, Select, MenuItem, FormControl } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
 import SideMenuCart from "../client/menu/SideMenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
-import { useGetCart, useUpdateCartPlanId } from "../client/global/state/cartState";
+import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-import { useGetAvailablePlans } from "../plan/planService";
+import PlanFilter from "../client/menu/PlanFilter";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -27,15 +27,15 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
     display: 'flex',
   },
-  mini: {
-    marginLeft: 'auto',
-  },
   smallPaddingBottom: {
     paddingBottom: theme.spacing(2),
   },
   input: {
     alignSelf: 'stretch',
     marginLeft: theme.spacing(2),
+  },
+  mini: {
+    marginLeft: 'auto',
   },
   paddingTop: {
     paddingTop: theme.spacing(2),
@@ -62,19 +62,6 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const sortedPlans = useGetAvailablePlans();
-  const defaultPlan = cart && cart.StripePlanId ? cart.StripePlanId : ''
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(defaultPlan);
-  const setCartStripePlanId = useUpdateCartPlanId();
-  const updatePlanId = (planId: string) => {
-    setCartStripePlanId(planId);
-    setSelectedPlanId(planId);
-  };
-  useEffect(() => {
-    if ((!cart || !cart.StripePlanId) && sortedPlans.data) {
-      updatePlanId(sortedPlans.data[0].StripeId);
-    }
-  }, [sortedPlans.data]);
   const cartRestId = cart ? cart.RestId : null;
   const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
@@ -120,32 +107,24 @@ const menu = () => {
           <div className={classes.filters}>
             <Link className={classes.link} color='inherit' onClick={onClickZip}>
               <LocationOnIcon />
-              {isMdAndUp &&
+              {
+                isMdAndUp &&
                 <>
                   <Typography>{zip ? zip : 'Zip'}</Typography>
                   <ArrowDropDownIcon />
                 </>
               }
             </Link>
-            <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-              <InputLabel>
-                Plan
-              </InputLabel>
-              <Select
-                value={selectedPlanId}
-                onChange={e => updatePlanId(e.target.value as string)}
-              >
-                {sortedPlans.data && sortedPlans.data.map(plan => (
-                  <MenuItem key={plan.StripeId} value={plan.StripeId}>
-                    {plan.MealCount} (${plan.MealPrice.toFixed(2)} ea)
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {!isMdAndUp &&
-              <div className={classes.mini}>
-                <MenuMiniCart />
-              </div>
+            {
+              !isMdAndUp &&
+              <>
+                <div className={`${classes.input} ${classes.smallPaddingBottom}`}>
+                  <PlanFilter />
+                </div>
+                <div className={classes.mini}>
+                  <MenuMiniCart />
+                </div>
+              </>
             }
           </div>
           {
