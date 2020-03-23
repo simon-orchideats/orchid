@@ -107,14 +107,10 @@ export const useUpdateConsumer = (): [
     })
   }
   return useMemo(() => {
-    console.log('MUTATION?', mutation.data)
-    // the resolver doeesnt return anything, have it return
-    // IConsumer stuff? 
     const data = mutation.data && {
       res: mutation.data.updateConsumer.res && new Consumer(mutation.data.updateConsumer.res),
       error: mutation.data.updateConsumer.error
     }
-    console.log('RUNS?:', data?.res)
     return [
       updateConsumer,
       {

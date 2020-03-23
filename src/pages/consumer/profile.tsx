@@ -10,7 +10,7 @@ import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "rea
 import { activeConfig } from "../../config";
 import { isServer } from "../../client/utils/isServer";
 import { IConsumer } from "../../consumer/consumerModel";
-
+import { Card } from "../../card/cardModel";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -77,15 +77,35 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
   const [updateConsumer, updateConsumerRes] = useUpdateConsumer();
+  let consumerAddressLabel ='';
+  let consumerCardLabel ='';
+
   // todo: default the label based on the consumer's address data.
   // then given each part of the address data, we can set default values to the addrForm
-  const [addrLabel, setAddrLabel] = useState<string>('19 Middle st boston ma 02127')
+  // const [addrLabel, setAddrLabel] = useState<string>('19 Middle st boston ma 02127')
   const consumer = useRequireConsumer(profileRoute);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
   console.log('CONSUMER',consumer)
-
+  
+  // destination
+  if (consumer.data?.Profile.destination && consumer.data?.Profile.destination.address) {
+    const addressInfo = consumer.data?.Profile.destination.Address
+    const address1 = addressInfo.address1;
+    const address2 = addressInfo.address2;
+    const city = addressInfo.city;
+    const zip = addressInfo.zip; 
+    consumerAddressLabel = `${address1} ${address2} ${city} ${zip}`
+  } 
+  // card
+  if (consumer.data?.Profile.card) {
+    const card = consumer.data?.Profile.card;
+    const Last4 = card.Last4;
+    const expMonth = card.expMonth;
+    const expYear = card.expYear;
+    consumerCardLabel = `${Last4} ${expMonth}/${expYear}`
+  }
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
@@ -111,11 +131,32 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onSaveAddr = () => {
     if (!validateAddressRef.current!()) return;
     setIsUpdatingAddr(false);
-    const addr1 = addr1InputRef.current!.value;
-    const addr2 = addr2InputRef.current!.value;
-    const city = cityInputRef.current!.value;
-    const zip = zipInputRef.current!.value;
-    setAddrLabel(`${addr1} ${addr2 ? addr2 + ' ' : ''}${city} ${state}, ${zip}`);
+     const updatedConsumer: IConsumer = {
+      _id: consumer.data!._id,
+      plan: consumer.data!.plan,
+      profile: {
+        name: consumer.data!.profile.name,
+        email: consumer.data!.profile.email,
+        card: consumer.data!.profile.card,
+        destination: {
+          address: {
+            address1: addr1InputRef.current!.value,
+            address2: addr2InputRef.current!.value,
+            city: cityInputRef.current!.value,
+            state: state,
+            zip: zipInputRef.current!.value,
+          },
+          name: consumer.data!.profile.destination && consumer.data!.profile.destination.name,
+          instructions: consumer.data!.profile.destination && consumer.data!.profile.destination.instructions,
+
+        },
+        phone: consumer.data!.profile.phone
+      },
+      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
+      stripeCustomerId: consumer.data!.stripeCustomerId
+    }
+    updateConsumer(updatedConsumer);
+    //setAddrLabel(`${addr1} ${addr2 ? addr2 + ' ' : ''}${city} ${state}, ${zip}`);
   }
   const onCancelAddr = () => {
     setIsUpdatingAddr(false);
@@ -150,6 +191,21 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw e;
     }
     if (pm.error) return;
+    const updatedConsumer: IConsumer = {
+      _id: consumer.data!._id,
+      plan: consumer.data!.plan,
+      profile: {
+        name: consumer.data!.profile.name,
+        email: consumer.data!.profile.email,
+        card: Card.getCardFromStripe(pm.paymentMethod!.card),
+        destination: consumer.data!.profile.destination,
+        phone: consumer.data!.profile.phone
+      },
+      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
+      stripeCustomerId: consumer.data!.stripeCustomerId
+    }
+    updateConsumer(updatedConsumer);
+    setIsUpdatingCard(false);
   };
   const onCancelCard = () => {
     setIsUpdatingCard(false);
@@ -270,7 +326,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <>
                 <Labels
                   primary='Payment'
-                  secondary='**** 10/24 123'
+                  secondary={consumerCardLabel}
                 />
                 <ListItemSecondaryAction>
                   <Button className={classes.link} onClick={() => setIsUpdatingCard(true)}>
@@ -319,7 +375,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <>
               <Labels
                 primary='Address'
-                secondary={addrLabel}
+                secondary={consumerAddressLabel}
               />
               <ListItemSecondaryAction>
                 <Button className={classes.link} onClick={() => setIsUpdatingAddr(true)}>

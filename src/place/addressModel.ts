@@ -1,4 +1,5 @@
 export type state =
+''|
 'AK'
 | 'AL'
 | 'AR'
