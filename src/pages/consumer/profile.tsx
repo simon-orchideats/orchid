@@ -83,8 +83,8 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return <Typography>Logging you in...</Typography>
   }
   // creates Address label based on consumer
-  if (consumer.data?.Profile.destination && consumer.data?.Profile.destination.address) {
-    const addressInfo = consumer.data?.Profile.destination.Address
+  if (consumer.data && consumer.data.Profile.destination && consumer.data.Profile.destination.address) {
+    const addressInfo = consumer.data.Profile.destination.Address
     const address1 = addressInfo.address1;
     const address2 = addressInfo.address2;
     const city = addressInfo.city;
@@ -92,8 +92,8 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     consumerAddressLabel = `${address1} ${address2} ${city} ${zip}`
   } 
   // creates card label based on consumer
-  if (consumer.data?.Profile.card) {
-    const card = consumer.data?.Profile.card;
+  if (consumer.data && consumer.data.Profile.card) {
+    const card = consumer.data.Profile.card;
     const Last4 = card.Last4;
     const expMonth = card.expMonth;
     const expYear = card.expYear;
