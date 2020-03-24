@@ -343,7 +343,7 @@ class ConsumerService implements IConsumerService {
   }
 
   // grab current upcoming deliveries and update with new consumer info 
-  async updateConsumer (signedInUser: SignedInUser | null, consumer: Consumer): Promise<MutationConsumerRes> {
+  async updateConsumer (signedInUser: SignedInUser | null, consumer: IConsumer): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       await this.elastic.update({

@@ -23,7 +23,7 @@ const _ConsumerQL = gql`
     _id: ID!
     stripeCustomerId: ID
     stripeSubscriptionId: ID
-    profile: ConsumerProfileInput
+    profile: ConsumerProfileInput!
     plan: ConsumerPlanInput
   }
   input ConsumerProfileInput {
