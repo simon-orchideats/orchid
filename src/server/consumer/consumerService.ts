@@ -342,27 +342,22 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  // grab current upcoming deliveries and update with new consumer info 
   async updateConsumer (signedInUser: SignedInUser | null, consumer: IConsumer): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       await this.elastic.update({
         index: CONSUMER_INDEX,
         id: consumer._id,
-        body: {doc:{
-          stripeCustomerId: consumer.stripeCustomerId,
-          stripeSubscriptionId: consumer.stripeSubscriptionId,
-          profile: consumer.profile,
-          plan: consumer.plan
-
+        body: {
+          doc: {
+            stripeCustomerId: consumer.stripeCustomerId,
+            stripeSubscriptionId: consumer.stripeSubscriptionId,
+            profile: consumer.profile,
+            plan: consumer.plan
         }}
       });
-
-      let res= await this.orderService?.getMyUpcomingEOrders(signedInUser);
-      let orderIds = res?.map((orderObj) => {
-        return orderObj._id;
-      })
-      console.log(orderIds);
+      let res = await this.orderService?.getMyUpcomingEOrders(signedInUser);
+      let orderIds = res?.map(orderObj =>  orderObj._id);
       await this.elastic.updateByQuery({
         index: ORDER_INDEX,
         size: 1000,
@@ -398,8 +393,6 @@ class ConsumerService implements IConsumerService {
           },
         }
       });
-      console.log('ORDERS GREATER THAN TODAY', res);
-
       return {
         res: {
           _id: consumer._id,
@@ -407,8 +400,8 @@ class ConsumerService implements IConsumerService {
           stripeSubscriptionId: consumer.stripeSubscriptionId,
           profile: consumer.profile,
           plan: consumer.plan
-        }, error:null
-
+        },
+        error: null
       }
     } catch (e) {
       console.error(`[ConsumerService] failed to update consumer '${consumer._id}', '${JSON.stringify(consumer)}'`, e.stack);
@@ -416,7 +409,6 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  
   async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationBoolRes> {
     // todo simon: finish this
     try {
