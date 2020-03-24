@@ -96,7 +96,7 @@ export const useUpdateConsumer = (): [
   type res = { updateConsumer: MutationConsumerRes };
   type vars = { consumer: IConsumer }
   const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateConsumer($consumer: ConsumerInput) {
+    mutation updateConsumer($consumer: ConsumerInput!) {
       updateConsumer(consumer: $consumer) {
         res {
           ...consumerFragment
