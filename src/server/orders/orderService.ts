@@ -4,14 +4,14 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { RenewalTypes, EConsumer } from './../../consumer/consumerModel';
+import { RenewalTypes, EConsumer, CuisineType, IConsumerPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
-import { isDate2DaysLater } from './../../order/utils';
+import { isDate2DaysLater, getNextDeliveryDate } from './../../order/utils';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { Order } from '../../order/orderModel';
@@ -26,6 +26,14 @@ export const adjustmentDescHeader = 'Plan Adjustment for week of ';
 export const getAdjustmentDesc = (fromPlanName: string, toPlanName: string, date: string) =>
   `Plan adjustment from '${fromPlanName}' to '${toPlanName}' for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
+
+const chooseRandomMeals = (menu: IMeal[], mealCount: number) => {
+  const chooseRandomly = getItemChooser<IMeal>(menu);
+  const meals: IMeal[] = [];
+  for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
+  return Cart.getCartMeals(meals);
+}
+
 /**
  * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
  * are returned at which point the chooser "resets". Upon a reset, Chooser returns another cycle of unique elements.
@@ -58,6 +66,51 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
   }
 }
 
+const getUpcomingOrdersQuery = (signedInUserId: string) => ({
+  bool: {
+    filter: {
+      bool: {
+        must: [
+          {
+            range: {
+              deliveryDate: {
+                gte: Date.now(),
+              }
+            },
+          },
+          {
+            term: {
+              'consumer.userId': signedInUserId
+            }
+          }
+        ]
+      }
+    }
+  }
+})
+
+const removeMealsRandomly = (meals: ICartMeal[], numMealsToRemove: number) => {
+  const chooseRandomly = getItemChooser<ICartMeal>(meals);
+  for (let i = 0; i < numMealsToRemove; i++) {
+    let randomMeal = chooseRandomly();
+    let targetIndex = meals.findIndex(m => m.mealId === randomMeal.mealId);
+    while (targetIndex === -1) {
+      // this is possible if the randomly chosen meal was already removed from meals
+      randomMeal = chooseRandomly();
+      targetIndex = meals.findIndex(m => m.mealId === randomMeal.mealId);
+    }
+    const targetMeal = meals[targetIndex];
+    if (targetMeal.quantity === 1) {
+      meals.splice(targetIndex, 1);
+    } else {
+      meals[targetIndex] = {
+        ...targetMeal,
+        quantity: targetMeal.quantity - 1,
+      };
+    }
+  }
+}
+
 export interface IOrderService {
   placeOrder(
     signedInUser: SignedInUser,
@@ -73,6 +126,14 @@ export interface IOrderService {
     updateOptions: IUpdateOrderInput,
     now?: number,
   ): Promise<MutationBoolRes>
+  updateUpcomingOrders(
+    signedInUser: SignedInUser,
+    mealPrice: number,
+    total: number,
+    mealCount: number,
+    plan: IConsumerPlan,
+    updatedDate?: number,
+  ): Promise<(ApiResponse<any, any>)[]>
 }
 
 class OrderService {
@@ -104,6 +165,22 @@ class OrderService {
 
   public setRestService(restService: IRestService) {
     this.restService = restService;
+  }
+
+  private async chooseRandomRestAndMeals(cuisines: CuisineType[], mealCount: number) {
+    try {
+      if (!this.restService) throw new Error('No rest service');
+      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu'])
+      if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+      const rest = rests[Math.floor(Math.random() * rests.length)];
+      return {
+        restId: rest._id,
+        meals: chooseRandomMeals(rest.menu, mealCount),
+      };
+    } catch (e) {
+      console.error(`[OrderService] could not auto pick rests and meals`, e.stack)
+      throw e;
+    }
   }
 
   private validateRest(restId: string, meals: ICartMeal[]) {
@@ -378,22 +455,16 @@ class OrderService {
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       const nextDeliveryDate = moment(cart.deliveryDate).add(1, 'w').valueOf();
-      // divide by 1000, then mulitply by 1000 to keep calculation consistent
+      // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
+      // placed order
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
       if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
-        this.restService.getRestsByCuisines(cart.consumerPlan.cuisines, ['menu'])
-          .then(rests => {
-            if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cart.consumerPlan.cuisines)}' is empty`)
-            const rest = rests[Math.floor(Math.random() * rests.length)];
-            const menu = rest.menu;
-            const chooseRandomly = getItemChooser<IMeal>(menu);
-            const meals: IMeal[] = [];
-            for (let i = 0; i < Cart.getMealCount(cart.meals); i++) meals.push(chooseRandomly())
-            const cartMeals = Cart.getCartMeals(meals);
+        this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals))
+          .then(({ restId, meals }) => {
             const newCart = {
               ...cart,
-              restId: rest._id,
-              meals: cartMeals,
+              restId: restId,
+              meals,
               deliveryDate: nextDeliveryDate
             }
             const order = Order.getNewOrderFromCartInput(
@@ -446,28 +517,7 @@ class OrderService {
         index: ORDER_INDEX,
         size: 1000,
         body: {
-          query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: [
-                    {
-                      range: {
-                        deliveryDate: {
-                          gte: Date.now(),
-                        }
-                      },
-                    },
-                    {
-                      term: {
-                        'consumer.userId': signedInUser._id
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
+          query: getUpcomingOrdersQuery(signedInUser._id),
           sort: [
             {
               deliveryDate: {
@@ -682,6 +732,107 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
       throw new Error('Internal Server Error');
+    }
+  }
+
+  async updateUpcomingOrders(
+    signedInUser: SignedInUser,
+    mealPrice: number,
+    total: number,
+    targetMealCount: number,
+    plan: IConsumerPlan,
+    updatedDate: number = Date.now(),
+  ) {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      const upcomingOrders = await this.getMyUpcomingEOrders(signedInUser);
+      const getNewOrder = (
+        rest: { restId: string, meals: ICartMeal[] } | null,
+        deliveryDate: number,
+        invoiceDate: number,
+        order: EOrder,
+      ): Partial<EOrder> => ({
+        costs: {
+          ...order.costs,
+          mealPrice,
+          total,
+        },
+        status: 'Open',
+        cartUpdatedDate: updatedDate,
+        rest: rest || order.rest,
+        invoiceDate,
+        deliveryDate,
+      })
+      return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
+        if (!this.restService) throw new Error ('RestService not set');
+        const deliveryDate = getNextDeliveryDate(plan.deliveryDay).add(orderNum, 'w').valueOf();
+        const invoiceDate = moment(deliveryDate).subtract(2, 'd').valueOf();
+        if (order.rest.restId) {
+          const rest = await this.restService.getRest(order.rest.restId);
+          if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
+          const numMealsInOrder = Cart.getMealCount(order.rest.meals);
+          if (numMealsInOrder === targetMealCount) {
+            return this.elastic.update({
+              index: ORDER_INDEX,
+              id: _id,
+              body: {
+                doc: getNewOrder(
+                  null,
+                  deliveryDate,
+                  invoiceDate,
+                  order
+                ),
+              }
+            })
+          };
+          if (numMealsInOrder > targetMealCount) {
+            removeMealsRandomly(order.rest.meals, numMealsInOrder - targetMealCount);
+          } else {
+            const randomMeals = chooseRandomMeals(rest.menu, targetMealCount - numMealsInOrder);
+            let randomMeal = randomMeals.shift();
+            while (randomMeal) {
+              const orderMealIndex = order.rest.meals.findIndex(oMeal => oMeal.mealId === randomMeal!.mealId);
+              if (orderMealIndex !== -1) {
+                const newCartMeal: ICartMeal = {
+                  ...order.rest.meals[orderMealIndex],
+                  quantity: order.rest.meals[orderMealIndex].quantity + randomMeal.quantity,
+                }
+                order.rest.meals[orderMealIndex] = newCartMeal;
+              } else {
+                order.rest.meals.push(randomMeal);
+              }
+              randomMeal = randomMeals.shift(); 
+            }
+          }
+          return this.elastic.update({
+            index: ORDER_INDEX,
+            id: _id,
+            body: {
+              doc: getNewOrder(
+                {
+                  restId: order.rest.restId,
+                  meals: order.rest.meals
+                },
+                deliveryDate,
+                invoiceDate,
+                order
+              ),
+            }
+          })
+        } else {
+          const eOrderRest = await this.chooseRandomRestAndMeals(plan.cuisines, targetMealCount);
+          return this.elastic.update({
+            index: ORDER_INDEX,
+            id: _id,
+            body: {
+              doc: getNewOrder(eOrderRest, deliveryDate, invoiceDate, order),
+            }
+          })
+        }
+      }))
+    } catch (e) {
+      console.error(`[OrderService] Failed to update upcoming orders for consumer '${signedInUser && signedInUser._id}'`);
+      throw e;
     }
   }
 }

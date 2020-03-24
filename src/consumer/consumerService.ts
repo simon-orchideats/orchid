@@ -2,7 +2,7 @@ import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer, IConsumer } from './consumerModel';
+import { Consumer, IConsumer, ConsumerPlan } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -261,6 +261,64 @@ export const useSignUp = (): [
     }
     return [
       signUp,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
+}
+
+export const useUpdateConsumerPlan = (): [
+  (plan: ConsumerPlan, currConsumer: Consumer) => void,
+  {
+    error?: ApolloError 
+    data?: {
+      res: Consumer | null,
+      error: string | null
+    }
+  }
+] => {
+  type res = { updateMyPlan: MutationConsumerRes };
+  const [mutate, mutation] = useMutation<res>(gql`
+    mutation updateMyPlan($plan: ConsumerPlanInput!) {
+      updateMyPlan(plan: $plan) {
+        res {
+          ...consumerFragment
+        }
+        error
+      }
+    }
+    ${consumerFragment}
+  `);
+  const updateMyPlan = (plan: ConsumerPlan, currConsumer: Consumer) => {
+    mutate({ 
+      variables: {
+        plan,
+      },
+      optimisticResponse: {
+        updateMyPlan: {
+          res: copyWithTypenames({
+            ...currConsumer,
+            plan
+          }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
+        }
+      },
+      update: (cache, { data }) => {
+        if (data && data.updateMyPlan.res) updateMyConsumer(cache, data.updateMyPlan.res)
+      }
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.updateMyPlan.res && new Consumer(mutation.data.updateMyPlan.res),
+      error: mutation.data.updateMyPlan.error
+    }
+    return [
+      updateMyPlan,
       {
         error: mutation.error,
         data,

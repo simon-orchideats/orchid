@@ -200,10 +200,10 @@ function createIsomorphLink(context: Context) {
       }
   
       if (networkError) {
-        msg = `[Network error]: '${networkError}', Operation: '${operationName}', variables: '${JSON.stringify(variables)}`;
+        msg = msg + '\n' + `[Network error]: '${networkError}', Operation: '${operationName}', variables: '${JSON.stringify(variables)}`;
       }
       
-      console.error(JSON.stringify(e));
+      console.error(msg);
     });
     return ApolloLink.from([
       errorLink,

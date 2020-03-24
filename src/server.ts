@@ -51,7 +51,10 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
 // payment day if the consumer updated the delivery date. for now we'll just do it each day
 // at 12am.
-// skipping orders doenst update the ui
+// todo skipping orders doenst update the ui
+// todo investigate why sometimes accountName is null when placing order. alvin was logged in with google
+// when this happened
+// todo remove the "SKIP" renewal type. that literally makes no sense....
 
 
 init({

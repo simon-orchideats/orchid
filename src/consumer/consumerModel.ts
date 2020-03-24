@@ -109,7 +109,7 @@ export class ConsumerPlan implements IConsumerPlan {
     this.stripePlanId = consumerPlan.stripePlanId
     this.deliveryDay = consumerPlan.deliveryDay;
     this.renewal = consumerPlan.renewal;
-    this.cuisines = consumerPlan.cuisines;
+    this.cuisines = consumerPlan.cuisines.map(c => c);
   }
 
   public get StripePlanId() { return this.stripePlanId }

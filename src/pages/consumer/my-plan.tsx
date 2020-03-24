@@ -1,11 +1,11 @@
 
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
-import { useState, useRef } from 'react';
-import { CuisineType, RenewalType,RenewalTypes, deliveryDay } from '../../consumer/consumerModel';
+import { useRef } from 'react';
+import { CuisineType, RenewalType, RenewalTypes, deliveryDay, ConsumerPlan } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
-import { useRequireConsumer, useCancelSubscription } from "../../consumer/consumerService";
+import { useRequireConsumer, useCancelSubscription, useUpdateConsumerPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
@@ -46,9 +46,10 @@ const myPlan = () => {
   const classes = useStyles();
   const consumer = useRequireConsumer(myPlanRoute);
   const plan = consumer.data && consumer.data.Plan;
-  const [renewal, setRenewal] = useState<RenewalType>(plan ? plan.Renewal : RenewalTypes.Auto)
-  const [cuisines, setCuisines] = useState<CuisineType[]>(plan ? plan.Cuisines : []);
-  const [day, setDay] = useState<deliveryDay>(plan ? plan.DeliveryDay : 0);
+  const renewal = plan ? plan.Renewal : RenewalTypes.Auto;
+  const cuisines = plan ? plan.Cuisines : [];
+  const day = plan ? plan.DeliveryDay : 0;
+  const [updateConsumerPlan] = useUpdateConsumerPlan()
   const validateCuisineRef= useRef<() => boolean>();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
   const setCartStripePlanId = useUpdateCartPlanId();
@@ -59,6 +60,51 @@ const myPlan = () => {
   const onClickCardNoSubscription = (plan: Plan) => {
     Router.push(menuRoute);
     setCartStripePlanId(plan.stripeId);
+  };
+  const noConsumerPlanErr = () => {
+    const err = new Error(`No consumer plan '${JSON.stringify(consumer.data)}' for update plan`);
+    console.error(err.stack);
+    return err;
+  }
+  const updatePlan = (plan: Plan) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    updateConsumerPlan(
+      new ConsumerPlan({
+        ...consumer.data.Plan,
+        stripePlanId: plan.stripeId,
+      }),
+      consumer.data
+    );
+  };
+  const updateDay = (deliveryDay: deliveryDay) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    updateConsumerPlan(
+      new ConsumerPlan({
+        ...consumer.data.Plan,
+        deliveryDay,
+      }),
+      consumer.data
+    );
+  };
+  const updateCuisines = (cuisines: CuisineType[]) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    updateConsumerPlan(
+      new ConsumerPlan({
+        ...consumer.data.Plan,
+        cuisines,
+      }),
+      consumer.data
+    );
+  };
+  const updateRenewal = (renewal: RenewalType) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    updateConsumerPlan(
+      new ConsumerPlan({
+        ...consumer.data.Plan,
+        renewal,
+      }),
+      consumer.data
+    );
   };
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
@@ -91,7 +137,7 @@ const myPlan = () => {
             >
               Preferred meal plan
             </Typography>
-            <PlanCards isSelectable={true} defaultPlanId={plan.StripePlanId} />
+            <PlanCards selectedPlanId={plan.StripePlanId} onClickCard={plan => updatePlan(plan)}/>
             <Typography
               variant='h6'
               color='primary'
@@ -99,7 +145,7 @@ const myPlan = () => {
             >
               Preferred delivery day
             </Typography>
-            <DeliveryDateChooser day={day} onDayChange={day => setDay(day)}/>
+            <DeliveryDateChooser day={day} onDayChange={day => updateDay(day)}/>
             <Typography
               variant='h6'
               color='primary'
@@ -110,8 +156,8 @@ const myPlan = () => {
             <RenewalChooser
               renewal={renewal}
               cuisines={cuisines}
-              onCuisineChange={cuisines => setCuisines(cuisines)}
-              onRenewalChange={renewal => setRenewal(renewal)}
+              onCuisineChange={cuisines => updateCuisines(cuisines)}
+              onRenewalChange={renewal => updateRenewal(renewal)}
               validateCuisineRef={validateCuisine => {
                 validateCuisineRef.current = validateCuisine;
               }}

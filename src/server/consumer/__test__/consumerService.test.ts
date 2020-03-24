@@ -46,9 +46,51 @@ export default {};
  * unpaid invoice. same logic applies to invN1.
  */
 
+
+
+
+
+
 /**
  * stripe subscription, change the plan
  *  - what happens to the existing orders....? and their invoices...?
+ * 
+ * on permanent plan change there are 2 possible experiences.
+ * 
+ * - we should update consumer upcoming orders to reflect their new plans
+ *  - money wise, this is handled in the big explanation below. but the tricky part is, 
+ *    we'd have to auto add/remove meals
+ * - we keep the existing orders, i would actually probably prefer this as a consumer. 
+ * 
+ * 
+ * 2 WAYS TO ACCOMPLISH THIS
+ * 
+ *  - 1 way we can do this is with schedules and to schedule the change to occur AFTER the nextnext order. after
+ *  nextnext because i might have an invoice for nextnext on upcoming payment. i could do after upcoming, but then we
+ *  have to figure out the logic to handle invoices for nextnext... which doesn't sound too hard. infact, we just
+ *  look for nextnext invoice item adjustment and update it. also... if we do after upcoming, then we also have to
+ *  update nextnext's meals anyway.
+ * 
+ * 
+ *  - what we can do... is if they upgrade, we add meals. if they downgrade, we keep the same. that's the best move.
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ *  - another way we can do this is change it immediately, and create an invoice. yup i like this.
+ * 
+ * 
+ * SCREW IT. IF I CHANGE HTE PLAN THEN I BETTER EXPECT MY STUFF TO CHANGE. the reason why is because if i just leave the
+ * upcoming-orders as is, then it looks like nothing even happened. theres nofeedback that hte change was successfull.
+ * therefore we actually update them automatically. plus if we decided to leave upcoming-orders as is, there's always
+ * gonna be upcoming orders. once curr week is delivered, next week becomes curr week adn we have a new nextnext week.
+ * so then what? is that newest upcomign delivery also gonna be left alone? nope. so we just change immediately.
+ *  
+ * 
+ * 
  * 
  * here are the possible states based on invoices where n1 = next payment and n2 = nextnext payment
  * 
@@ -98,10 +140,49 @@ export default {};
  * planN1 = planN1 -> auto updated
  * invN0 = newN0Plan - (n0Plan + n0inv) -> leave as is because (n0Plan + n0Inv) was true at the time when invN0 was calculated
  * invN1 = newN1Plan - (n1Plan + n1inv) -> needs to be recalculated by updating n1Plan and n1Inv
- * invN2 = newN2Plan - n2Plan -> needs to be recalculated by updating n2Plan
+ * invN2 = newN2Plan - n2Plan -> needs to be recalculated by updating n2Plan (since n2Plan was the original plan plan)
  * 
  * to update invN2, i can just store the individual variables in metadata. then
  * use them to recalculate.
+ * 
+ * as previously stated, we dont need to update invN0. let's walk through an example to confirm. today is 3/19. we update
+ * plan from $40 to $80. payment and confirmation is 3/22. then we update delivery to 3/27. On 3/22 we pay 
+ * $40 (plan price) + $40 (adjustment inv). On 3/23, we update plan again to $150. this creates and invoice for
+ * 3/29 for to adjust the previous week's 3/22 payment.
+ * 
+ * invN0 on 3/22 = newN0Plan - (n0Plan + n0inv) 
+ *               = $80 - ($40 + 0)
+ *               = $80 - $40
+ *               = $40
+ * 
+ * invN0 on 3/29 = newN0Plan - (n0Plan + n0inv) 
+ *               = $150 - ($40 + $40)
+ *               = $150 - ($80)
+ *               = $70
+ * 
+ * total inv = $40 + $70 = $110 which is correct since... 
+ * 
+ * 3/22 total payment for invN0 delivery = sub payment + invN0 = $40 + $40 = $80
+ * 3/29 total payment for invN0 delivery = invN0 = $70
+ * total payment for invn0 delivery = $80 + $70 = $150.
+ * 
+ * if on 3/24 I PERMANAENTLY update the plan to $80, then consumer shouldn't be invoiced again on 3/29 since consumer
+ * alreayd paid for $80 plan on 3/22. so we follow the same plan for invN0 as we do for invN1, and below is the math
+ * 
+ * invN0 on 3/29 = newN0Plan - (n0Plan + n0inv) 
+ *               = $150 - ($80 + $40)
+ *               = $150 - ($120)
+ *               = $30
+ * 
+ * so consumer needs to have paid a total of $150 for this delivery.
+ * 
+ * 3/22 total payment for invN0 delivery = sub payment + invN0 = $40 + $40 = $80
+ * 3/29 total payment for invN0 delivery = invN0 = $30
+ * total payment for invn0 delivery = $80 + $30 = $110. 
+ * 
+ * which is wrong cuz then consumer underpaid by $40. so the best course of action is to just leave invN0 as is.
+ * intutively, it's because to invN0's adjustment is based on what the consumer already paid for during n0, which is
+ * why we dont touch it.
  * 
  * to update invN1, that's a little more tricky since even if i store individual variables in metadata,
  * i can't just update n1plan and recalculate since n1inv needs to be updated to, but it's unclear how
@@ -135,7 +216,7 @@ export default {};
  *    = 80 - (190)
  *    = -110
  * 
- * we get the desired payment for n1 when we used the not the current invN1, but the previous invN1. let's updating
+ * we get the desired payment for n1 when we used the not the current invN1, but the previous invN1. let's try updating
  * to 150 with previous invN1
  * 
  * n1 = planN1 + invN1
@@ -170,5 +251,101 @@ export default {};
  *    and grab meta data and update them with new value using new subsricption plan and meta
  * 
  * 
+ * 
+ * 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ * but what about... delivery day changes? let's use another example. today is 3/19 with dDay Tues 3/24. we update
+ * plan from $40 to $80. payment and confirmation is 3/22. then we update delivery to 3/27. On 3/22 we pay 
+ * $40 (plan price) + $40 (adjustment inv). On 3/23, we update plan again to $150. this creates and invoice for
+ * 3/29 for to adjust the previous week's 3/22 payment. summary...
+ * 
+ * 3/22 = paid total of $80 (40 base + 40 inv) for 3/27 delivery.
+ * 3/23 = creates $70 inv adjustment for on 3/29 for 3/27 delivery
+ * 
+ * invN1 = newN1Plan - (n1Plan + n1inv)
+ *       = 150 - (40 + 40)
+ *       = 150 - 80
+ *       = $70
+ * 
+ * 
+ * at this point at 3/23 the consumer updates permanatly the delivery date to Wednesday. Next wednesday is 3/25
+ * followed by 4/1. obviously i can't delivery on wednesday since it's not 2 days away, so the next delivery is updated
+ * to 4/1 and nextnext = 4/8. money wise, here were the original past and expected upcoming transactions 
+ * 
+ * 3/22 for the 3/27 delivery = $80 = (paymentDay) for the (deliveryDay)
+ * 3/29 for 3/27 = $70 = (upcoming paymentDay) for the (deliveryDay)
+ * 
+ * now this becomes...
+ * 
+ * 3/22 for the 4/1 delivery = $80 = (paymentDay) for the (deliveryDay)
+ * 3/30 for the 4/1 delivery = $70 = (paymentDay) for the (deliveryDay)
+ * 
+ * a day passes and now it's 3/24 and consumer decides to update permanently update plan + delivery to $40 and monday
+ * the next monday which is 2 days away is 3/30 so that's the new dDay. so the above 2 invoices become
+ * 
+ * 3/22 for the 3/30 delivery = $80
+ * 3/28 for the 3/30 delivery = -$40
+ * 
+ * invN1 = newN1Plan - (n1Plan + PREVIOUSn1inv)
+ *       = 40 - (150 + 40)
+ *       = 150 - 80
+ *       = $70
+ * 
+ * generally, if i 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * what if.... i just pretended to cancel... without canceling? currently when canceling i look at the 2 upcoming orders
+ * 
+ * orderInvoice > today?
+ *    yes  
+ *      this means consumer is updating an order they haven't paid for yet. so if they havn't paid for it yet, we can
+ *      just delete the associated invoiceItems because consumer won't be getting this food anyway.
+ * 
+ *    no
+ *      this means the consumer has already paid for it but didnt get the food yet. now what we do in cancelation is
+ *      we "skip" the order which creates an invoice to give back the consumer money since they wont be getting the food
+ * 
+ * 
+ *    then after loooking at the 2 upcoming invoices, we then cancel which immediately charges the consumer any
+ *    pending invoices.
+ * 
+ * we can think of permanaent changes as cancel and resubscribe. when perma updating plan + delivery day, we follow
+ * cancelation logic BUT DON'T ACTAULLY CANCEL. at this point, we've successfully "reset" the subscriptoin. then we just
+ * act as if the consumer is placing a new order. and on their "first" invoice, they'll have the corresponding invoice items
+ * with it.
  * 
  */

@@ -27,15 +27,15 @@ const _ConsumerPlanQL = gql`
   type ConsumerPlan {
     stripePlanId: ID!
     deliveryDay: Int!
-    renewal: RenewalType
-    cuisines: [CuisineType!]
+    renewal: RenewalType!
+    cuisines: [CuisineType!]!
   }
 
   input ConsumerPlanInput {
     stripePlanId: ID!
     deliveryDay: Int!
-    renewal: RenewalType
-    cuisines: [CuisineType!]
+    renewal: RenewalType!
+    cuisines: [CuisineType!]!
   }
 `
 

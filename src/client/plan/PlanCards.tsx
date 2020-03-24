@@ -3,7 +3,6 @@ import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
 import PlanDetails from './PlanDetails';
 import { Plan } from '../../plan/planModel';
-import { useState } from 'react';
 
 const useStyles = makeStyles(() => ({
   item: {
@@ -14,18 +13,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 const PlanCards: React.FC <{
-  defaultPlanId?: string;
-  isSelectable?: boolean;
+  selectedPlanId?: string;
   onClickCard?: (plan: Plan) => void
 }> = ({
-  defaultPlanId,
-  isSelectable =  false,
+  selectedPlanId,
   onClickCard = (_plan: Plan) => {}
 }) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(defaultPlanId);
- 
   if (!plans.data) {
     return <div>loading</div>
   }
@@ -34,11 +29,10 @@ const PlanCards: React.FC <{
       {plans.data.map(plan => (
         <Grid key={plan.StripeId} item sm={12} md={4} className={classes.item}>
           <PlanDetails
-            selected={isSelectable && !!selectedPlanId && selectedPlanId === plan.StripeId}
+            selected={!!selectedPlanId && selectedPlanId === plan.StripeId}
             mealPlan={plan}
             onClick={() => {
               onClickCard(plan);
-              setSelectedPlanId(plan.StripeId);
             }}
           />
         </Grid>
