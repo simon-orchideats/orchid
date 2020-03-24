@@ -16,6 +16,7 @@ import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
+const ORDER_INDEX = 'orders';
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
@@ -341,6 +342,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  // grab current upcoming deliveries and update with new consumer info 
   async updateConsumer (signedInUser: SignedInUser | null, consumer: Consumer): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
@@ -355,6 +357,48 @@ class ConsumerService implements IConsumerService {
 
         }}
       });
+
+      let res= await this.orderService?.getMyUpcomingEOrders(signedInUser);
+      let orderIds = res?.map((orderObj) => {
+        return orderObj._id;
+      })
+      console.log(orderIds);
+      await this.elastic.updateByQuery({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      range: {
+                        deliveryDate: {
+                          gte: Date.now(),
+                        }
+                      },
+                    },
+                    {
+                      ids: {
+                        values: orderIds
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          script: {
+            source: "ctx._source.consumer.profile = params.newProfile",
+            lang: 'painless',
+            params: {
+              newProfile: consumer.profile
+            }
+          },
+        }
+      });
+      console.log('ORDERS GREATER THAN TODAY', res);
 
       return {
         res: {
@@ -440,7 +484,6 @@ export const initConsumerService = (
 ) => {
   if (consumerService) throw new Error('[ConsumerService] already initialized.');
   consumerService = new ConsumerService(elastic, stripe);
-  consumerService.getConsumer('123');
   return consumerService;
 };
 
