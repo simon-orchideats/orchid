@@ -1,5 +1,5 @@
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
-import { useState, useRef, createRef, useEffect } from "react";
+import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
 import AddressForm from '../../client/general/inputs/AddressForm'
 import  { useRequireConsumer, useUpdateConsumer } from '../../consumer/consumerService';
@@ -66,7 +66,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const classes = useStyles();
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  // const [phoneLabel, setPhoneLabel] = useState<string>('609-513-8166')
   const validateAddressRef = useRef<() => boolean>();
   const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
@@ -76,20 +75,14 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
-  const [updateConsumer, updateConsumerRes] = useUpdateConsumer();
+  const [updateConsumer] = useUpdateConsumer();
   let consumerAddressLabel ='';
   let consumerCardLabel ='';
-
-  // todo: default the label based on the consumer's address data.
-  // then given each part of the address data, we can set default values to the addrForm
-  // const [addrLabel, setAddrLabel] = useState<string>('19 Middle st boston ma 02127')
   const consumer = useRequireConsumer(profileRoute);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
-  console.log('CONSUMER',consumer)
-  
-  // destination
+  // creates Address label based on consumer
   if (consumer.data?.Profile.destination && consumer.data?.Profile.destination.address) {
     const addressInfo = consumer.data?.Profile.destination.Address
     const address1 = addressInfo.address1;
@@ -98,7 +91,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     const zip = addressInfo.zip; 
     consumerAddressLabel = `${address1} ${address2} ${city} ${zip}`
   } 
-  // card
+  // creates card label based on consumer
   if (consumer.data?.Profile.card) {
     const card = consumer.data?.Profile.card;
     const Last4 = card.Last4;
@@ -109,7 +102,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onSavePhone = () => {
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
-    // setPhoneLabel(phoneInputRef.current!.value); //may not need this
     const updatedConsumer: IConsumer = {
       _id: consumer.data!._id,
       plan: consumer.data!.plan,
@@ -156,7 +148,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       stripeCustomerId: consumer.data!.stripeCustomerId
     }
     updateConsumer(updatedConsumer);
-    //setAddrLabel(`${addr1} ${addr2 ? addr2 + ' ' : ''}${city} ${state}, ${zip}`);
   }
   const onCancelAddr = () => {
     setIsUpdatingAddr(false);
@@ -210,23 +201,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onCancelCard = () => {
     setIsUpdatingCard(false);
   }
-
-  useEffect(() => {
-    console.log("UPDATED");
-    // if (placeOrderRes.error) {
-    //   notify('Sorry, something went wrong', NotificationType.error, false);
-    // }
-    // if (placeOrderRes.data !== undefined) {
-    //   if (placeOrderRes.data.error) {
-    //     notify(placeOrderRes.data.error, NotificationType.error, false);
-    //   } else {
-    //     Router.push({
-    //       pathname: upcomingDeliveriesRoute,
-    //       query: { confirmation: 'true' },
-    //     })
-    //   }
-    // }
-  }, [updateConsumerRes]);
 
   return (
     <>
