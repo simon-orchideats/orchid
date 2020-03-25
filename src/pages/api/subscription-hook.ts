@@ -5,7 +5,7 @@ import { activeConfig } from '../../config';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
-  apiVersion: '2019-12-03',
+  apiVersion: '2020-03-02',
 });
 
 export const config = {
