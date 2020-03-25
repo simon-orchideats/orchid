@@ -39,10 +39,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo: listen for stripe event of payment and then create the next order
 // todo: use refresh token...
 // todo logout
-// todo cancel subscription
 // todo update profile
-// todo update plan
-// todo on checkout with skip renewal, create nextnext that's a skip
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
 // todo use getAdjustmentDesc
 // todo test for consumerServiceTest
@@ -54,7 +51,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo skipping orders doenst update the ui
 // todo investigate why sometimes accountName is null when placing order. alvin was logged in with google
 // when this happened
-// todo remove the "SKIP" renewal type. that literally makes no sense....
 
 
 init({
