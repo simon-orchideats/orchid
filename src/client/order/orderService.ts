@@ -160,7 +160,7 @@ export const useUpdateOrder = (): [
         if (data && data.updateOrder.res) {
           const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
           if (!upcomingOrders) {
-            const err = new Error('Couldn\'t get upcoming orders for cache update');
+            const err = new Error('Failed to get upcoming orders for cache update');
             console.error(err.stack);
             throw err;
           }
@@ -168,7 +168,7 @@ export const useUpdateOrder = (): [
           if (updateOptions.restId) {
             const restRes = getRest(cache, updateOptions.restId)
             if (!restRes) {
-              const err = new Error('Couldn\'t get rest for cache update');
+              const err = new Error('Failed to get rest for cache update');
               console.error(err.stack);
               throw err;
             }
@@ -179,42 +179,40 @@ export const useUpdateOrder = (): [
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
             if (!plans) {
-              const err = new Error('Couldn\'t get plan for cache update');
+              const err = new Error('Failed to get plan for cache update');
               console.error(err.stack);
               throw err;
             }
             mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals), plans.availablePlans);
           }
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
-            if (order._id === orderId) {
-              const newOrder = Order.getIOrderFromUpdatedOrderInput(
-                orderId,
-                updateOptions,
-                mealPrice,
-                mealCount > 0 ? order.status : 'Skipped',
-                rest
-              );
+            if (order._id !== orderId) return order;
+            const newOrder = Order.getIOrderFromUpdatedOrderInput(
+              orderId,
+              updateOptions,
+              mealPrice,
+              mealCount > 0 ? order.status : 'Skipped',
+              rest
+            );
+            //@ts-ignore
+            newOrder.destination.address.__typename = 'Address';
+            //@ts-ignore
+            newOrder.destination.__typename = 'Destination';
+            //@ts-ignore
+            newOrder.meals.forEach(meal => meal.__typename = 'CartMeal');
+            if (rest !== null) {
               //@ts-ignore
-              newOrder.destination.address.__typename = 'Address';
+              newOrder.rest.location.address.__typename = 'Address';
               //@ts-ignore
-              newOrder.destination.__typename = 'Destination';
+              newOrder.rest.location.__typename = 'Location';
               //@ts-ignore
-              newOrder.meals.forEach(meal => meal.__typename = 'CartMeal');
-              if (rest !== null) {
-                //@ts-ignore
-                newOrder.rest.location.address.__typename = 'Address';
-                //@ts-ignore
-                newOrder.rest.location.__typename = 'Location';
-                //@ts-ignore
-                newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
-                //@ts-ignore
-                newOrder.rest.profile.__typename = 'Rest';
-              }
+              newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
               //@ts-ignore
-              newOrder.__typename = 'Order';
-              return newOrder;
+              newOrder.rest.profile.__typename = 'Rest';
             }
-            return order;
+            //@ts-ignore
+            newOrder.__typename = 'Order';
+            return newOrder;
           });
           cache.writeQuery({
             query: MY_UPCOMING_ORDERS_QUERY,

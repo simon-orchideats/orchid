@@ -187,11 +187,11 @@ const DestinationPopper: React.FC<{
 
 const DeliveryOverview: React.FC<{
   cart?: Cart
-  defaultOrder: Order,
+  order: Order,
   isUpdating: boolean,
 }> = ({
   cart,
-  defaultOrder,
+  order,
   isUpdating,
 }) => {
   const classes = useStyles();
@@ -199,7 +199,6 @@ const DeliveryOverview: React.FC<{
   const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
   const plans = useGetAvailablePlans();
-  const [order] = useState<Order>(defaultOrder);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
   useEffect(() => {
@@ -238,6 +237,9 @@ const DeliveryOverview: React.FC<{
   };
   const onUpdateOrder = () => {
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
+  }
+  const onSkip = () => {
+    updateOrder(order._id, Order.getUpdatedOrderInput(order));
   }
   const open = !!anchorEl;
   return (
@@ -310,7 +312,7 @@ const DeliveryOverview: React.FC<{
                 variant='outlined'
                 color='primary'
                 className={classes.skip}
-                onClick={onUpdateOrder}
+                onClick={onSkip}
               >
                 Skip
               </Button>
