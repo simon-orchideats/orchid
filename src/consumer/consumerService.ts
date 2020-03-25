@@ -2,7 +2,7 @@ import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer, IConsumer, ConsumerPlan } from './consumerModel';
+import { Consumer, IConsumer, ConsumerPlan, IConsumerProfile } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -81,6 +81,57 @@ export const useAddConsumerEmail = (): [
       data: mutation.data ? mutation.data.insertEmail : undefined,
     }
   ], [mutation]);
+}
+
+export const useUpdateMyProfile = (): [
+  (consumer: Consumer, profile: IConsumerProfile) => void,
+  {
+    error?: ApolloError 
+    data?: {
+      res: Consumer | null,
+      error: string | null
+    }
+  }
+] => {
+  type res = { updateMyProfile: MutationConsumerRes };
+  type vars = { profile: IConsumerProfile }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation updateMyProfile($profile: ConsumerProfileInput!) {
+      updateMyProfile(profile: $profile) {
+        res {
+          ...consumerFragment
+        }
+        error
+      }
+    }
+    ${consumerFragment}
+  `);
+  const updateMyProfile = (consumer: Consumer, profile: IConsumerProfile) => {
+    mutate({
+      variables: { profile },
+      optimisticResponse: {
+        updateMyProfile: { 
+          res: copyWithTypenames({ ...consumer, profile }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
+        }
+      }
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.updateMyProfile.res && new Consumer(mutation.data.updateMyProfile.res),
+      error: mutation.data.updateMyProfile.error
+    }
+    return [
+      updateMyProfile,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
 }
 
 export const useCancelSubscription = (): [

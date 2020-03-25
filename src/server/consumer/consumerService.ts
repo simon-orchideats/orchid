@@ -7,7 +7,7 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService, adjustmentDateFormat } from './../orders/orderService';
 import { manualAuthSignUp, refetchAccessToken } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -24,6 +24,7 @@ export interface IConsumerService {
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
+  updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
 
 class ConsumerService implements IConsumerService {
@@ -343,7 +344,39 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  
+  async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationConsumerRes> {
+    if (!signedInUser) throw getNotSignedInErr()
+    try {
+      const res = await this.elastic.update({
+          index: CONSUMER_INDEX,
+          id: signedInUser._id,
+          _source: 'true',
+          body: {
+            doc: {
+              profile,
+            }
+          }
+        });
+      const newConsumer = {
+        _id: signedInUser._id,
+        ...res.body.get._source
+      };
+      if (this.orderService) {
+        await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile)
+      } else {
+        console.error(`[ConsumerService]: OrderService not available to updateUpcomingOrders '${signedInUser && signedInUser._id}'`);
+        throw new Error('No order service');
+      }
+      return {
+        res: newConsumer,
+        error: null
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser && signedInUser._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
+
   async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
@@ -385,7 +418,7 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
 
-      const updateUpcoming = this.orderService.updateUpcomingOrders(
+      const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
         signedInUser, 
         mealPrice,
         total,
@@ -444,7 +477,6 @@ export const initConsumerService = (
 ) => {
   if (consumerService) throw new Error('[ConsumerService] already initialized.');
   consumerService = new ConsumerService(elastic, stripe);
-  consumerService.getConsumer('123');
   return consumerService;
 };
 

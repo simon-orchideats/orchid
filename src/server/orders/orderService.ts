@@ -4,7 +4,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerPlan } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
@@ -126,7 +126,7 @@ export interface IOrderService {
     updateOptions: IUpdateOrderInput,
     now?: number,
   ): Promise<MutationBoolRes>
-  updateUpcomingOrders(
+  updateUpcomingOrdersPlans(
     signedInUser: SignedInUser,
     mealPrice: number,
     total: number,
@@ -134,6 +134,7 @@ export interface IOrderService {
     plan: IConsumerPlan,
     updatedDate?: number,
   ): Promise<(ApiResponse<any, any>)[]>
+  updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>
 }
 
 class OrderService {
@@ -704,7 +705,7 @@ class OrderService {
     }
   }
 
-  async updateUpcomingOrders(
+  async updateUpcomingOrdersPlans(
     signedInUser: SignedInUser,
     mealPrice: number,
     total: number,
@@ -803,6 +804,33 @@ class OrderService {
       console.error(`[OrderService] Failed to update upcoming orders for consumer '${signedInUser && signedInUser._id}'`);
       throw e;
     }
+  }
+
+  async updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {
+    if (!signedInUser) throw getNotSignedInErr()
+    try {
+      await this.elastic.updateByQuery({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: getUpcomingOrdersQuery(signedInUser._id),
+          script: {
+            source: 'ctx._source.consumer.profile = params.profile',
+            lang: 'painless',
+            params: {
+              profile
+            }
+          },
+        }
+      });
+      return {
+        res: true,
+        error: null
+      }
+    } catch(e) {
+      console.error(`[OrderService]: Couldn't update UpComingOrders for '${signedInUser._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    } 
   }
 }
 

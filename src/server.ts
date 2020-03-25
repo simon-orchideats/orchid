@@ -50,7 +50,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // at 12am.
 // todo investigate why sometimes accountName is null when placing order. alvin was logged in with google
 // when this happened
-
+// todo Add name field in address form and get rid of checkbox in checkout. (For updating profile)
 
 init({
   dsn: activeConfig.server.sentry.dsn,

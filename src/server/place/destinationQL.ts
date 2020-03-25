@@ -4,13 +4,13 @@ const destinationQL = gql`
   type Destination {
     name: String!
     address: Address!
-    instructions: String!
+    instructions: String
   }
 
   input DestinationInput {
     name: String!
     address: AddressInput!
-    instructions: String!
+    instructions: String
   }
 `
 

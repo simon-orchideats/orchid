@@ -228,7 +228,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!validate() || pm.current.error) return;
+    if (!validate()) return;
+    if (pm.current.error) {
+      const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.current.error)}`);
+      console.error(err.stack);
+      throw err;
+    }
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {

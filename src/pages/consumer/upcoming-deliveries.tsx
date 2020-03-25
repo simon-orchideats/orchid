@@ -358,7 +358,7 @@ const UpcomingDeliveries = () => {
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
-        defaultOrder={order}
+        order={order}
         isUpdating={isUpdating}
         cart={cart ? cart : undefined}
       />

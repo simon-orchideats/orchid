@@ -19,6 +19,14 @@ const _ConsumerQL = gql`
     phone: String
     destination: Destination
   }
+
+  input ConsumerProfileInput {
+    name: String!
+    email: String!
+    card: CardInput
+    phone: String
+    destination: DestinationInput
+  }
 `
 
 export const ConsumerQL = () => [
