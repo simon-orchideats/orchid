@@ -52,7 +52,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // payment day if the consumer updated the delivery date. for now we'll just do it each day
 // at 12am.
 // skipping orders doenst update the ui
-
+// todo Add name field in address form and get rid of checkbox in checkout. (For updating profile)
 
 init({
   dsn: activeConfig.server.sentry.dsn,

@@ -344,21 +344,30 @@ class ConsumerService implements IConsumerService {
   async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
-      await this.elastic.update({
-        index: CONSUMER_INDEX,
-        id: signedInUser._id,
-        body: {
-          doc: {
-            profile: profile,
-        }}
-      });
-      if(this.orderService) await this.orderService.updateUpComingOrders(signedInUser, profile)
+      const res = await this.elastic.update({
+          index: CONSUMER_INDEX,
+          id: signedInUser._id,
+          body: {
+            doc: {
+              profile,
+          }}
+        });
+      const newConsumer = {
+        _id: signedInUser._id,
+        ...res.body.get._source
+      };
+      if (this.orderService) {
+        await this.orderService.updateUpcomingOrders(signedInUser, profile)
+      } else {
+        console.error(`[ConsumerService]: OrderService not available to updateUpcomingOrders '${signedInUser && signedInUser._id}'`);
+        throw new Error('Internal Server Error');
+      }
       return {
-        res: await this.getConsumer(signedInUser._id),
+        res: newConsumer,
         error: null
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser && signedInUser._id}', e.stack`);
+      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser && signedInUser._id}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }

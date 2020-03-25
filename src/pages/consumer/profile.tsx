@@ -72,7 +72,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const cityInputRef = createRef<HTMLInputElement>();
   const zipInputRef = createRef<HTMLInputElement>();
   const [state, setState] = useState<state | ''>('');
-  const [accountName, setAccountName] = useState<string>('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
@@ -86,9 +85,9 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
   if (consumer.data) {
     setAccountName(consumer.data.Profile.Name);
-    consumer.data.Profile.Destination ? consumer.data.Profile.Destination.Address.getAddrStr() : consumerAddressLabel;
-    consumer.data.Profile.Card ? consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
-    consumer.data.Profile.Phone ? consumer.data.Profile.Phone : consumerPhoneLabel;
+    consumer.data.Profile.Destination ? consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr() : consumerAddressLabel;
+    consumer.data.Profile.Card ? consumerAddressLabel = consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
+    consumer.data.Profile.Phone ? consumerAddressLabel = consumer.data.Profile.Phone : consumerPhoneLabel;
   }
 
   const noConsumerErr = () => {
@@ -101,10 +100,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
     const updatedProfile: IConsumerProfile = {
-      name: consumer.data.profile.name,
-      email: consumer.data.profile.email,
-      card: consumer.data.profile.card,
-      destination: consumer.data.profile.destination,
+      ...consumer.data.profile,
       phone: phoneInputRef.current!.value
     }
     updateMyProfile(consumer.data, updatedProfile);
@@ -118,26 +114,23 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     setIsUpdatingAddr(false);
     if (state) {
       const updatedProfile: IConsumerProfile = {
-          name: consumer.data.profile.name,
-          email: consumer.data.profile.email,
-          card: consumer.data.profile.card,
-          destination: {
-            address: {
-              address1: addr1InputRef.current!.value,
-              address2: addr2InputRef.current!.value,
-              city: cityInputRef.current!.value,
-              state: state,
-              zip: zipInputRef.current!.value,
-            },
-            name: consumer.data.profile.destination!.name,
-            instructions: consumer.data.profile.destination && consumer.data.profile.destination.instructions,
+        ...consumer.data.profile,
+        destination: {
+          address: {
+            address1: addr1InputRef.current!.value,
+            address2: addr2InputRef.current!.value,
+            city: cityInputRef.current!.value,
+            state: state,
+            zip: zipInputRef.current!.value,
           },
-          phone: consumer.data.profile.phone
+          name: consumer.data.Profile.Destination ? consumer.data.Profile.Destination.Name : consumer.data.Profile.Name,
+          instructions: consumer.data.Profile.Destination && consumer.data.Profile.Destination.Instructions,
+        },
       }
       updateMyProfile(consumer.data, updatedProfile);
     } else {
-      console.error("State is empty")
-      throw new Error ("State is empty")
+      console.error('State is empty')
+      throw new Error ('State is empty')
     }
   }
   const onCancelAddr = () => {
@@ -166,20 +159,21 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       pm = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        billing_details: { name: accountName },
+        billing_details: { name: consumer.data.Profile.Name },
       });
     } catch (e) {
-      const err =  new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
+      const err =  new Error(`Failed to createPaymentMethod for accountName '${consumer.data.Profile.Name}'`);
       console.error(e.stack);
       throw err;
     }
-    if (pm.error) return;
+    if (pm.error) {
+      const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.error)}`);
+      console.error(err.stack);
+      throw err;
+    };
     const updatedProfile: IConsumerProfile = {
-      name: consumer.data.profile.name,
-      email: consumer.data.profile.email,
+      ...consumer.data.profile,
       card: Card.getCardFromStripe(pm.paymentMethod!.card),
-      destination: consumer.data.profile.destination,
-      phone: consumer.data.profile.phone
     }
     updateMyProfile(consumer.data, updatedProfile);
     setIsUpdatingCard(false);

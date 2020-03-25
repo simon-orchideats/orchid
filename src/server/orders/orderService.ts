@@ -73,7 +73,7 @@ export interface IOrderService {
     updateOptions: IUpdateOrderInput,
     now?: number,
   ): Promise<MutationBoolRes>
-  updateUpComingOrders(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>
+  updateUpcomingOrders(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>
 }
 
 class OrderService {
@@ -507,7 +507,7 @@ class OrderService {
     }
   }
 
-  async updateUpComingOrders(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {
+  async updateUpcomingOrders(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       await this.elastic.updateByQuery({
@@ -545,14 +545,14 @@ class OrderService {
           },
         }
       });
+      return {
+        res: true,
+        error: null
+      }
     } catch(e) {
       console.error(`[OrderService]: Couldn't update UpComingOrders for '${signedInUser._id}'`, e.stack);
       throw new Error('Internal Server Error');
     } 
-    return {
-      res: true,
-      error: null
-    }
   }
 
   async updateOrder(
