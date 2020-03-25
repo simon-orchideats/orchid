@@ -16,25 +16,16 @@ const CuisineTypeQL = gql`
   }
 `
 
-const RenewalTypeQL = gql`
-  enum RenewalType {
-    Skip
-    Auto
-  }
-`
-
 const _ConsumerPlanQL = gql`
   type ConsumerPlan {
     stripePlanId: ID!
     deliveryDay: Int!
-    renewal: RenewalType!
     cuisines: [CuisineType!]!
   }
 
   input ConsumerPlanInput {
     stripePlanId: ID!
     deliveryDay: Int!
-    renewal: RenewalType!
     cuisines: [CuisineType!]!
   }
 `
@@ -42,5 +33,4 @@ const _ConsumerPlanQL = gql`
 export const ConsumerPlanQL = () => [
   _ConsumerPlanQL,
   CuisineTypeQL,
-  RenewalTypeQL,
 ]

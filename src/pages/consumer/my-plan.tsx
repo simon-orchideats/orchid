@@ -1,11 +1,11 @@
 
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
-import { useRef } from 'react';
-import { CuisineType, RenewalType, RenewalTypes, deliveryDay, ConsumerPlan } from '../../consumer/consumerModel';
+import { useRef, useState } from 'react';
+import { CuisineType, deliveryDay, ConsumerPlan } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
-import { useRequireConsumer, useCancelSubscription, useUpdateConsumerPlan } from "../../consumer/consumerService";
+import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
@@ -15,6 +15,7 @@ import { Plan } from "../../plan/planModel";
 import { menuRoute } from "../menu";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
+import { useGetAvailablePlans } from "../../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -40,22 +41,52 @@ const useStyles = makeStyles(theme => ({
   cancel: {
     marginTop: theme.spacing(3),
   },
+  subtitle: {
+    marginTop: -theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+  },
 }));
 
 const myPlan = () => {
   const classes = useStyles();
   const consumer = useRequireConsumer(myPlanRoute);
   const plan = consumer.data && consumer.data.Plan;
-  const renewal = plan ? plan.Renewal : RenewalTypes.Auto;
   const cuisines = plan ? plan.Cuisines : [];
   const day = plan ? plan.DeliveryDay : 0;
-  const [updateConsumerPlan] = useUpdateConsumerPlan()
+  const plans = useGetAvailablePlans();
+  const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const validateCuisineRef= useRef<() => boolean>();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
   const setCartStripePlanId = useUpdateCartPlanId();
+  const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
   const notify = useNotify();
   useMutationResponseHandler(cancelSubscriptionRes, () => {
-    notify('Plan updated', NotificationType.success, true);
+    notify('Plan canceled.', NotificationType.success, false);
+  });
+  useMutationResponseHandler(updateMyPlanRes, () => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!prevPlan) {
+      const err = new Error('No prev plan');
+      console.error(err.stack);
+      throw err;
+    }
+    let msg = '.';
+    const newMealCount = Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data);
+    const prevMealCount = Plan.getPlanCount(prevPlan.StripePlanId, plans.data);
+    const newDeliveryDay = consumer.data.Plan.DeliveryDay;
+    if (newMealCount > prevMealCount) {
+      msg = `. We added ${Math.abs(newMealCount - prevMealCount)} meals to your upcoming deliveries.`
+    } else if (newMealCount < prevMealCount) {
+      msg = `. We removed ${Math.abs(newMealCount - prevMealCount)} meals from your upcoming deliveries.`
+    } else if (newDeliveryDay !== prevPlan.DeliveryDay) {
+      msg = ` with new delivery day.`
+    }
+    notify(`Plan updated${msg}`, NotificationType.success, false);
   });
   const onClickCardNoSubscription = (plan: Plan) => {
     Router.push(menuRoute);
@@ -68,7 +99,8 @@ const myPlan = () => {
   }
   const updatePlan = (plan: Plan) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    updateConsumerPlan(
+    setPrevPlan(consumer.data.Plan);
+    updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
         stripePlanId: plan.stripeId,
@@ -78,7 +110,8 @@ const myPlan = () => {
   };
   const updateDay = (deliveryDay: deliveryDay) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    updateConsumerPlan(
+    setPrevPlan(consumer.data.Plan);
+    updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
         deliveryDay,
@@ -88,20 +121,11 @@ const myPlan = () => {
   };
   const updateCuisines = (cuisines: CuisineType[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    updateConsumerPlan(
+    setPrevPlan(consumer.data.Plan);
+    updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
         cuisines,
-      }),
-      consumer.data
-    );
-  };
-  const updateRenewal = (renewal: RenewalType) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    updateConsumerPlan(
-      new ConsumerPlan({
-        ...consumer.data.Plan,
-        renewal,
       }),
       consumer.data
     );
@@ -137,6 +161,9 @@ const myPlan = () => {
             >
               Preferred meal plan
             </Typography>
+            <Typography variant='subtitle2' className={classes.subtitle}>
+              Upcoming deliveries will automatically update their meals
+            </Typography>
             <PlanCards selectedPlanId={plan.StripePlanId} onClickCard={plan => updatePlan(plan)}/>
             <Typography
               variant='h6'
@@ -145,19 +172,13 @@ const myPlan = () => {
             >
               Preferred delivery day
             </Typography>
-            <DeliveryDateChooser day={day} onDayChange={day => updateDay(day)}/>
-            <Typography
-              variant='h6'
-              color='primary'
-              className={classes.verticalPadding}
-            >
-              Next Week
+            <Typography variant='subtitle2' className={classes.subtitle}>
+              Upcoming deliveries will automatically change dates
             </Typography>
+            <DeliveryDateChooser day={day} onDayChange={day => updateDay(day)}/>
             <RenewalChooser
-              renewal={renewal}
               cuisines={cuisines}
               onCuisineChange={cuisines => updateCuisines(cuisines)}
-              onRenewalChange={renewal => updateRenewal(renewal)}
               validateCuisineRef={validateCuisine => {
                 validateCuisineRef.current = validateCuisine;
               }}

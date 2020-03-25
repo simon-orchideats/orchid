@@ -8,7 +8,6 @@ export const consumerFragment = gql`
     plan {
       stripePlanId
       deliveryDay
-      renewal
       cuisines
     }
     profile {

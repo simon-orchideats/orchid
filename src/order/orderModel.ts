@@ -169,7 +169,6 @@ export class Order implements IOrder{
     subscriptionId: string,
     mealPrice: number,
     total: number,
-    isSkipped: boolean = false,
   ): EOrder {
     if (!signedInUser) {
       const err = new Error ('Signed in user null');
@@ -179,8 +178,8 @@ export class Order implements IOrder{
     const now = moment();
     return {
       rest: {
-        restId: isSkipped ? null : cart.restId,
-        meals: isSkipped ? [] : cart.meals,
+        restId: cart.restId,
+        meals: cart.meals,
       },
       status: 'Open',
       consumer: {

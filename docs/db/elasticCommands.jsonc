@@ -23,9 +23,9 @@ GET /consumers/_search?
 
 GET /rests/_search?
 {
-    "query" : {
-        "match_all" : {}
-    }
+  "query" : {
+      "match_all" : {}
+  }
 }
 
 GET /rests/_search?
@@ -43,12 +43,45 @@ GET /rests/_search?
 
 ############################
 
+######### UPDATE ###########
+POST orders/_update_by_query
+{
+  "doc": {
+    "status": "Skipped"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+############################
+
 
 ######### DELETE ###########
 
 DELETE rests
 DELETE orders
 DELETE consumers
+
+POST consumers/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
+
+POST consumers/_delete_by_query
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "term": {
+          "profile.email": "simon.vuong.orchid@gmail.com"
+        }
+      }
+    }
+  }
+}
 
 POST orders/_delete_by_query
 {
@@ -495,9 +528,6 @@ PUT /consumers/
           },
           "deliveryDay": {
             "type": "integer"
-          },
-          "renewal": {
-            "type": "keyword"
           },
           "cuisines": {
             "type": "keyword"

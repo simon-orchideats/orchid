@@ -80,48 +80,33 @@ export const CuisineTypes: {
   Vegetarian: 'Vegetarian'
 }
 
-export type RenewalType = 'Skip' | 'Auto';
-
-export const RenewalTypes: {
-  Skip: 'Skip',
-  Auto: 'Auto'
-} = {
-  Skip: 'Skip',
-  Auto: 'Auto',
-}
-
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface IConsumerPlan {
   readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
-  readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
   readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
-  readonly renewal: RenewalType
   readonly cuisines: CuisineType[]
 
   constructor(consumerPlan: IConsumerPlan) {
     this.stripePlanId = consumerPlan.stripePlanId
     this.deliveryDay = consumerPlan.deliveryDay;
-    this.renewal = consumerPlan.renewal;
     this.cuisines = consumerPlan.cuisines.map(c => c);
   }
 
   public get StripePlanId() { return this.stripePlanId }
   public get DeliveryDay() { return this.deliveryDay }
-  public get Renewal() { return this.renewal }
   public get Cuisines() { return this.cuisines }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
       stripePlanId: plan.stripePlanId,
       deliveryDay: plan.deliveryDay,
-      renewal: plan.renewal,
       cuisines: plan.cuisines.map(c => c),
     }
   }
@@ -198,10 +183,6 @@ export class Consumer implements IConsumer {
       || d === 6
     ) return true;
     return false;
-  }
-
-  static isRenewalTypeValid(type: string) {
-    return !!Object.values<string>(RenewalTypes).includes(type);
   }
 
   static getWeekday(d: deliveryDay | null) {

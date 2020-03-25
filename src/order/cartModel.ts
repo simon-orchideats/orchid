@@ -1,7 +1,7 @@
 import { getNextDeliveryDate } from './utils';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { deliveryDay, IConsumerPlan, RenewalType, CuisineType } from '../consumer/consumerModel';
+import { deliveryDay, IConsumerPlan, CuisineType } from '../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 
@@ -151,7 +151,6 @@ export class Cart implements ICart {
     card: ICard,
     paymentMethodId: string,
     instructions: string,
-    renewal: RenewalType,
     cuisines: CuisineType[],
   ): ICartInput {
     if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
@@ -167,7 +166,6 @@ export class Cart implements ICart {
       consumerPlan: {
         stripePlanId: this.StripePlanId,
         deliveryDay: this.DeliveryDay,
-        renewal,
         cuisines,
       },
       deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),

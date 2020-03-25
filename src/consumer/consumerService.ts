@@ -269,7 +269,7 @@ export const useSignUp = (): [
   }, [mutation]);
 }
 
-export const useUpdateConsumerPlan = (): [
+export const useUpdateMyPlan = (): [
   (plan: ConsumerPlan, currConsumer: Consumer) => void,
   {
     error?: ApolloError 
@@ -307,9 +307,6 @@ export const useUpdateConsumerPlan = (): [
           __typename: 'ConsumerRes'
         }
       },
-      update: (cache, { data }) => {
-        if (data && data.updateMyPlan.res) updateMyConsumer(cache, data.updateMyPlan.res)
-      }
     })
   }
   return useMemo(() => {

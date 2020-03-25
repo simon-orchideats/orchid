@@ -10,7 +10,7 @@ import { state } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
-import { RenewalTypes, CuisineType, RenewalType } from "../consumer/consumerModel";
+import { CuisineType } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
@@ -65,7 +65,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [renewal, setRenewal] = useState<RenewalType>(RenewalTypes.Skip)
   const [oneName, setOneName] = useState<boolean>(true);
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [accountName, setAccountName] = useState<string>('');
@@ -132,7 +131,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            renewal,
             cuisines,
           )
         );
@@ -251,7 +249,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(pm.current.paymentMethod!.card),
           pm.current.paymentMethod!.id,
           deliveryInstructions,
-          renewal,
           cuisines,
         ),
       );
@@ -450,13 +447,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Next Week
           </Typography>
           <RenewalChooser
-            renewal={renewal}
             cuisines = {cuisines}
             validateCuisineRef={validateCuisine => {
               validateCuisineRef.current = validateCuisine;
             }}
             onCuisineChange={cuisines => setCuisines(cuisines)}
-            onRenewalChange={renewal => setRenewal(renewal)}
           />
         </Grid>
         {

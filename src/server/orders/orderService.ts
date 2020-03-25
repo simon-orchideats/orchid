@@ -4,7 +4,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { RenewalTypes, EConsumer, CuisineType, IConsumerPlan } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
@@ -258,6 +258,12 @@ class OrderService {
       return msg;
     }
 
+    if (cart.consumerPlan.cuisines.length === 0) {
+      const msg = 'Cuisines cannot be empty';
+      console.warn('[OrderService]', msg);
+      return msg;
+    }
+
     const p1 = this.validateRest(cart.restId, cart.meals);
     const p2 = this.validateAddress(cart.destination.address);
     const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals));
@@ -271,17 +277,6 @@ class OrderService {
     }
     if (messages[2]) {
       return messages[2]
-    }
-
-    const {
-      renewal,
-      cuisines,
-    } = cart.consumerPlan;
-
-    if (renewal === RenewalTypes.Auto && cuisines.length === 0) {
-      const msg = `Cuisines cannot be empty if renewal type is '${renewal}'`;
-      console.warn('[OrderService]', msg);
-      return msg;
     }
 
     return '';
@@ -366,19 +361,9 @@ class OrderService {
 
       const {
         deliveryDay,
-        renewal,
         cuisines,
         stripePlanId,
       } = cart.consumerPlan;
-    
-      if (renewal === RenewalTypes.Auto && cuisines.length === 0) {
-        const msg = `Cuisines cannot be empty if renewal type is '${renewal}'`;
-        console.warn('[OrderService]', msg);
-        return {
-          res: null,
-          error: msg
-        }
-      }
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
       let subscription: Stripe.Subscription;
@@ -440,7 +425,6 @@ class OrderService {
         plan: {
           stripePlanId,
           deliveryDay,
-          renewal,
           cuisines,
         },
         profile: {
@@ -458,45 +442,30 @@ class OrderService {
       // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
       // placed order
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      if (cart.consumerPlan.renewal === RenewalTypes.Auto) {
-        this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals))
-          .then(({ restId, meals }) => {
-            const newCart = {
-              ...cart,
-              restId: restId,
-              meals,
-              deliveryDate: nextDeliveryDate
-            }
-            const order = Order.getNewOrderFromCartInput(
-              signedInUser,
-              newCart,
-              nextInvoice,
-              subscription.id,
-              parseFloat(subscription.plan!.metadata.mealPrice),
-              subscription.plan!.amount! / 100,
-            );
-            return this.elastic.index({
-              index: ORDER_INDEX,
-              body: order
-            })
-          })
-          .catch(e => {
-            console.error('[OrderService] could not auto pick rests', e.stack);
-          })
-      } else {
-        this.elastic.index({
-          index: ORDER_INDEX,
-          body: Order.getNewOrderFromCartInput(
+      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals))
+        .then(({ restId, meals }) => {
+          const newCart = {
+            ...cart,
+            restId: restId,
+            meals,
+            deliveryDate: nextDeliveryDate
+          }
+          const order = Order.getNewOrderFromCartInput(
             signedInUser,
-            { ...cart, deliveryDate: nextDeliveryDate },
+            newCart,
             nextInvoice,
             subscription.id,
-            0,
-            0,
-            true
-          )
+            parseFloat(subscription.plan!.metadata.mealPrice),
+            subscription.plan!.amount! / 100,
+          );
+          return this.elastic.index({
+            index: ORDER_INDEX,
+            body: order
+          })
         })
-      }
+        .catch(e => {
+          console.error('[OrderService] could not auto pick rests', e.stack);
+        })
 
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
       if (req && res) await refetchAccessToken(req, res);
