@@ -39,7 +39,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo: listen for stripe event of payment and then create the next order
 // todo: use refresh token...
 // todo logout
-// todo update profile
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
 // todo use getAdjustmentDesc
 // todo test for consumerServiceTest
