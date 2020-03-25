@@ -1,13 +1,13 @@
 import { IAddress, Address } from './addressModel';
 
 export interface IDestination {
-  readonly name: string | null
+  readonly name: string
   readonly address: IAddress
   readonly instructions: string | null
 }
 
 export class Destination implements IDestination {
-  readonly name: string | null
+  readonly name: string
   readonly address: Address
   readonly instructions: string | null
 

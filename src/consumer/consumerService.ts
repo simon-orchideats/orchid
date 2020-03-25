@@ -2,7 +2,7 @@ import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer, IConsumer } from './consumerModel';
+import { Consumer, IConsumer, IConsumerProfile } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -83,8 +83,8 @@ export const useAddConsumerEmail = (): [
   ], [mutation]);
 }
 
-export const useUpdateConsumer = (): [
-  (consumer: IConsumer) => void,
+export const useUpdateMyProfile = (): [
+  (consumer: Consumer, profile: IConsumerProfile) => void,
   {
     error?: ApolloError 
     data?: {
@@ -93,11 +93,11 @@ export const useUpdateConsumer = (): [
     }
   }
 ] => {
-  type res = { updateConsumer: MutationConsumerRes };
-  type vars = { consumer: IConsumer }
+  type res = { updateMyProfile: MutationConsumerRes };
+  type vars = { profile: IConsumerProfile }
   const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateConsumer($consumer: ConsumerInput!) {
-      updateConsumer(consumer: $consumer) {
+    mutation updateMyProfile($profile: ConsumerProfileInput!) {
+      updateMyProfile(profile: $profile) {
         res {
           ...consumerFragment
         }
@@ -106,18 +106,12 @@ export const useUpdateConsumer = (): [
     }
     ${consumerFragment}
   `);
-  const updateConsumer = (consumer: IConsumer) => {
+  const updateMyProfile = (consumer: Consumer, profile: IConsumerProfile) => {
     mutate({
-      variables: { consumer },
+      variables: { profile },
       optimisticResponse: {
-        updateConsumer: { 
-          res: copyWithTypenames({
-            _id: consumer._id,
-            stripeSubscriptionId: consumer.stripeSubscriptionId,
-            stripeCustomerId: consumer.stripeCustomerId,
-            profile: consumer.profile,
-            plan: consumer.plan,
-          }),
+        updateMyProfile: { 
+          res: copyWithTypenames({ ...consumer, profile }),
           error: null,
           //@ts-ignore
           __typename: 'ConsumerRes'
@@ -127,11 +121,11 @@ export const useUpdateConsumer = (): [
   }
   return useMemo(() => {
     const data = mutation.data && {
-      res: mutation.data.updateConsumer.res && new Consumer(mutation.data.updateConsumer.res),
-      error: mutation.data.updateConsumer.error
+      res: mutation.data.updateMyProfile.res && new Consumer(mutation.data.updateMyProfile.res),
+      error: mutation.data.updateMyProfile.error
     }
     return [
-      updateConsumer,
+      updateMyProfile,
       {
         error: mutation.error,
         data,

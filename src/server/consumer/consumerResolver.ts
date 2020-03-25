@@ -1,4 +1,4 @@
-import { IConsumerPlan, IConsumer } from './../../consumer/consumerModel';
+import { IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
 import { ServerResolovers } from './../../utils/apolloUtils';
 import { getConsumerService } from './consumerService';
 
@@ -32,7 +32,7 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().updateMyPlan(signedInUser, plan);
   },
 
-  updateConsumer: async(_root, { consumer }: { consumer: IConsumer }, { signedInUser }) => {
-    return await getConsumerService().updateConsumer(signedInUser, consumer );
+  updateMyProfile: async(_root, { profile }: { profile: IConsumerProfile }, { signedInUser }) => {
+    return await getConsumerService().updateMyProfile(signedInUser, profile );
   }
 }

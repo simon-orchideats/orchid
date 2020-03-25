@@ -6,7 +6,7 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService, adjustmentDateFormat } from './../orders/orderService';
 import { manualAuthSignUp, refetchAccessToken } from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -16,7 +16,6 @@ import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
 
 const CONSUMER_INDEX = 'consumers';
-const ORDER_INDEX = 'orders';
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   insertEmail: (email: string) => Promise<MutationBoolRes>
@@ -24,7 +23,7 @@ export interface IConsumerService {
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationBoolRes>
-  updateConsumer: (signedInUser: SignedInUser, consumer: Consumer) => Promise<MutationConsumerRes>
+  updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
 
 class ConsumerService implements IConsumerService {
@@ -295,7 +294,7 @@ class ConsumerService implements IConsumerService {
           error: signedUp.error,
         }
       }
-      const consumer = await this.insertConsumer(signedUp.res!._id, signedUp.res!.profile.name,  signedUp.res!.profile.email)
+      const consumer = await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
       return {
         res: consumer,
         error: null,
@@ -342,70 +341,25 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async updateConsumer (signedInUser: SignedInUser | null, consumer: IConsumer): Promise<MutationConsumerRes> {
+  async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationConsumerRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       await this.elastic.update({
         index: CONSUMER_INDEX,
-        id: consumer._id,
+        id: signedInUser._id,
         body: {
           doc: {
-            stripeCustomerId: consumer.stripeCustomerId,
-            stripeSubscriptionId: consumer.stripeSubscriptionId,
-            profile: consumer.profile,
-            plan: consumer.plan
+            profile: profile,
         }}
       });
-      let res = await this.orderService?.getMyUpcomingEOrders(signedInUser);
-      let orderIds = res?.map(orderObj =>  orderObj._id);
-      await this.elastic.updateByQuery({
-        index: ORDER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: [
-                    {
-                      range: {
-                        deliveryDate: {
-                          gte: Date.now(),
-                        }
-                      },
-                    },
-                    {
-                      ids: {
-                        values: orderIds
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          script: {
-            source: "ctx._source.consumer.profile = params.newProfile",
-            lang: 'painless',
-            params: {
-              newProfile: consumer.profile
-            }
-          },
-        }
-      });
+      if(this.orderService) await this.orderService.updateUpComingOrders(signedInUser, profile)
       return {
-        res: {
-          _id: consumer._id,
-          stripeCustomerId: consumer.stripeCustomerId,
-          stripeSubscriptionId: consumer.stripeSubscriptionId,
-          profile: consumer.profile,
-          plan: consumer.plan
-        },
+        res: await this.getConsumer(signedInUser._id),
         error: null
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to update consumer '${consumer._id}', '${JSON.stringify(consumer)}'`, e.stack);
-      throw e;
+      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser && signedInUser._id}', e.stack`);
+      throw new Error('Internal Server Error');
     }
   }
 

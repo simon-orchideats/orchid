@@ -2,14 +2,14 @@ import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
 import AddressForm from '../../client/general/inputs/AddressForm'
-import  { useRequireConsumer, useUpdateConsumer } from '../../consumer/consumerService';
+import  { useRequireConsumer, useUpdateMyProfile } from '../../consumer/consumerService';
 import withApollo from "../../client/utils/withPageApollo";
 import { state } from "../../place/addressModel";
 import CardForm from "../../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { activeConfig } from "../../config";
 import { isServer } from "../../client/utils/isServer";
-import { IConsumer } from "../../consumer/consumerModel";
+import { IConsumerProfile } from "../../consumer/consumerModel";
 import { Card } from "../../card/cardModel";
 const useStyles = makeStyles(theme => ({
   container: {
@@ -72,87 +72,79 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const cityInputRef = createRef<HTMLInputElement>();
   const zipInputRef = createRef<HTMLInputElement>();
   const [state, setState] = useState<state | ''>('');
+  const [accountName, setAccountName] = useState<string>('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
-  const [updateConsumer] = useUpdateConsumer();
-  let consumerAddressLabel ='';
-  let consumerCardLabel ='';
+  const [updateMyProfile] = useUpdateMyProfile();
+  let consumerAddressLabel = '';
+  let consumerCardLabel = '';
+  let consumerPhoneLabel = ''
   const consumer = useRequireConsumer(profileRoute);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
-  // creates Address label based on consumer
-  if (consumer.data && consumer.data.Profile.destination && consumer.data.Profile.destination.address) {
-    const addressInfo = consumer.data.Profile.destination.Address
-    const address1 = addressInfo.address1;
-    const address2 = addressInfo.address2;
-    const city = addressInfo.city;
-    const zip = addressInfo.zip; 
-    consumerAddressLabel = `${address1} ${address2} ${city} ${zip}`
-  } 
-  // creates card label based on consumer
-  if (consumer.data && consumer.data.Profile.card) {
-    const card = consumer.data.Profile.card;
-    const Last4 = card.Last4;
-    const expMonth = card.expMonth;
-    const expYear = card.expYear;
-    consumerCardLabel = `${Last4} ${expMonth}/${expYear}`
+  if (consumer.data) {
+    setAccountName(consumer.data.Profile.Name);
+    consumer.data.Profile.Destination ? consumer.data.Profile.Destination.Address.getAddrStr() : consumerAddressLabel;
+    consumer.data.Profile.Card ? consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
+    consumer.data.Profile.Phone ? consumer.data.Profile.Phone : consumerPhoneLabel;
+  }
+
+  const noConsumerErr = () => {
+    const err = new Error(`Consumer does not exist`);
+    console.error(err.stack);
+    return err;
   }
   const onSavePhone = () => {
+    if (!consumer.data) throw noConsumerErr() 
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
-    const updatedConsumer: IConsumer = {
-      _id: consumer.data!._id,
-      plan: consumer.data!.plan,
-      profile: {
-        name: consumer.data!.profile.name,
-        email: consumer.data!.profile.email,
-        card: consumer.data!.profile.card,
-        destination: consumer.data!.profile.destination,
-        phone: phoneInputRef.current!.value
-      },
-      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
-      stripeCustomerId: consumer.data!.stripeCustomerId
+    const updatedProfile: IConsumerProfile = {
+      name: consumer.data.profile.name,
+      email: consumer.data.profile.email,
+      card: consumer.data.profile.card,
+      destination: consumer.data.profile.destination,
+      phone: phoneInputRef.current!.value
     }
-    updateConsumer(updatedConsumer);
+    updateMyProfile(consumer.data, updatedProfile);
   }
   const onCancelPhone = () => {
     setIsUpdatingPhone(false);
   }
   const onSaveAddr = () => {
+    if (!consumer.data) throw noConsumerErr() 
     if (!validateAddressRef.current!()) return;
     setIsUpdatingAddr(false);
-     const updatedConsumer: IConsumer = {
-      _id: consumer.data!._id,
-      plan: consumer.data!.plan,
-      profile: {
-        name: consumer.data!.profile.name,
-        email: consumer.data!.profile.email,
-        card: consumer.data!.profile.card,
-        destination: {
-          address: {
-            address1: addr1InputRef.current!.value,
-            address2: addr2InputRef.current!.value,
-            city: cityInputRef.current!.value,
-            state: state,
-            zip: zipInputRef.current!.value,
+    if (state) {
+      const updatedProfile: IConsumerProfile = {
+          name: consumer.data.profile.name,
+          email: consumer.data.profile.email,
+          card: consumer.data.profile.card,
+          destination: {
+            address: {
+              address1: addr1InputRef.current!.value,
+              address2: addr2InputRef.current!.value,
+              city: cityInputRef.current!.value,
+              state: state,
+              zip: zipInputRef.current!.value,
+            },
+            name: consumer.data.profile.destination!.name,
+            instructions: consumer.data.profile.destination && consumer.data.profile.destination.instructions,
           },
-          name: consumer.data!.profile.destination && consumer.data!.profile.destination.name,
-          instructions: consumer.data!.profile.destination && consumer.data!.profile.destination.instructions,
-
-        },
-        phone: consumer.data!.profile.phone
-      },
-      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
-      stripeCustomerId: consumer.data!.stripeCustomerId
+          phone: consumer.data.profile.phone
+      }
+      updateMyProfile(consumer.data, updatedProfile);
+    } else {
+      console.error("State is empty")
+      throw new Error ("State is empty")
     }
-    updateConsumer(updatedConsumer);
   }
   const onCancelAddr = () => {
     setIsUpdatingAddr(false);
   }
   const onSaveCard = async () => {
+    if (!consumer.data) throw noConsumerErr() 
     if (!stripe) {
       const err = new Error('Stripe not initialized');
       console.error(err.stack);
@@ -174,28 +166,22 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       pm = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        // billing_details: { name: accountName },
+        billing_details: { name: accountName },
       });
     } catch (e) {
-      // const err =  new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
+      const err =  new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
       console.error(e.stack);
-      throw e;
+      throw err;
     }
     if (pm.error) return;
-    const updatedConsumer: IConsumer = {
-      _id: consumer.data!._id,
-      plan: consumer.data!.plan,
-      profile: {
-        name: consumer.data!.profile.name,
-        email: consumer.data!.profile.email,
-        card: Card.getCardFromStripe(pm.paymentMethod!.card),
-        destination: consumer.data!.profile.destination,
-        phone: consumer.data!.profile.phone
-      },
-      stripeSubscriptionId: consumer.data!.stripeSubscriptionId,
-      stripeCustomerId: consumer.data!.stripeCustomerId
+    const updatedProfile: IConsumerProfile = {
+      name: consumer.data.profile.name,
+      email: consumer.data.profile.email,
+      card: Card.getCardFromStripe(pm.paymentMethod!.card),
+      destination: consumer.data.profile.destination,
+      phone: consumer.data.profile.phone
     }
-    updateConsumer(updatedConsumer);
+    updateMyProfile(consumer.data, updatedProfile);
     setIsUpdatingCard(false);
   };
   const onCancelCard = () => {
@@ -261,7 +247,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <>
                 <Labels
                   primary='Phone'
-                  secondary={consumer.data?.profile.phone ? consumer.data?.profile.phone : '' }
+                  secondary={consumerPhoneLabel}
                 />
                 <ListItemSecondaryAction>
                   <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>

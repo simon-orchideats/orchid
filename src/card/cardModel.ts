@@ -15,10 +15,13 @@ export class Card implements ICard {
     this.expYear = card.expYear;
   }
 
-  public get HiddenNumber() { return `**** ${this.Last4}`}
   public get Last4() { return this.last4 };
   public get ExpMonth() { return this.expMonth };
   public get ExpYear() { return this.expYear };
+  
+  public getHiddenCardStr() {
+    return `${this.last4} ${this.expMonth}/${this.expYear}`
+  }
 
   static getCardFromStripe(card?: stripe.paymentMethod.PaymentMethodCard) {
     if (!card) {

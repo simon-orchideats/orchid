@@ -223,7 +223,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       pm.current = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        billing_details: { name: 'tits' },
+        billing_details: { name: accountName },
       });
     } catch (e) {
       const err = new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
