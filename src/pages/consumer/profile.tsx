@@ -2,7 +2,7 @@ import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
 import AddressForm from '../../client/general/inputs/AddressForm'
-import  { useRequireConsumer, useUpdateMyProfile } from '../../consumer/consumerService';
+import { useRequireConsumer, useUpdateMyProfile } from '../../consumer/consumerService';
 import withApollo from "../../client/utils/withPageApollo";
 import { state } from "../../place/addressModel";
 import CardForm from "../../client/checkout/CardForm";
