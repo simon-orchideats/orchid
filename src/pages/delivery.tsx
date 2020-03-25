@@ -60,7 +60,7 @@ const delivery = () => {
             First delivery:&nbsp;
           </Typography>
           <Typography variant='subtitle1'>
-            {getNextDeliveryDate(day).format('M/D/YY')}, 6pm - 9pm
+            {getNextDeliveryDate(day).format('M/D/YY')}, 3pm - 7pm
           </Typography>
         </div>
         <Link href={checkoutRoute}>

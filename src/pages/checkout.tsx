@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, TextField, FormControlLabel, Checkbox, useMediaQuery, Theme, Button } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, TextField, useMediaQuery, Theme, Button } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
@@ -54,8 +54,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const notify = useNotify();
   const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer();
-  const [deliveryName, setDeliveryName] = useState<string>('');
-  const [deliveryNameError, setDeliveryNameError] = useState<string>('');
   const validateAddressRef = useRef<() => boolean>();
   const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
@@ -65,7 +63,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [oneName, setOneName] = useState<boolean>(true);
   const [cuisines, setCuisines] = useState<CuisineType[]>([]);
   const [accountName, setAccountName] = useState<string>('');
   const [accountNameError, setAccountNameError] = useState<string>('');
@@ -121,7 +118,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             email: signUpRes.data.res.Profile.Email
           },
           cart.getCartInput(
-            deliveryName,
             addr1InputRef.current!.value,
             addr2InputRef.current!.value,
             cityInputRef.current!.value,
@@ -150,17 +146,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       Router.replace(menuRoute)
       return <Typography>Redirecting...</Typography>
     }
-    if (!deliveryName && oneName) {
-      setDeliveryName(consumer.data.Profile.Name);
-    }
   }
 
   const validate = () => {
     let isValid = true;
-    if (!deliveryName) {
-      setDeliveryNameError('Your name is incomplete');
-      isValid = false;
-    }
     if (!validatePhoneRef.current!()) {
       isValid = false;
     }
@@ -196,6 +185,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
 
   const onClickPlaceOrder = async () => {
+    if (!validate()) return;
     if (!stripe) {
       const err = new Error('Stripe not initialized');
       console.error(err.stack);
@@ -228,7 +218,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!validate()) return;
     if (pm.current.error) {
       const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.current.error)}`);
       console.error(err.stack);
@@ -244,7 +233,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           email: consumer.data.Profile.Email,
         },
         cart.getCartInput(
-          deliveryName,
           addr1InputRef.current!.value,
           addr2InputRef.current!.value,
           cityInputRef.current!.value,
@@ -282,37 +270,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <TextField
-                label='Name'
-                variant='outlined'
-                size='small'
-                fullWidth
-                error={!!deliveryNameError}
-                helperText={deliveryNameError}
-                value={deliveryName}
-                onChange={e => {
-                  if (oneName) {
-                    setAccountName(e.target.value);
-                    if (accountNameError) setAccountNameError('');
-                  }
-                  setDeliveryName(e.target.value);
-                  if (deliveryNameError) setDeliveryNameError('');
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={oneName}
-                    onChange={(_, checked) => setOneName(checked)}
-                    color='primary'
-                  />
-                }
-                label='Delivery name is same as account name'
-              />
-            </Grid>
-            <Grid item xs={12}>
               <AddressForm
                 setValidator={(validator: () => boolean) => {
                   validateAddressRef.current = validator;
@@ -332,7 +289,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             >
               <PhoneInput
                 inputRef={phoneInputRef}
-                defaultValue={'6095138166'}
                 setValidator={(validator: () => boolean) => {
                   validatePhoneRef.current = validator;
                 }}
@@ -386,10 +342,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   helperText={accountNameError}
                   value={accountName}
                   onChange={e => {
-                    if (oneName) {
-                      setDeliveryName(e.target.value);
-                      if (deliveryNameError) setDeliveryNameError('');
-                    }
                     setAccountName(e.target.value);
                     if (accountNameError) setAccountNameError('');
                   }}
@@ -444,13 +396,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <CardForm />
-          <Typography
-            variant='h6'
-            color='primary'
-            className={classes.title}
-          >
-            Next Week
-          </Typography>
           <RenewalChooser
             cuisines = {cuisines}
             validateCuisineRef={validateCuisine => {

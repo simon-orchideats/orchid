@@ -21,7 +21,6 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
       _id
       deliveryDate
       destination {
-        name
         address {
           address1
           address2
@@ -92,7 +91,6 @@ export const usePlaceOrder = (): [
               phone: cart.phone,
               card: cart.card,
               destination: {
-                name: cart.destination.name,
                 instructions: cart.destination.instructions,
                 address: cart.destination.address,
               },

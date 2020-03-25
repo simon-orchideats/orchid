@@ -6,13 +6,10 @@ import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
 import StoreIcon from '@material-ui/icons/Storefront';
-import EmailInput from '../client/general/inputs/EmailInput';
 import { useRef, createRef } from 'react';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
-import { useUpdateCartEmail } from '../client/global/state/cartState';
-import { useAddConsumerEmail } from '../consumer/consumerService';
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import { analyticsService } from '../client/utils/analyticsService';
@@ -123,35 +120,23 @@ const Welcome = withClientApollo(() => {
   const classes = useStyles();
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
-  const updateCartEmail = useUpdateCartEmail();
-  const [addEmail] = useAddConsumerEmail();
   const onClick = () => {
     if (!validateEmailRef.current!()) return;
     const email = emailInputRef.current!.value;
     analyticsService.setUserProperties({
       email
     });
-    addEmail(email);
-    updateCartEmail(email);
     Router.push(menuRoute);
   }
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
-        <Typography variant='h2' className={classes.welcomeTitle}>
+        <Typography variant='h3' className={classes.welcomeTitle}>
           Chef-cooked healthy meals delivered weekly from local restaurants
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
           Offering meals starting at $9.99
         </Typography>
-        <EmailInput
-          className={classes.input}
-          variant='filled'
-          inputRef={emailInputRef}
-          setValidator={(validator: () => boolean) => {
-            validateEmailRef.current = validator;
-          }}
-        />
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           GET STARTED
         </Button>
@@ -201,6 +186,9 @@ const HowItWorks = () => {
         <Content description='Local restaurants cook, we deliver' icon={<StoreIcon className={classes.howIcon} />} />
         <Content description='Enjoy immediately' img='home/microwave.png'/>
       </Grid>
+      <Typography variant='subtitle1' className={classes.title}>
+        Get in touch at simon.orchideats@gmail.com to learn more
+      </Typography>
       <Link href={howItWorksRoute}>
         <Button variant='outlined' color='primary'>SEE DETAILS</Button>
       </Link>
@@ -250,7 +238,7 @@ const Benefits = () => {
       >
         {title}
       </Typography>
-      <Typography variant='h6' color='textSecondary'>
+      <Typography variant='subtitle1' color='textSecondary'>
         {description}
       </Typography>
     </>

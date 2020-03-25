@@ -102,10 +102,6 @@ const Confirmation: React.FC<{
   const res = useGetRest(cartRef.current.RestId);
   const groupedMeals = cartRef.current.Meals;
   const classes = useStyles();
-  const consumer = useRequireConsumer(upcomingDeliveriesRoute);
-  if (!consumer.data && !consumer.loading && !consumer.error) {
-    return <Typography>Logging you in...</Typography>
-  }
   return (
     <Paper variant='outlined' className={classes.confirmation}>
       <div className={classes.row}>
@@ -140,11 +136,13 @@ const DestinationPopper: React.FC<{
   open: boolean,
   onClose: () => void,
   anchorEl: Element | ((element: Element) => Element) | null | undefined
+  name: string
 }> = ({
   destination,
   open,
   onClose,
   anchorEl,
+  name,
 }) => {
   const classes = useStyles();
   return (
@@ -163,7 +161,7 @@ const DestinationPopper: React.FC<{
     >
       <Paper className={classes.popover}>
         <Typography variant='subtitle1'>
-          {destination.Name}
+          {name}
         </Typography>
         <Typography variant='body1'>
           {destination.Address.Address1}
@@ -187,12 +185,14 @@ const DestinationPopper: React.FC<{
 
 const DeliveryOverview: React.FC<{
   cart?: Cart
-  order: Order,
-  isUpdating: boolean,
+  isUpdating: boolean
+  name: string
+  order: Order
 }> = ({
   cart,
-  order,
   isUpdating,
+  name,
+  order,
 }) => {
   const classes = useStyles();
   const setCart = useSetCart();
@@ -271,7 +271,7 @@ const DeliveryOverview: React.FC<{
               </Typography>
               <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
                 <Typography variant='body1'>
-                  {order.Destination.Name}
+                  {name}
                 </Typography>
                 <ExpandMoreIcon />
               </div>
@@ -332,6 +332,7 @@ const DeliveryOverview: React.FC<{
         open={open}
         onClose={() => setAnchorEl(null)}
         anchorEl={anchorEl}
+        name={name}
       />
     </Paper>
   )
@@ -347,6 +348,7 @@ const UpcomingDeliveries = () => {
   const orders = useGetUpcomingOrders();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const consumer = useRequireConsumer(upcomingDeliveriesRoute);
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
   if (needsCart && !cart) {
@@ -354,12 +356,21 @@ const UpcomingDeliveries = () => {
     console.error(err.stack);
     throw err;
   }
+  if (!consumer.data && !consumer.loading && !consumer.error) {
+    return <Typography>Logging you in...</Typography>
+  }
+  if (!consumer.data) {
+    if (consumer.loading) return <Typography>Loading...</Typography>
+    console.error('No consumer data', consumer.error);
+    return <Typography>Error</Typography>
+  }
   const OrderOverviews = useMemo(() => ( 
     orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
         order={order}
         isUpdating={isUpdating}
+        name={consumer.data!.Profile.Name}
         cart={cart ? cart : undefined}
       />
     )

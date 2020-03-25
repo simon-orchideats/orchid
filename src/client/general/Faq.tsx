@@ -65,7 +65,7 @@ const Faq = () => {
           a='Yes. You can always update future weeks.'
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
-          *The cutoff for any changes is 11:59 pm EST, 2 days before the start of your next week.
+          *The cutoff for any changes is 12:00 am EST, 2 days before the start of your next week.
         </Typography>
       </Container>
     </Paper>

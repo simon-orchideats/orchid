@@ -118,7 +118,7 @@ const CheckoutCart: React.FC<props> = ({
         <Typography variant='body2' className={classes.hint}>
           You will be charged {price} on {deliveryDate.subtract(2, 'd').format('M/D/YY')}. Your plan will automatically
           renew every week unless you update or cancel your account before the cutoff
-          (11:59 pm EST, 2 days before delivery of next meal).
+          (12:00 am EST, 2 days before delivery of next meal).
         </Typography>
       </div>
     </>

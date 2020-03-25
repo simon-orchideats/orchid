@@ -122,7 +122,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             state,
             zip: zipInputRef.current!.value,
           },
-          name: consumer.data.Profile.Destination ? consumer.data.Profile.Destination.Name : consumer.data.Profile.Name,
           instructions: consumer.data.Profile.Destination && consumer.data.Profile.Destination.Instructions,
         },
       }

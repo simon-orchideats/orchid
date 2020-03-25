@@ -20,7 +20,6 @@ export const consumerFragment = gql`
       }
       phone
       destination {
-        name
         instructions
         address {
           address1

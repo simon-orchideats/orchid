@@ -27,11 +27,14 @@ const useStyles = makeStyles(theme => ({
   account: {
     marginLeft: 'auto',
     marginRight: theme.spacing(1),
+    height: '100%',
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    height: '100%',
+  },
+  hi: {
     minWidth: 95,
-    cursor: 'pointer',
+    display: 'flex',
   },
   how: {
     marginRight: theme.spacing(1),
@@ -157,14 +160,16 @@ const Navbar: React.FC = () => {
     <div className={classes.account} onClick={onClickUser}>
       {
         isMdAndUp ?
-        <>
+        <div className={classes.hi}>
           <Typography variant='body1'>
             Hi, {consumer.data.Profile.Name.split(' ')[0]}
           </Typography>
           <ExpandMoreIcon />
-        </>
+        </div>
         :
+        <>
         <AccountCircleIcon />
+        </>
       }
     </div>
   :

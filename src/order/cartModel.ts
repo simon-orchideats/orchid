@@ -141,7 +141,6 @@ export class Cart implements ICart {
   }
 
   public getCartInput(
-    deliveryName: string,
     address1: string,
     address2: string | null,
     city: string,
@@ -170,7 +169,6 @@ export class Cart implements ICart {
       },
       deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),
       destination: {
-        name: deliveryName,
         address: {
           address1,
           address2: address2 ? address2 : undefined,
