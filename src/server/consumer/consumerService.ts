@@ -347,6 +347,7 @@ class ConsumerService implements IConsumerService {
       const res = await this.elastic.update({
           index: CONSUMER_INDEX,
           id: signedInUser._id,
+          _source: 'true',
           body: {
             doc: {
               profile,

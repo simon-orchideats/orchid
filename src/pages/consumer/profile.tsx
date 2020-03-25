@@ -84,10 +84,9 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return <Typography>Logging you in...</Typography>
   }
   if (consumer.data) {
-    setAccountName(consumer.data.Profile.Name);
     consumer.data.Profile.Destination ? consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr() : consumerAddressLabel;
-    consumer.data.Profile.Card ? consumerAddressLabel = consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
-    consumer.data.Profile.Phone ? consumerAddressLabel = consumer.data.Profile.Phone : consumerPhoneLabel;
+    consumer.data.Profile.Card ? consumerCardLabel = consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
+    consumer.data.Profile.Phone ? consumerPhoneLabel = consumer.data.Profile.Phone : consumerPhoneLabel;
   }
 
   const noConsumerErr = () => {
