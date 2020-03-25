@@ -84,9 +84,9 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return <Typography>Logging you in...</Typography>
   }
   if (consumer.data) {
-    consumer.data.Profile.Destination ? consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr() : consumerAddressLabel;
-    consumer.data.Profile.Card ? consumerCardLabel = consumer.data.Profile.Card.getHiddenCardStr() : consumerCardLabel;
-    consumer.data.Profile.Phone ? consumerPhoneLabel = consumer.data.Profile.Phone : consumerPhoneLabel;
+    if (consumer.data.Profile.Destination) consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr();
+    if (consumer.data.Profile.Card) consumerCardLabel = consumer.data.Profile.Card.getHiddenCardStr();
+    if (consumer.data.Profile.Phone) consumerPhoneLabel = consumer.data.Profile.Phone;
   }
 
   const noConsumerErr = () => {
@@ -119,7 +119,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             address1: addr1InputRef.current!.value,
             address2: addr2InputRef.current!.value,
             city: cityInputRef.current!.value,
-            state: state,
+            state,
             zip: zipInputRef.current!.value,
           },
           name: consumer.data.Profile.Destination ? consumer.data.Profile.Destination.Name : consumer.data.Profile.Name,

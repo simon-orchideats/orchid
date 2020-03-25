@@ -351,7 +351,8 @@ class ConsumerService implements IConsumerService {
           body: {
             doc: {
               profile,
-          }}
+            }
+          }
         });
       const newConsumer = {
         _id: signedInUser._id,
@@ -361,7 +362,7 @@ class ConsumerService implements IConsumerService {
         await this.orderService.updateUpcomingOrders(signedInUser, profile)
       } else {
         console.error(`[ConsumerService]: OrderService not available to updateUpcomingOrders '${signedInUser && signedInUser._id}'`);
-        throw new Error('Internal Server Error');
+        throw new Error('No order service');
       }
       return {
         res: newConsumer,
