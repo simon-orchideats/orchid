@@ -11,6 +11,10 @@ import { activeConfig } from "../../config";
 import { isServer } from "../../client/utils/isServer";
 import { IConsumerProfile } from "../../consumer/consumerModel";
 import { Card } from "../../card/cardModel";
+import { NotificationType } from "../../client/notification/notificationModel";
+import { useNotify } from "../../client/global/state/notificationState";
+import { useMutationResponseHandler } from "../../utils/apolloUtils";
+import Notifier from "../../client/notification/Notifier";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -75,11 +79,15 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
-  const [updateMyProfile] = useUpdateMyProfile();
+  const [updateMyProfile, updateProfileRes] = useUpdateMyProfile();
+  const notify = useNotify();
+  useMutationResponseHandler(updateProfileRes, () => {
+    notify('Profile updated', NotificationType.success, false);
+  });
+  const consumer = useRequireConsumer(profileRoute);
   let consumerAddressLabel = '';
   let consumerCardLabel = '';
   let consumerPhoneLabel = ''
-  const consumer = useRequireConsumer(profileRoute);
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
@@ -181,140 +189,52 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
 
   return (
-    <>
-      <Container maxWidth='lg' className={classes.container}>
-        <Typography variant='h3'>
-          Profile
-        </Typography>
-        <List className={classes.list}>
-          <ListItem divider disableGutters>
-            <Labels
-              primary='Name'
-              secondary='Simon Vuong'
-            />
-          </ListItem>
-          <ListItem divider disableGutters>
-            <Labels
-              primary='Email'
-              secondary='simon.vuong@yahoo.com'
-            />
-          </ListItem>
-          <ListItem divider disableGutters>
-            <Labels
-              primary='Password'
-              secondary='*************'
-            />
-          </ListItem>
-          <ListItem divider disableGutters>
-            {
-              isUpdatingPhone ?
-              <div className={classes.stretch}>
-                <PhoneInput
-                  className={classes.input}
-                  inputRef={phoneInputRef}
-                  setValidator={(validator: () => boolean) => {
-                    validatePhoneRef.current = validator;
-                  }}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    className={classes.save}
-                    onClick={onSavePhone}
-                    variant='contained'
-                    color='primary'
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    onClick={onCancelPhone}
-                    variant='outlined'
-                    color='primary'
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-              :
-              <>
-                <Labels
-                  primary='Phone'
-                  secondary={consumerPhoneLabel}
-                />
-                <ListItemSecondaryAction>
-                  <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>
-                    Edit
-                  </Button>
-                </ListItemSecondaryAction>
-              </>
-            }
-          </ListItem>
-          <ListItem divider disableGutters>
-            {
-              isUpdatingCard ?
-              <div className={classes.stretch}>
-                <div className={classes.input}>
-                  <CardForm />
-                </div>
-                <div className={classes.buttons}>
-                  <Button
-                    className={classes.save}
-                    onClick={onSaveCard}
-                    variant='contained'
-                    color='primary'
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    onClick={onCancelCard}
-                    variant='outlined'
-                    color='primary'
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-              :
-              <>
-                <Labels
-                  primary='Payment'
-                  secondary={consumerCardLabel}
-                />
-                <ListItemSecondaryAction>
-                  <Button className={classes.link} onClick={() => setIsUpdatingCard(true)}>
-                    Edit
-                  </Button>
-                </ListItemSecondaryAction>
-              </>
-            }
-          </ListItem>
-          <ListItem disableGutters>
+    <Container maxWidth='lg' className={classes.container}>
+      <Notifier />
+      <Typography variant='h3'>
+        Profile
+      </Typography>
+      <List className={classes.list}>
+        <ListItem divider disableGutters>
+          <Labels
+            primary='Name'
+            secondary='Simon Vuong'
+          />
+        </ListItem>
+        <ListItem divider disableGutters>
+          <Labels
+            primary='Email'
+            secondary='simon.vuong@yahoo.com'
+          />
+        </ListItem>
+        <ListItem divider disableGutters>
+          <Labels
+            primary='Password'
+            secondary='*************'
+          />
+        </ListItem>
+        <ListItem divider disableGutters>
           {
-            isUpdatingAddr ?
+            isUpdatingPhone ?
             <div className={classes.stretch}>
-              <div className={classes.input}>
-                <AddressForm
-                  setValidator={validator => {
-                    validateAddressRef.current = validator;
-                  }}
-                  addr1InputRef={addr1InputRef}
-                  addr2InputRef={addr2InputRef}
-                  cityInputRef={cityInputRef}
-                  zipInputRef={zipInputRef}
-                  state={state}
-                  setState={setState}
-                />
-              </div>
+              <PhoneInput
+                className={classes.input}
+                inputRef={phoneInputRef}
+                setValidator={(validator: () => boolean) => {
+                  validatePhoneRef.current = validator;
+                }}
+              />
               <div className={classes.buttons}>
                 <Button
                   className={classes.save}
-                  onClick={onSaveAddr}
+                  onClick={onSavePhone}
                   variant='contained'
                   color='primary'
                 >
                   Save
                 </Button>
                 <Button
-                  onClick={onCancelAddr}
+                  onClick={onCancelPhone}
                   variant='outlined'
                   color='primary'
                 >
@@ -325,20 +245,107 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             :
             <>
               <Labels
-                primary='Address'
-                secondary={consumerAddressLabel}
+                primary='Phone'
+                secondary={consumerPhoneLabel}
               />
               <ListItemSecondaryAction>
-                <Button className={classes.link} onClick={() => setIsUpdatingAddr(true)}>
+                <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>
                   Edit
                 </Button>
               </ListItemSecondaryAction>
             </>
           }
-          </ListItem>
-        </List>
-      </Container>
-    </>
+        </ListItem>
+        <ListItem divider disableGutters>
+          {
+            isUpdatingCard ?
+            <div className={classes.stretch}>
+              <div className={classes.input}>
+                <CardForm />
+              </div>
+              <div className={classes.buttons}>
+                <Button
+                  className={classes.save}
+                  onClick={onSaveCard}
+                  variant='contained'
+                  color='primary'
+                >
+                  Save
+                </Button>
+                <Button
+                  onClick={onCancelCard}
+                  variant='outlined'
+                  color='primary'
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+            :
+            <>
+              <Labels
+                primary='Payment'
+                secondary={consumerCardLabel}
+              />
+              <ListItemSecondaryAction>
+                <Button className={classes.link} onClick={() => setIsUpdatingCard(true)}>
+                  Edit
+                </Button>
+              </ListItemSecondaryAction>
+            </>
+          }
+        </ListItem>
+        <ListItem disableGutters>
+        {
+          isUpdatingAddr ?
+          <div className={classes.stretch}>
+            <div className={classes.input}>
+              <AddressForm
+                setValidator={validator => {
+                  validateAddressRef.current = validator;
+                }}
+                addr1InputRef={addr1InputRef}
+                addr2InputRef={addr2InputRef}
+                cityInputRef={cityInputRef}
+                zipInputRef={zipInputRef}
+                state={state}
+                setState={setState}
+              />
+            </div>
+            <div className={classes.buttons}>
+              <Button
+                className={classes.save}
+                onClick={onSaveAddr}
+                variant='contained'
+                color='primary'
+              >
+                Save
+              </Button>
+              <Button
+                onClick={onCancelAddr}
+                variant='outlined'
+                color='primary'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+          :
+          <>
+            <Labels
+              primary='Address'
+              secondary={consumerAddressLabel}
+            />
+            <ListItemSecondaryAction>
+              <Button className={classes.link} onClick={() => setIsUpdatingAddr(true)}>
+                Edit
+              </Button>
+            </ListItemSecondaryAction>
+          </>
+        }
+        </ListItem>
+      </List>
+    </Container>
   )
 }
 

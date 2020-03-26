@@ -72,7 +72,7 @@ class GeoService implements IGeoService{
         if (res.status != 200) throw new Error('Could not fetch geocode');
         jsonData = await res.json();
       } catch (e) {
-        throw new Error(`Could not fetch city, state for '${zip}'`);
+        throw new Error(`Could not fetch city, state for '${zip}': ${e.stack}`);
       }
       if (jsonData.results && jsonData.results.length > 0) {
         const {

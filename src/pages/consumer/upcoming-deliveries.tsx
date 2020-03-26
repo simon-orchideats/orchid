@@ -248,41 +248,34 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const mealCount = Cart.getMealCount(cart.Meals);
-    const planId = Plan.getPlanId(mealCount, plans.data);
-    if (!planId) {
-      const err = new Error('No plan');
+    const cartMealCount = Cart.getMealCount(cart.Meals);
+    const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
+    if (!cartPlanId) {
+      const err = new Error('No car plan');
       console.error(err.stack);
       throw err;
     }
-    const mealPrice = Plan.getMealPrice(planId, plans.data);
+    const mealPrice = Plan.getMealPrice(cartPlanId, plans.data);
     if (!mealPrice) {
-      const err = new Error('No meal price');
+      const err = new Error('No cart meal price');
       console.error(err.stack);
       throw err;
     }
     if (!rest.data) {
-      const err = new Error('No rest');
+      const err = new Error('No cart rest');
       console.error(err.stack);
       throw err;
     }
     sendEditOrderMetrics(
-      planId,
+      order,
       cart,
       rest.data.Profile.Name,
       mealPrice,
-      mealCount
+      cartMealCount
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const onSkip = () => {
-    const mealCount = Cart.getMealCount(order.Meals);
-    const planId = Plan.getPlanId(mealCount, plans.data);
-    if (!planId) {
-      const err = new Error('No plan');
-      console.error(err.stack);
-      throw err;
-    }
     if (!order.Rest) {
       const err = new Error('No rest');
       console.error(err.stack);
@@ -294,10 +287,9 @@ const DeliveryOverview: React.FC<{
       throw err;
     }
     sendSkippedOrderMetrics(
-      planId,
+      order,
       order.Rest.Profile.Name,
       order.MealPrice,
-      mealCount
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order));
   }

@@ -11,13 +11,15 @@ export const events = {
   CHECKEDOUT: 'Checkedout',
   CHECKEDOUT_MEALS: 'Checkedout meals',
   EDITED_ORDER: 'Edited order',
-  EDITED_ORDER_MEALS: 'Edited order meals',
+  EDITED_ORDER_FROM_MEALS: 'Edited order from meals',
+  EDITED_ORDER_TO_MEALS: 'Edited order to meals',
   ENTERED_ZIP: 'Entered zip',
   FILLED_CART: 'Filled cart',
   FILLED_CART_MEALS: 'Filled cart meals',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
   SKIPPED_ORDER: 'Skipped order',
+  SKIPPED_ORDER_FROM_MEALS: 'Skipped order from meals',
 }
 
 class AnalyticsService {
