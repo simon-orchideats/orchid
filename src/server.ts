@@ -48,6 +48,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // payment day if the consumer updated the delivery date. for now we'll just do it each day
 // at 12am.
 // write up experiences for dave.
+// todo everything in config needs to be prod. for stripe, use the foodflick one. update elastic dbs.
+// add metrics
 
 init({
   dsn: activeConfig.server.sentry.dsn,

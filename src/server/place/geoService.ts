@@ -6,15 +6,13 @@ import { state } from '../../place/addressModel';
 
 export interface IGeoService {
   getGeocode: (street: string, city: string, state: state, zip: string) => Promise<{
-    geo: {
-      lat: string,
-      lon: string,
-    }
+    lat: string,
+    lon: string,
   }>
 
-  getCityState: (zip: string) => Promise<{
-    city: string
-    state: state
+  getGeocodeByZip: (zip: string) => Promise<{
+    lat: string,
+    lon: string,
   } | null>
 }
 
@@ -46,10 +44,8 @@ class GeoService implements IGeoService{
         if (accuracy > 0.7 && (accuracy_type === 'rooftop' || accuracy_type === 'range_interpolation' || accuracy_type === 'point')) {
           const { lat, lng } = firstRes.location;
           return {
-            geo: {
-              lat: lat as string,
-              lon: lng as string,
-            },
+            lat: lat as string,
+            lon: lng as string,
             // timezone: {
             //   name: fields.timezone.name as string,
             //   shortName: fields.timezone.abbreviation as string
@@ -64,9 +60,9 @@ class GeoService implements IGeoService{
     }
   }
 
-  async getCityState(zip: string): Promise<{
-    city: string
-    state: state
+  async getGeocodeByZip(zip: string): Promise<{
+    lat: string
+    lon: state
   } | null> {
     try {
       const query = `postal_code=${querystring.escape(zip)}&api_key=${activeConfig.server.geo.key}`;
@@ -82,19 +78,19 @@ class GeoService implements IGeoService{
         const {
           accuracy,
           accuracy_type,
-          address_components,
+          location,
         } = jsonData.results[0];
         if (accuracy === 1 && accuracy_type === 'place') {
           return {
-            city: address_components.city,
-            state: address_components.state,
+            lat: location.lat,
+            lon: location.lng,
           }
         }
       }
-      console.warn(`[GeoService] Could not find city, state for '${zip}'`);
+      console.warn(`[GeoService] Could not find lat, lon for '${zip}'`);
       return null;
     } catch (e) {
-      console.error('[GeoService] could not get city, state', e.stack);
+      console.error('[GeoService] could not get lat, lon', e.stack);
       throw e;
     }
   }

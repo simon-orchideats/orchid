@@ -27,27 +27,38 @@ class RestService implements IRestService {
   async getNearbyRests(zip: string): Promise<IRest[]> {
     try {
       if (!this.geoService) throw new Error('GeoService not set');
-      const geo = await this.geoService.getCityState(zip);
+      const geo = await this.geoService.getGeocodeByZip(zip);
       if (!geo) return [];
-      const { city, state } = geo;
+      const { lat, lon } = geo;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
+        body: {
+          query: {
+            bool: {
+              // must : {
+              //   match_all: {}
+              // },
+              filter: {
+                geo_distance : {
+                  distance: '5km',
+                  'location.geo' : {
+                    lat,
+                    lon
+                  }
+                }
+              }
+            }
+          }
+        }
       });
       return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
         _id,
-        location: {
-          address: {
-            ..._source.location.address,
-            city,
-            state,
-          }
-        }
       }))
     } catch (e) {
       console.error(`[RestService] could not get nearby rests for '${zip}'. '${e.stack}'`);
-      throw e;
+      throw new Error('Internal Server Error');
     }
   }
 
