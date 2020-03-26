@@ -8,6 +8,7 @@ import { Consumer } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
 import { Cart } from "../../order/cartModel";
+import { sendCheckoutMetrics } from "./checkoutMetrics";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -53,11 +54,36 @@ const CheckoutCart: React.FC<props> = ({
   const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
+  const onClickPlaceOrder = () => {
+    if (!cart.StripePlanId) {
+      const err = new Error('No cart stripePlanId');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!rest.data) {
+      const err = new Error('No rest');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!plans.data) {
+      const err = new Error('No plans');
+      console.error(err.stack);
+      throw err;
+    }
+    sendCheckoutMetrics(
+      cart.StripePlanId,
+      cart,
+      rest.data.Profile.Name,
+      Plan.getMealPrice(cart.StripePlanId, plans.data),
+      Cart.getMealCount(groupedMeals),
+    )
+    onPlaceOrder();
+  }
   const button = (
     <Button
       variant='contained'
       color='primary'
-      onClick={onPlaceOrder}
+      onClick={onClickPlaceOrder}
       className={classes.button}
     >
       Place order

@@ -1,14 +1,14 @@
 import { Cart } from '../../order/cartModel';
 import { analyticsService, events } from "../utils/analyticsService";
 
-export const sendCartMenuMetrics = (
+export const sendCheckoutMetrics = (
   stripePlanId: string,
   cart: Cart,
   restName: string,
   mealPrice: number,
   mealCount: number,
 ) => {
-  analyticsService.trackEvent(events.FILLED_CART, {
+  analyticsService.trackEvent(events.CHECKEDOUT, {
     count: mealCount,
     stripePlanId,
     restId: cart.RestId,
@@ -17,18 +17,10 @@ export const sendCartMenuMetrics = (
   });
   cart.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {
-      analyticsService.trackEvent(events.FILLED_CART_MEALS, {
+      analyticsService.trackEvent(events.CHECKEDOUT_MEALS, {
         name: meal.Name,
         mealId: meal.MealId,
       });
     }
-  });
-}
-
-export const sendZipMetrics = (
-  zip: string
-) => {
-  analyticsService.trackEvent(events.ENTERED_ZIP, {
-    zip
   });
 }

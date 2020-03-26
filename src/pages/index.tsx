@@ -6,13 +6,11 @@ import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
 import StoreIcon from '@material-ui/icons/Storefront';
-import { useRef, createRef } from 'react';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
-import { analyticsService } from '../client/utils/analyticsService';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -118,14 +116,7 @@ const useStyles = makeStyles(theme => ({
 
 const Welcome = withClientApollo(() => {
   const classes = useStyles();
-  const validateEmailRef = useRef<() => boolean>();
-  const emailInputRef = createRef<HTMLInputElement>();
   const onClick = () => {
-    if (!validateEmailRef.current!()) return;
-    const email = emailInputRef.current!.value;
-    analyticsService.setUserProperties({
-      email
-    });
     Router.push(menuRoute);
   }
   return (

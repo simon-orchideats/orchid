@@ -60,6 +60,21 @@ const MenuCart: React.FC<{
       console.error(err.stack);
       throw err;
     }
+    if (!sortedPlans.data) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!cart) {
+      const err = new Error('Missing cart');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!rest.data) {
+      const err = new Error('Missing rest');
+      console.error(err.stack);
+      throw err;
+    }
     if (isUpdating) {
       Router.push(upcomingDeliveriesPath);
     } else {
@@ -71,9 +86,9 @@ const MenuCart: React.FC<{
     }
     sendCartMenuMetrics(
       stripePlanId,
-      sortedPlans.data,
       cart,
-      rest.data,
+      rest.data.Profile.Name,
+      Plan.getMealPrice(stripePlanId, sortedPlans.data),
       mealCount,
     );
   }

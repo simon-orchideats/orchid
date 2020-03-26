@@ -37,6 +37,9 @@ const useStyles = makeStyles(theme => ({
   mini: {
     marginLeft: 'auto',
   },
+  noRests: {
+    display: 'flex',
+  },
   paddingTop: {
     paddingTop: theme.spacing(2),
   },
@@ -127,10 +130,14 @@ const menu = () => {
               </>
             }
           </div>
+          {rests.loading && <Typography>Loading...</Typography>}
           {
             hasNoRests ?
-            <Typography variant='h5' className={classes.paddingTop}>
-              No restaurants found for zip code {zip}
+            <Typography variant='h5' className={`${classes.paddingTop} ${classes.noRests}`}>
+              No restaurants found for zip code&nbsp;
+              <Link className={classes.link} color='inherit' onClick={onClickZip}>
+                {zip}
+              </Link>
             </Typography>
             :
             RestMenus

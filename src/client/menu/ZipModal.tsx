@@ -4,6 +4,7 @@ import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import { TextField, Paper, Typography, Grid, Button } from '@material-ui/core';
 import { useUpdateZip } from '../global/state/cartState';
+import { sendZipMetrics } from './menuMetrics';
 
 const useStyles = makeStyles(theme => ({
   close: {
@@ -72,11 +73,14 @@ const ZipModal: React.FC<{
   const [error, setError] = useState('');
   const [zip, setZip] = useState<string>('');
   const updateCartZip = useUpdateZip()
-  const findFood = () => {
+  const findFood = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!zip) {
       setError('Enter zip');
       return;
     }
+    sendZipMetrics(zip);
     updateCartZip(zip);
     onClose();
   }
@@ -92,7 +96,7 @@ const ZipModal: React.FC<{
           <Grid container className={classes.gridContainer}>
             <Grid item xs={12} sm={5} md={7} className={classes.img} />
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
-              <div>
+              <form onSubmit={findFood}>
                 <Typography variant='h3' className={classes.title}>
                   Meal plans from restaurants you love
                 </Typography>
@@ -115,13 +119,13 @@ const ZipModal: React.FC<{
                       variant='contained'
                       color='primary'
                       className={classes.button}
-                      onClick={findFood}
+                      type='submit'
                     >
                       Find food
                     </Button>
                   </Grid>
                 </Grid>
-              </div>
+              </form>
             </Grid>
           </Grid>
         </Paper>

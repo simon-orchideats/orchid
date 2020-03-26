@@ -79,8 +79,8 @@ const development: config = {
     },
     analytics: {
       amplitude: {
-        // key: '5437afb3d48e3f34441c41e9295261ac',
-        key: '',
+        key: 'd9a3d86674a064af5f76e222fba9bad6',
+        // key: '',
       },
       ga: {
         // trackingId: 'UA-158803692-1',
@@ -159,7 +159,7 @@ const production: config = {
     },
     analytics: {
       amplitude: {
-        key: '5437afb3d48e3f34441c41e9295261ac',
+        key: '3aa095499fd45cab00cbb40c5a65a9da',
       },
       ga: {
         trackingId: 'UA-158803692-1',
