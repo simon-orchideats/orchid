@@ -351,6 +351,17 @@ const UpcomingDeliveries = () => {
   const consumer = useRequireConsumer(upcomingDeliveriesRoute);
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
+  const OrderOverviews = useMemo(() => ( 
+    consumer.data && orders.data && orders.data.map(order => 
+      <DeliveryOverview
+        key={order.Id}
+        order={order}
+        isUpdating={isUpdating}
+        name={consumer.data!.Profile.Name}
+        cart={cart ? cart : undefined}
+      />
+    )
+  ), [orders.data, consumer.data, isUpdating, cart]);
   if (needsCart && !cart) {
     const err = new Error('Needs cart, but no cart');
     console.error(err.stack);
@@ -364,17 +375,6 @@ const UpcomingDeliveries = () => {
     console.error('No consumer data', consumer.error);
     return <Typography>Error</Typography>
   }
-  const OrderOverviews = useMemo(() => ( 
-    orders.data && orders.data.map(order => 
-      <DeliveryOverview
-        key={order.Id}
-        order={order}
-        isUpdating={isUpdating}
-        name={consumer.data!.Profile.Name}
-        cart={cart ? cart : undefined}
-      />
-    )
-  ), [orders.data, isUpdating, cart]);
   if (needsCart) {
     return (
       <Container maxWidth='lg' className={classes.needsCartContainer}>

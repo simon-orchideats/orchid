@@ -17,7 +17,7 @@ import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
-import { Consumer } from '../../consumer/consumerModel';
+import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment';
 
 const ORDER_INDEX = 'orders';
@@ -112,6 +112,13 @@ const removeMealsRandomly = (meals: ICartMeal[], numMealsToRemove: number) => {
 }
 
 export interface IOrderService {
+  addAutomaticOrder(
+    consumer: IConsumer,
+    iDate: number,
+    mealCount: number,
+    weekPrice: number,
+    mealPrice: number
+  ): Promise<void>
   placeOrder(
     signedInUser: SignedInUser,
     cart: ICartInput,
@@ -134,7 +141,7 @@ export interface IOrderService {
     plan: IConsumerPlan,
     updatedDate?: number,
   ): Promise<(ApiResponse<any, any>)[]>
-  updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>
+  updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>,
 }
 
 class OrderService {
@@ -341,7 +348,50 @@ class OrderService {
     }
   }
 
-  async placeOrder(
+  public async addAutomaticOrder(
+    consumer: IConsumer,
+    iDate: number,
+    mealCount: number,
+    weekPrice: number,
+    mealPrice: number
+  ) {
+    try {
+      if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
+      if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumer._id}'`);
+      const rest = await this.chooseRandomRestAndMeals(consumer.plan.cuisines, mealCount);
+      const now = Date.now();
+      const eOrder: EOrder = {
+        cartUpdatedDate: now,
+        consumer: {
+          userId: consumer._id,
+          profile: consumer.profile,
+        },
+        costs: {
+          tax: 0,
+          tip: 0,
+          mealPrice,
+          total: weekPrice,
+          percentFee: 0,
+          flatRateFee: 0,
+        },
+        createdDate: now,
+        invoiceDate: iDate,
+        deliveryDate: moment(iDate).add(2, 'd').valueOf(),
+        rest,
+        status: 'Open',
+        stripeSubscriptionId: consumer.stripeSubscriptionId,
+      }
+      await this.elastic.index({
+        index: ORDER_INDEX,
+        body: eOrder
+      });
+    } catch (e) {
+      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${iDate}`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  public async placeOrder(
     signedInUser: SignedInUser,
     cart: ICartInput,
     req?: IncomingMessage,

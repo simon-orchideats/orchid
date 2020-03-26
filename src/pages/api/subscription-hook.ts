@@ -1,3 +1,6 @@
+import moment from 'moment';
+import { getOrderService } from './../../server/orders/orderService';
+import { getConsumerService } from './../../server/consumer/consumerService';
 import Stripe from 'stripe';
 import { buffer } from 'micro'
 import Cors from 'micro-cors'
@@ -18,6 +21,10 @@ const cors = Cors({
   allowMethods: ['POST', 'HEAD'],
 })
 
+/**
+ * test this via creating a subscription with a now trial period
+ curl https://api.stripe.com/v1/subscriptions -u sk_test_EtoOx29Q3dzaLnbQSg3ByORG00k8y4TX9j   -d customer=cus_GxVSVDNqZWXoxY -d "items[0][plan]"=plan_GiaBhGMrdjKDFU -d "trial_end"=now
+ */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST') {
     const buff = await buffer(req);
@@ -26,35 +33,49 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       event = stripe.webhooks.constructEvent(buff.toString(), sig, 'whsec_zXIPgWgZs8Qk1pAmXjtA6I7PiSGiqER9')
     } catch (err) {
-      console.error(`[SubscriptionHook] ${err.message}`)
+      console.error(`[SubscriptionHook] ${err.stack}`)
       res.status(400).send(`Webhook Error: ${err.message}`)
       return
     }
 
-    // Cast event data to Stripe object.
-    if (event.type !== 'invoice.created') {
+    if (event.type !== 'invoice.upcoming') {
       console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
       res.json({ received: true });
       return;
     }
-    console.log('got created', event.type);
-    const invoice = event.data.object as Stripe.Invoice
-    // console.log(`invoice ${JSON.stringify(invoice)}`)
 
+    const invoice = event.data.object as Stripe.Invoice
     try {
-      await stripe.invoiceItems.create({
-        subscription: invoice.subscription as string,
-        customer: invoice.customer as string,
-        currency: 'usd',
-        amount: 2500,
-        discountable: false,
-        invoice: invoice.id,
-        description: 'sup',
-      });
+      const stripeCustomerId = invoice.customer as string;
+      const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+      if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
+      if (!consumer.plan) throw new Error(`Received invoice creation for consumer ${stripeCustomerId} without a plan`);
+
+      const planInvoiceLineItem = invoice.lines.data.find(p => !!p.plan);
+      if (!planInvoiceLineItem || !planInvoiceLineItem.plan) {
+        throw new Error(`Plan not found in subscription for stripe customerId '${stripeCustomerId}'`);
+      }
+      if (!planInvoiceLineItem.plan.amount) {
+        throw new Error(`Plan invoice line item has no amount for stirpeCustomerId '${stripeCustomerId}' and line ${planInvoiceLineItem.id}`);
+      }
+      const {
+        mealCount,
+        mealPrice,
+      } = planInvoiceLineItem.plan.metadata;
+      await getOrderService().addAutomaticOrder(
+        consumer,
+        // 2 weeks because 1 week would be nextnext order
+        moment().add(2, 'w').valueOf(),
+        parseFloat(mealCount),
+        planInvoiceLineItem.plan.amount / 100,
+        parseFloat(mealPrice)
+      );
     } catch (e) {
-      console.error('[SubscriptionHook] failed to create invoiceItem', e.stack)
+      console.error('[SubscriptionHook] failed to generate automatic order', e.stack);
+      throw e;
+    } finally {
+      res.json({ received: true })
     }
-    res.json({ received: true })
   } else {
     res.setHeader('Allow', 'POST')
     res.status(405).end('Method Not Allowed')

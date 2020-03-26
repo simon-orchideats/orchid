@@ -47,6 +47,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
 // payment day if the consumer updated the delivery date. for now we'll just do it each day
 // at 12am.
+// write up experiences for dave.
+// directly going to upcomingorders crashes
 
 init({
   dsn: activeConfig.server.sentry.dsn,

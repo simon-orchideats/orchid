@@ -207,11 +207,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
+    const billingName = (!consumer || !consumer.data) ? accountName : consumer.data.Profile.Name;
     try {
       pm.current = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        billing_details: { name: accountName },
+        billing_details: { name: billingName },
       });
     } catch (e) {
       const err = new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);

@@ -244,6 +244,32 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  async getConsumerByStripeId(stripeCustomerId: string): Promise<IConsumer> {
+    try {
+      const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                term: {
+                  stripeCustomerId
+                }
+              }
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value === 0) throw new Error(`Consumer with stripeId '${stripeCustomerId}' not found`);
+      const consumer = res.body.hits.hits[0];
+      return Consumer.getIConsumerFromEConsumer(consumer._id, consumer._source);
+    } catch (e) {
+      console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
+      throw new Error('Internal Server Error');
+    }
+  }
+
   async insertEmail(email: string): Promise<MutationBoolRes> {
     try {
       let res: ApiResponse<SearchResponse<any>>
