@@ -23,6 +23,7 @@ import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
+import { sendSkippedOrderMetrics, sendEditOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -201,6 +202,7 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
+  const rest = useGetRest(cart ? cart.RestId : null);
   useEffect(() => {
     if (updateOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -236,9 +238,67 @@ const DeliveryOverview: React.FC<{
     });
   };
   const onUpdateOrder = () => {
+    if (!plans.data) {
+      const err = new Error('No plans');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!cart) {
+      const err = new Error('No cart');
+      console.error(err.stack);
+      throw err;
+    }
+    const mealCount = Cart.getMealCount(cart.Meals);
+    const planId = Plan.getPlanId(mealCount, plans.data);
+    if (!planId) {
+      const err = new Error('No plan');
+      console.error(err.stack);
+      throw err;
+    }
+    const mealPrice = Plan.getMealPrice(planId, plans.data);
+    if (!mealPrice) {
+      const err = new Error('No meal price');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!rest.data) {
+      const err = new Error('No rest');
+      console.error(err.stack);
+      throw err;
+    }
+    sendEditOrderMetrics(
+      planId,
+      cart,
+      rest.data.Profile.Name,
+      mealPrice,
+      mealCount
+    );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const onSkip = () => {
+    const mealCount = Cart.getMealCount(order.Meals);
+    const planId = Plan.getPlanId(mealCount, plans.data);
+    if (!planId) {
+      const err = new Error('No plan');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!order.Rest) {
+      const err = new Error('No rest');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!order.MealPrice) {
+      const err = new Error('No meal price');
+      console.error(err.stack);
+      throw err;
+    }
+    sendSkippedOrderMetrics(
+      planId,
+      order.Rest.Profile.Name,
+      order.MealPrice,
+      mealCount
+    );
     updateOrder(order._id, Order.getUpdatedOrderInput(order));
   }
   const open = !!anchorEl;

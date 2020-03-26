@@ -10,11 +10,14 @@ const amplitude: {
 export const events = {
   CHECKEDOUT: 'Checkedout',
   CHECKEDOUT_MEALS: 'Checkedout meals',
+  EDITED_ORDER: 'Edited order',
+  EDITED_ORDER_MEALS: 'Edited order meals',
   ENTERED_ZIP: 'Entered zip',
   FILLED_CART: 'Filled cart',
   FILLED_CART_MEALS: 'Filled cart meals',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
+  SKIPPED_ORDER: 'Skipped order',
 }
 
 class AnalyticsService {

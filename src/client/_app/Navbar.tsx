@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -17,6 +17,7 @@ import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
+import { analyticsService } from '../utils/analyticsService';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -93,6 +94,12 @@ const Navbar: React.FC = () => {
   const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  useMemo(() => {
+    const id = consumer.data && consumer.data.Id;
+    if (id) {
+      analyticsService.setUserId(id)
+    }
+  }, [consumer.data && consumer.data.Id]);
   const open = !!anchorEl;
   const currRoute = useRouter().pathname;
   const menuStep = (
