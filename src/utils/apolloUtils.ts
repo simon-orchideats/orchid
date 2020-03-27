@@ -63,7 +63,6 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
 }
 
 const getSignedInUser = async (req: IncomingMessage, res: OutgoingMessage): Promise<SignedInUser> => {
-  if (!req || !res) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   try {
