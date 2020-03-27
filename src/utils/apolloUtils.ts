@@ -3,7 +3,7 @@ import { NotificationType } from './../client/notification/notificationModel';
 import { useEffect } from 'react';
 import { ApolloError } from 'apollo-client';
 import { IConsumer } from './../consumer/consumerModel';
-import { accessTokenCookie } from './auth';
+import { accessTokenCookie, refetchAccessToken } from './auth';
 import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
 import { activeConfig } from '../config'
@@ -56,16 +56,21 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
       }   
     };
   } catch (e) {
-    console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
+    if (e.name !== 'TokenExpiredError') console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
     throw (e)
   }
 }
 
-const getSignedInUser = (req?: IncomingMessage): SignedInUser => {
+const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<SignedInUser> => {
   if (!req) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
-  return decodeToSignedInUser(access);
+  try {
+    return decodeToSignedInUser(access);
+  } catch (e) {
+    let refreshToken = await refetchAccessToken(req, res!);
+    return decodeToSignedInUser(refreshToken);
+  }
 }
 
 type handlerRes = {
@@ -91,8 +96,16 @@ export const useMutationResponseHandler:(
   }, [res]);
 }
 
-export const getContext = (req?: IncomingMessage, res?: OutgoingMessage): Context => ({
-  signedInUser: getSignedInUser(req),
-  req,
-  res,
-})
+export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => {
+  return {
+    signedInUser: await getSignedInUser(req, res),
+    req,
+    res,
+  }
+}
+
+export const getContextNoParam = () => {
+  return {
+    signedInUser: null,
+  }
+}

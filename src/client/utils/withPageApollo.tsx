@@ -20,7 +20,7 @@ import {
   clientInitialState
 } from '../global/state/localState'
 import { isServer } from './isServer';
-import { getContext, Context } from '../../utils/apolloUtils';
+import { getContext, Context, getContextNoParam } from '../../utils/apolloUtils';
 
 type TApolloClient = ApolloClient<NormalizedCacheObject>
 
@@ -49,7 +49,7 @@ export default function withApollo(
     apolloState,
     ...pageProps
   }: InitialProps) => {
-    const client = apolloClient || initApolloClient(getContext(), apolloState)
+    const client = apolloClient || initApolloClient(getContextNoParam(), apolloState)
     return (
       <ApolloProvider client={client}>
         <PageComponent {...pageProps} />
@@ -75,7 +75,7 @@ export default function withApollo(
 
       // Initialize ApolloClient, add it to the ctx object so
       // we can use it in `PageComponent.getInitialProp`.
-      const apolloClient = (ctx.apolloClient = initApolloClient(getContext(ctx.req, ctx.res)))
+      const apolloClient = (ctx.apolloClient = initApolloClient(await getContext(ctx.req, ctx.res)))
 
       // Run wrapped getInitialProps methods
       let pageProps = {}
