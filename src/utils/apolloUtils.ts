@@ -68,8 +68,8 @@ const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Pr
   try {
     return decodeToSignedInUser(access);
   } catch (e) {
-    let refreshToken = await refetchAccessToken(req, res!);
-    return decodeToSignedInUser(refreshToken);
+    let newAccessToken = await refetchAccessToken(req, res!);
+    return decodeToSignedInUser(newAccessToken);
   }
 }
 
