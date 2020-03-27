@@ -55,6 +55,7 @@ export interface ICartInput {
   readonly phone: string//shared
   readonly destination: IDestination
   readonly deliveryDate: number
+  readonly donationCount: number
 };
 
 export interface ICart {
@@ -151,6 +152,7 @@ export class Cart implements ICart {
     paymentMethodId: string,
     instructions: string,
     cuisines: CuisineType[],
+    donationCount: number
   ): ICartInput {
     if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
       const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
@@ -179,6 +181,7 @@ export class Cart implements ICart {
         instructions,
       },
       meals: this.Meals,
+      donationCount // this is hardcoded in checkout
     }
   }
 

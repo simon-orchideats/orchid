@@ -24,6 +24,7 @@ export interface EOrder {
   }
   readonly status: OrderStatus
   readonly stripeSubscriptionId: string
+  readonly donationCount: number
 }
 
 export interface IOrder {
@@ -35,6 +36,8 @@ export interface IOrder {
   readonly phone: string
   readonly rest: IRest | null // null for skipped order
   readonly status: OrderStatus
+  readonly name: string
+  readonly donationCount: number
 }
 
 export interface IUpdateOrderInput {
@@ -44,6 +47,8 @@ export interface IUpdateOrderInput {
   readonly phone: string
   readonly destination: IDestination
   readonly deliveryDate: number
+  readonly name: string
+  readonly donationCount: number
 }
 
 export class Order implements IOrder{
@@ -55,6 +60,8 @@ export class Order implements IOrder{
   readonly phone: string
   readonly rest: Rest | null
   readonly status: OrderStatus
+  readonly name: string
+  readonly donationCount: number
 
   constructor(order: IOrder) {
     this._id = order._id;
@@ -65,6 +72,8 @@ export class Order implements IOrder{
     this.phone = order.phone;
     this.rest = order.rest ? new Rest(order.rest) : null;
     this.status = order.status
+    this.name = order.name;
+    this.donationCount = order.donationCount;
   }
 
   public get Id() { return this._id }
@@ -92,6 +101,8 @@ export class Order implements IOrder{
       phone: order.phone,
       rest: rest ? Rest.getICopy(rest) : null,
       status,
+      name: order.name,
+      donationCount: order.donationCount
     }
   }
 
@@ -105,6 +116,8 @@ export class Order implements IOrder{
       phone: order.consumer.profile.phone!,
       rest,
       status: order.status,
+      name: order.consumer.profile.name,
+      donationCount: order.donationCount
     }
   }
 
@@ -115,6 +128,8 @@ export class Order implements IOrder{
       phone: order.Phone,
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
+      name: order.name,
+      donationCount: order.donationCount
     }
   }
 
@@ -205,6 +220,7 @@ export class Order implements IOrder{
         flatRateFee: 0,
       },
       deliveryDate: cart.deliveryDate,
+      donationCount: cart.donationCount,
     }
   }
 }

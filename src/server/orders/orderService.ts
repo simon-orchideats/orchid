@@ -231,7 +231,7 @@ class OrderService {
     });
   } 
 
-  private validatePlan(planId: string, cartMealCount: number) {
+  private validatePlan(planId: string, cartMealCount: number, donationCount: number) {
     if (!this.planService) return Promise.reject('PlanService not set');
     return this.planService.getPlan(planId)
       .then(stripePlan => {
@@ -240,7 +240,7 @@ class OrderService {
           console.warn('[OrderService]', msg);
           return msg;
         }
-        if (cartMealCount !== stripePlan.mealCount) {
+        if (cartMealCount+donationCount !== stripePlan.mealCount) {
           const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
           console.warn('[OrderService]', msg);
           return msg;
@@ -274,7 +274,7 @@ class OrderService {
 
     const p1 = this.validateRest(cart.restId, cart.meals);
     const p2 = this.validateAddress(cart.destination.address);
-    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals));
+    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals), cart.donationCount);
 
     const messages = await Promise.all([p1, p2, p3]);
     if (messages[0]) {
@@ -380,6 +380,7 @@ class OrderService {
         rest,
         status: 'Open',
         stripeSubscriptionId: consumer.stripeSubscriptionId,
+        donationCount: 0 // new automatic order
       }
       await this.elastic.index({
         index: ORDER_INDEX,
