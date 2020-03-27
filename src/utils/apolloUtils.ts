@@ -56,12 +56,13 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
       }   
     };
   } catch (e) {
-    if (e.name !== 'TokenExpiredError') console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
-    throw (e)
+    if (e.name === 'TokenExpiredError') return null;
+    console.error(`[getSignedInUser] Error in verifying accessToken: ${e.stack}`)
+    throw e 
   }
 }
 
-const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<SignedInUser> => {
+const getSignedInUser = async (req: IncomingMessage, res: OutgoingMessage): Promise<SignedInUser> => {
   if (!req || !res) return null;
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
@@ -96,16 +97,12 @@ export const useMutationResponseHandler:(
   }, [res]);
 }
 
-export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => {
-  return {
-    signedInUser: await getSignedInUser(req, res),
-    req,
-    res,
-  }
-}
+export const getContext = async (req: IncomingMessage, res: OutgoingMessage): Promise<Context> => ({
+  signedInUser: await getSignedInUser(req, res),
+  req,
+  res,
+})
 
-export const getContextNoParam = () => {
-  return {
-    signedInUser: null,
-  }
-}
+export const getContextNoParam = () => ({
+  signedInUser: null,
+})
