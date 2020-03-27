@@ -25,6 +25,10 @@ import EmailInput from "../client/general/inputs/EmailInput";
 import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
 import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
+import { useGetRest } from "../rest/restService";
+import { useGetAvailablePlans } from "../plan/planService";
+import { Plan } from "../plan/planModel";
+import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -71,11 +75,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [password, setPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
+  const rest = useGetRest(cart ? cart.RestId : null);
   const [signUp, signUpRes] = useSignUp();
   const validateCuisineRef= useRef<() => boolean>();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
+  const plans = useGetAvailablePlans();
 
   useEffect(() => {
     if (placeOrderRes.error) {
@@ -201,6 +207,21 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
+    if (!rest.data) {
+      const err = new Error(`No rest`);
+      console.error(err.stack);
+      throw err;
+    }
+    if (!plans.data) {
+      const err = new Error(`No rest`);
+      console.error(err.stack);
+      throw err;
+    }
+    if (!cart.StripePlanId) {
+      const err = new Error(`No cart stripePlanId`);
+      console.error(err.stack);
+      throw err;
+    }
     const cardElement = elements.getElement('cardNumber');
     if (!cardElement) {
       const err =  new Error('No card element');
@@ -224,6 +245,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
+
+    sendCheckoutMetrics(
+      cart,
+      rest.data.Profile.Name,
+      Plan.getMealPrice(cart.StripePlanId, plans.data),
+      cuisines,
+    )
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {

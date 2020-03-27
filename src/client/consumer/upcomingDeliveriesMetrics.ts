@@ -19,6 +19,10 @@ export const sendEditOrderMetrics = (
     toRestName,
     toMealPrice,
   });
+  analyticsService.trackEvent(events.CHOSE_PLAN, {
+    count: toMealCount,
+    mealPrice: toMealPrice,
+  });
   fromOrder.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {
       analyticsService.trackEvent(events.EDITED_ORDER_FROM_MEALS, {

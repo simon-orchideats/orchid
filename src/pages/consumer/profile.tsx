@@ -15,6 +15,7 @@ import { NotificationType } from "../../client/notification/notificationModel";
 import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
+import { sendUpdateAddressMetrics, sendUpdatePhoneMetrics, sendUpdateCardMetrics } from "../../client/consumer/profileMetrics";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -110,6 +111,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       ...consumer.data.profile,
       phone: phoneInputRef.current!.value
     }
+    sendUpdatePhoneMetrics();
     updateMyProfile(consumer.data, updatedProfile);
   }
   const onCancelPhone = () => {
@@ -133,6 +135,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           instructions: consumer.data.Profile.Destination && consumer.data.Profile.Destination.Instructions,
         },
       }
+      sendUpdateAddressMetrics();
       updateMyProfile(consumer.data, updatedProfile);
     } else {
       console.error('State is empty')
@@ -181,6 +184,8 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       ...consumer.data.profile,
       card: Card.getCardFromStripe(pm.paymentMethod!.card),
     }
+
+    sendUpdateCardMetrics();
     updateMyProfile(consumer.data, updatedProfile);
     setIsUpdatingCard(false);
   };

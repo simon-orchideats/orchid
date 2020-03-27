@@ -69,6 +69,10 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(5),
     marginBottom: theme.spacing(5),
   },
+  largeVerticalPadding: {
+    paddingTop: theme.spacing(5),
+    paddingBottom: theme.spacing(5),
+  },
   plans: {
     backgroundImage: `url(/cuttingBoard.jpeg)`,
     backgroundPosition: '70% 30%',
@@ -112,6 +116,10 @@ const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(2)
   },
+  donate: {
+    backgroundColor: theme.palette.primary.main,
+    color: 'white',
+  }
 }));
 
 const Welcome = withClientApollo(() => {
@@ -183,6 +191,21 @@ const HowItWorks = () => {
       <Link href={howItWorksRoute}>
         <Button variant='outlined' color='primary'>SEE DETAILS</Button>
       </Link>
+    </div>
+  );
+};
+
+const Donate = () => {
+  const classes = useStyles();
+  return (
+    <div className={`${classes.largeVerticalPadding} ${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
+      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+        Let's help our heroic healthcare workers fight COVID-19
+      </Typography>
+      <Typography variant='subtitle1'>
+        We now offer the option to donate meals in your plan to local hospitals. We'll match every meal donated and handle
+        delivery.
+      </Typography>
     </div>
   );
 };
@@ -387,6 +410,7 @@ const Index = () => {
   return (
     <>
       <Welcome />
+      <Donate />
       <HowItWorks />
       <Plans />
       <Benefits />

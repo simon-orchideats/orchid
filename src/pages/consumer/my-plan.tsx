@@ -16,6 +16,7 @@ import { menuRoute } from "../menu";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { useGetAvailablePlans } from "../../plan/planService";
+import { sendUpdatePlanMetrics, sendUpdateDeliveryDayMetrics, sendUpdateCuisinesMetrics, sendCancelSubscriptionMetrics } from "../../client/consumer/myPlanMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -99,7 +100,18 @@ const myPlan = () => {
   }
   const updatePlan = (plan: Plan) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('No plan');
+      console.error(err.stack);
+      throw err;
+    }
     setPrevPlan(consumer.data.Plan);
+    sendUpdatePlanMetrics(
+      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
+      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
+      plan.MealPrice,
+      plan.MealCount,
+    );
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
@@ -111,6 +123,7 @@ const myPlan = () => {
   const updateDay = (deliveryDay: deliveryDay) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
+    sendUpdateDeliveryDayMetrics(consumer.data.Plan.DeliveryDay, deliveryDay);
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
@@ -122,6 +135,7 @@ const myPlan = () => {
   const updateCuisines = (cuisines: CuisineType[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
+    sendUpdateCuisinesMetrics(consumer.data.Plan.Cuisines, cuisines);
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
@@ -130,6 +144,19 @@ const myPlan = () => {
       consumer.data
     );
   };
+  const onCancelSubscription = () => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('No plan');
+      console.error(err.stack);
+      throw err;
+    }
+    sendCancelSubscriptionMetrics(
+      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
+      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
+    );
+    cancelSubscription();
+  }
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
@@ -186,7 +213,7 @@ const myPlan = () => {
             <Button
               variant='outlined'
               className={classes.cancel}
-              onClick={cancelSubscription}
+              onClick={onCancelSubscription}
             >
               Cancel subscription
             </Button>

@@ -8,8 +8,12 @@ const amplitude: {
 } = isServer() ? null : require("amplitude-js");
 
 export const events = {
+  ADDED_CUISINE: 'Added cuisine',
+  CANCELED_SUBSCRIPTION: 'Canceled subscription',
   CHECKEDOUT: 'Checkedout',
   CHECKEDOUT_MEALS: 'Checkedout meals',
+  CHOSE_DELIVERY_DAY: 'Chose delivery day',
+  CHOSE_PLAN: 'Chose plan',
   EDITED_ORDER: 'Edited order',
   EDITED_ORDER_FROM_MEALS: 'Edited order from meals',
   EDITED_ORDER_TO_MEALS: 'Edited order to meals',
@@ -18,8 +22,14 @@ export const events = {
   FILLED_CART_MEALS: 'Filled cart meals',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
+  REMOVED_CUISINE: 'Removed cuisine',
   SKIPPED_ORDER: 'Skipped order',
   SKIPPED_ORDER_FROM_MEALS: 'Skipped order from meals',
+  UPDATED_ADDRESS: 'Updated address',
+  UPDATED_CARD: 'Updated card',
+  UPDATED_PHONE: 'Updated phone',
+  UPDATED_PLAN: 'Updated plan',
+  UPDATED_DELIVERY_DAY: 'Updated delivery day',
 }
 
 class AnalyticsService {

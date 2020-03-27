@@ -8,7 +8,6 @@ import { Consumer } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
 import { Cart } from "../../order/cartModel";
-import { sendCheckoutMetrics } from "./checkoutMetrics";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -70,13 +69,6 @@ const CheckoutCart: React.FC<props> = ({
       console.error(err.stack);
       throw err;
     }
-    sendCheckoutMetrics(
-      cart.StripePlanId,
-      cart,
-      rest.data.Profile.Name,
-      Plan.getMealPrice(cart.StripePlanId, plans.data),
-      Cart.getMealCount(groupedMeals),
-    )
     onPlaceOrder();
   }
   const button = (
