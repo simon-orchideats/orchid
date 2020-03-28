@@ -129,15 +129,13 @@ export class Order implements IOrder{
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
       name: order.name,
-      donationCount: cart ? order.donationCount : 0 // if there is a cart then there mustve been a change in cart
-                                                    // otherwise you're skipping if cart is empty
+      donationCount: cart ? order.donationCount : 0
     }
   }
 
   static getEOrderFromUpdatedOrder(
     {
       consumer,
-      status,
     }: EOrder,
     mealPrice: number | null,
     total: number,
@@ -149,6 +147,7 @@ export class Order implements IOrder{
       deliveryDate,
     }: IUpdateOrderInput
   ): Partial<EOrder> {
+    console.log('MEALPRICE',mealPrice)
     return {
       rest: {
         restId,
@@ -160,8 +159,8 @@ export class Order implements IOrder{
         tip: 0,
         mealPrice,
         total,
-        percentFee: 123,
-        flatRateFee: 123,
+        percentFee: 0,
+        flatRateFee: 0,
       },
       deliveryDate,
       consumer: {
@@ -174,7 +173,7 @@ export class Order implements IOrder{
           destination,
         }
       },
-      status: mealPrice === null ? status : 'Skipped'
+      status: mealPrice === null ? 'Skipped' : 'Open'
     }
   }
 

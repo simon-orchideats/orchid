@@ -251,7 +251,7 @@ const DeliveryOverview: React.FC<{
       throw err;
     }
     const cartMealCount = Cart.getMealCount(cart.Meals);
-    const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
+    const cartPlanId = Plan.getPlanId(cartMealCount+order.donationCount, plans.data);
     if (!cartPlanId) {
       const err = new Error('No car plan');
       console.error(err.stack);

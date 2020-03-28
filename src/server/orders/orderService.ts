@@ -497,7 +497,7 @@ class OrderService {
       this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals)+cart.donationCount) // here checkout
         .then(({ restId, meals }) => {
           const newCart = {
-            ...cart,
+            ...{...cart, donationCount: 0},
             restId: restId,
             meals,
             deliveryDate: nextDeliveryDate
@@ -705,9 +705,11 @@ class OrderService {
       }
       let newPlan;
       let amount;
+      console.log(updateOptions)
       const mealCount = Cart.getMealCount(updateOptions.meals);
+      console.log('mealcout',mealCount)
       if (mealCount > 0) {
-        newPlan = await this.planService.getPlanByCount(mealCount);
+        newPlan = await this.planService.getPlanByCount(mealCount+updateOptions.donationCount);
         if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
         amount = newPlan.weekPrice * 100 - originalPrice;
       } else {
