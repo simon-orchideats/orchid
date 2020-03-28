@@ -116,7 +116,8 @@ export const useUpdateMyProfile = (): [
           //@ts-ignore
           __typename: 'ConsumerRes'
         }
-      }
+      },
+      refetchQueries: ['myUpcomingOrders'],
     })
   }
   return useMemo(() => {
@@ -175,7 +176,8 @@ export const useCancelSubscription = (): [
             plan: null,
           });
         }
-      }
+      },
+      refetchQueries: ['myUpcomingOrders'],
     })
   }
   return useMemo(() => [
@@ -358,6 +360,7 @@ export const useUpdateMyPlan = (): [
           __typename: 'ConsumerRes'
         }
       },
+      refetchQueries: ['myUpcomingOrders'],
     })
   }
   return useMemo(() => {

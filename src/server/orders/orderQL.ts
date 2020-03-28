@@ -36,6 +36,7 @@ export const _OrderQL = gql`
     phone: String!
     destination: DestinationInput!
     deliveryDate: Float!
+    donationCount: Int!
   }
   input UpdateOrderInput {
     restId: ID # null for skip order

@@ -51,6 +51,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo everything in config needs to be prod. for stripe, use the foodflick one. update elastic dbs.
 // add metrics
 // have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
+// todo confirmation email
 
 init({
   dsn: activeConfig.server.sentry.dsn,

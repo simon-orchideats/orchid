@@ -105,6 +105,7 @@ export const usePlaceOrder = (): [
       update: (cache, { data }) => {
         if (data && data.placeOrder.res) updateMyConsumer(cache, data.placeOrder.res)
       },
+      refetchQueries: ['myUpcomingOrders'],
     })
   }
   return useMemo(() => {
@@ -233,7 +234,7 @@ export const useUpdateOrder = (): [
 
 type upcomingOrdersRes = { myUpcomingOrders: IOrder[] }
 export const useGetUpcomingOrders = () => {
-  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY, { fetchPolicy: 'cache-and-network' });
+  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
   ), [res.data]);

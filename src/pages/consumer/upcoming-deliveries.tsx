@@ -24,6 +24,7 @@ import { NotificationType } from "../../client/notification/notificationModel";
 import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkippedOrderMetrics, sendEditOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
+import { isServer } from "../../client/utils/isServer";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -95,13 +96,14 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
+  const res = useGetRest(cartRef.current && cartRef.current.RestId);
+  const groupedMeals = cartRef.current ? cartRef.current.Meals : [];
   if (!cartRef.current) {
     const err = Error('Cart is null');
-    console.error(err.stack);
-    throw err;
+    console.warn(err.stack);
+    if (!isServer()) Router.replace(upcomingDeliveriesRoute);
+    return null;
   }
-  const res = useGetRest(cartRef.current.RestId);
-  const groupedMeals = cartRef.current.Meals;
   const classes = useStyles();
   return (
     <Paper variant='outlined' className={classes.confirmation}>
@@ -271,7 +273,6 @@ const DeliveryOverview: React.FC<{
       cart,
       rest.data.Profile.Name,
       mealPrice,
-      cartMealCount
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
@@ -403,8 +404,14 @@ const UpcomingDeliveries = () => {
   const consumer = useRequireConsumer(upcomingDeliveriesRoute);
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
-  const OrderOverviews = useMemo(() => ( 
-    consumer.data && orders.data && orders.data.map(order => 
+  const OrderOverviews = useMemo(() => {
+    if (orders.loading) {
+      return <Typography variant='body1'>Loading...</Typography>
+    }
+    if (orders.data && orders.data.length === 0) {
+      return <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
+    }
+    return consumer.data && orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
         order={order}
@@ -413,11 +420,13 @@ const UpcomingDeliveries = () => {
         cart={cart ? cart : undefined}
       />
     )
-  ), [orders.data, consumer.data, isUpdating, cart]);
+  }, [orders.data, orders.loading, consumer.data, isUpdating, cart]);
+
   if (needsCart && !cart) {
     const err = new Error('Needs cart, but no cart');
-    console.error(err.stack);
-    throw err;
+    console.warn(err.stack);
+    if (!isServer()) Router.replace(upcomingDeliveriesRoute);
+    return null;
   }
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>

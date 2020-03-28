@@ -379,7 +379,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <Grid item xs={12}>
                 <EmailInput
                   inputRef={emailInputRef}
-                  defaultValue={cart.Email ? cart.Email : ''}
+                  defaultValue={''}
                   setValidator={(validator: () => boolean) => {
                     validateEmailRef.current = validator;
                   }}

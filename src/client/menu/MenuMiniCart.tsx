@@ -24,7 +24,6 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
     <MenuCart
       render={(
       cart,
-      _sortedPlans,
       disabled,
       onNext,
       _rest,

@@ -9,13 +9,14 @@ export const sendCheckoutMetrics = (
   cuisines: CuisineType[],
 ) => {
   analyticsService.trackEvent(events.CHECKEDOUT, {
-    count: Cart.getMealCount(cart.Meals),
+    mealCount: Cart.getMealCount(cart.Meals),
     restId: cart.RestId,
     restName,
     mealPrice,
+    donationCount: cart.DonationCount,
   });
   analyticsService.trackEvent(events.CHOSE_PLAN, {
-    count: Cart.getMealCount(cart.Meals),
+    mealCount: Cart.getMealCount(cart.Meals),
     mealPrice,
   });
   analyticsService.trackEvent(events.CHOSE_DELIVERY_DAY, {

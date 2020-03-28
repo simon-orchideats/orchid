@@ -7,7 +7,7 @@ import { getNextDeliveryDate } from "../../order/utils";
 import { Consumer } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
-import { Cart } from "../../order/cartModel";
+import { Cart, CartMeal } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -100,6 +100,17 @@ const CheckoutCart: React.FC<props> = ({
       {groupedMeals && groupedMeals.map(mealGroup => (
         <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
       ))}
+      {
+        cart && cart.DonationCount > 0 &&
+        <CartMealGroup
+          mealGroup={new CartMeal({
+            mealId: 'donations',
+            img: '/heartHand.png',
+            name: 'Donation',
+            quantity: cart.DonationCount
+          })}
+        />
+      }
       <Typography variant='body1'>
         Deliver on {deliveryDate.format('M/D/YY')}, 6pm - 9pm
       </Typography>

@@ -200,11 +200,11 @@ const Donate = () => {
   return (
     <div className={`${classes.largeVerticalPadding} ${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        Let's help our heroic healthcare workers fight COVID-19
+        Let's help our heroic healthcare workers fight COVID-19.
       </Typography>
       <Typography variant='subtitle1'>
-        We now offer the option to donate meals in your plan to local hospitals. We'll match every meal donated and handle
-        delivery.
+        Orchid will match all meal donations, now optional in your plan, and deliver to local NYC hospitals.
+        Please join us in doing our part to help on the front lines of this crisis.
       </Typography>
     </div>
   );

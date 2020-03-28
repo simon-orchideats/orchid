@@ -7,20 +7,23 @@ export const sendEditOrderMetrics = (
   toCart: Cart,
   toRestName: string,
   toMealPrice: number,
-  toMealCount: number,
 ) => {
+  const toMealCount = Cart.getMealCount(toCart.Meals);
   analyticsService.trackEvent(events.EDITED_ORDER, {
     fromCount: Cart.getMealCount(fromOrder.Meals),
     fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
     fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
     fromMealPrice: fromOrder.MealPrice,
-    toCount: toMealCount,
+    // todo simon: enable this
+    // fromDonationCount: fromOrder.DonationCount
+    toMealCount,
     toRestId: toCart.RestId,
     toRestName,
     toMealPrice,
+    toDonationCount: toCart.DonationCount,
   });
   analyticsService.trackEvent(events.CHOSE_PLAN, {
-    count: toMealCount,
+    mealCount: toMealCount,
     mealPrice: toMealPrice,
   });
   fromOrder.Meals.forEach(meal => {
@@ -56,6 +59,8 @@ export const sendSkippedOrderMetrics = (
     fromRestName,
     fromMealPrice,
     fromMealCount: Cart.getMealCount(fromOrder.Meals),
+    //todo simon. enable this
+    // fromDonationCount: fromOrder.DonationCount
   });
   fromOrder.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {

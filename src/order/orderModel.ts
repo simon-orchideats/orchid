@@ -115,6 +115,8 @@ export class Order implements IOrder{
       phone: order.Phone,
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
+      // todo simon add this
+      // donationCount: cart ? cart.DonationCount : null
     }
   }
 

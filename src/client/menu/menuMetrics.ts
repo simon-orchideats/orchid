@@ -2,18 +2,16 @@ import { Cart } from '../../order/cartModel';
 import { analyticsService, events } from "../utils/analyticsService";
 
 export const sendCartMenuMetrics = (
-  stripePlanId: string,
   cart: Cart,
-  restName: string,
+  restName: string | null,
   mealPrice: number,
-  mealCount: number,
 ) => {
   analyticsService.trackEvent(events.FILLED_CART, {
-    count: mealCount,
-    stripePlanId,
+    mealCount: Cart.getMealCount(cart.Meals),
     restId: cart.RestId,
     restName,
     mealPrice,
+    donationCount: cart.DonationCount,
   });
   cart.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {
