@@ -129,7 +129,8 @@ export class Order implements IOrder{
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
       name: order.name,
-      donationCount: order.donationCount
+      donationCount: cart ? order.donationCount : 0 // if there is a cart then there mustve been a change in cart
+                                                    // otherwise you're skipping if cart is empty
     }
   }
 

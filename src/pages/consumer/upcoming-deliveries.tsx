@@ -223,7 +223,9 @@ const DeliveryOverview: React.FC<{
   };
   const onEdit = () => {
     if (order.Rest) {
-      const mealCount = Cart.getMealCount(order.Meals);
+      console.log('donationCOunt',order.donationCount)
+      console.log(order);
+      const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
       const planId = Plan.getPlanId(mealCount, plans.data)
       if (!planId) {
         const err = new Error(`Missing planId for mealCount ${mealCount}`);

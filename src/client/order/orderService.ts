@@ -42,6 +42,8 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         ...restFragment
       }
       status
+      donationCount
+      name
     }
   }
   ${restFragment}

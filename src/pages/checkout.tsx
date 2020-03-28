@@ -134,7 +134,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             pm.current.paymentMethod!.id,
             deliveryInstructions,
             cuisines,
-            6 //donationCount
+            2 //donationCount
           )
         );
       }
@@ -273,7 +273,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           pm.current.paymentMethod!.id,
           deliveryInstructions,
           cuisines,
-          6 // hardCoded donationCOunt
+          2 // hardCoded donationCOunt
         ),
       );
     }

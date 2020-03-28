@@ -44,6 +44,8 @@ export const _OrderQL = gql`
     phone: String!
     destination: DestinationInput!
     deliveryDate: Float!
+    donationCount: Int!
+    name: String!
   }
   type Order {
     _id: ID!
@@ -54,6 +56,8 @@ export const _OrderQL = gql`
     phone: String!
     rest: Rest
     status: OrderStatus!
+    name: String!
+    donationCount:Int!
   }
 `;
 

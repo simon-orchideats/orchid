@@ -49,7 +49,7 @@ const MenuCart: React.FC<{
   const rest = useGetRest(cart ? cart.RestId : null);
   const fixedMealCount = (cart && cart.StripePlanId) ? Plan.getPlanCount(cart.StripePlanId, sortedPlans.data || []) : null;
   const mealCount = cart ? Cart.getMealCount(cart.Meals) : 0;
-  const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
+  const stripePlanId = Plan.getPlanId(mealCount+2, sortedPlans.data);
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
     query: { updating: 'true' }
@@ -93,7 +93,7 @@ const MenuCart: React.FC<{
     );
   }
 
-  const disabled = cart === null || cart.Zip === null || (fixedMealCount !== null && mealCount !== fixedMealCount)
+  const disabled = cart === null || cart.Zip === null || (fixedMealCount !== null && mealCount+2 !== fixedMealCount)
 
   const suggestion = getSuggestion(mealCount, fixedMealCount);
   return (

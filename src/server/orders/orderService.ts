@@ -303,7 +303,7 @@ class OrderService {
     }
     const p2 = this.validateAddress(updateOptions.destination.address);
     let p3 = Promise.resolve('');
-    const mealCount = Cart.getMealCount(updateOptions.meals);
+    const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
     if (mealCount > 0) {
       p3 = this.planService.getPlanByCount(mealCount)
         .then(plan => {
@@ -494,7 +494,7 @@ class OrderService {
       // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
       // placed order
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals))
+      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals)+cart.donationCount) // here checkout
         .then(({ restId, meals }) => {
           const newCart = {
             ...cart,
