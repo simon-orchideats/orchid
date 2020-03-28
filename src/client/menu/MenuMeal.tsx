@@ -52,6 +52,7 @@ const useStyles = makeStyles(theme => ({
     boxShadow: 'none',
     color: `${theme.palette.common.white} !important`,
     minWidth: theme.spacing(4),
+    borderRadius: 10,
   },
   chip: {
     flex: 1,

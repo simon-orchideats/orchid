@@ -54,13 +54,14 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
-    [theme.breakpoints.down(550)]: {
-      display: 'none',
-    },
   },
   horzMargin: {
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
+    [theme.breakpoints.down(550)]: {
+      marginLeft: 0,
+      marginRight: 0,
+    },
   },
   vertCenter: {
     display: 'flex',
@@ -174,9 +175,7 @@ const Navbar: React.FC = () => {
           <ExpandMoreIcon />
         </div>
         :
-        <>
         <AccountCircleIcon />
-        </>
       }
     </div>
   :
