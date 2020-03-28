@@ -16,6 +16,7 @@ type cartQueryRes = {
 export const cartQL = gql`
   type CartState {
     meals: [CartMeal!]!
+    donationCount: Int!
     restId: ID
     stripePlanId: ID
     deliveryDay: Int!
@@ -27,9 +28,10 @@ export const cartQL = gql`
   extend type Mutation {
     clearCartMeals: CartState
     addMealToCart(meal: Meal!, restId: ID!): CartState!
+    decrementDonationCount: CartState!
+    incrementDonationCount: CartState!
     removeMealFromCart(mealId: ID!): CartState!
     setCart(order: Order!): CartState!
-    updateCartEmail(email: String!): CartState!
     updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
     updateZip(zip: String!): CartState!
@@ -47,6 +49,28 @@ const CART_QUERY = gql`
 export const useGetCart = () => {
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   return queryRes.data ? queryRes.data.cart : null
+}
+
+export const useDecrementCartDonationCount = () => {
+  const [mutate] = useMutation(gql`
+    mutation decrementDonationCount {
+      decrementDonationCount @client
+    }
+  `);
+  return () => {
+    mutate();
+  }
+}
+
+export const useIncrementCartDonationCount = () => {
+  const [mutate] = useMutation(gql`
+    mutation incrementDonationCount {
+      incrementDonationCount @client
+    }
+  `);
+  return () => {
+    mutate();
+  }
 }
 
 export const useClearCartMeals = () => {
@@ -147,9 +171,10 @@ export const useUpdateZip = (): (zip: string) => void => {
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
+  decrementDonationCount: ClientResolver<undefined, Cart | null>
+  incrementDonationCount: ClientResolver<undefined, Cart | null>
   removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
   setCart: ClientResolver<{ order: Order, planId: string }, Cart | null>
-  updateCartEmail: ClientResolver<{ email: string }, Cart | null>
   updateCartPlanId: ClientResolver<{ id: string }, Cart | null>
   updateDeliveryDay: ClientResolver<{ day: deliveryDay }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
@@ -173,7 +198,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const newCartMealInput = CartMeal.getCartMeal(meal);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
-        email: null,
+        donationCount: 0,
         meals: [newCartMealInput],
         restId,
         stripePlanId: null,
@@ -188,17 +213,17 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     if (Cart.getMealCount(res.cart.Meals) === 0) {
       return updateCartCache(cache, new Cart({
-        email: res.cart.Email,
+        donationCount: res.cart.DonationCount,
         meals: [newCartMealInput],
         restId,
-        stripePlanId: res.cart.stripePlanId,
+        stripePlanId: res.cart.StripePlanId,
         deliveryDay: res.cart.DeliveryDay,
         zip: res.cart.Zip,
       }));
     }
     const newCart = res.cart.addMeal(meal);
     return updateCartCache(cache, new Cart({
-      email: newCart.Email,
+      donationCount: newCart.DonationCount,
       meals: newCart.Meals,
       restId,
       stripePlanId: newCart.StripePlanId,
@@ -207,15 +232,53 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }));
   },
 
+  decrementDonationCount: (_, _args, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      const err = new Error(`Cannot decrement donation count from null cart`);
+      console.error(err.stack);
+      throw err;
+    }
+    return updateCartCache(cache, new Cart({
+      donationCount: res.cart.DonationCount - 1,
+      meals: res.cart.Meals,
+      restId: res.cart.RestId,
+      stripePlanId: res.cart.StripePlanId,
+      deliveryDay: res.cart.DeliveryDay,
+      zip: res.cart.Zip,
+    }));
+  },
+
+  incrementDonationCount: (_, _args, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      return updateCartCache(cache, new Cart({
+        donationCount: 1,
+        meals: [],
+        restId: null,
+        stripePlanId: null,
+        deliveryDay: null,
+        zip: null,
+      }));
+    }
+    return updateCartCache(cache, new Cart({
+      donationCount: res.cart.DonationCount + 1,
+      meals: res.cart.Meals,
+      restId: res.cart.RestId,
+      stripePlanId: res.cart.StripePlanId,
+      deliveryDay: res.cart.DeliveryDay,
+      zip: res.cart.Zip,
+    }));
+  },
+
   clearCartMeals: (_, _args, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       // possible when you skip an order and there is no cart
-      console.warn('Cannot clear cart meals from null cart');
       return null;
     }
     return updateCartCache(cache, new Cart({
-      email: res.cart.Email,
+      donationCount: 0,
       meals: [],
       restId: null,
       stripePlanId: null,
@@ -235,7 +298,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const mealCount = Cart.getMealCount(newCart.Meals);
     if (mealCount === 0) {
       newCart = new Cart({
-        email: newCart.Email,
+        donationCount: newCart.DonationCount,
         meals: [],
         restId: null,
         stripePlanId: newCart.StripePlanId,
@@ -253,7 +316,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     return updateCartCache(cache, new Cart({
-      email: null,
+      // todo simon: should be donationCount: order.DonationCount
+      donationCount: 0,
       meals: order.Meals,
       restId: order.Rest.Id,
       stripePlanId: planId,
@@ -262,33 +326,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }));
   },
 
-  updateCartEmail: (_, { email }, { cache }) => {
-    const res = getCart(cache);
-    if (!res || !res.cart) {
-      return updateCartCache(cache, new Cart({
-        email,
-        meals: [],
-        restId: null,
-        stripePlanId: null,
-        deliveryDay: null,
-        zip: null,
-      }));
-    }
-    return updateCartCache(cache, new Cart({
-      email,
-      meals: res.cart.Meals,
-      restId: res.cart.RestId,
-      stripePlanId: res.cart.StripePlanId,
-      deliveryDay: res.cart.DeliveryDay,
-      zip: res.cart.Zip,
-    }));
-  },
-
   updateCartPlanId: (_, { id }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
-        email: null,
+        donationCount: 0,
         meals: [],
         restId: null,
         stripePlanId: id,
@@ -297,7 +339,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     return updateCartCache(cache, new Cart({
-      email: res.cart.Email,
+      donationCount: res.cart.DonationCount,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
       stripePlanId: id,
@@ -314,7 +356,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     return updateCartCache(cache, new Cart({
-      email: res.cart.Email,
+      donationCount: res.cart.DonationCount,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
       stripePlanId: res.cart.stripePlanId,
@@ -327,7 +369,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const res = getCart(cache);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
-        email: null,
+        donationCount: 0,
         meals: [],
         restId: null,
         stripePlanId: null,
@@ -336,7 +378,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     return updateCartCache(cache, new Cart({
-      email: res.cart.Email,
+      donationCount: res.cart.DonationCount,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
       stripePlanId: res.cart.stripePlanId,

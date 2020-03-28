@@ -66,7 +66,7 @@ export const sendUpdatePlanMetrics = (
     toMealCount,
   });
   analyticsService.trackEvent(events.CHOSE_PLAN, {
-    count: toMealCount,
+    mealCount: toMealCount,
     mealPrice: toMealPrice,
   });
 }

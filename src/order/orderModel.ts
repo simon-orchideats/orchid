@@ -129,7 +129,7 @@ export class Order implements IOrder{
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
       name: order.name,
-      donationCount: cart ? order.donationCount : 0
+      donationCount: cart ? cart.donationCount : 0
     }
   }
 

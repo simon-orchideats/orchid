@@ -133,8 +133,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            cuisines,
-            2 //donationCount
+            cuisines
           )
         );
       }
@@ -272,8 +271,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(pm.current.paymentMethod!.card),
           pm.current.paymentMethod!.id,
           deliveryInstructions,
-          cuisines,
-          2 // hardCoded donationCOunt
+          cuisines
         ),
       );
     }
@@ -381,7 +379,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <Grid item xs={12}>
                 <EmailInput
                   inputRef={emailInputRef}
-                  defaultValue={cart.Email ? cart.Email : ''}
+                  defaultValue={''}
                   setValidator={(validator: () => boolean) => {
                     validateEmailRef.current = validator;
                   }}

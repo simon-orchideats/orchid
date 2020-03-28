@@ -1,5 +1,6 @@
 import { makeStyles, Typography, Button } from "@material-ui/core";
 import MenuCart from "./MenuCart";
+import Counter from "./Counter";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -14,6 +15,10 @@ const useStyles = makeStyles(theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
+    width: '100%'
+  },
+  heart: {
+    height: 24,
   },
 }));
 
@@ -24,13 +29,36 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
     <MenuCart
       render={(
       cart,
-      _sortedPlans,
       disabled,
       onNext,
       _rest,
-      suggestion
+      suggestion,
+      donationCount,
+      incrementDonationCount,
+      decrementDonationCount,
+      addDonationDisabled,
     ) => (
       <div className={classes.container}>
+        <Counter
+          subtractDisabled={!donationCount}
+          onClickSubtract={decrementDonationCount}
+          subractIcon={
+            donationCount ?
+            <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
+            :
+            <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
+          }
+          chipLabel={donationCount}
+          chipDisabled={!donationCount}
+          addDisabled={addDonationDisabled}
+          onClickAdd={incrementDonationCount}
+          addIcon={
+            addDonationDisabled ?
+            <img src='menu/heartPlusDisabled.png' className={classes.heart} alt='heart' />
+            :
+            <img src='menu/heartPlus.png' className={classes.heart} alt='heart' />
+          }
+        />
         <Typography variant='body1' className={classes.suggestion}>
           {cart && cart.Zip ? suggestion : 'Enter zip to continue'}
         </Typography>

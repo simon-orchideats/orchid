@@ -26,19 +26,21 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.common.link,
     cursor: 'pointer',
     display: 'flex',
+    alignItems: 'center',
+    marginRight: theme.spacing(2),
   },
-  smallPaddingBottom: {
-    paddingBottom: theme.spacing(2),
-  },
-  input: {
+  zipPlan: {
     alignSelf: 'stretch',
-    marginLeft: theme.spacing(2),
-  },
-  mini: {
-    marginLeft: 'auto',
-  },
-  noRests: {
+    flexBasis: '100%',
+    paddingBottom: theme.spacing(2),
     display: 'flex',
+    alignItems: 'center',
+  },
+  row: {
+    display: 'flex',
+  },
+  right: {
+    marginLeft: 'auto',
   },
   paddingTop: {
     paddingTop: theme.spacing(2),
@@ -49,6 +51,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     position: 'sticky',
+    flexWrap: 'wrap',
     backgroundColor: theme.palette.background.paper,
     zIndex: theme.zIndex.appBar - 1,
     top: theme.mixins.toolbar.height,
@@ -108,32 +111,29 @@ const menu = () => {
           className={classes.menu}
         >
           <div className={classes.filters}>
-            <Link className={classes.link} color='inherit' onClick={onClickZip}>
-              <LocationOnIcon />
-              {
-                isMdAndUp &&
-                <>
-                  <Typography>{zip ? zip : 'Zip'}</Typography>
-                  <ArrowDropDownIcon />
-                </>
-              }
-            </Link>
             {
-              !isMdAndUp &&
+              isMdAndUp ?
+              <Link className={classes.link} color='inherit' onClick={onClickZip}>
+                <LocationOnIcon />
+                <Typography>{zip ? zip : 'Zip'}</Typography>
+                <ArrowDropDownIcon />
+              </Link>
+            :
               <>
-                <div className={`${classes.input} ${classes.smallPaddingBottom}`}>
+                <div className={classes.zipPlan}>
+                  <Link className={classes.link} color='inherit' onClick={onClickZip}>
+                    <LocationOnIcon />
+                  </Link>
                   <PlanFilter />
                 </div>
-                <div className={classes.mini}>
-                  <MenuMiniCart />
-                </div>
+                <MenuMiniCart />
               </>
             }
           </div>
           {rests.loading && <Typography>Loading...</Typography>}
           {
             hasNoRests ?
-            <Typography variant='h5' className={`${classes.paddingTop} ${classes.noRests}`}>
+            <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
               No restaurants found for zip code&nbsp;
               <Link className={classes.link} color='inherit' onClick={onClickZip}>
                 {zip}

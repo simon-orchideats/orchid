@@ -52,6 +52,7 @@ const useStyles = makeStyles(theme => ({
     boxShadow: 'none',
     color: `${theme.palette.common.white} !important`,
     minWidth: theme.spacing(4),
+    borderRadius: 10,
   },
   chip: {
     flex: 1,
@@ -99,34 +100,42 @@ const MenuMeal: React.FC<{
       </div>
       <CardContent className={classes.content}>
         <div className={classes.actionBar}>
-          <Button
-            size='small'
-            variant='contained'
-            disabled={!count}
-            className={`${classes.button} ${classes.minusButton}`}
-            onClick={() => onRemoveMeal()}
-          >
-            <RemoveIcon />
-          </Button>
-          <Chip
-            className={classes.chip}
-            disabled={!count}
-            label={count}
-            variant='outlined'
-            classes={{
-              disabled: classes.disabledChip
-            }}
-          />
-          <Button
-            size='small'
-            variant='contained'
-            color='primary'
-            disabled={disabled}
-            className={classes.button}
-            onClick={() => onAddMeal()}
-          >
-            <AddIcon />
-          </Button>
+          {
+            disabled ?
+            <Typography variant='body1'>
+              1 restaurant per week
+            </Typography>
+            :
+            <>
+              <Button
+                size='small'
+                variant='contained'
+                disabled={!count}
+                className={`${classes.button} ${classes.minusButton}`}
+                onClick={() => onRemoveMeal()}
+              >
+                <RemoveIcon />
+              </Button>
+              <Chip
+                className={classes.chip}
+                disabled={!count}
+                label={count}
+                variant='outlined'
+                classes={{
+                  disabled: classes.disabledChip
+                }}
+              />
+              <Button
+                size='small'
+                variant='contained'
+                color='primary'
+                className={classes.button}
+                onClick={() => onAddMeal()}
+              >
+                <AddIcon />
+              </Button>
+            </>
+          }
         </div>
         <Typography
           gutterBottom

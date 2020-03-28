@@ -52,40 +52,40 @@ export interface ICartInput {
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
   readonly meals: ICartMeal[]
+  readonly donationCount: number
   readonly phone: string//shared
   readonly destination: IDestination
   readonly deliveryDate: number
-  readonly donationCount: number
 };
 
 export interface ICart {
+  readonly donationCount: number
   readonly meals: ICartMeal[];
   readonly restId: string | null;
   readonly stripePlanId: string | null;
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
-  readonly email: string | null;
 }
 
 export class Cart implements ICart {
+  readonly donationCount: number
   readonly meals: CartMeal[]
   readonly restId: string | null
   readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
-  readonly email: string | null;
 
   constructor(cart: ICart) {
+    this.donationCount = cart.donationCount;
     this.meals = cart.meals.map(meal => new CartMeal(meal));
     this.restId = cart.restId;
     this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
     this.zip = cart.zip;
-    this.email = cart.email;
   }
 
   public get DeliveryDay() { return this.deliveryDay }
-  public get Email() { return this.email }
+  public get DonationCount() { return this.donationCount }
   public get Meals() { return this.meals }
   public get StripePlanId() { return this.stripePlanId }
   public get RestId() { return this.restId }
@@ -152,7 +152,6 @@ export class Cart implements ICart {
     paymentMethodId: string,
     instructions: string,
     cuisines: CuisineType[],
-    donationCount: number
   ): ICartInput {
     if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
       const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
@@ -160,6 +159,7 @@ export class Cart implements ICart {
       throw err;
     }
     return {
+      donationCount: this.donationCount,
       restId: this.RestId,
       paymentMethodId,
       card,
@@ -181,7 +181,6 @@ export class Cart implements ICart {
         instructions,
       },
       meals: this.Meals,
-      donationCount // this is hardcoded in checkout
     }
   }
 
