@@ -27,7 +27,7 @@ export const sendCheckoutMetrics = (
     }
   });
   sendChoosePlanMetrics(planMealPrice, planMealCount);
-  if (!cart.DeliveryDay) {
+  if (cart.DeliveryDay === null) {
     const err = new Error('Missing delivery day');
     console.error(err.stack);
     throw err;
