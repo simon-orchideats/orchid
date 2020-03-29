@@ -45,7 +45,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       res.json({ received: true });
       return;
     }
-    console.log('got invoice.upcoming event')
+
     const invoice = event.data.object as Stripe.Invoice
     try {
       const stripeCustomerId = invoice.customer as string;
@@ -64,8 +64,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         mealCount,
         mealPrice,
       } = planInvoiceLineItem.plan.metadata;
-
-      console.log('gonna call getOrderService().addAutomaticOrder()')
       await getOrderService().addAutomaticOrder(
         consumer,
         // 2 weeks because 1 week would be nextnext order

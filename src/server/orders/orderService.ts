@@ -383,7 +383,6 @@ class OrderService {
         deliveryTime: consumer.plan.deliveryTime,
         donationCount: 0
       }
-      console.log('about to index new order', eOrder);
       await this.elastic.index({
         index: ORDER_INDEX,
         body: eOrder
@@ -498,7 +497,7 @@ class OrderService {
       // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
       // placed order
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals)+cart.donationCount) // here checkout
+      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals)+cart.donationCount)
         .then(({ restId, meals }) => {
           const newCart = {
             ...{...cart, donationCount: 0},
@@ -709,11 +708,9 @@ class OrderService {
       }
       let newPlan;
       let amount;
-      console.log(updateOptions)
-      const mealCount = Cart.getMealCount(updateOptions.meals);
-      console.log('mealcout',mealCount)
+      const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
       if (mealCount > 0) {
-        newPlan = await this.planService.getPlanByCount(mealCount+updateOptions.donationCount);
+        newPlan = await this.planService.getPlanByCount(mealCount);
         if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
         amount = newPlan.weekPrice * 100 - originalPrice;
       } else {

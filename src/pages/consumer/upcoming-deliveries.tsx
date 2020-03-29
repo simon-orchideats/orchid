@@ -226,8 +226,6 @@ const DeliveryOverview: React.FC<{
   };
   const onEdit = () => {
     if (order.Rest) {
-      //console.log('donationCOunt',order.donationCount)
-     // console.log(order);
       const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
       const planId = Plan.getPlanId(mealCount, plans.data)
       if (!planId) {
@@ -253,8 +251,8 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const cartMealCount = Cart.getMealCount(cart.Meals);
-    const cartPlanId = Plan.getPlanId(cartMealCount + cart.DonationCount, plans.data);
+    const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
+    const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
     if (!cartPlanId) {
       const err = new Error('No car plan');
       console.error(err.stack);
