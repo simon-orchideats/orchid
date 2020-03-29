@@ -74,4 +74,13 @@ export class Plan implements IPlan {
     console.error(err.stack);
     throw err;
   }
+
+  public static getMealCountFromMealPrice(price: number, plans: IPlan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (plans[i].mealPrice === price) return plans[i].mealCount;
+    }
+    const err = new Error(`No plan found for price '${price}'`);
+    console.error(err.stack);
+    throw err;
+  }
 }

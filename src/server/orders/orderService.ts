@@ -4,7 +4,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile, deliveryTime } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
@@ -380,6 +380,7 @@ class OrderService {
         rest,
         status: 'Open',
         stripeSubscriptionId: consumer.stripeSubscriptionId,
+        deliveryTime: consumer.plan.deliveryTime,
       }
       await this.elastic.index({
         index: ORDER_INDEX,
@@ -414,6 +415,7 @@ class OrderService {
         deliveryDay,
         cuisines,
         stripePlanId,
+        deliveryTime,
       } = cart.consumerPlan;
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
@@ -476,6 +478,7 @@ class OrderService {
         plan: {
           stripePlanId,
           deliveryDay,
+          deliveryTime,
           cuisines,
         },
         profile: {
@@ -769,9 +772,10 @@ class OrderService {
       const getNewOrder = (
         rest: { restId: string, meals: ICartMeal[] } | null,
         deliveryDate: number,
+        deliveryTime: deliveryTime,
         invoiceDate: number,
         order: EOrder,
-      ): Partial<EOrder> => ({
+      ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'consumer'> => ({
         costs: {
           ...order.costs,
           mealPrice,
@@ -782,11 +786,13 @@ class OrderService {
         rest: rest || order.rest,
         invoiceDate,
         deliveryDate,
+        deliveryTime,
       })
       return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
         if (!this.restService) throw new Error ('RestService not set');
         const deliveryDate = getNextDeliveryDate(plan.deliveryDay).add(orderNum, 'w').valueOf();
         const invoiceDate = moment(deliveryDate).subtract(2, 'd').valueOf();
+        const deliveryTime = plan.deliveryTime;
         if (order.rest.restId) {
           const rest = await this.restService.getRest(order.rest.restId);
           if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
@@ -799,13 +805,13 @@ class OrderService {
                 doc: getNewOrder(
                   null,
                   deliveryDate,
+                  deliveryTime,
                   invoiceDate,
                   order
                 ),
               }
             })
-          };
-          if (numMealsInOrder > targetMealCount) {
+          } else if (numMealsInOrder > targetMealCount) {
             removeMealsRandomly(order.rest.meals, numMealsInOrder - targetMealCount);
           } else {
             const randomMeals = chooseRandomMeals(rest.menu, targetMealCount - numMealsInOrder);
@@ -834,6 +840,7 @@ class OrderService {
                   meals: order.rest.meals
                 },
                 deliveryDate,
+                deliveryTime,
                 invoiceDate,
                 order
               ),
@@ -845,7 +852,7 @@ class OrderService {
             index: ORDER_INDEX,
             id: _id,
             body: {
-              doc: getNewOrder(eOrderRest, deliveryDate, invoiceDate, order),
+              doc: getNewOrder(eOrderRest, deliveryDate, deliveryTime, invoiceDate, order),
             }
           })
         }

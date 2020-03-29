@@ -98,7 +98,7 @@ const ZipModal: React.FC<{
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
               <form onSubmit={findFood}>
                 <Typography variant='h3' className={classes.title}>
-                  Meal plans from restaurants you love
+                  Subscribe to meal plans from local restaurants you love
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={12} md={6}>

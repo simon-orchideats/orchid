@@ -250,6 +250,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       cart,
       rest.data.Profile.Name,
       Plan.getMealPrice(cart.StripePlanId, plans.data),
+      Plan.getPlanCount(cart.StripePlanId, plans.data),
       cuisines,
     )
     if (!consumer || !consumer.data) {

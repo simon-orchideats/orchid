@@ -1,7 +1,7 @@
 
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
-import { CuisineType, deliveryDay, ConsumerPlan } from '../../consumer/consumerModel';
+import { CuisineType, deliveryDay, ConsumerPlan, deliveryTime } from '../../consumer/consumerModel';
 import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
@@ -16,7 +16,7 @@ import { menuRoute } from "../menu";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { sendUpdatePlanMetrics, sendUpdateDeliveryDayMetrics, sendUpdateCuisinesMetrics, sendCancelSubscriptionMetrics } from "../../client/consumer/myPlanMetrics";
+import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseCuisineMetrics, sendCancelSubscriptionMetrics, sendChooseDeliveryTimeMetrics } from "../../client/consumer/myPlanMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -54,6 +54,7 @@ const myPlan = () => {
   const plan = consumer.data && consumer.data.Plan;
   const cuisines = plan ? plan.Cuisines : [];
   const day = plan ? plan.DeliveryDay : 0;
+  const deliveryTime = plan ? plan.deliveryTime : ConsumerPlan.getDefaultDeliveryTime();
   const plans = useGetAvailablePlans();
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const validateCuisineRef= useRef<() => boolean>();
@@ -106,11 +107,11 @@ const myPlan = () => {
       throw err;
     }
     setPrevPlan(consumer.data.Plan);
-    sendUpdatePlanMetrics(
-      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
-      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
+    sendChoosePlanMetrics(
       plan.MealPrice,
       plan.MealCount,
+      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
+      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
     );
     updateMyPlan(
       new ConsumerPlan({
@@ -123,7 +124,7 @@ const myPlan = () => {
   const updateDay = (deliveryDay: deliveryDay) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
-    sendUpdateDeliveryDayMetrics(consumer.data.Plan.DeliveryDay, deliveryDay);
+    sendChooseDeliveryDayMetrics(deliveryDay, consumer.data.Plan.DeliveryDay);
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
@@ -132,10 +133,24 @@ const myPlan = () => {
       consumer.data
     );
   };
+  
+  const updateDeliveryTime = (deliveryTime: deliveryTime) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    setPrevPlan(consumer.data.Plan);
+    sendChooseDeliveryTimeMetrics(deliveryTime, consumer.data.Plan.DeliveryTime)
+    updateMyPlan(
+      new ConsumerPlan({
+        ...consumer.data.Plan,
+        deliveryTime,
+      }),
+      consumer.data
+    );
+  };
+
   const updateCuisines = (cuisines: CuisineType[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
-    sendUpdateCuisinesMetrics(consumer.data.Plan.Cuisines, cuisines);
+    sendChooseCuisineMetrics(cuisines, consumer.data.Plan.Cuisines);
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
@@ -202,7 +217,12 @@ const myPlan = () => {
             <Typography variant='subtitle2' className={classes.subtitle}>
               Upcoming deliveries will automatically change dates
             </Typography>
-            <DeliveryDateChooser day={day} onDayChange={day => updateDay(day)}/>
+            <DeliveryDateChooser
+              day={day}
+              onDayChange={day => updateDay(day)}
+              time={deliveryTime}
+              onTimeChange={time => updateDeliveryTime(time)}
+            />
             <RenewalChooser
               cuisines={cuisines}
               onCuisineChange={cuisines => updateCuisines(cuisines)}

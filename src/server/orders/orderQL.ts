@@ -44,10 +44,12 @@ export const _OrderQL = gql`
     phone: String!
     destination: DestinationInput!
     deliveryDate: Float!
+    deliveryTime: DeliveryTime!
   }
   type Order {
     _id: ID!
     deliveryDate: Float!
+    deliveryTime: DeliveryTime!
     destination: Destination!
     mealPrice: Float
     meals: [CartMeal!]!

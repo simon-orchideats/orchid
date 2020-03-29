@@ -2,7 +2,7 @@ import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IRest, Rest } from './../rest/restModel';
-import { IConsumerProfile } from './../consumer/consumerModel';
+import { IConsumerProfile, deliveryTime } from './../consumer/consumerModel';
 import { ICost } from './costModel';
 import { ICartInput, ICartMeal, CartMeal, Cart } from './cartModel';
 
@@ -18,6 +18,7 @@ export interface EOrder {
   readonly createdDate: number
   readonly invoiceDate: number
   readonly deliveryDate: number
+  readonly deliveryTime: deliveryTime
   readonly rest: {
     readonly restId: string | null // null for skipped order
     readonly meals: ICartMeal[]
@@ -30,6 +31,7 @@ export interface IOrder {
   readonly _id: string
   readonly deliveryDate: number
   readonly destination: IDestination
+  readonly deliveryTime: deliveryTime
   readonly mealPrice: number | null
   readonly meals: ICartMeal[]
   readonly phone: string
@@ -44,11 +46,13 @@ export interface IUpdateOrderInput {
   readonly phone: string
   readonly destination: IDestination
   readonly deliveryDate: number
+  readonly deliveryTime: deliveryTime
 }
 
 export class Order implements IOrder{
   readonly _id: string
   readonly deliveryDate: number
+  readonly deliveryTime: deliveryTime
   readonly destination: Destination
   readonly mealPrice: number | null
   readonly meals: CartMeal[]
@@ -59,6 +63,7 @@ export class Order implements IOrder{
   constructor(order: IOrder) {
     this._id = order._id;
     this.deliveryDate = order.deliveryDate;
+    this.deliveryTime = order.deliveryTime;
     this.destination = new Destination(order.destination);
     this.mealPrice = order.mealPrice;
     this.meals = order.meals.map(meal => new CartMeal(meal))
@@ -69,6 +74,7 @@ export class Order implements IOrder{
 
   public get Id() { return this._id }
   public get DeliveryDate() { return this.deliveryDate }
+  public get DeliveryTime() { return this.deliveryTime }
   public get Destination() { return this.destination }
   public get MealPrice() { return this.mealPrice }
   public get Meals() { return this.meals }
@@ -86,6 +92,7 @@ export class Order implements IOrder{
     return {
       _id,
       deliveryDate: order.deliveryDate,
+      deliveryTime: order.deliveryTime,
       destination: Destination.getICopy(order.destination),
       mealPrice,
       meals: order.meals.map(meal => CartMeal.getICopy(meal)),
@@ -99,6 +106,7 @@ export class Order implements IOrder{
     return {
       _id,
       deliveryDate: order.deliveryDate,
+      deliveryTime: order.deliveryTime,
       destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
       mealPrice: order.costs.mealPrice,
       meals: order.rest.meals,
@@ -115,6 +123,7 @@ export class Order implements IOrder{
       phone: order.Phone,
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
+      deliveryTime: order.DeliveryTime,
       // todo simon add this
       // donationCount: cart ? cart.DonationCount : null
     }
@@ -133,8 +142,9 @@ export class Order implements IOrder{
       phone,
       destination,
       deliveryDate,
+      deliveryTime,
     }: IUpdateOrderInput
-  ): Partial<EOrder> {
+  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
     return {
       rest: {
         restId,
@@ -150,6 +160,7 @@ export class Order implements IOrder{
         flatRateFee: 123,
       },
       deliveryDate,
+      deliveryTime,
       consumer: {
         userId: consumer.userId,
         profile: {
@@ -207,6 +218,7 @@ export class Order implements IOrder{
         flatRateFee: 0,
       },
       deliveryDate: cart.deliveryDate,
+      deliveryTime: cart.consumerPlan.deliveryTime,
     }
   }
 }

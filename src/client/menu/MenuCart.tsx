@@ -84,6 +84,7 @@ const MenuCart: React.FC<{
       cart,
       rest.data ? rest.data.Profile.Name : null,
       Plan.getMealPrice(stripePlanId, sortedPlans.data),
+      Plan.getPlanCount(stripePlanId, sortedPlans.data),
     );
   }
   const incrementDonationCount = useIncrementCartDonationCount();

@@ -1,7 +1,7 @@
 import { getNextDeliveryDate } from './utils';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { deliveryDay, IConsumerPlan, CuisineType } from '../consumer/consumerModel';
+import { deliveryDay, IConsumerPlan, CuisineType, deliveryTime } from '../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 
@@ -53,7 +53,7 @@ export interface ICartInput {
   readonly consumerPlan: IConsumerPlan
   readonly meals: ICartMeal[]
   readonly donationCount: number
-  readonly phone: string//shared
+  readonly phone: string
   readonly destination: IDestination
   readonly deliveryDate: number
 };
@@ -65,6 +65,7 @@ export interface ICart {
   readonly stripePlanId: string | null;
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
+  readonly deliveryTime: deliveryTime | null;
 }
 
 export class Cart implements ICart {
@@ -74,6 +75,7 @@ export class Cart implements ICart {
   readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
+  readonly deliveryTime: deliveryTime | null;
 
   constructor(cart: ICart) {
     this.donationCount = cart.donationCount;
@@ -82,9 +84,11 @@ export class Cart implements ICart {
     this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
     this.zip = cart.zip;
+    this.deliveryTime = cart.deliveryTime;
   }
 
   public get DeliveryDay() { return this.deliveryDay }
+  public get DeliveryTime() { return this.deliveryTime }
   public get DonationCount() { return this.donationCount }
   public get Meals() { return this.meals }
   public get StripePlanId() { return this.stripePlanId }
@@ -153,7 +157,7 @@ export class Cart implements ICart {
     instructions: string,
     cuisines: CuisineType[],
   ): ICartInput {
-    if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null) {
+    if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null || this.DeliveryTime === null) {
       const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
       console.error(err.stack);
       throw err;
@@ -167,6 +171,7 @@ export class Cart implements ICart {
       consumerPlan: {
         stripePlanId: this.StripePlanId,
         deliveryDay: this.DeliveryDay,
+        deliveryTime: this.DeliveryTime,
         cuisines,
       },
       deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),
