@@ -1,29 +1,29 @@
+import { sendChoosePlanMetrics } from './myPlanMetrics';
 import { Order } from './../../order/orderModel';
 import { Cart } from '../../order/cartModel';
 import { analyticsService, events } from "../utils/analyticsService";
 
 export const sendEditOrderMetrics = (
   fromOrder: Order,
+  fromPlanMealCount: number | null,
   toCart: Cart,
-  toRestName: string,
-  toMealPrice: number,
+  toPlanMealPrice: number,
+  toPlanMealCount: number,
+  toRestName?: string
 ) => {
-  const toMealCount = Cart.getMealCount(toCart.Meals);
   analyticsService.trackEvent(events.EDITED_ORDER, {
-    fromCount: Cart.getMealCount(fromOrder.Meals),
     fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
     fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
-    fromMealPrice: fromOrder.MealPrice,
-    fromDonationCount: fromOrder.DonationCount,
-    toMealCount,
+    fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
+    fromOrderDonationCount: fromOrder.DonationCount,
+    fromPlanMealPrice: fromOrder.MealPrice,
+    fromPlanMealCount,
     toRestId: toCart.RestId,
     toRestName,
-    toMealPrice,
-    toDonationCount: toCart.DonationCount,
-  });
-  analyticsService.trackEvent(events.CHOSE_PLAN, {
-    mealCount: toMealCount,
-    mealPrice: toMealPrice,
+    toCartMealCount: Cart.getMealCount(toCart.Meals),
+    toCartDonationCount: toCart.DonationCount,
+    toPlanMealPrice,
+    toPlanMealCount,
   });
   fromOrder.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {
@@ -41,12 +41,19 @@ export const sendEditOrderMetrics = (
       });
     }
   });
+  sendChoosePlanMetrics(
+    toPlanMealPrice,
+    toPlanMealCount,
+    fromOrder.MealPrice || undefined,
+    fromPlanMealCount || undefined
+  );
 }
 
 export const sendSkippedOrderMetrics = (
   fromOrder: Order,
   fromRestName: string,
-  fromMealPrice: number,
+  fromPlanMealPrice: number,
+  fromPlanMealCount: number
 ) => {
   if (!fromOrder.Rest) {
     const err = new Error('No rest');
@@ -56,9 +63,10 @@ export const sendSkippedOrderMetrics = (
   analyticsService.trackEvent(events.SKIPPED_ORDER, {
     fromRestId: fromOrder.Rest.Id,
     fromRestName,
-    fromMealPrice,
-    fromMealCount: Cart.getMealCount(fromOrder.Meals),
-    fromDonationCount: fromOrder.DonationCount
+    fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
+    fromOrderDonationCountCount: fromOrder.DonationCount,
+    fromPlanMealPrice,
+    fromPlanMealCount, 
   });
   fromOrder.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {

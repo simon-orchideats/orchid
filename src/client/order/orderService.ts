@@ -20,6 +20,7 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
     myUpcomingOrders {
       _id
       deliveryDate
+      deliveryTime
       destination {
         address {
           address1

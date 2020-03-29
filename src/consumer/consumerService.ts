@@ -54,35 +54,6 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
   });
 }
 
-export const useAddConsumerEmail = (): [
-  (email: string) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  }
-] => {
-  type res = { insertEmail: MutationBoolRes };
-  type vars = { email: string }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation insertEmail($email: String!) {
-      insertEmail(email: $email) {
-        res
-        error
-      }
-    }
-  `);
-  const addConsumerEmail = (email: string) => {
-    mutate({ variables: { email } })
-  }
-  return useMemo(() => [
-    addConsumerEmail,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.insertEmail : undefined,
-    }
-  ], [mutation]);
-}
-
 export const useUpdateMyProfile = (): [
   (consumer: Consumer, profile: IConsumerProfile) => void,
   {

@@ -13,6 +13,7 @@ export const events = {
   CHECKEDOUT: 'Checkedout',
   CHECKEDOUT_MEALS: 'Checkedout meals',
   CHOSE_DELIVERY_DAY: 'Chose delivery day',
+  CHOSE_DELIVERY_TIME: 'Chose delivery time',
   CHOSE_PLAN: 'Chose plan',
   EDITED_ORDER: 'Edited order',
   EDITED_ORDER_FROM_MEALS: 'Edited order from meals',
@@ -28,8 +29,6 @@ export const events = {
   UPDATED_ADDRESS: 'Updated address',
   UPDATED_CARD: 'Updated card',
   UPDATED_PHONE: 'Updated phone',
-  UPDATED_PLAN: 'Updated plan',
-  UPDATED_DELIVERY_DAY: 'Updated delivery day',
 }
 
 class AnalyticsService {

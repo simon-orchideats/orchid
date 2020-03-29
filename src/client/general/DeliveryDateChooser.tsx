@@ -1,7 +1,7 @@
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import { makeStyles, FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { deliveryDay } from "../../consumer/consumerModel";
+import { deliveryDay, deliveryTime, ConsumerPlan } from "../../consumer/consumerModel";
 import { useState, useRef, useEffect } from "react";
 import withClientApollo from '../utils/withClientApollo';
 
@@ -21,7 +21,14 @@ const useStyles = makeStyles(theme => ({
 const DeliveryDateChooser: React.FC<{
   onDayChange: (d: deliveryDay) => void
   day: deliveryDay
-}> = ({ onDayChange, day }) => {
+  onTimeChange: (t: deliveryTime) => void
+  time: deliveryTime
+}> = ({
+  onDayChange,
+  day,
+  onTimeChange,
+  time,
+}) => {
   const classes = useStyles();
   const inputLabel = useRef<HTMLLabelElement>(null);
   const [labelWidth, setLabelWidth] = useState(0);
@@ -63,6 +70,22 @@ const DeliveryDateChooser: React.FC<{
           <MenuItem value={2}>Tue</MenuItem>
           <MenuItem value={4}>Thur</MenuItem>
           <MenuItem value={6}>Sat</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
+        <InputLabel>
+          Delivery time
+        </InputLabel>
+        <Select
+          value={time}
+          onChange={e => onTimeChange(e.target.value as deliveryTime)}
+        >
+          <MenuItem value={'OnePToTwoP'}>{ConsumerPlan.getDeliveryTimeStr('OnePToTwoP')}</MenuItem>
+          <MenuItem value={'TwoPToThreeP'}>{ConsumerPlan.getDeliveryTimeStr('TwoPToThreeP')}</MenuItem>
+          <MenuItem value={'ThreePToFourP'}>{ConsumerPlan.getDeliveryTimeStr('ThreePToFourP')}</MenuItem>
+          <MenuItem value={'FourPToFiveP'}>{ConsumerPlan.getDeliveryTimeStr('FourPToFiveP')}</MenuItem>
+          <MenuItem value={'FivePToSixP'}>{ConsumerPlan.getDeliveryTimeStr('FivePToSixP')}</MenuItem>
+          <MenuItem value={'SixPToSevenP'}>{ConsumerPlan.getDeliveryTimeStr('SixPToSevenP')}</MenuItem>
         </Select>
       </FormControl>
     </>

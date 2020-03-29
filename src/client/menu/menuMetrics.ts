@@ -4,14 +4,16 @@ import { analyticsService, events } from "../utils/analyticsService";
 export const sendCartMenuMetrics = (
   cart: Cart,
   restName: string | null,
-  mealPrice: number,
+  planMealPrice: number,
+  planMealCount: number
 ) => {
   analyticsService.trackEvent(events.FILLED_CART, {
-    mealCount: Cart.getMealCount(cart.Meals),
     restId: cart.RestId,
     restName,
-    mealPrice,
     donationCount: cart.DonationCount,
+    cartMealCount: Cart.getMealCount(cart.Meals),
+    planMealPrice,
+    planMealCount,
   });
   cart.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {

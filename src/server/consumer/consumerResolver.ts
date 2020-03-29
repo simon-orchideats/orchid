@@ -13,13 +13,6 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().cancelSubscription(signedInUser, req, res);
   },
 
-  insertEmail: async (
-    _root,
-    { email }: { email: string },
-  ) => {
-    return await getConsumerService().insertEmail(email);
-  },
-
   signUp: async (
     _root,
     { email, name, pass }: { email: string, name: string, pass: string, },

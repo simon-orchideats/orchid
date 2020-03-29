@@ -4,7 +4,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile, deliveryTime } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
@@ -231,7 +231,7 @@ class OrderService {
     });
   } 
 
-  private validatePlan(planId: string, cartMealCount: number, donationCount: number) {
+  private validatePlan(planId: string, cartMealCount: number) {
     if (!this.planService) return Promise.reject('PlanService not set');
     return this.planService.getPlan(planId)
       .then(stripePlan => {
@@ -240,7 +240,7 @@ class OrderService {
           console.warn('[OrderService]', msg);
           return msg;
         }
-        if (cartMealCount+donationCount !== stripePlan.mealCount) {
+        if (cartMealCount !== stripePlan.mealCount) {
           const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
           console.warn('[OrderService]', msg);
           return msg;
@@ -274,7 +274,7 @@ class OrderService {
 
     const p1 = this.validateRest(cart.restId, cart.meals);
     const p2 = this.validateAddress(cart.destination.address);
-    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals), cart.donationCount);
+    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals)+cart.donationCount);
 
     const messages = await Promise.all([p1, p2, p3]);
     if (messages[0]) {
@@ -380,6 +380,7 @@ class OrderService {
         rest,
         status: 'Open',
         stripeSubscriptionId: consumer.stripeSubscriptionId,
+        deliveryTime: consumer.plan.deliveryTime,
         donationCount: 0
       }
       console.log('about to index new order', eOrder);
@@ -416,6 +417,7 @@ class OrderService {
         deliveryDay,
         cuisines,
         stripePlanId,
+        deliveryTime,
       } = cart.consumerPlan;
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
@@ -478,6 +480,7 @@ class OrderService {
         plan: {
           stripePlanId,
           deliveryDay,
+          deliveryTime,
           cuisines,
         },
         profile: {
@@ -773,9 +776,10 @@ class OrderService {
       const getNewOrder = (
         rest: { restId: string, meals: ICartMeal[] } | null,
         deliveryDate: number,
+        deliveryTime: deliveryTime,
         invoiceDate: number,
         order: EOrder,
-      ): Partial<EOrder> => ({
+      ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'consumer'> => ({
         costs: {
           ...order.costs,
           mealPrice,
@@ -786,11 +790,14 @@ class OrderService {
         rest: rest || order.rest,
         invoiceDate,
         deliveryDate,
+        deliveryTime,
+        donationCount: order.donationCount
       })
       return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
         if (!this.restService) throw new Error ('RestService not set');
         const deliveryDate = getNextDeliveryDate(plan.deliveryDay).add(orderNum, 'w').valueOf();
         const invoiceDate = moment(deliveryDate).subtract(2, 'd').valueOf();
+        const deliveryTime = plan.deliveryTime;
         if (order.rest.restId) {
           const rest = await this.restService.getRest(order.rest.restId);
           if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
@@ -803,13 +810,13 @@ class OrderService {
                 doc: getNewOrder(
                   null,
                   deliveryDate,
+                  deliveryTime,
                   invoiceDate,
                   order
                 ),
               }
             })
-          };
-          if (numMealsInOrder > targetMealCount) {
+          } else if (numMealsInOrder > targetMealCount) {
             removeMealsRandomly(order.rest.meals, numMealsInOrder - targetMealCount);
           } else {
             const randomMeals = chooseRandomMeals(rest.menu, targetMealCount - numMealsInOrder);
@@ -838,6 +845,7 @@ class OrderService {
                   meals: order.rest.meals
                 },
                 deliveryDate,
+                deliveryTime,
                 invoiceDate,
                 order
               ),
@@ -849,7 +857,7 @@ class OrderService {
             index: ORDER_INDEX,
             id: _id,
             body: {
-              doc: getNewOrder(eOrderRest, deliveryDate, invoiceDate, order),
+              doc: getNewOrder(eOrderRest, deliveryDate, deliveryTime, invoiceDate, order),
             }
           })
         }

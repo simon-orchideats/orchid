@@ -20,7 +20,6 @@ import { OutgoingMessage, IncomingMessage } from 'http';
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
-  insertEmail: (email: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
@@ -88,6 +87,7 @@ class ConsumerService implements IConsumerService {
               phone: order.consumer.profile.phone!,
               destination: order.consumer.profile.destination!,
               deliveryDate: order.deliveryDate,
+              deliveryTime: order.deliveryTime,
               donationCount: order.donationCount,
               name: order.consumer.profile.name
             }).catch(e => {
@@ -149,7 +149,7 @@ class ConsumerService implements IConsumerService {
         console.error(msg)
         throw e;
       });
-      const updatedConsumer: Partial<EConsumer> = {
+      const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
         stripeSubscriptionId: null,
         plan: null,
       }
@@ -270,49 +270,6 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
       throw new Error('Internal Server Error');
-    }
-  }
-
-  async insertEmail(email: string): Promise<MutationBoolRes> {
-    try {
-      let res: ApiResponse<SearchResponse<any>>
-      try {
-        res = await this.elastic.search({
-          index: CONSUMER_INDEX,
-          size: 1000,
-          _source: 'false',
-          body: {
-            query: {
-              bool: {
-                filter: {
-                  term: {
-                    'profile.email': email
-                  }
-                }
-              }
-            }
-          }
-        });
-      } catch (e) {
-        throw new Error(`Couldn't seach for consumer email ${email}. ${e.stack}`);
-      }
-      if (res.body.hits.total.value > 0) throw new Error('Email already exists');
-      await this.elastic.index({
-        index: CONSUMER_INDEX,
-        body: {
-          createdDate: Date.now(),
-          profile: {
-            email,
-          }
-        }
-      });
-      return {
-        res: true,
-        error: null,
-      }
-    } catch (e) {
-      console.error(`[ConsumerService] failed to insert email '${email}'`, e.stack);
-      throw e;
     }
   }
 

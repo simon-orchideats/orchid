@@ -82,33 +82,88 @@ export const CuisineTypes: {
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+export type deliveryTime =  'NineAToTenA' |
+'TenAToElevenA' |
+'ElevenAToTwelveP' |
+'TwelvePToOneP' |
+'OnePToTwoP' |
+'TwoPToThreeP' |
+'ThreePToFourP' |
+'FourPToFiveP' |
+'FivePToSixP' |
+'SixPToSevenP' |
+'SevenPToEightP' |
+'EightPToNineP' |
+'NinePToTenP'
+
+const deliveryTimes: {
+  NineAToTenA: '9am - 10pm',
+  TenAToElevenA: '10am - 11pm',
+  ElevenAToTwelveP: '11am - 12pm',
+  TwelvePToOneP: '12pm - 1pm',
+  OnePToTwoP: '1pm - 2pm',
+  TwoPToThreeP: '2pm - 3pm',
+  ThreePToFourP: '3pm - 4pm',
+  FourPToFiveP: '4pm - 5pm',
+  FivePToSixP: '5pm - 6pm',
+  SixPToSevenP: '6pm - 7pm',
+  SevenPToEightP: '7pm - 8pm',
+  EightPToNineP: '8pm - 9pm',
+  NinePToTenP: '9pm - 10pm',
+} = {
+  NineAToTenA: '9am - 10pm',
+  TenAToElevenA: '10am - 11pm',
+  ElevenAToTwelveP: '11am - 12pm',
+  TwelvePToOneP: '12pm - 1pm',
+  OnePToTwoP: '1pm - 2pm',
+  TwoPToThreeP: '2pm - 3pm',
+  ThreePToFourP: '3pm - 4pm',
+  FourPToFiveP: '4pm - 5pm',
+  FivePToSixP: '5pm - 6pm',
+  SixPToSevenP: '6pm - 7pm',
+  SevenPToEightP: '7pm - 8pm',
+  EightPToNineP: '8pm - 9pm',
+  NinePToTenP: '9pm - 10pm',
+}
+
 export interface IConsumerPlan {
   readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
+  readonly deliveryTime: deliveryTime
   readonly cuisines: CuisineType[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
   readonly stripePlanId: string
   readonly deliveryDay: deliveryDay
+  readonly deliveryTime: deliveryTime
   readonly cuisines: CuisineType[]
 
   constructor(consumerPlan: IConsumerPlan) {
     this.stripePlanId = consumerPlan.stripePlanId
     this.deliveryDay = consumerPlan.deliveryDay;
     this.cuisines = consumerPlan.cuisines.map(c => c);
+    this.deliveryTime = consumerPlan.deliveryTime;
   }
 
+  public get DeliveryTime() { return this.deliveryTime }
   public get StripePlanId() { return this.stripePlanId }
   public get DeliveryDay() { return this.deliveryDay }
   public get Cuisines() { return this.cuisines }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
-      stripePlanId: plan.stripePlanId,
-      deliveryDay: plan.deliveryDay,
+      ...plan,
       cuisines: plan.cuisines.map(c => c),
     }
+  }
+
+  static getDeliveryTimeStr(deliveryTime: deliveryTime) {
+    return deliveryTimes[deliveryTime];
+  }
+
+  static getDefaultDeliveryTime(): 'ThreePToFourP' {
+    return 'ThreePToFourP';
   }
 }
 

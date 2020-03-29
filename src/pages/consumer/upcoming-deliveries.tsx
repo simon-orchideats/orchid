@@ -25,6 +25,7 @@ import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkippedOrderMetrics, sendEditOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { isServer } from "../../client/utils/isServer";
+import { ConsumerPlan } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -253,28 +254,27 @@ const DeliveryOverview: React.FC<{
       throw err;
     }
     const cartMealCount = Cart.getMealCount(cart.Meals);
-    const cartPlanId = Plan.getPlanId(cartMealCount+order.donationCount, plans.data);
+    const cartPlanId = Plan.getPlanId(cartMealCount + cart.DonationCount, plans.data);
     if (!cartPlanId) {
       const err = new Error('No car plan');
       console.error(err.stack);
       throw err;
     }
-    const mealPrice = Plan.getMealPrice(cartPlanId, plans.data);
-    if (!mealPrice) {
+    const planMealPrice = Plan.getMealPrice(cartPlanId, plans.data);
+    const planMealCount = Plan.getPlanCount(cartPlanId, plans.data);
+    if (!planMealPrice) {
       const err = new Error('No cart meal price');
       console.error(err.stack);
       throw err;
     }
-    if (!rest.data) {
-      const err = new Error('No cart rest');
-      console.error(err.stack);
-      throw err;
-    }
+    
     sendEditOrderMetrics(
       order,
+      order.MealPrice && Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
       cart,
-      rest.data.Profile.Name,
-      mealPrice,
+      planMealPrice,
+      planMealCount,
+      rest.data?.Profile.Name,
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
@@ -289,10 +289,16 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
+    if (!plans.data) {
+      const err = new Error('No plans');
+      console.error(err.stack);
+      throw err;
+    }
     sendSkippedOrderMetrics(
       order,
       order.Rest.Profile.Name,
       order.MealPrice,
+      Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order));
   }
@@ -306,7 +312,7 @@ const DeliveryOverview: React.FC<{
             Deliver on
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {moment(order.DeliveryDate).format('M/DD/Y')}
+            {moment(order.DeliveryDate).format('M/DD/Y')}, {ConsumerPlan.getDeliveryTimeStr(order.DeliveryTime)}
           </Typography>
         </div>
         <div className={classes.column}>

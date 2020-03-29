@@ -46,6 +46,7 @@ const MenuCart: React.FC<{
   const consumer = useGetConsumer();
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
+  console.log()
   const rest = useGetRest(cart ? cart.RestId : null);
   const fixedMealCount = (cart && cart.StripePlanId) ? Plan.getPlanCount(cart.StripePlanId, sortedPlans.data || []) : 0;
   const donationCount = cart ? cart.DonationCount : 0;
@@ -85,6 +86,7 @@ const MenuCart: React.FC<{
       cart,
       rest.data ? rest.data.Profile.Name : null,
       Plan.getMealPrice(stripePlanId, sortedPlans.data),
+      Plan.getPlanCount(stripePlanId, sortedPlans.data),
     );
   }
   const incrementDonationCount = useIncrementCartDonationCount();

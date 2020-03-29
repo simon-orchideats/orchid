@@ -1,20 +1,20 @@
+import { deliveryTime } from './../../consumer/consumerModel';
 import { analyticsService, events } from "../utils/analyticsService";
 import { CuisineType } from '../../consumer/consumerModel';
 
-
 export const sendCancelSubscriptionMetrics = (
-  fromMealPrice: number,
-  fromMealCount: number
+  fromPlanMealPrice: number,
+  fromPlanMealCount: number
 ) => {
   analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
-    fromMealPrice,
-    fromMealCount,
+    fromPlanMealPrice,
+    fromPlanMealCount,
   });
 }
 
-export const sendUpdateCuisinesMetrics = (
-  oldCuisines: CuisineType[],
+export const sendChooseCuisineMetrics = (
   newCuisines: CuisineType[],
+  oldCuisines: CuisineType[] = [],
 ) => {
   const addedCuisines: CuisineType[] = [];
   const removedCuisines: CuisineType[] = [];
@@ -40,33 +40,36 @@ export const sendUpdateCuisinesMetrics = (
   });
 }
 
-export const sendUpdateDeliveryDayMetrics = (
-  fromDay: number,
+export const sendChooseDeliveryDayMetrics = (
   toDay: number,
+  fromDay?: number,
 ) => {
-  analyticsService.trackEvent(events.UPDATED_DELIVERY_DAY, {
-    fromDay,
-    toDay,
-  });
   analyticsService.trackEvent(events.CHOSE_DELIVERY_DAY, {
-    day: toDay,
+    toDay,
+    fromDay,
   });
 }
 
-export const sendUpdatePlanMetrics = (
-  fromMealPrice: number,
-  fromMealCount: number,
-  toMealPrice: number,
-  toMealCount: number,
+export const sendChooseDeliveryTimeMetrics = (
+  toTime: deliveryTime,
+  fromTime?: deliveryTime,
 ) => {
-  analyticsService.trackEvent(events.UPDATED_PLAN, {
-    fromMealPrice,
-    fromMealCount,
-    toMealPrice,
-    toMealCount,
+  analyticsService.trackEvent(events.CHOSE_DELIVERY_TIME, {
+    toTime,
+    fromTime,
   });
+}
+
+export const sendChoosePlanMetrics = (
+  toPlanMealPrice: number,
+  toPlanMealCount: number,
+  fromPlanMealPrice?: number,
+  fromPlanMealCount?: number,
+) => {
   analyticsService.trackEvent(events.CHOSE_PLAN, {
-    mealCount: toMealCount,
-    mealPrice: toMealPrice,
+    toPlanMealPrice,
+    toPlanMealCount,
+    fromPlanMealPrice,
+    fromPlanMealCount,
   });
 }

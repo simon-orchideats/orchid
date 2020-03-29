@@ -1,6 +1,6 @@
 import { Container, makeStyles, Typography, Button } from "@material-ui/core";
 import Faq from "../client/general/Faq";
-import { useGetCart, useUpdateDeliveryDay } from "../client/global/state/cartState";
+import { useGetCart, useUpdateDeliveryDay, useUpdateDeliveryTime } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import Link from "next/link";
 import Router from 'next/router'
@@ -10,7 +10,7 @@ import DeliveryDateChooser from '../client/general/DeliveryDateChooser'
 import { getNextDeliveryDate } from '../order/utils';
 import { checkoutRoute } from "./checkout";
 import { useState } from "react";
-import { deliveryDay } from "../consumer/consumerModel";
+import { deliveryDay, deliveryTime, ConsumerPlan } from "../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -42,7 +42,9 @@ const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const [day, setDay] = useState<deliveryDay>(0);
+  const [time, setTime] = useState<deliveryTime>(ConsumerPlan.getDefaultDeliveryTime());
   const updateDeliveryDay = useUpdateDeliveryDay();
+  const updateDeliveryTime = useUpdateDeliveryTime();
   if (!cart && !isServer()) Router.replace(`${menuRoute}`);
   return (
     <>
@@ -54,13 +56,18 @@ const delivery = () => {
         >
           Choose a repeat delivery day
         </Typography>
-        <DeliveryDateChooser day={day} onDayChange={day => setDay(day)}/>
+        <DeliveryDateChooser
+          day={day}
+          onDayChange={day => setDay(day)}
+          time={time}
+          onTimeChange={time => setTime(time)}
+        />
         <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
           <Typography variant='subtitle1'>
             First delivery:&nbsp;
           </Typography>
           <Typography variant='subtitle1'>
-            {getNextDeliveryDate(day).format('M/D/YY')}, 3pm - 7pm
+            {getNextDeliveryDate(day).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(time)}
           </Typography>
         </div>
         <Link href={checkoutRoute}>
@@ -68,7 +75,10 @@ const delivery = () => {
             variant='contained'
             color='primary'
             fullWidth
-            onClick={() => updateDeliveryDay(day)}
+            onClick={() => {
+              updateDeliveryDay(day);
+              updateDeliveryTime(time);
+            }}
           >
             Next
           </Button>

@@ -1,31 +1,22 @@
 import { Cart } from '../../order/cartModel';
 import { analyticsService, events } from "../utils/analyticsService";
 import { CuisineType } from '../../consumer/consumerModel';
+import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseDeliveryTimeMetrics, sendChooseCuisineMetrics } from '../consumer/myPlanMetrics';
 
 export const sendCheckoutMetrics = (
   cart: Cart,
   restName: string,
-  mealPrice: number,
+  planMealPrice: number,
+  planMealCount: number,
   cuisines: CuisineType[],
 ) => {
   analyticsService.trackEvent(events.CHECKEDOUT, {
-    mealCount: Cart.getMealCount(cart.Meals),
-    restId: cart.RestId,
-    restName,
-    mealPrice,
-    donationCount: cart.DonationCount,
-  });
-  analyticsService.trackEvent(events.CHOSE_PLAN, {
-    mealCount: Cart.getMealCount(cart.Meals),
-    mealPrice,
-  });
-  analyticsService.trackEvent(events.CHOSE_DELIVERY_DAY, {
-    day: cart.DeliveryDay,
-  });
-  cuisines.forEach(cuisine => {
-    analyticsService.trackEvent(events.ADDED_CUISINE, {
-      cuisine
-    });
+    cartRestId: cart.RestId,
+    cartRestName: restName,
+    cartDonationCount: cart.DonationCount,
+    cartMealCount: Cart.getMealCount(cart.Meals),
+    planMealPrice,
+    planMealCount,
   });
   cart.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {
@@ -35,4 +26,18 @@ export const sendCheckoutMetrics = (
       });
     }
   });
+  sendChoosePlanMetrics(planMealPrice, planMealCount);
+  if (!cart.DeliveryDay) {
+    const err = new Error('Missing delivery day');
+    console.error(err.stack);
+    throw err;
+  }
+  if (!cart.DeliveryTime) {
+    const err = new Error('Missing delivery time');
+    console.error(err.stack);
+    throw err;
+  }
+  sendChooseDeliveryDayMetrics(cart.DeliveryDay);
+  sendChooseDeliveryTimeMetrics(cart.DeliveryTime);
+  sendChooseCuisineMetrics(cuisines);
 }
