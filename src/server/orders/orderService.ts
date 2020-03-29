@@ -382,6 +382,7 @@ class OrderService {
         stripeSubscriptionId: consumer.stripeSubscriptionId,
         donationCount: 0 // new automatic order
       }
+      console.log('about to index new order', eOrder);
       await this.elastic.index({
         index: ORDER_INDEX,
         body: eOrder

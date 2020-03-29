@@ -14,8 +14,7 @@ export const sendEditOrderMetrics = (
     fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
     fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
     fromMealPrice: fromOrder.MealPrice,
-    // todo simon: enable this
-    // fromDonationCount: fromOrder.DonationCount
+    fromDonationCount: fromOrder.DonationCount,
     toMealCount,
     toRestId: toCart.RestId,
     toRestName,
@@ -59,8 +58,7 @@ export const sendSkippedOrderMetrics = (
     fromRestName,
     fromMealPrice,
     fromMealCount: Cart.getMealCount(fromOrder.Meals),
-    //todo simon. enable this
-    // fromDonationCount: fromOrder.DonationCount
+    fromDonationCount: fromOrder.DonationCount
   });
   fromOrder.Meals.forEach(meal => {
     for (let i = 0; i < meal.Quantity; i++) {

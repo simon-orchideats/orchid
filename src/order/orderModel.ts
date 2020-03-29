@@ -84,6 +84,8 @@ export class Order implements IOrder{
   public get Phone() { return this.phone }
   public get Rest() { return this.rest }
   public get Status() { return this.status }
+  public get DonationCount() { return this.donationCount}
+  public get Name() { return this.name}
 
   static getIOrderFromUpdatedOrderInput(
     _id: string,
@@ -122,15 +124,14 @@ export class Order implements IOrder{
   }
 
   static getUpdatedOrderInput(order: Order, cart?: Cart): IUpdateOrderInput {
-    console.log('UPDASTING',cart)
     return {
       restId: cart && cart.RestId ? cart.RestId : null,
       meals: cart && Cart.getMealCount(cart.Meals) ? cart.Meals : [],
       phone: order.Phone,
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
-      name: order.name,
-      donationCount: cart ? cart.donationCount : 0
+      name: order.Name,
+      donationCount: cart ? cart.DonationCount : 0
     }
   }
 

@@ -38,12 +38,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return
     }
 
+    // Use invoice upcoming instead of invoice created because when a consumer cancels that creates an invoice
+    // and we dont wanna create an automatically generated order for someone who is cancelling
     if (event.type !== 'invoice.upcoming') {
       console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
       res.json({ received: true });
       return;
     }
-
+    console.log('got invoice.upcoming event')
     const invoice = event.data.object as Stripe.Invoice
     try {
       const stripeCustomerId = invoice.customer as string;
@@ -62,6 +64,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         mealCount,
         mealPrice,
       } = planInvoiceLineItem.plan.metadata;
+
+      console.log('gonna call getOrderService().addAutomaticOrder()')
       await getOrderService().addAutomaticOrder(
         consumer,
         // 2 weeks because 1 week would be nextnext order
