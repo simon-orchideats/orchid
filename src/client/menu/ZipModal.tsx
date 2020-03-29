@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, 
+  // useTheme 
+} from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import { TextField, Paper, Typography, Grid, Button } from '@material-ui/core';
@@ -7,14 +9,17 @@ import { useUpdateZip } from '../global/state/cartState';
 import { sendZipMetrics } from './menuMetrics';
 
 const useStyles = makeStyles(theme => ({
-  close: {
-    [theme.breakpoints.down('xs')]: {
-      color: theme.palette.common.white
+  modal: {
+    // need to do media query to override the inline-styles that material uses
+    '@media (min-width:0px)': {
+      top: `${theme.mixins.toolbar.height}px !important`,
     },
-    cursor: 'pointer',
-    position: 'absolute',
-    top: theme.spacing(4),
-    right: theme.spacing(4),
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      top: `${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px !important`,
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      top: `${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px !important`
+    },
   },
   img: {
     [theme.breakpoints.down('sm')]: {
@@ -70,6 +75,7 @@ const ZipModal: React.FC<{
   defaultZip,
 }) => {
   const classes = useStyles();
+  // const theme = useTheme();
   const [error, setError] = useState('');
   const [zip, setZip] = useState<string>('');
   const updateCartZip = useUpdateZip()
@@ -86,6 +92,18 @@ const ZipModal: React.FC<{
   }
   return (
     <Modal
+      // style instead className because material-ui uses direct styles and we need to override them
+      // style={{
+      //   // @ts-ignore // +9 chosen by inspection
+      //   top: `${theme.mixins.toolbar.height + 9}px`,
+      //   // [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      //   //   top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height,
+      //   // },
+      //   // [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      //   //   top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height
+      //   // },
+      // }}
+      className={classes.modal}
       open={open}
       onClose={onClose}
       BackdropComponent={() => null}
