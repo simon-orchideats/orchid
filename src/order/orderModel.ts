@@ -122,6 +122,7 @@ export class Order implements IOrder{
   }
 
   static getUpdatedOrderInput(order: Order, cart?: Cart): IUpdateOrderInput {
+    console.log('UPDASTING',cart)
     return {
       restId: cart && cart.RestId ? cart.RestId : null,
       meals: cart && Cart.getMealCount(cart.Meals) ? cart.Meals : [],
@@ -147,7 +148,6 @@ export class Order implements IOrder{
       deliveryDate,
     }: IUpdateOrderInput
   ): Partial<EOrder> {
-    console.log('MEALPRICE',mealPrice)
     return {
       rest: {
         restId,

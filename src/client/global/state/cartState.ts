@@ -317,7 +317,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     return updateCartCache(cache, new Cart({
       // todo simon: should be donationCount: order.DonationCount
-      donationCount: 0,
+      donationCount: order.donationCount,
       meals: order.Meals,
       restId: order.Rest.Id,
       stripePlanId: planId,

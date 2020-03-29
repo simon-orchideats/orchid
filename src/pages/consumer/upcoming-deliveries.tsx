@@ -225,8 +225,8 @@ const DeliveryOverview: React.FC<{
   };
   const onEdit = () => {
     if (order.Rest) {
-      console.log('donationCOunt',order.donationCount)
-      console.log(order);
+      //console.log('donationCOunt',order.donationCount)
+     // console.log(order);
       const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
       const planId = Plan.getPlanId(mealCount, plans.data)
       if (!planId) {
