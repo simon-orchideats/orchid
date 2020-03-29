@@ -380,7 +380,7 @@ class OrderService {
         rest,
         status: 'Open',
         stripeSubscriptionId: consumer.stripeSubscriptionId,
-        donationCount: 0 // new automatic order
+        donationCount: 0
       }
       console.log('about to index new order', eOrder);
       await this.elastic.index({
