@@ -54,12 +54,12 @@ type config = {
     },
     stripe: {
       key: string
+      hookSecret: string
     },
   }
 }
 
 const devUrl = 'http://localhost:8443';
-const prodUrl = 'https://orchideats.com';
 
 const development: config = {
   client: {
@@ -129,7 +129,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
       }
     },
     stripe: {
-      key: process.env.STRIPE_KEY!
+      key: process.env.STRIPE_KEY!,
+      hookSecret: process.env.STRIPE_HOOK_SECRET!
     },
     sentry: {
       // dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
@@ -141,28 +142,34 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
   }
 };
 
+const prodUrl = 'https://orchideats.com';
+
 const production: config = {
   client: {
     app: {
       url: prodUrl,
     },
     auth: {
-      domain: 'foodflick.auth0.com',
-      clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
-      audience: 'https://saute.com',
+      domain: 'orchideats.auth0.com',
+      clientId: 'xjM2bZ6zvBl6u4OzjDRGxeAV5hvZQHOK',
+      audience: 'https://orchideats.com',
     },
     stripe: {
-      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+      // key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+      key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
     },
     logRocket: {
-      key: 'ugxrrj/orchid',
+      // key: 'ugxrrj/orchid',
+      key: '',
     },
     analytics: {
       amplitude: {
-        key: '3aa095499fd45cab00cbb40c5a65a9da',
+        // key: '3aa095499fd45cab00cbb40c5a65a9da',
+        key: ''
       },
       ga: {
-        trackingId: 'UA-158803692-1',
+        // trackingId: 'UA-158803692-1',
+        trackingId: '',
       }
     },
   },
@@ -172,32 +179,31 @@ const production: config = {
       url: 'https://orchideats.com',
     },
     auth: {
-      domain: 'foodflick.auth0.com',
-      clientId: 'yB4RJFwiguCLo0ATlr03Z1fnFjzc30Wg',
+      domain: 'orchideats.auth0.com',
+      clientId: 'xjM2bZ6zvBl6u4OzjDRGxeAV5hvZQHOK',
       audience: 'https://orchideats.com',
       secret: process.env.AUTH_SECRET!,
-      managementClientId: 'xofNOKgLq75hICbjLJHOhFJhP0E33tS5',
+      managementClientId: 'OVMLHOh8thZWyX695SXYAO1CvJ2E1pVw',
       managementSecret: process.env.AUTH_MANAGEMENT_SECRET!,
       publicKey: `-----BEGIN CERTIFICATE-----
-MIIDATCCAemgAwIBAgIJLREMbwE8DeepMA0GCSqGSIb3DQEBCwUAMB4xHDAaBgNV
-BAMTE2Zvb2RmbGljay5hdXRoMC5jb20wHhcNMTgwMjAyMjIzMjA0WhcNMzExMDEy
-MjIzMjA0WjAeMRwwGgYDVQQDExNmb29kZmxpY2suYXV0aDAuY29tMIIBIjANBgkq
-hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxNuO8QYUqRESqXaEzNdSxH+Jvs0d7l4N
-oVzZENIw0/D0AdF75CdYB2+Mi7Xz/WO8iZfGEeoyjXTG4RNERFiUL99Bi8GgjieI
-nimyFJH7db0ddiVQpcLDoIbgF0+PQH6PtAePKdXsfqQB2pT9w7nBYksLJerP333a
-ZcxQps1rt9hKm4W03pdrEz+xSZj9sWB6Wf4molPZyfESPBROlw4dk2Dj63GANvgc
-XoGoBrORgRRoaJnAORPXPJezkViBjTFDc0pEwCBBEI3/lVtp/JbozWJaqu3tfQCr
-5w7oyj8/tP5MiwJPGpjLg9bnw6B4pBrWfXwMP3m3kTrqupvE/W3cIwIDAQABo0Iw
-QDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRznsMCp6w8rkifGSAjan9qppUM
-YTAOBgNVHQ8BAf8EBAMCAoQwDQYJKoZIhvcNAQELBQADggEBAErwXe9nKeAi97MK
-w180YFqmeNSZte8dm7RzPvw1iUsAN1QF5gToGmvxHXwpuBAZs0aE7M89KyOWqmEw
-v1IiUjrem/VR0n4Saa1LkB/AKXb9x/O7QeZxfkEV/LE0W1z5XU2ZrWQZuyLfKkdu
-aQx4EHqH/bQYY/91mOWJB/UYmReDpmZ5xNKXLnU05fX5CF8W3OFwpdk0Eg08r8++
-m276/KnLks6VjskEbEhyAj8vYIrXI591DBRsNDH4mffOKUJdKT0MP4Ze17tu0mPC
-HH5LD0RE9irb3gEn+BFMOd2JyMbddf2HiFIiPErw+LhDoWr2jpmFc6tIieDm8Fcj
-CAXO0dg=
------END CERTIFICATE-----
-      `,
+MIIDAzCCAeugAwIBAgIJdtXnFEGQrHtaMA0GCSqGSIb3DQEBCwUAMB8xHTAbBgNV
+BAMTFG9yY2hpZGVhdHMuYXV0aDAuY29tMB4XDTIwMDMxNTE2NTM0MFoXDTMzMTEy
+MjE2NTM0MFowHzEdMBsGA1UEAxMUb3JjaGlkZWF0cy5hdXRoMC5jb20wggEiMA0G
+CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDJADnSv2ZTEF9Ogp42AWzGuDI7pMr3
+BKULVVw0LRrGbnnXTruWYsoVi5zQy9Etm5Dd5L+y1olCpk5z1IE9o9cfUizeNRTk
+Kcu5OZo9AHr3fiUTekRs/z3yD1shJPU32b0WmPr2tPUvcUTENfx7YEbq3z1uaIMp
+I2nhZlofCNgcVs/zgUOSA1/6XcHtkda9I/aD167a1Xm7EC1t8lpq7PHJCS8Zb3Yi
+POSMSyEJxDsw2UsU5DoCtNvBu+vNFyP2LE66b3yMxuLSSPhIcqmYTZXLD/35dnVo
+JMceyn06gAfeVisuKSsErXuDUHGmk0epjOqjjgYamZzFaPMdTOWzrz/ZAgMBAAGj
+QjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFJIB/3JXCP0/dQRo51LRmcSa
+R/yUMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEALpziR9s5wsml
+YuK2hVyA5Ftjir9H1SKr+fE/A9JTJlletX3gyl+9l1rcjMLm8wtdQ6KIidBRV7IV
+hKzxpEYDHPmGkNiYPycpbM6X6mQ4j+5NKvFlJ2sDX3z5O9fCpSNofMWj/HGExiC+
+vSew4L/i6dbzBOCzmrigLtzyqpIa/jDMbWoj7PV5LNxPuLR4z1a3BssW7VYYavfq
+K9iDSwnGyysGsDPn0tkAYa+FNSZ9KzbC7peZ2OnXQOF19TP3yB1PoDW/fLXu4hQF
+4QmCN+vJ6FB/jY2si61hGEoVl95zA8NOgfyONFp8193a5Pzg3nyQL/liC6WTP0O4
+D8hc31R0UA==
+-----END CERTIFICATE-----`,
     },
     elastic: {
       node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',
@@ -207,10 +213,12 @@ CAXO0dg=
       }
     },
     stripe: {
-      key: process.env.STRIPE_KEY!
+      key: process.env.STRIPE_KEY!,
+      hookSecret: process.env.STRIPE_HOOK_SECRET!
     },
     sentry: {
-      dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',
+      // dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',
+      dsn: '',
     },
     geo: {
       key: process.env.GEO_KEY!

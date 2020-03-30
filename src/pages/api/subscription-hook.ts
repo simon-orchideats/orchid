@@ -31,7 +31,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const sig = req.headers['stripe-signature']!
     let event: Stripe.Event
     try {
-      event = stripe.webhooks.constructEvent(buff.toString(), sig, 'whsec_zXIPgWgZs8Qk1pAmXjtA6I7PiSGiqER9')
+      event = stripe.webhooks.constructEvent(buff.toString(), sig, activeConfig.server.stripe.hookSecret)
     } catch (err) {
       console.error(`[SubscriptionHook] ${err.stack}`)
       res.status(400).send(`Webhook Error: ${err.message}`)
