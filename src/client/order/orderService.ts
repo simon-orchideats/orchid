@@ -177,7 +177,9 @@ export const useUpdateOrder = (): [
             rest = restRes.rest;
           }
           let mealPrice: number | null = null;
-          const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
+          const donationCount = updateOptions.donationCount;
+          const mealCount = Cart.getMealCount(updateOptions.meals);
+          const totalMealCount = mealCount + donationCount;
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
             if (!plans) {
@@ -185,15 +187,17 @@ export const useUpdateOrder = (): [
               console.error(err.stack);
               throw err;
             }
-            mealPrice = Plan.getMealPriceFromCount(mealCount, plans.availablePlans);
+            mealPrice = Plan.getMealPriceFromCount(totalMealCount, plans.availablePlans);
           }
+          const isAllDonations = mealCount === 0 && donationCount > 0;
+          const isSkipped = totalMealCount === 0;
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
             if (order._id !== orderId) return order;
             const newOrder = Order.getIOrderFromUpdatedOrderInput(
               orderId,
               updateOptions,
               mealPrice,
-              mealCount > 0 ? order.status : 'Skipped',
+              (isAllDonations || isSkipped) ? 'Skipped' : order.status,
               rest
             );
             //@ts-ignore
