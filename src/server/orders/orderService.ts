@@ -271,8 +271,10 @@ class OrderService {
       console.warn('[OrderService]', msg);
       return msg;
     }
-
-    const p1 = this.validateRest(cart.restId, cart.meals);
+    let p1;
+    if (cart.donationCount != 0 && Cart.getMealCount(cart.meals) > 0  && cart.restId) {
+      p1 = this.validateRest(cart.restId, cart.meals);
+    }
     const p2 = this.validateAddress(cart.destination.address);
     const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals)+cart.donationCount);
 

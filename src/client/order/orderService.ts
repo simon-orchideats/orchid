@@ -177,7 +177,7 @@ export const useUpdateOrder = (): [
             rest = restRes.rest;
           }
           let mealPrice: number | null = null;
-          const mealCount = Cart.getMealCount(updateOptions.meals);
+          const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
             if (!plans) {
