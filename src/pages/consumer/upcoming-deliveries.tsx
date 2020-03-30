@@ -6,7 +6,7 @@ import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
-import { Cart } from "../../order/cartModel";
+import { Cart, CartMeal } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
 import moment from "moment";
 import { Destination } from "../../place/destinationModel";
@@ -318,7 +318,7 @@ const DeliveryOverview: React.FC<{
             Total
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {order.MealPrice ? `${Cart.getMealCount(order.Meals)} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
+            {order.MealPrice ? `${Cart.getMealCount(order.Meals) + order.DonationCount} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
           </Typography>
         </div>
         <div className={classes.column}>
@@ -344,12 +344,22 @@ const DeliveryOverview: React.FC<{
       </div>
       <Divider />
       {
-        order.Rest &&
         <div className={classes.overviewSection}>
           <Typography variant='subtitle1'>
-            {order.Rest.Profile.Name}
+            {order.Rest?.Profile.Name}
           </Typography>
           {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
+          {
+            order.DonationCount > 0 &&
+            <CartMealGroup
+              mealGroup={new CartMeal({
+                mealId: 'donations',
+                img: '/heartHand.png',
+                name: 'Donation',
+                quantity: order.DonationCount
+              })}
+            />
+          }
         </div>
       }
       <Divider />
