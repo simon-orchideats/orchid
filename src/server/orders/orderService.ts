@@ -776,6 +776,7 @@ class OrderService {
         rest: { restId: string, meals: ICartMeal[] } | null,
         deliveryDate: number,
         deliveryTime: deliveryTime,
+        donationCount: number,
         invoiceDate: number,
         order: EOrder,
       ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'consumer'> => ({
@@ -790,35 +791,44 @@ class OrderService {
         invoiceDate,
         deliveryDate,
         deliveryTime,
-        donationCount: order.donationCount
+        donationCount,
       })
       return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
         if (!this.restService) throw new Error ('RestService not set');
         const deliveryDate = getNextDeliveryDate(plan.deliveryDay).add(orderNum, 'w').valueOf();
         const invoiceDate = moment(deliveryDate).subtract(2, 'd').valueOf();
         const deliveryTime = plan.deliveryTime;
-        if (order.rest.restId) {
-          const rest = await this.restService.getRest(order.rest.restId);
-          if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
-          const numMealsInOrder = Cart.getMealCount(order.rest.meals) + order.donationCount;
-          if (numMealsInOrder === targetMealCount) {
-            return this.elastic.update({
-              index: ORDER_INDEX,
-              id: _id,
-              body: {
-                doc: getNewOrder(
-                  null,
-                  deliveryDate,
-                  deliveryTime,
-                  invoiceDate,
-                  order
-                ),
-              }
-            })
-          } else if (numMealsInOrder > targetMealCount) {
-            removeMealsRandomly(order.rest.meals, numMealsInOrder - targetMealCount);
+        const myMealsCount = Cart.getMealCount(order.rest.meals);
+        const totalMeals = myMealsCount + order.donationCount;
+        let newDonationCount = order.donationCount;
+        if (totalMeals === targetMealCount) {
+          return this.elastic.update({
+            index: ORDER_INDEX,
+            id: _id,
+            body: {
+              doc: getNewOrder(
+                null,
+                deliveryDate,
+                deliveryTime,
+                order.donationCount,
+                invoiceDate,
+                order
+              ),
+            }
+          })
+        } else if (totalMeals > targetMealCount) {
+          const numToRemove = totalMeals - targetMealCount;
+          if (numToRemove > order.donationCount) {
+            newDonationCount = 0;
+            removeMealsRandomly(order.rest.meals, numToRemove - order.donationCount);
           } else {
-            const randomMeals = chooseRandomMeals(rest.menu, targetMealCount - numMealsInOrder);
+            newDonationCount = order.donationCount - numToRemove;
+          }
+        } else {
+          if (order.rest.restId) {
+            const rest = await this.restService.getRest(order.rest.restId);
+            if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`);
+            const randomMeals = chooseRandomMeals(rest.menu, targetMealCount - totalMeals);
             let randomMeal = randomMeals.shift();
             while (randomMeal) {
               const orderMealIndex = order.rest.meals.findIndex(oMeal => oMeal.mealId === randomMeal!.mealId);
@@ -833,33 +843,45 @@ class OrderService {
               }
               randomMeal = randomMeals.shift(); 
             }
+          } else {
+            // full donation order or skipped order
+            const eOrderRest = await this.chooseRandomRestAndMeals(plan.cuisines, targetMealCount - order.donationCount);
+            return this.elastic.update({
+              index: ORDER_INDEX,
+              id: _id,
+              body: {
+                doc: getNewOrder(
+                  eOrderRest,
+                  deliveryDate,
+                  deliveryTime,
+                  order.donationCount,
+                  invoiceDate, 
+                  order
+                ),
+              }
+            })
           }
-          return this.elastic.update({
-            index: ORDER_INDEX,
-            id: _id,
-            body: {
-              doc: getNewOrder(
-                {
-                  restId: order.rest.restId,
-                  meals: order.rest.meals
-                },
-                deliveryDate,
-                deliveryTime,
-                invoiceDate,
-                order
-              ),
-            }
-          })
-        } else {
-          const eOrderRest = await this.chooseRandomRestAndMeals(plan.cuisines, targetMealCount);
-          return this.elastic.update({
-            index: ORDER_INDEX,
-            id: _id,
-            body: {
-              doc: getNewOrder(eOrderRest, deliveryDate, deliveryTime, invoiceDate, order),
-            }
-          })
         }
+        return this.elastic.update({
+          index: ORDER_INDEX,
+          id: _id,
+          body: {
+            doc: getNewOrder(
+              order.rest.restId === null ? // this happens when downgrading an order with only donations
+              null
+              :
+              {
+                restId: order.rest.restId,
+                meals: order.rest.meals
+              },
+              deliveryDate,
+              deliveryTime,
+              newDonationCount,
+              invoiceDate,
+              order
+            ),
+          }
+        })
       }))
     } catch (e) {
       console.error(`[OrderService] Failed to update upcoming orders for consumer '${signedInUser && signedInUser._id}'`);
