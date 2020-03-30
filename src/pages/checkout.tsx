@@ -133,7 +133,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            cuisines,
+            cuisines
           )
         );
       }
@@ -207,11 +207,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!rest.data) {
-      const err = new Error(`No rest`);
-      console.error(err.stack);
-      throw err;
-    }
     if (!plans.data) {
       const err = new Error(`No rest`);
       console.error(err.stack);
@@ -248,10 +243,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 
     sendCheckoutMetrics(
       cart,
-      rest.data.Profile.Name,
       Plan.getMealPrice(cart.StripePlanId, plans.data),
       Plan.getPlanCount(cart.StripePlanId, plans.data),
       cuisines,
+      rest.data?.Profile.Name,
     )
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
@@ -272,7 +267,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(pm.current.paymentMethod!.card),
           pm.current.paymentMethod!.id,
           deliveryInstructions,
-          cuisines,
+          cuisines
         ),
       );
     }

@@ -271,10 +271,10 @@ class OrderService {
       console.warn('[OrderService]', msg);
       return msg;
     }
-
-    const p1 = this.validateRest(cart.restId, cart.meals);
+    let p1;
+    if (cart.restId) p1 = this.validateRest(cart.restId, cart.meals);
     const p2 = this.validateAddress(cart.destination.address);
-    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals));
+    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals) + cart.donationCount);
 
     const messages = await Promise.all([p1, p2, p3]);
     if (messages[0]) {
@@ -303,7 +303,7 @@ class OrderService {
     }
     const p2 = this.validateAddress(updateOptions.destination.address);
     let p3 = Promise.resolve('');
-    const mealCount = Cart.getMealCount(updateOptions.meals);
+    const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
     if (mealCount > 0) {
       p3 = this.planService.getPlanByCount(mealCount)
         .then(plan => {
@@ -381,6 +381,7 @@ class OrderService {
         status: 'Open',
         stripeSubscriptionId: consumer.stripeSubscriptionId,
         deliveryTime: consumer.plan.deliveryTime,
+        donationCount: 0
       }
       await this.elastic.index({
         index: ORDER_INDEX,
@@ -496,14 +497,16 @@ class OrderService {
       // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
       // placed order
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals))
+      this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals) + cart.donationCount)
         .then(({ restId, meals }) => {
           const newCart = {
             ...cart,
+            donationCount: 0,
             restId: restId,
             meals,
             deliveryDate: nextDeliveryDate
           }
+
           const order = Order.getNewOrderFromCartInput(
             signedInUser,
             newCart,
@@ -707,7 +710,7 @@ class OrderService {
       }
       let newPlan;
       let amount;
-      const mealCount = Cart.getMealCount(updateOptions.meals);
+      const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
       if (mealCount > 0) {
         newPlan = await this.planService.getPlanByCount(mealCount);
         if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
@@ -787,6 +790,7 @@ class OrderService {
         invoiceDate,
         deliveryDate,
         deliveryTime,
+        donationCount: order.donationCount
       })
       return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
         if (!this.restService) throw new Error ('RestService not set');
@@ -796,7 +800,7 @@ class OrderService {
         if (order.rest.restId) {
           const rest = await this.restService.getRest(order.rest.restId);
           if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
-          const numMealsInOrder = Cart.getMealCount(order.rest.meals);
+          const numMealsInOrder = Cart.getMealCount(order.rest.meals) + order.donationCount;
           if (numMealsInOrder === targetMealCount) {
             return this.elastic.update({
               index: ORDER_INDEX,

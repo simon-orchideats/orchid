@@ -7,16 +7,15 @@ export const sendEditOrderMetrics = (
   fromOrder: Order,
   fromPlanMealCount: number | null,
   toCart: Cart,
-  toRestName: string,
   toPlanMealPrice: number,
   toPlanMealCount: number,
+  toRestName?: string
 ) => {
   analyticsService.trackEvent(events.EDITED_ORDER, {
     fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
     fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
     fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
-    // todo simon: enable this
-    // fromOrderDonationCount: fromOrder.DonationCount
+    fromOrderDonationCount: fromOrder.DonationCount,
     fromPlanMealPrice: fromOrder.MealPrice,
     fromPlanMealCount,
     toRestId: toCart.RestId,
@@ -65,8 +64,7 @@ export const sendSkippedOrderMetrics = (
     fromRestId: fromOrder.Rest.Id,
     fromRestName,
     fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
-    // todo simon enable this
-    // fromOrderDonationCountCount: fromOrder.DonationCount,
+    fromOrderDonationCountCount: fromOrder.DonationCount,
     fromPlanMealPrice,
     fromPlanMealCount, 
   });

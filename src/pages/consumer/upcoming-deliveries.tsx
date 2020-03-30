@@ -226,7 +226,7 @@ const DeliveryOverview: React.FC<{
   };
   const onEdit = () => {
     if (order.Rest) {
-      const mealCount = Cart.getMealCount(order.Meals);
+      const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
       const planId = Plan.getPlanId(mealCount, plans.data)
       if (!planId) {
         const err = new Error(`Missing planId for mealCount ${mealCount}`);
@@ -251,7 +251,7 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const cartMealCount = Cart.getMealCount(cart.Meals);
+    const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
     const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
     if (!cartPlanId) {
       const err = new Error('No car plan');
@@ -265,18 +265,14 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    if (!rest.data) {
-      const err = new Error('No cart rest');
-      console.error(err.stack);
-      throw err;
-    }
+    
     sendEditOrderMetrics(
       order,
       order.MealPrice && Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
       cart,
-      rest.data.Profile.Name,
       planMealPrice,
       planMealCount,
+      rest.data?.Profile.Name,
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }

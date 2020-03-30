@@ -79,8 +79,8 @@ const development: config = {
     },
     analytics: {
       amplitude: {
-        key: 'd9a3d86674a064af5f76e222fba9bad6',
-        // key: '',
+        //key: 'd9a3d86674a064af5f76e222fba9bad6',
+         key: '',
       },
       ga: {
         // trackingId: 'UA-158803692-1',

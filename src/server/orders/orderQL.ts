@@ -28,7 +28,7 @@ export const OrderStatus = gql`
 
 export const _OrderQL = gql`
   input CartInput {
-    restId: ID!
+    restId: ID # null for if cart is all donated
     consumerPlan: ConsumerPlanInput!
     paymentMethodId: String!
     card: CardInput!
@@ -45,6 +45,8 @@ export const _OrderQL = gql`
     destination: DestinationInput!
     deliveryDate: Float!
     deliveryTime: DeliveryTime!
+    donationCount: Int!
+    name: String!
   }
   type Order {
     _id: ID!
@@ -56,6 +58,8 @@ export const _OrderQL = gql`
     phone: String!
     rest: Rest
     status: OrderStatus!
+    name: String!
+    donationCount:Int!
   }
 `;
 

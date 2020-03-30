@@ -47,7 +47,7 @@ export class CartMeal implements ICartMeal {
 }
 
 export interface ICartInput {
-  readonly restId: string
+  readonly restId: string | null // null for all donations as cart
   readonly paymentMethodId: string
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
@@ -157,7 +157,7 @@ export class Cart implements ICart {
     instructions: string,
     cuisines: CuisineType[],
   ): ICartInput {
-    if (!this.RestId || !this.StripePlanId || this.DeliveryDay === null || this.DeliveryTime === null) {
+    if (!this.StripePlanId || this.DeliveryDay === null || this.DeliveryTime === null) {
       const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
       console.error(err.stack);
       throw err;

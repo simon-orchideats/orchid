@@ -43,6 +43,8 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         ...restFragment
       }
       status
+      donationCount
+      name
     }
   }
   ${restFragment}
@@ -175,7 +177,7 @@ export const useUpdateOrder = (): [
             rest = restRes.rest;
           }
           let mealPrice: number | null = null;
-          const mealCount = Cart.getMealCount(updateOptions.meals);
+          const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
           if (mealCount > 0) {
             const plans = getAvailablePlans(cache);
             if (!plans) {
@@ -183,7 +185,7 @@ export const useUpdateOrder = (): [
               console.error(err.stack);
               throw err;
             }
-            mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals), plans.availablePlans);
+            mealPrice = Plan.getMealPriceFromCount(mealCount, plans.availablePlans);
           }
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
             if (order._id !== orderId) return order;

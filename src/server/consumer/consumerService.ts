@@ -88,6 +88,8 @@ class ConsumerService implements IConsumerService {
               destination: order.consumer.profile.destination!,
               deliveryDate: order.deliveryDate,
               deliveryTime: order.deliveryTime,
+              donationCount: order.donationCount,
+              name: order.consumer.profile.name
             }).catch(e => {
               const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}': ${e.stack}`;
               console.error(msg)

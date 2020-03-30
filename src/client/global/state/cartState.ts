@@ -338,8 +338,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     return updateCartCache(cache, new Cart({
-      // todo simon: should be donationCount: order.DonationCount
-      donationCount: 0,
+      donationCount: order.DonationCount,
       deliveryTime: order.DeliveryTime,
       meals: order.Meals,
       restId: order.Rest.Id,

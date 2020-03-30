@@ -38,6 +38,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return
     }
 
+    // Use invoice upcoming instead of invoice created because when a consumer cancels that creates an invoice
+    // and we dont wanna create an automatically generated order for someone who is cancelling
     if (event.type !== 'invoice.upcoming') {
       console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
       res.json({ received: true });

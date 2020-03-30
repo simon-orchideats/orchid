@@ -25,6 +25,7 @@ export interface EOrder {
   }
   readonly status: OrderStatus
   readonly stripeSubscriptionId: string
+  readonly donationCount: number
 }
 
 export interface IOrder {
@@ -37,6 +38,8 @@ export interface IOrder {
   readonly phone: string
   readonly rest: IRest | null // null for skipped order
   readonly status: OrderStatus
+  readonly name: string
+  readonly donationCount: number
 }
 
 export interface IUpdateOrderInput {
@@ -47,6 +50,8 @@ export interface IUpdateOrderInput {
   readonly destination: IDestination
   readonly deliveryDate: number
   readonly deliveryTime: deliveryTime
+  readonly name: string
+  readonly donationCount: number
 }
 
 export class Order implements IOrder{
@@ -59,6 +64,8 @@ export class Order implements IOrder{
   readonly phone: string
   readonly rest: Rest | null
   readonly status: OrderStatus
+  readonly name: string
+  readonly donationCount: number
 
   constructor(order: IOrder) {
     this._id = order._id;
@@ -70,6 +77,8 @@ export class Order implements IOrder{
     this.phone = order.phone;
     this.rest = order.rest ? new Rest(order.rest) : null;
     this.status = order.status
+    this.name = order.name;
+    this.donationCount = order.donationCount;
   }
 
   public get Id() { return this._id }
@@ -81,6 +90,8 @@ export class Order implements IOrder{
   public get Phone() { return this.phone }
   public get Rest() { return this.rest }
   public get Status() { return this.status }
+  public get DonationCount() { return this.donationCount}
+  public get Name() { return this.name}
 
   static getIOrderFromUpdatedOrderInput(
     _id: string,
@@ -99,6 +110,8 @@ export class Order implements IOrder{
       phone: order.phone,
       rest: rest ? Rest.getICopy(rest) : null,
       status,
+      name: order.name,
+      donationCount: order.donationCount
     }
   }
 
@@ -113,6 +126,8 @@ export class Order implements IOrder{
       phone: order.consumer.profile.phone!,
       rest,
       status: order.status,
+      name: order.consumer.profile.name,
+      donationCount: order.donationCount
     }
   }
 
@@ -124,15 +139,14 @@ export class Order implements IOrder{
       destination: order.Destination,
       deliveryDate: order.DeliveryDate,
       deliveryTime: order.DeliveryTime,
-      // todo simon add this
-      // donationCount: cart ? cart.DonationCount : null
+      name: order.Name,
+      donationCount: cart ? cart.DonationCount : 0
     }
   }
 
   static getEOrderFromUpdatedOrder(
     {
       consumer,
-      status,
     }: EOrder,
     mealPrice: number | null,
     total: number,
@@ -143,6 +157,7 @@ export class Order implements IOrder{
       destination,
       deliveryDate,
       deliveryTime,
+      donationCount
     }: IUpdateOrderInput
   ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
     return {
@@ -156,8 +171,8 @@ export class Order implements IOrder{
         tip: 0,
         mealPrice,
         total,
-        percentFee: 123,
-        flatRateFee: 123,
+        percentFee: 0,
+        flatRateFee: 0,
       },
       deliveryDate,
       deliveryTime,
@@ -171,7 +186,8 @@ export class Order implements IOrder{
           destination,
         }
       },
-      status: mealPrice === null ? status : 'Skipped'
+      status: mealPrice === null ? 'Skipped' : 'Open',
+      donationCount
     }
   }
 
@@ -219,6 +235,7 @@ export class Order implements IOrder{
       },
       deliveryDate: cart.deliveryDate,
       deliveryTime: cart.consumerPlan.deliveryTime,
+      donationCount: cart.donationCount
     }
   }
 }

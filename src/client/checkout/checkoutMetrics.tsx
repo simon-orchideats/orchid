@@ -5,10 +5,10 @@ import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseDelivery
 
 export const sendCheckoutMetrics = (
   cart: Cart,
-  restName: string,
   planMealPrice: number,
   planMealCount: number,
   cuisines: CuisineType[],
+  restName?: string,
 ) => {
   analyticsService.trackEvent(events.CHECKEDOUT, {
     cartRestId: cart.RestId,
