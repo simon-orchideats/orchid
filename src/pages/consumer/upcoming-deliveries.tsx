@@ -337,7 +337,7 @@ const DeliveryOverview: React.FC<{
             </>
             :
             <Typography variant='body1' className={classes.hint}>
-              Order Skipped
+              {order.status}
             </Typography>
           }
         </div>
