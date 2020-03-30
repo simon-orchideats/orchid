@@ -88,7 +88,7 @@ export const useUpdateMyProfile = (): [
           __typename: 'ConsumerRes'
         }
       },
-      refetchQueries: ['myUpcomingOrders'],
+      // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
     })
   }
   return useMemo(() => {
@@ -148,7 +148,7 @@ export const useCancelSubscription = (): [
           });
         }
       },
-      refetchQueries: ['myUpcomingOrders'],
+      // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
     })
   }
   return useMemo(() => [
@@ -331,7 +331,7 @@ export const useUpdateMyPlan = (): [
           __typename: 'ConsumerRes'
         }
       },
-      refetchQueries: ['myUpcomingOrders'],
+      // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
     })
   }
   return useMemo(() => {
