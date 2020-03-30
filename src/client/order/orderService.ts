@@ -185,7 +185,7 @@ export const useUpdateOrder = (): [
               console.error(err.stack);
               throw err;
             }
-            mealPrice = Plan.getMealPriceFromCount(Cart.getMealCount(updateOptions.meals)+updateOptions.donationCount, plans.availablePlans);
+            mealPrice = Plan.getMealPriceFromCount(mealCount, plans.availablePlans);
           }
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
             if (order._id !== orderId) return order;
