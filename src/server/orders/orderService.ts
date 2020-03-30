@@ -272,11 +272,9 @@ class OrderService {
       return msg;
     }
     let p1;
-    if (cart.donationCount != 0 && Cart.getMealCount(cart.meals) > 0  && cart.restId) {
-      p1 = this.validateRest(cart.restId, cart.meals);
-    }
+    if (cart.restId) p1 = this.validateRest(cart.restId, cart.meals);
     const p2 = this.validateAddress(cart.destination.address);
-    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals)+cart.donationCount);
+    const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart.meals) + cart.donationCount);
 
     const messages = await Promise.all([p1, p2, p3]);
     if (messages[0]) {
@@ -502,11 +500,13 @@ class OrderService {
       this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals) + cart.donationCount)
         .then(({ restId, meals }) => {
           const newCart = {
-            ...{ ...cart, donationCount: 0 },
+            ...cart,
+            donationCount: 0,
             restId: restId,
             meals,
             deliveryDate: nextDeliveryDate
           }
+
           const order = Order.getNewOrderFromCartInput(
             signedInUser,
             newCart,
@@ -800,7 +800,7 @@ class OrderService {
         if (order.rest.restId) {
           const rest = await this.restService.getRest(order.rest.restId);
           if (!rest) throw new Error(`Failed to find rest with id '${order.rest.restId}'`)
-          const numMealsInOrder = Cart.getMealCount(order.rest.meals);
+          const numMealsInOrder = Cart.getMealCount(order.rest.meals) + order.donationCount;
           if (numMealsInOrder === targetMealCount) {
             return this.elastic.update({
               index: ORDER_INDEX,
