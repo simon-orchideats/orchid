@@ -499,7 +499,7 @@ class OrderService {
       const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
       this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals) + cart.donationCount)
         .then(({ restId, meals }) => {
-          const newCart = {
+          const newCart: ICartInput = {
             ...cart,
             donationCount: 0,
             restId: restId,

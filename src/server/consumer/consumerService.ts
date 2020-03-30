@@ -70,13 +70,11 @@ class ConsumerService implements IConsumerService {
           if (order.invoiceDate > today) {
             return Promise.all(pendingLineItems.data.map(line => {
               if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
-                try {
-                  return this.stripe.invoiceItems.del(line.id);
-                } catch (e) {
+                return this.stripe.invoiceItems.del(line.id).catch(e => {
                   const msg = `Couldn't remove future adjustment id '${line.id}': ${e.stack}`
                   console.error(msg);
                   throw e;
-                }
+                });
               }
             }));
           } else {
@@ -420,19 +418,18 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      let subscription;
-      try {
-        subscription = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
-      } catch (e) {
+      const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
         throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
-      }
+      });
+
+      const res = await Promise.all([canceler, subscription])
 
       const newInvoiceDateSeconds = Math.round(getNextDeliveryDate(newPlan.deliveryDay).subtract(2, 'd').valueOf() / 1000)
       const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
         trial_end: newInvoiceDateSeconds,
         proration_behavior: 'none',
         items: [{
-          id: subscription.items.data[0].id,
+          id: res[1].items.data[0].id,
           plan: newPlan.stripePlanId,
         }]
       }).catch(e => {
@@ -440,7 +437,7 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      await Promise.all([updateUpcoming, canceler, updateSubscription])
+      await Promise.all([updateUpcoming, updateSubscription])
       return {
         res: newConsumer,
         error: null,

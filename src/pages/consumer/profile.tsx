@@ -88,7 +88,9 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const consumer = useRequireConsumer(profileRoute);
   let consumerAddressLabel = '';
   let consumerCardLabel = '';
-  let consumerPhoneLabel = ''
+  let consumerPhoneLabel = '';
+  let consumerNameLabel = '';
+  let consumerEmailLabel = '';
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
@@ -96,6 +98,10 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (consumer.data.Profile.Destination) consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr();
     if (consumer.data.Profile.Card) consumerCardLabel = consumer.data.Profile.Card.getHiddenCardStr();
     if (consumer.data.Profile.Phone) consumerPhoneLabel = consumer.data.Profile.Phone;
+    if (consumer.data.Profile.Name) consumerNameLabel = consumer.data.Profile.Name;
+    if (consumer.data.Profile.Email) consumerEmailLabel = consumer.data.Profile.Email;
+
+
   }
 
   const noConsumerErr = () => {
@@ -203,19 +209,13 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         <ListItem divider disableGutters>
           <Labels
             primary='Name'
-            secondary='Simon Vuong'
+            secondary={consumerNameLabel}
           />
         </ListItem>
         <ListItem divider disableGutters>
           <Labels
             primary='Email'
-            secondary='simon.vuong@yahoo.com'
-          />
-        </ListItem>
-        <ListItem divider disableGutters>
-          <Labels
-            primary='Password'
-            secondary='*************'
+            secondary={consumerEmailLabel}
           />
         </ListItem>
         <ListItem divider disableGutters>
