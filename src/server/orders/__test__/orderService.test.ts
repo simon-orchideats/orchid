@@ -1,7 +1,7 @@
-import { IRestService } from './../../rests/restService';
-import { IConsumerService } from './../../consumer/consumerService';
-import { IPlanService } from './../../plans/planService';
-import { IGeoService } from './../../place/geoService';
+// import { IRestService } from './../../rests/restService';
+// import { IConsumerService } from './../../consumer/consumerService';
+// import { IPlanService } from './../../plans/planService';
+// import { IGeoService } from './../../place/geoService';
 import moment from 'moment';
 import { EOrder, IUpdateOrderInput } from './../../../order/orderModel';
 import { Client } from '@elastic/elasticsearch';
@@ -23,7 +23,6 @@ const getTargetorder = (invoiceDate: number, deliveryDate: number): EOrder  => (
         expYear: 2020
       },
       destination: {
-        name: 'name',
         address: {
           address1: 'address1',
           address2: 'address2',
@@ -46,6 +45,8 @@ const getTargetorder = (invoiceDate: number, deliveryDate: number): EOrder  => (
   createdDate: 123,
   invoiceDate,
   deliveryDate,
+  deliveryTime: 'FourPToFiveP',
+  donationCount: 0,
   rest: {
     restId: 'restId',
     meals: []
@@ -56,7 +57,7 @@ const getTargetorder = (invoiceDate: number, deliveryDate: number): EOrder  => (
 
 
 const signedInUser: SignedInUser = {
-  userId: 'userId',
+  _id: 'userId',
   stripeSubscriptionId: 'subscriptionId',
   stripeCustomerId: 'stripeCustomerId',
   profile: {
@@ -88,7 +89,6 @@ const getUpdateOptions = (
   }],
   phone: 'phone',
   destination: {
-    name: 'name',
     address: {
       address1: 'address1',
       address2: 'address2',
@@ -98,7 +98,10 @@ const getUpdateOptions = (
     },
     instructions: 'intsructions',
   },
+  name: 'name',
   deliveryDate,
+  donationCount: 0,
+  deliveryTime: 'FourPToFiveP',
 });
 
 const originalInvoiceDate3DaysBeforeDDate = moment('3-10-2020', 'M/D/YY').valueOf();
@@ -173,54 +176,50 @@ const getStripe = (
 } as unknown as Stripe)
 
 
-const getGeoService = () => ({
-  getGeocode: jest.fn(() => Promise.resolve({}))
-} as unknown as IGeoService);
+// const getGeoService = () => ({
+//   getGeocode: jest.fn(() => Promise.resolve({}))
+// } as unknown as IGeoService);
 
-const getPlanService = () => ({
-  getPlanByCount: jest.fn((count: number) => {
-    let weekPrice;
-    let mealPrice;
-    switch (count) {
-      case 4:
-        weekPrice = 40;
-        mealPrice = 11.5;
-        break;
-      case 8:
-        weekPrice = 80
-        mealPrice = 10.99
-        break;
-      case 12:
-        weekPrice = 150
-        mealPrice = 9.99
-        break;
-    }
-    return Promise.resolve({
-      weekPrice,
-      mealPrice,
-    })
-  })
-} as unknown as IPlanService);
+// const getPlanService = () => ({
+//   getPlanByCount: jest.fn((count: number) => {
+//     let weekPrice;
+//     let mealPrice;
+//     switch (count) {
+//       case 4:
+//         weekPrice = 40;
+//         mealPrice = 11.5;
+//         break;
+//       case 8:
+//         weekPrice = 80
+//         mealPrice = 10.99
+//         break;
+//       case 12:
+//         weekPrice = 150
+//         mealPrice = 9.99
+//         break;
+//     }
+//     return Promise.resolve({
+//       weekPrice,
+//       mealPrice,
+//     })
+//   })
+// } as unknown as IPlanService);
 
-const getConsumerService = () => ({} as unknown as IConsumerService)
+// const getConsumerService = () => ({} as unknown as IConsumerService)
 
-const getRestService = () => ({
-  getRest: jest.fn(() => Promise.resolve({
-    menu: [{
-      _id: 'mealId',
-      name: 'name',
-      img: 'img',
-    }],
-  }))
-} as unknown as IRestService);
+// const getRestService = () => ({
+//   getRest: jest.fn(() => Promise.resolve({
+//     menu: [{
+//       _id: 'mealId',
+//       name: 'name',
+//       img: 'img',
+//     }],
+//   }))
+// } as unknown as IRestService);
 
 const initOrderServiceWithMocks = (stripe: Stripe) => initOrderService(
   getElastic(),
   stripe,
-  getGeoService(),
-  getPlanService(),
-  getConsumerService(),
-  getRestService(),
 )
 
 describe('OrderService', () => {
