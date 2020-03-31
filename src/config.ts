@@ -165,7 +165,8 @@ const production: config = {
     analytics: {
       amplitude: {
         // key: '3aa095499fd45cab00cbb40c5a65a9da',
-        key: ''
+        key: 'd9a3d86674a064af5f76e222fba9bad6',
+        // key: ''
       },
       ga: {
         // trackingId: 'UA-158803692-1',
