@@ -10,7 +10,7 @@ import { state } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
-import { CuisineType } from "../consumer/consumerModel";
+import { CuisineType, CuisineTypes } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
@@ -67,7 +67,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [cuisines, setCuisines] = useState<CuisineType[]>([]);
+  const [cuisines, setCuisines] = useState<CuisineType[]>(Object.values(CuisineTypes));
   const [accountName, setAccountName] = useState<string>('');
   const [accountNameError, setAccountNameError] = useState<string>('');
   const validateEmailRef = useRef<() => boolean>();
@@ -148,7 +148,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
 
   if (consumer && consumer.data) {
-    if (consumer.data.StripeSubscriptionId && !placeOrderRes.called) {
+    if (consumer.data.StripeSubscriptionId && !placeOrderRes.called && !signUpRes.called) {
       Router.replace(menuRoute)
       return <Typography>Redirecting...</Typography>
     }
@@ -422,7 +422,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Typography>
           <CardForm />
           <RenewalChooser
-            cuisines = {cuisines}
+            cuisines={cuisines}
             validateCuisineRef={validateCuisine => {
               validateCuisineRef.current = validateCuisine;
             }}

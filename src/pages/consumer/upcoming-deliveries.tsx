@@ -105,6 +105,12 @@ const Confirmation: React.FC<{
     if (!isServer()) Router.replace(upcomingDeliveriesRoute);
     return null;
   }
+  if (!cartRef.current.DeliveryTime) {
+    const err = Error('No delivery time');
+    console.warn(err.stack);
+    if (!isServer()) Router.replace(upcomingDeliveriesRoute);
+    return null;
+  }
   const classes = useStyles();
   return (
     <Paper variant='outlined' className={classes.confirmation}>
@@ -115,13 +121,13 @@ const Confirmation: React.FC<{
         <Close className={classes.close} onClick={onClose} />
       </div>
       <Typography variant='body1'>
-        We sent you a confirmation email
+        You will be billed 2 days before your delivery day. Feel free to update your order before you're billed.
       </Typography>
       <Typography variant='body1'>
         We'll text you the day of your delivery
       </Typography>
       <Typography variant='body1'>
-        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
+        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cartRef.current.DeliveryTime)}
       </Typography>
       <Typography variant='subtitle1'>
         {res.data && res.data.Profile.Name}
@@ -345,7 +351,7 @@ const DeliveryOverview: React.FC<{
       <Divider />
       {
         <div className={classes.overviewSection}>
-          <Typography variant='subtitle1'>
+          <Typography variant='h6'>
             {order.Rest?.Profile.Name}
           </Typography>
           {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}

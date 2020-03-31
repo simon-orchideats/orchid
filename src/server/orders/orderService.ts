@@ -221,13 +221,13 @@ class OrderService {
   }: IAddress) {
     if (!this.geoService) return Promise.reject('GeoService not set');
     return this.geoService.getGeocode(address1, city, state, zip)
-    .then(() => '')  
-    .catch(e => {
-      const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
-      console.warn('[OrderService]', msg, e.stack);
-      return msg;
-    });
-  } 
+      .then(() => '')  
+      .catch(e => {
+        const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+        console.warn('[OrderService]', msg, e.stack);
+        return msg;
+      });
+    } 
 
   private validatePlan(planId: string, cartMealCount: number) {
     if (!this.planService) return Promise.reject('PlanService not set');

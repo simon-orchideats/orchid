@@ -95,6 +95,7 @@ const start = async () => {
   restService.setGeoService(geoService);
   consumerService.setOrderService(orderService);
   consumerService.setPlanService(planService);
+  consumerService.setGeoService(geoService);
   orderService.setConsumerService(consumerService);
   orderService.setGeoService(geoService);
   orderService.setPlanService(planService);

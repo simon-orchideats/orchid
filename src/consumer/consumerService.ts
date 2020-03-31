@@ -249,6 +249,7 @@ export const useSignUp = (): [
       res: Consumer | null,
       error: string | null
     }
+    called: boolean,
   }
 ] => {
   type res = { signUp: MutationConsumerRes };
@@ -289,6 +290,7 @@ export const useSignUp = (): [
       {
         error: mutation.error,
         data,
+        called: mutation.called
       }
     ]
   }, [mutation]);

@@ -106,6 +106,7 @@ const myPlan = () => {
       console.error(err.stack);
       throw err;
     }
+    if (consumer.data.Plan.StripePlanId === plan.StripeId) return;
     setPrevPlan(consumer.data.Plan);
     sendChoosePlanMetrics(
       plan.MealPrice,
@@ -123,6 +124,7 @@ const myPlan = () => {
   };
   const updateDay = (deliveryDay: deliveryDay) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (consumer.data.Plan.DeliveryDay === deliveryDay) return;
     setPrevPlan(consumer.data.Plan);
     sendChooseDeliveryDayMetrics(deliveryDay, consumer.data.Plan.DeliveryDay);
     updateMyPlan(
@@ -136,6 +138,7 @@ const myPlan = () => {
   
   const updateDeliveryTime = (deliveryTime: deliveryTime) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (consumer.data.Plan.DeliveryTime === deliveryTime) return;
     setPrevPlan(consumer.data.Plan);
     sendChooseDeliveryTimeMetrics(deliveryTime, consumer.data.Plan.DeliveryTime)
     updateMyPlan(

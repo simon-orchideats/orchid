@@ -100,8 +100,6 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (consumer.data.Profile.Phone) consumerPhoneLabel = consumer.data.Profile.Phone;
     if (consumer.data.Profile.Name) consumerNameLabel = consumer.data.Profile.Name;
     if (consumer.data.Profile.Email) consumerEmailLabel = consumer.data.Profile.Email;
-
-
   }
 
   const noConsumerErr = () => {
