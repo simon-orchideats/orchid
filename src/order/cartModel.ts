@@ -68,6 +68,7 @@ export interface ICart {
   readonly donationCount: number
   readonly meals: ICartMeal[];
   readonly restId: string | null;
+  readonly restName: string | null;
   readonly stripePlanId: string | null;
   readonly deliveryDay: deliveryDay | null;
   readonly zip: string | null;
@@ -78,6 +79,7 @@ export class Cart implements ICart {
   readonly donationCount: number
   readonly meals: CartMeal[]
   readonly restId: string | null
+  readonly restName: string | null
   readonly stripePlanId: string | null
   readonly deliveryDay: deliveryDay | null
   readonly zip: string | null;
@@ -87,6 +89,7 @@ export class Cart implements ICart {
     this.donationCount = cart.donationCount;
     this.meals = cart.meals.map(meal => new CartMeal(meal));
     this.restId = cart.restId;
+    this.restName = cart.restName;
     this.stripePlanId = cart.stripePlanId;
     this.deliveryDay = cart.deliveryDay;
     this.zip = cart.zip;
@@ -99,6 +102,7 @@ export class Cart implements ICart {
   public get Meals() { return this.meals }
   public get StripePlanId() { return this.stripePlanId }
   public get RestId() { return this.restId }
+  public get RestName() { return this.restName }
   public get Zip() { return this.zip }
 
   public static getCartMeals(meals: IMeal[]) {

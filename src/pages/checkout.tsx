@@ -25,7 +25,6 @@ import EmailInput from "../client/general/inputs/EmailInput";
 import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
 import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
-import { useGetRest } from "../rest/restService";
 import { useGetAvailablePlans } from "../plan/planService";
 import { Plan } from "../plan/planModel";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
@@ -75,7 +74,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [password, setPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
-  const rest = useGetRest(cart ? cart.RestId : null);
   const [signUp, signUpRes] = useSignUp();
   const validateCuisineRef= useRef<() => boolean>();
   const theme = useTheme<Theme>();
@@ -202,13 +200,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
+    if (!cart.RestName) {
+      const err =  new Error('No rest name in cart');
+      console.error(err.stack);
+      throw err;
+    }
     if (!elements) {
       const err =  new Error('No elements');
       console.error(err.stack);
       throw err;
     }
     if (!plans.data) {
-      const err = new Error(`No rest`);
+      const err = new Error(`No plans`);
       console.error(err.stack);
       throw err;
     }
@@ -246,7 +249,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       Plan.getMealPrice(cart.StripePlanId, plans.data),
       Plan.getPlanCount(cart.StripePlanId, plans.data),
       cuisines,
-      rest.data?.Profile.Name,
+      cart.RestName ? cart.RestName : undefined,
     )
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);

@@ -1,6 +1,5 @@
 import { makeStyles, Typography, Divider, Button } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
-import { useGetRest } from "../../rest/restService";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { getNextDeliveryDate } from "../../order/utils";
@@ -54,7 +53,6 @@ const CheckoutCart: React.FC<props> = ({
     console.error(err.stack);
     throw err;
   }
-  const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
   const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
@@ -82,7 +80,7 @@ const CheckoutCart: React.FC<props> = ({
         variant='h6'
         className={classes.paddingBottom}
       >
-        {rest.data ? rest.data.Profile.Name : ''}
+        {cart && cart.RestName}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
         <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />

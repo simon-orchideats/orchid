@@ -126,7 +126,7 @@ const menu = () => {
                   </Link>
                   <PlanFilter />
                 </div>
-                <MenuMiniCart />
+                {rests.data && <MenuMiniCart />}
               </>
             }
           </div>
@@ -151,7 +151,7 @@ const menu = () => {
             lg={4}
           >
             <StickyDrawer>
-              <SideMenuCart />
+              {rests.data && <SideMenuCart />}
             </StickyDrawer>
           </Grid>
         }

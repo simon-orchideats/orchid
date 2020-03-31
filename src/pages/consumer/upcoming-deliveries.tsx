@@ -1,6 +1,5 @@
 import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
 import { useRouter } from "next/router";
-import { useGetRest } from "../../rest/restService";
 import { getNextDeliveryDate } from "../../order/utils";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -97,7 +96,6 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
-  const res = useGetRest(cartRef.current && cartRef.current.RestId);
   const groupedMeals = cartRef.current ? cartRef.current.Meals : [];
   if (!cartRef.current) {
     const err = Error('Cart is null');
@@ -130,7 +128,7 @@ const Confirmation: React.FC<{
         Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cartRef.current.DeliveryTime)}
       </Typography>
       <Typography variant='subtitle1'>
-        {res.data && res.data.Profile.Name}
+        {cartRef.current.RestName}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
         <Typography key={mealGroup.MealId} variant='body1'>
@@ -211,7 +209,6 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
-  const rest = useGetRest(cart ? cart.RestId : null);
   useEffect(() => {
     if (updateOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -257,6 +254,11 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
+    if (!cart.RestName) {
+      const err = new Error('No cart rest name');
+      console.error(err.stack);
+      throw err;
+    }
     const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
     const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
     if (!cartPlanId) {
@@ -278,7 +280,7 @@ const DeliveryOverview: React.FC<{
       cart,
       planMealPrice,
       planMealCount,
-      rest.data?.Profile.Name,
+      cart.RestName
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }

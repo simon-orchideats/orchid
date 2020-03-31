@@ -60,6 +60,7 @@ const RestMenu: React.FC<{
         <MenuMeal
           disabled={cartRestId ? cartRestId !== rest.Id : false}
           restId={rest.Id}
+          restName={rest.Profile.Name}
           meal={meal} 
           defaultCount={index === -1 ? 0 : cartMeals[index].Quantity}
         />
