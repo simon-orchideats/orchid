@@ -179,7 +179,7 @@ const DestinationPopper: React.FC<{
         {
           destination.Address.Address2 &&
           <Typography variant='body1'>
-            {destination.Address.Address1}
+            {destination.Address.Address2}
           </Typography>
         }
         <Typography variant='body1'>
