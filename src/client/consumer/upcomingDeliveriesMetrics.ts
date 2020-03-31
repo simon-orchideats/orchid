@@ -51,18 +51,12 @@ export const sendEditOrderMetrics = (
 
 export const sendSkippedOrderMetrics = (
   fromOrder: Order,
-  fromRestName: string,
   fromPlanMealPrice: number,
   fromPlanMealCount: number
 ) => {
-  if (!fromOrder.Rest) {
-    const err = new Error('No rest');
-    console.error(err.stack);
-    throw err;
-  }
   analyticsService.trackEvent(events.SKIPPED_ORDER, {
-    fromRestId: fromOrder.Rest.Id,
-    fromRestName,
+    fromRestId: fromOrder.Rest ? fromOrder.Rest.Id : undefined,
+    fromRestName: fromOrder.Rest ? fromOrder.Rest.Profile.Name : undefined,
     fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
     fromOrderDonationCountCount: fromOrder.DonationCount,
     fromPlanMealPrice,

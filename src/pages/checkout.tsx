@@ -45,6 +45,10 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
+  subtitle: {
+    marginTop: -theme.spacing(2),
+    fontWeight: 'bold',
+  },
 }));
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
@@ -62,7 +66,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const addr2InputRef = createRef<HTMLInputElement>();
   const cityInputRef = createRef<HTMLInputElement>();
   const zipInputRef = createRef<HTMLInputElement>();
-  const [state, setState] = useState<state | ''>('');
+  const [state, setState] = useState<state | ''>('NJ');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
@@ -200,11 +204,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!cart.RestName) {
-      const err =  new Error('No rest name in cart');
-      console.error(err.stack);
-      throw err;
-    }
     if (!elements) {
       const err =  new Error('No elements');
       console.error(err.stack);
@@ -297,6 +296,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Delivery Address
           </Typography>
           <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant='subtitle2' className={classes.subtitle}>
+                Delivery is only available in NJ. NY is coming soon.
+              </Typography>
+            </Grid>
             <Grid item xs={12}>
               <AddressForm
                 setValidator={(validator: () => boolean) => {

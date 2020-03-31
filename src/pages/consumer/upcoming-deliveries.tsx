@@ -254,11 +254,6 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    if (!cart.RestName) {
-      const err = new Error('No cart rest name');
-      console.error(err.stack);
-      throw err;
-    }
     const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
     const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
     if (!cartPlanId) {
@@ -280,16 +275,11 @@ const DeliveryOverview: React.FC<{
       cart,
       planMealPrice,
       planMealCount,
-      cart.RestName
+      cart.RestName ? cart.RestName : undefined
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const onSkip = () => {
-    if (!order.Rest) {
-      const err = new Error('No rest');
-      console.error(err.stack);
-      throw err;
-    }
     if (!order.MealPrice) {
       const err = new Error('No meal price');
       console.error(err.stack);
@@ -302,7 +292,6 @@ const DeliveryOverview: React.FC<{
     }
     sendSkippedOrderMetrics(
       order,
-      order.Rest.Profile.Name,
       order.MealPrice,
       Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
     );

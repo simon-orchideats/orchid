@@ -2,7 +2,7 @@ import { useState, RefObject, Dispatch, SetStateAction } from "react";
 import BaseInput from "./BaseInput";
 import { Grid } from "@material-ui/core";
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { state, States } from "../../../place/addressModel";
+import { state } from "../../../place/addressModel";
 
 type props = {
   setValidator: (validate: () => boolean) => void
@@ -21,7 +21,7 @@ const AddressForm: React.FC<props> = ({
   cityInputRef,
   zipInputRef,
   state,
-  setState,
+  // setState,
 }) => {
   const [addr1Error, setAddr1Error] = useState('');
   const [cityError, setCityError] = useState('');
@@ -122,12 +122,12 @@ const AddressForm: React.FC<props> = ({
         md={3}
       >
         <Autocomplete
-          options={Object.values<state>(States)}
+          options={['NJ']}
           value={state || '' as state}
-          onChange={(_e: any, value: state | null) => {
-            setState(value ? value : '');
-            if (stateError) setStateError('');
-          }}
+          // onChange={(_e: any, value: state | null) => {
+          //   setState(value ? value : '');
+          //   if (stateError) setStateError('');
+          // }}
           renderInput={params => (
             <BaseInput
               {...params}

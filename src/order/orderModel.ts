@@ -36,7 +36,7 @@ export interface IOrder {
   readonly mealPrice: number | null
   readonly meals: ICartMeal[]
   readonly phone: string
-  readonly rest: IRest | null // null for skipped order
+  readonly rest: IRest | null // null for skipped order or is full of donations
   readonly status: OrderStatus
   readonly name: string
   readonly donationCount: number
