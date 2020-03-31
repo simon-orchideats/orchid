@@ -684,8 +684,7 @@ POST rests/_doc/
       "img": "/menu/taqueria/roja-enchiladas.png",
       "name": "Roja Enchiladas",
       "originalPrice": 11.50,
-      "description": "two chicken-rolled corn tortillas topped w/ red sauce and served w/ red Mexican rice and pinto beans",
-
+      "description": "two chicken-rolled corn tortillas topped w/ red sauce and served w/ red Mexican rice and pinto beans"
     }
   ],
   "profile": {
@@ -718,7 +717,7 @@ POST rests/_doc/
       "name": "Fettuccine Alfredo",
       "originalPrice": 10.95,
       "tags": [],
-      "discription": "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
+      "discription": "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce"
     },
     {
       "_id": "leM-xEuV4ucGVV2GdcM3x",
@@ -726,7 +725,7 @@ POST rests/_doc/
       "name": "Penne Vodka",
       "originalPrice": 10.95,
       "tags": [],
-      "discription": "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka",
+      "discription": "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka"
     },
     {
       "_id": "umQoRB1zA7dpb2lZ_eta1",
@@ -734,7 +733,7 @@ POST rests/_doc/
       "name": "Rigatoni w/ Meat Sauce",
       "originalPrice": 10.95,
       "tags": [],
-      "discription": "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese",
+      "discription": "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese"
     },
     {
       "_id": "zFSbyFbfXkD-pSI6p-ETG",
@@ -742,22 +741,22 @@ POST rests/_doc/
       "name": "Chicken Cutlet Sandwich",
       "originalPrice": 9.95,
       "tags": [],
-      "discription": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo",
+      "discription": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo"
     },
     {
       "_id": "kmXktTAR0c0FA7aA9RwJj",
       "img": "/menu/margheritas/sausage-n-peppers.png",
       "originalPrice": 9.95,
       "tags": [],
-      "name": "Sausage, Peppers, and Onions Sandwich",
+      "name": "Sausage, Peppers, and Onions Sandwich"
     },
     {
       "_id": "uxeKzlMF-24OF8GXTrhUm",
       "img": "/menu/margheritas/fresh-mozz-and-roasted-peps-sandwhich.png",
-      "name": "Fresh Mozzarella & Roasted Red Peppers Sandwich",,
+      "name": "Fresh Mozzarella & Roasted Red Peppers Sandwich",
       "originalPrice": 9.95,
       "tags": ["Vegan", "Vegetarian"],
-      "discription": "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia",
+      "discription": "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia"
     }
   ],
   "profile": {
@@ -953,7 +952,6 @@ POST rests/_doc/
       "originalPrice": 11.50,
       "tags": [],
       "discription": "melted American, lettuce, tomato. Served w/ fries and coleslaw"
-    },
     },
     {
       "_id": "FmoCjgnlAeKVBrt0CJlc8",

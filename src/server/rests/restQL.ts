@@ -3,7 +3,7 @@ import { gql } from 'apollo-server';
 const MealQL = gql`
   type Meal {
     _id: ID!
-    img: String!
+    img: String
     name: String!
     description: String
     originalPrice: Float

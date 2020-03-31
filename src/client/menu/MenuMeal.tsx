@@ -144,12 +144,6 @@ const MenuMeal: React.FC<{
         >
           {meal.Name.toUpperCase()}
         </Typography>
-        {
-          meal.OriginalPrice !== null
-          && meal.OriginalPrice < 11.5
-          && meal.OriginalPrice > 9.99
-          && <Typography color='primary' variant='subtitle1'> (originally <del>${meal.OriginalPrice.toFixed(2)}</del>) </Typography>
-        }
         <Typography variant='body2' color='textSecondary'>
           {meal.Description}
         </Typography>

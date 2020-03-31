@@ -238,7 +238,7 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Set deliviery time'
+            title='Set delivery time'
             description='Know exactly when your food arrives, no more unpredictable delivery times. Every meal is cooked
             the same day and delivered exactly when you want it.'
             dividerTitle='Step'

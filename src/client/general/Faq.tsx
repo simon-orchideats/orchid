@@ -49,20 +49,37 @@ const Faq = () => {
           FAQ
         </Typography>
         <Expander
-          q='Will I be locked into a contract?'
-          a='No, you can cancel your plan at any time. Any confirmed meals this week will be delivered.'
+          q='How many restaurants can I pick?'
+          a='Currently we only offer 1 restaurant per week, but we are quickly adding the option for up to 2 restaurants per week.
+          Stay tuned!'
         />
         <Expander
-          q='Can I skip a week of delivery?'
-          a='Yes. Just make sure you do it before the plan cutoff time to stop your next order.'
-        />
-        <Expander
-          q="What if I forget to choose next week's menu?"
-          a="No worries. We'll hand pick new meals for you."
+          q="Do I need to pick meals every week?"
+          a="No worries. We'll hand pick new meals for you based on your preferences."
         />
         <Expander
           q='Can update my schedule?'
           a='Yes. You can always update future weeks.'
+        />
+        <Expander
+          q='Can I change my meals?'
+          a="Yes. You can change your meals any time as long as it's 2 days before your delivery. If you perform a 1-time
+          plan upgrade or downgrade for a single week, then we'll charge or refund you the difference on your weekly
+          bill."
+        />
+        <Expander
+          q='Can I skip a week of delivery?'
+          a="Yes. If you skip a week then we'll adjust your week's bill accordingly. Just make sure you do it before the
+          plan cutoff time to stop your next order."
+        />
+        <Expander
+          q='How often am I charged?'
+          a='Orchid charges you once per week, 2 days before your delivery. If you change your preferred delivery day
+          we also update your billing date.'
+        />
+        <Expander
+          q='Will I be locked into a contract?'
+          a='No, you can cancel your plan at any time. Any confirmed meals this week will be delivered.'
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
           *The cutoff for any changes is 12:00 am EST, 2 days before the start of your next week.

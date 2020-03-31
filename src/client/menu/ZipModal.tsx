@@ -60,7 +60,8 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(4)
   },
   paper: {
-    height: '100vh',
+    height: '100%',
+    overflowY: 'scroll',
     backgroundColor: theme.palette.background.paper,
   },
 }));

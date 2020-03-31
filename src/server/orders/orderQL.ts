@@ -3,14 +3,14 @@ import { gql } from 'apollo-server';
 export const CartMealQL = gql`
   type CartMeal {
     mealId: ID!
-    img: String!
+    img: String
     name: String!
     quantity: Int!
   }
 
   input CartMealInput {
     mealId: ID!
-    img: String!
+    img: String
     name: String!
     quantity: Int!
   }

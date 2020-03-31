@@ -56,7 +56,6 @@ const RestMenu: React.FC<{
         key={meal.Id}
         xs={6}
         sm={4}
-        lg={3}
       >
         <MenuMeal
           disabled={cartRestId ? cartRestId !== rest.Id : false}

@@ -8,7 +8,7 @@ import { state } from '../place/addressModel';
 export type ICartMeal = {
   readonly mealId: string
   readonly name: string
-  readonly img: string
+  readonly img?: string
   readonly quantity: number
   // todo: enable these
   // readonly isVegan: boolean
@@ -20,7 +20,7 @@ export type ICartMeal = {
 
 export class CartMeal implements ICartMeal {
   readonly mealId: string;
-  readonly img: string;
+  readonly img?: string;
   readonly name: string;
   readonly quantity: number
 

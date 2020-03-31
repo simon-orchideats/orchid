@@ -1,6 +1,6 @@
 export interface IMeal {
   readonly _id: string,
-  readonly img: string,
+  readonly img?: string,
   readonly name: string,
   readonly description: string
   readonly originalPrice: number
@@ -8,7 +8,7 @@ export interface IMeal {
 
 export class Meal implements IMeal {
   readonly _id: string;
-  readonly img: string;
+  readonly img?: string;
   readonly name: string;
   readonly description: string;
   readonly originalPrice: number;
