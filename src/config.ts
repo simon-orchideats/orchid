@@ -155,12 +155,12 @@ const production: config = {
       audience: 'https://orchideats.com',
     },
     stripe: {
-      // key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
-      key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
+      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+      // key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
     },
     logRocket: {
-      // key: 'ugxrrj/orchid',
-      key: '',
+      key: 'ugxrrj/orchid',
+      // key: '',
     },
     analytics: {
       amplitude: {
@@ -217,8 +217,7 @@ D8hc31R0UA==
       hookSecret: process.env.STRIPE_HOOK_SECRET!
     },
     sentry: {
-      // dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',
-      dsn: '',
+      dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',
     },
     geo: {
       key: process.env.GEO_KEY!
