@@ -11,7 +11,6 @@ import { ICartInput, Cart, ICartMeal } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
-import { isDate2DaysLater, getNextDeliveryDate } from './../../order/utils';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { Order } from '../../order/orderModel';
@@ -19,12 +18,11 @@ import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment';
+import { isDate2DaysLater } from '../../order/utils';
 
 const ORDER_INDEX = 'orders';
-export const adjustmentDescHeader = 'Plan Adjustment for week of ';
-//todo 0: use this
-export const getAdjustmentDesc = (fromPlanName: string, toPlanName: string, date: string) =>
-  `Plan adjustment from '${fromPlanName}' to '${toPlanName}' for week of ${date}`
+export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
+  `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
 const chooseRandomMeals = (menu: IMeal[], mealCount: number) => {
@@ -223,13 +221,13 @@ class OrderService {
   }: IAddress) {
     if (!this.geoService) return Promise.reject('GeoService not set');
     return this.geoService.getGeocode(address1, city, state, zip)
-    .then(() => '')  
-    .catch(e => {
-      const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
-      console.warn('[OrderService]', msg, e.stack);
-      return msg;
-    });
-  } 
+      .then(() => '')  
+      .catch(e => {
+        const msg = `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+        console.warn('[OrderService]', msg, e.stack);
+        return msg;
+      });
+    } 
 
   private validatePlan(planId: string, cartMealCount: number) {
     if (!this.planService) return Promise.reject('PlanService not set');
@@ -724,7 +722,11 @@ class OrderService {
             amount,
             currency: 'usd',
             customer: stripeCustomerId,
-            description: `${adjustmentDescHeader}${targetOrderInvoiceDateDisplay}`,
+            description: getAdjustmentDesc(
+              Cart.getMealCount(targetOrder.rest.meals) + targetOrder.donationCount,
+              newPlan ? newPlan.mealCount : 0,
+              targetOrderInvoiceDateDisplay
+            ),
             subscription: subscriptionId,
           });
         } catch (e) {
@@ -767,10 +769,12 @@ class OrderService {
     total: number,
     targetMealCount: number,
     plan: IConsumerPlan,
+    nextDeliveryDate: number,
     updatedDate: number = Date.now(),
   ) {
     try {
       if (!signedInUser) throw getNotSignedInErr();
+      if (validateDeliveryDate(nextDeliveryDate)) throw new Error('Next delivery date is not 2 days after today');
       const upcomingOrders = await this.getMyUpcomingEOrders(signedInUser);
       const getNewOrder = (
         rest: { restId: string, meals: ICartMeal[] } | null,
@@ -795,7 +799,7 @@ class OrderService {
       })
       return Promise.all(upcomingOrders.map(async ({ _id, order }, orderNum) => {
         if (!this.restService) throw new Error ('RestService not set');
-        const deliveryDate = getNextDeliveryDate(plan.deliveryDay).add(orderNum, 'w').valueOf();
+        const deliveryDate = moment(nextDeliveryDate).add(orderNum, 'w').valueOf();
         const invoiceDate = moment(deliveryDate).subtract(2, 'd').valueOf();
         const deliveryTime = plan.deliveryTime;
         const myMealsCount = Cart.getMealCount(order.rest.meals);

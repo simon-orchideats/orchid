@@ -1,6 +1,5 @@
 import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
 import { useRouter } from "next/router";
-import { useGetRest } from "../../rest/restService";
 import { getNextDeliveryDate } from "../../order/utils";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -97,10 +96,15 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
-  const res = useGetRest(cartRef.current && cartRef.current.RestId);
   const groupedMeals = cartRef.current ? cartRef.current.Meals : [];
   if (!cartRef.current) {
     const err = Error('Cart is null');
+    console.warn(err.stack);
+    if (!isServer()) Router.replace(upcomingDeliveriesRoute);
+    return null;
+  }
+  if (!cartRef.current.DeliveryTime) {
+    const err = Error('No delivery time');
     console.warn(err.stack);
     if (!isServer()) Router.replace(upcomingDeliveriesRoute);
     return null;
@@ -115,16 +119,16 @@ const Confirmation: React.FC<{
         <Close className={classes.close} onClick={onClose} />
       </div>
       <Typography variant='body1'>
-        We sent you a confirmation email
+        You will be billed 2 days before your delivery day. Feel free to update your order before you're billed.
       </Typography>
       <Typography variant='body1'>
         We'll text you the day of your delivery
       </Typography>
       <Typography variant='body1'>
-        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, 6pm - 9pm
+        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cartRef.current.DeliveryTime)}
       </Typography>
       <Typography variant='subtitle1'>
-        {res.data && res.data.Profile.Name}
+        {cartRef.current.RestName}
       </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
         <Typography key={mealGroup.MealId} variant='body1'>
@@ -173,7 +177,7 @@ const DestinationPopper: React.FC<{
         {
           destination.Address.Address2 &&
           <Typography variant='body1'>
-            {destination.Address.Address1}
+            {destination.Address.Address2}
           </Typography>
         }
         <Typography variant='body1'>
@@ -205,7 +209,6 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
-  const rest = useGetRest(cart ? cart.RestId : null);
   useEffect(() => {
     if (updateOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -251,6 +254,11 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
+    if (!cart.RestName) {
+      const err = new Error('No cart rest name');
+      console.error(err.stack);
+      throw err;
+    }
     const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
     const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
     if (!cartPlanId) {
@@ -272,7 +280,7 @@ const DeliveryOverview: React.FC<{
       cart,
       planMealPrice,
       planMealCount,
-      rest.data?.Profile.Name,
+      cart.RestName
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
@@ -345,7 +353,7 @@ const DeliveryOverview: React.FC<{
       <Divider />
       {
         <div className={classes.overviewSection}>
-          <Typography variant='subtitle1'>
+          <Typography variant='h6'>
             {order.Rest?.Profile.Name}
           </Typography>
           {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}

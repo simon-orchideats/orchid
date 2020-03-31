@@ -229,7 +229,7 @@ const HowItWorks = () => {
           <Explanation
             title='Pick the menu'
             description="Like variety? Pick a set of customized meals from a variety of your favorite local restaurants.
-            Forget to choose next weeks menu? No worries. We'll pick a new restaurant, personalized for you."
+            Forgot to choose next weeks menu? No worries. We'll pick a new restaurant, personalized for you."
             dividerTitle='Step'
             dividerSubtitle='2'
             img='how-it-works/chef.jpg'
@@ -286,7 +286,7 @@ const HowItWorks = () => {
         <Grid item xs={2} />
         <BenefitTextBox
           title='Variety'
-          description='Ultimate variety from a endless collection of restaurants.'
+          description='Ultimate variety from an endless collection of restaurants.'
         />
         <Grid item xs={2} />
       </Grid>

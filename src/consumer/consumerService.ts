@@ -1,3 +1,4 @@
+import { getNextDeliveryDate } from './../order/utils';
 import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
@@ -248,6 +249,7 @@ export const useSignUp = (): [
       res: Consumer | null,
       error: string | null
     }
+    called: boolean,
   }
 ] => {
   type res = { signUp: MutationConsumerRes };
@@ -288,6 +290,7 @@ export const useSignUp = (): [
       {
         error: mutation.error,
         data,
+        called: mutation.called
       }
     ]
   }, [mutation]);
@@ -305,8 +308,8 @@ export const useUpdateMyPlan = (): [
 ] => {
   type res = { updateMyPlan: MutationConsumerRes };
   const [mutate, mutation] = useMutation<res>(gql`
-    mutation updateMyPlan($plan: ConsumerPlanInput!) {
-      updateMyPlan(plan: $plan) {
+    mutation updateMyPlan($plan: ConsumerPlanInput!, $nextDeliveryDate: Float!) {
+      updateMyPlan(plan: $plan, nextDeliveryDate: $nextDeliveryDate) {
         res {
           ...consumerFragment
         }
@@ -319,6 +322,7 @@ export const useUpdateMyPlan = (): [
     mutate({ 
       variables: {
         plan,
+        nextDeliveryDate: getNextDeliveryDate(plan.DeliveryDay).valueOf(),
       },
       optimisticResponse: {
         updateMyPlan: {

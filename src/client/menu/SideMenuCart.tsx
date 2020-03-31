@@ -63,7 +63,6 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       cart,
       disabled,
       onNext,
-      rest,
       suggestion,
       donationCount,
       incrementDonationCount,
@@ -95,7 +94,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             color='primary'
             className={classes.title}
           >
-            {rest.data ? `Meals from ${rest.data.Profile.Name}` : 'Your meals'}
+            {cart && cart.RestName ? `Meals from ${cart.RestName}` : 'Your meals'}
           </Typography>
             {hideNext && meals}
             {

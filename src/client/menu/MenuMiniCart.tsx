@@ -31,7 +31,6 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       cart,
       disabled,
       onNext,
-      _rest,
       suggestion,
       donationCount,
       incrementDonationCount,

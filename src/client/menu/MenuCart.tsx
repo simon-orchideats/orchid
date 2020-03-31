@@ -1,5 +1,4 @@
 import { useGetCart, useIncrementCartDonationCount, useDecrementCartDonationCount } from "../global/state/cartState";
-import { useGetRest } from "../../rest/restService";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { Plan } from "../../plan/planModel";
@@ -7,8 +6,6 @@ import { Cart } from "../../order/cartModel";
 import Router, { useRouter } from 'next/router'
 import { sendCartMenuMetrics } from "./menuMetrics";
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
-import { ApolloError } from "apollo-client";
-import { Rest } from "../../rest/restModel";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 
@@ -27,11 +24,6 @@ const MenuCart: React.FC<{
     cart: Cart | null,
     disabled: boolean | undefined,
     onNext: () => void,
-    rest: {
-      loading: boolean;
-      error: ApolloError | undefined;
-      data: Rest | undefined;
-    },
     suggestion: string | undefined,
     donationCount: number,
     incrementDonationCount: () => void,
@@ -46,7 +38,6 @@ const MenuCart: React.FC<{
   const consumer = useGetConsumer();
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
-  const rest = useGetRest(cart ? cart.RestId : null);
   const fixedMealCount = (cart && cart.StripePlanId) ? Plan.getPlanCount(cart.StripePlanId, sortedPlans.data || []) : 0;
   const donationCount = cart ? cart.DonationCount : 0;
   const mealCount = cart ? Cart.getMealCount(cart.Meals) + donationCount : 0;
@@ -82,7 +73,7 @@ const MenuCart: React.FC<{
     }
     sendCartMenuMetrics(
       cart,
-      rest.data ? rest.data.Profile.Name : null,
+      cart && cart.RestName ? cart.RestName : null,
       Plan.getMealPrice(stripePlanId, sortedPlans.data),
       Plan.getPlanCount(stripePlanId, sortedPlans.data),
     );
@@ -98,7 +89,6 @@ const MenuCart: React.FC<{
         cart,
         disabled,
         onNext,
-        rest,
         suggestion,
         donationCount,
         incrementDonationCount,

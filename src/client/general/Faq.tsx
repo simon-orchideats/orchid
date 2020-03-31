@@ -58,7 +58,7 @@ const Faq = () => {
           a="No worries. We'll hand pick new meals for you based on your preferences."
         />
         <Expander
-          q='Can update my schedule?'
+          q='Can I update my schedule?'
           a='Yes. You can always update future weeks.'
         />
         <Expander

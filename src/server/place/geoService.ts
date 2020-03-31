@@ -3,7 +3,6 @@ import { activeConfig } from '../../config';
 import querystring from 'querystring';
 import { state } from '../../place/addressModel';
 
-
 export interface IGeoService {
   getGeocode: (street: string, city: string, state: state, zip: string) => Promise<{
     lat: string,

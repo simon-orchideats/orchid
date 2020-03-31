@@ -18,11 +18,12 @@ const useStyles = makeStyles(theme => ({
     paddingRight: 0,
     paddingLeft: 0,
   },
-  scaler: {
+  scaler: ({ meal }: { meal: Meal }) => ({
     width: '100%',
-    paddingBottom: '100%',
+    paddingBottom: meal.Img ? '100%' : undefined,
+    paddingTop: meal.Img ? undefined : '100%',
     position: 'relative',
-  },
+  }),
   img: {
     position: 'absolute',
     width: '100%',
@@ -71,19 +72,21 @@ const MenuMeal: React.FC<{
   disabled: boolean,
   meal: Meal,
   restId: string,
+  restName: string,
 }> = ({
   defaultCount,
   disabled,
   meal,
-  restId
+  restId,
+  restName
 }) => {
-  const classes = useStyles();
+  const classes = useStyles({ meal });
   const [count, updateCount] = useState(defaultCount);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
     updateCount(count + 1);
-    addMealToCart(new Meal(meal), restId);
+    addMealToCart(new Meal(meal), restId, restName);
   }
   const onRemoveMeal = () => {
     updateCount(count - 1);
@@ -92,11 +95,18 @@ const MenuMeal: React.FC<{
   return (
     <Card elevation={0} className={classes.card}>
       <div className={classes.scaler}>
-        <CardMedia
-          className={classes.img}
-          image={meal.Img}
-          title={meal.Img}
-        />
+        {
+          meal.Img ?
+          <CardMedia
+            className={classes.img}
+            image={meal.Img}
+            title={meal.Img}
+          />
+          :
+          <Typography>
+            No picture
+          </Typography>
+        }
       </div>
       <CardContent className={classes.content}>
         <div className={classes.actionBar}>

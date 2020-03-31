@@ -18,6 +18,7 @@ export const cartQL = gql`
     meals: [CartMeal!]!
     donationCount: Int!
     restId: ID
+    restName: String
     stripePlanId: ID
     deliveryDay: Int
     zip: String
@@ -85,15 +86,15 @@ export const useClearCartMeals = () => {
   }
 }
 
-export const useAddMealToCart = (): (meal: Meal, restId: string) => void => {
-  type vars = { meal: Meal, restId: string };
+export const useAddMealToCart = (): (meal: Meal, restId: string, restName: string) => void => {
+  type vars = { meal: Meal, restId: string, restName: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation addMealToCart($meal: Meal!, $restId: ID!) {
-      addMealToCart(meal: $meal, restId: $restId) @client
+    mutation addMealToCart($meal: Meal!, $restId: ID!, $restName: String!) {
+      addMealToCart(meal: $meal, restId: $restId, restName: $restName) @client
     }
   `);
-  return (meal: Meal, restId: string) => {
-    mutate({ variables: { meal, restId } })
+  return (meal: Meal, restId: string, restName: string) => {
+    mutate({ variables: { meal, restId, restName } })
   }
 }
 
@@ -182,7 +183,7 @@ export const useUpdateZip = (): (zip: string) => void => {
 }
 
 type cartMutationResolvers = {
-  addMealToCart: ClientResolver<{ meal: Meal, restId: string }, Cart | null>
+  addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
@@ -207,7 +208,7 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 });
 
 export const cartMutationResolvers: cartMutationResolvers = {
-  addMealToCart: (_, { meal, restId }, { cache }) => {
+  addMealToCart: (_, { meal, restId, restName }, { cache }) => {
     const res = getCart(cache);
     const newCartMealInput = CartMeal.getCartMeal(meal);
     if (!res || !res.cart) {
@@ -216,6 +217,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: null,
         meals: [newCartMealInput],
         restId,
+        restName,
         stripePlanId: null,
         deliveryDay: null,
         zip: null,
@@ -232,6 +234,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: res.cart.DeliveryTime,
         meals: [newCartMealInput],
         restId,
+        restName,
         stripePlanId: res.cart.StripePlanId,
         deliveryDay: res.cart.DeliveryDay,
         zip: res.cart.Zip,
@@ -243,6 +246,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: newCart.DeliveryTime,
       meals: newCart.Meals,
       restId,
+      restName,
       stripePlanId: newCart.StripePlanId,
       deliveryDay: newCart.DeliveryDay,
       zip: newCart.Zip,
@@ -261,6 +265,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: res.cart.StripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
@@ -275,6 +280,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: null,
         meals: [],
         restId: null,
+        restName: null,
         stripePlanId: null,
         deliveryDay: null,
         zip: null,
@@ -285,6 +291,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: res.cart.StripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
@@ -302,6 +309,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: [],
       restId: null,
+      restName: null,
       stripePlanId: null,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
@@ -323,6 +331,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: newCart.DeliveryTime,
         meals: [],
         restId: null,
+        restName: null,
         stripePlanId: newCart.StripePlanId,
         deliveryDay: newCart.DeliveryDay,
         zip: newCart.Zip,
@@ -342,6 +351,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: order.DeliveryTime,
       meals: order.Meals,
       restId: order.Rest.Id,
+      restName: order.Rest.Profile.Name,
       stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
       zip: order.Destination.Address.Zip,
@@ -356,6 +366,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: null,
         meals: [],
         restId: null,
+        restName: null,
         stripePlanId: id,
         deliveryDay: null,
         zip: null,
@@ -366,6 +377,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: id,
       deliveryDay: res.cart.DeliveryDay,
       zip: res.cart.Zip,
@@ -384,6 +396,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: res.cart.stripePlanId,
       deliveryDay: day,
       zip: res.cart.Zip,
@@ -401,6 +414,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: res.cart.DonationCount,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: res.cart.stripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       deliveryTime: time,
@@ -416,6 +430,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveryTime: null,
         meals: [],
         restId: null,
+        restName: null,
         stripePlanId: null,
         deliveryDay: null,
         zip,
@@ -426,6 +441,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveryTime: res.cart.DeliveryTime,
       meals: res.cart.Meals,
       restId: res.cart.RestId,
+      restName: res.cart.RestName,
       stripePlanId: res.cart.stripePlanId,
       deliveryDay: res.cart.DeliveryDay,
       zip,

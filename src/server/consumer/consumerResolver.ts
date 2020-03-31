@@ -21,8 +21,8 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().signUp(email, name, pass, res);
   },
 
-  updateMyPlan: async(_root, { plan }: { plan: IConsumerPlan }, { signedInUser }) => {
-    return await getConsumerService().updateMyPlan(signedInUser, plan);
+  updateMyPlan: async(_root, { plan, nextDeliveryDate }: { plan: IConsumerPlan, nextDeliveryDate: number }, { signedInUser }) => {
+    return await getConsumerService().updateMyPlan(signedInUser, plan, nextDeliveryDate);
   },
 
   updateMyProfile: async(_root, { profile }: { profile: IConsumerProfile }, { signedInUser }) => {

@@ -1,4 +1,4 @@
-import { getNextDeliveryDate } from './../../order/utils';
+import { IGeoService, getGeoService } from './../place/geoService';
 import moment from 'moment';
 import { getNotSignedInErr } from './../utils/error';
 import { MutationConsumerRes } from './../../utils/apolloUtils';
@@ -23,7 +23,7 @@ export interface IConsumerService {
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
-  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
+  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
 
@@ -32,6 +32,7 @@ class ConsumerService implements IConsumerService {
   private readonly stripe: Stripe
   private planService?: IPlanService
   private orderService?: IOrderService
+  private geoService?: IGeoService
 
   public constructor(elastic: Client, stripe: Stripe) {
     this.elastic = elastic;
@@ -44,6 +45,10 @@ class ConsumerService implements IConsumerService {
 
   public setOrderService(orderService: IOrderService) {
     this.orderService = orderService;
+  }
+
+  public setGeoService(geoService: IGeoService) {
+    this.geoService = geoService;
   }
 
   private async prepareOrdersForCancelation(signedInUser: SignedInUser) {
@@ -329,8 +334,25 @@ class ConsumerService implements IConsumerService {
   }
 
   async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationConsumerRes> {
-    if (!signedInUser) throw getNotSignedInErr()
     try {
+      if (!this.geoService) return Promise.reject('GeoService not set');
+      if (!signedInUser) throw getNotSignedInErr();
+      if (!profile.destination) throw new Error('Missing destination');
+      if (!this.orderService) throw new Error('Order service not set');
+      const {
+        address1,
+        city,
+        state,
+        zip
+      } = profile.destination.address;
+      try {
+        await this.geoService.getGeocode(address1, city, state, zip);
+      } catch (e) {
+        return {
+          res: null,
+          error: `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+        }
+      }
       const res = await this.elastic.update({
           index: CONSUMER_INDEX,
           id: signedInUser._id,
@@ -345,23 +367,18 @@ class ConsumerService implements IConsumerService {
         _id: signedInUser._id,
         ...res.body.get._source
       };
-      if (this.orderService) {
-        await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile)
-      } else {
-        console.error(`[ConsumerService]: OrderService not available to updateUpcomingOrders '${signedInUser && signedInUser._id}'`);
-        throw new Error('No order service');
-      }
+      await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile)
       return {
         res: newConsumer,
         error: null
       }
     } catch (e) {
-      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser && signedInUser._id}'`, e.stack);
+      console.error(`[ConsumerService] failed to update consumer profile for '${signedInUser?._id}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }
 
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
@@ -408,6 +425,7 @@ class ConsumerService implements IConsumerService {
         total,
         mealCount,
         newPlan,
+        nextDeliveryDate,
       ).catch(e => {
         console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
         throw e;
@@ -424,7 +442,7 @@ class ConsumerService implements IConsumerService {
 
       const res = await Promise.all([canceler, subscription])
 
-      const newInvoiceDateSeconds = Math.round(getNextDeliveryDate(newPlan.deliveryDay).subtract(2, 'd').valueOf() / 1000)
+      const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
       const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
         trial_end: newInvoiceDateSeconds,
         proration_behavior: 'none',
@@ -473,5 +491,6 @@ export const getConsumerService = () => {
   );
   consumerService!.setOrderService(getOrderService());
   consumerService!.setPlanService(getPlanService());
+  consumerService!.setGeoService(getGeoService());
   return consumerService;
 }
