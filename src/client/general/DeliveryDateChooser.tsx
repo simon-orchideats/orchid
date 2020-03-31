@@ -74,7 +74,7 @@ const DeliveryDateChooser: React.FC<{
       </FormControl>
       <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
         <InputLabel>
-          Delivery time
+          Preferred delivery time
         </InputLabel>
         <Select
           value={time}
