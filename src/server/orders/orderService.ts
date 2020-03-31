@@ -763,7 +763,6 @@ class OrderService {
     }
   }
 
-  // left off here. make sure this still works. test eveyrthing
   async updateUpcomingOrdersPlans(
     signedInUser: SignedInUser,
     mealPrice: number,
