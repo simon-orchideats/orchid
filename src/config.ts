@@ -155,8 +155,7 @@ const production: config = {
       audience: 'https://orchideats.com',
     },
     stripe: {
-      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
-      // key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
+      key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
     },
     logRocket: {
       key: 'ugxrrj/orchid',
@@ -164,12 +163,10 @@ const production: config = {
     },
     analytics: {
       amplitude: {
-        // key: '3aa095499fd45cab00cbb40c5a65a9da',
-        key: ''
+        key: '3aa095499fd45cab00cbb40c5a65a9da',
       },
       ga: {
-        // trackingId: 'UA-158803692-1',
-        trackingId: '',
+        trackingId: 'UA-158803692-1',
       }
     },
   },
