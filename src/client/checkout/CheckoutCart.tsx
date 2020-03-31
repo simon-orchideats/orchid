@@ -4,7 +4,7 @@ import { useGetRest } from "../../rest/restService";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { getNextDeliveryDate } from "../../order/utils";
-import { Consumer } from "../../consumer/consumerModel";
+import { Consumer, ConsumerPlan } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
 import { Cart, CartMeal } from "../../order/cartModel";
@@ -49,6 +49,11 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
+  if (!cart.DeliveryTime) {
+    const err = new Error('Missing delivery time');
+    console.error(err.stack);
+    throw err;
+  }
   const rest = useGetRest(cart ? cart.RestId : null);
   const groupedMeals = cart && cart.Meals;
   const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
@@ -94,7 +99,7 @@ const CheckoutCart: React.FC<props> = ({
         />
       }
       <Typography variant='body1'>
-        Deliver on {deliveryDate.format('M/D/YY')}, 6pm - 9pm
+        Deliver on {deliveryDate.format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cart.DeliveryTime)}
       </Typography>
       <Typography variant='body1'>
         Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}

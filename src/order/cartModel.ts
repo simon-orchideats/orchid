@@ -10,6 +10,12 @@ export type ICartMeal = {
   readonly name: string
   readonly img: string
   readonly quantity: number
+  // todo: enable these
+  // readonly isVegan: boolean
+  // readonly isVegetarian: boolean
+  // readonly restId: string
+  // readonly deliveryDate: number
+  // readonly deliveryTime: deliveryTime
 }
 
 export class CartMeal implements ICartMeal {

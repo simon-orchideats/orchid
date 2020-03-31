@@ -56,27 +56,27 @@ export type CuisineType =
 
 export const CuisineTypes: {
   American: 'American',
-  Bbq: 'Bbq',
+  // Bbq: 'Bbq',
   Chinese: 'Chinese',
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
-  Mediterranean: 'Mediterranean',
+  // Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
-  Thai: 'Thai',
-  Vegan: 'Vegan',
+  // Thai: 'Thai',
+  // Vegan: 'Vegan',
   Vegetarian: 'Vegetarian'
 } = {
   American: 'American',
-  Bbq: 'Bbq',
+  // Bbq: 'Bbq',
   Chinese: 'Chinese',
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
-  Mediterranean: 'Mediterranean',
+  // Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
-  Thai: 'Thai',
-  Vegan: 'Vegan',
+  // Thai: 'Thai',
+  // Vegan: 'Vegan',
   Vegetarian: 'Vegetarian'
 }
 

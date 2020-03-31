@@ -3,15 +3,15 @@ import gql from 'graphql-tag';
 const CuisineTypeQL = gql`
   enum CuisineType {
     American
-    Bbq
+    # Bbq
     Chinese
     Indian
     Italian
     Japanese
-    Mediterranean
+    # Mediterranean
     Mexican
-    Thai
-    Vegan
+    # Thai
+    # Vegan
     Vegetarian
   }
 `
