@@ -1,4 +1,3 @@
-import { getNextDeliveryDate } from './../../order/utils';
 import moment from 'moment';
 import { getNotSignedInErr } from './../utils/error';
 import { MutationConsumerRes } from './../../utils/apolloUtils';
@@ -23,7 +22,7 @@ export interface IConsumerService {
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
-  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
+  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
 
@@ -361,7 +360,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
@@ -408,6 +407,7 @@ class ConsumerService implements IConsumerService {
         total,
         mealCount,
         newPlan,
+        nextDeliveryDate,
       ).catch(e => {
         console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
         throw e;
@@ -424,7 +424,7 @@ class ConsumerService implements IConsumerService {
 
       const res = await Promise.all([canceler, subscription])
 
-      const newInvoiceDateSeconds = Math.round(getNextDeliveryDate(newPlan.deliveryDay).subtract(2, 'd').valueOf() / 1000)
+      const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
       const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
         trial_end: newInvoiceDateSeconds,
         proration_behavior: 'none',
