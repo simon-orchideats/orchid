@@ -159,7 +159,6 @@ const production: config = {
     },
     logRocket: {
       key: 'ugxrrj/orchid',
-      // key: '',
     },
     analytics: {
       amplitude: {
