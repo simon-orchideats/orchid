@@ -180,7 +180,7 @@ export const useUpdateOrder = (): [
           const donationCount = updateOptions.donationCount;
           const mealCount = Cart.getMealCount(updateOptions.meals);
           const totalMealCount = mealCount + donationCount;
-          if (mealCount > 0) {
+          if (totalMealCount > 0) {
             const plans = getAvailablePlans(cache);
             if (!plans) {
               const err = new Error('Failed to get plan for cache update');
@@ -189,15 +189,13 @@ export const useUpdateOrder = (): [
             }
             mealPrice = Plan.getMealPriceFromCount(totalMealCount, plans.availablePlans);
           }
-          const isAllDonations = mealCount === 0 && donationCount > 0;
-          const isSkipped = totalMealCount === 0;
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
             if (order._id !== orderId) return order;
             const newOrder = Order.getIOrderFromUpdatedOrderInput(
               orderId,
               updateOptions,
               mealPrice,
-              (isAllDonations || isSkipped) ? 'Skipped' : order.status,
+              totalMealCount > 0 ? 'Open' : 'Skipped',
               rest
             );
             //@ts-ignore

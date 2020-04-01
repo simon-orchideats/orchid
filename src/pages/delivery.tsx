@@ -36,6 +36,7 @@ const useStyles = makeStyles(theme => ({
   row: {
     display: 'flex',
   },
+
 }));
 
 const delivery = () => {
@@ -68,6 +69,12 @@ const delivery = () => {
           </Typography>
           <Typography variant='subtitle1'>
             {getNextDeliveryDate(day).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(time)}
+          </Typography>
+          <br/>
+        </div>
+        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
+          <Typography variant='body1' align='center'>
+            We'll do our best to meet your delivery schedule and email you if we need to reschedule your order to the next best time.
           </Typography>
         </div>
         <Link href={checkoutRoute}>

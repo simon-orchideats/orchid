@@ -186,7 +186,7 @@ export class Order implements IOrder{
           destination,
         }
       },
-      status: (Cart.getMealCount(meals) > 0 && donationCount >= 0) ? 'Open' : 'Skipped',
+      status: (Cart.getMealCount(meals) > 0 || donationCount > 0) ? 'Open' : 'Skipped',
       donationCount
     }
   }
@@ -210,7 +210,7 @@ export class Order implements IOrder{
         restId: cart.restId,
         meals: cart.meals,
       },
-      status: Cart.getMealCount(cart.meals) > 0 ? 'Open' : 'Skipped',
+      status: 'Open',
       consumer: {
         userId: signedInUser._id,
         profile: {
