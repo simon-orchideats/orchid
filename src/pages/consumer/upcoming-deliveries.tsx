@@ -281,7 +281,7 @@ const DeliveryOverview: React.FC<{
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const onSkip = () => {
-    if (!order.MealPrice || !isAllDonations ) {
+    if (!order.MealPrice) {
       const err = new Error('No meal price');
       console.error(err.stack);
       throw err;
