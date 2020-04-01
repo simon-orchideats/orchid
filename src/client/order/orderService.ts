@@ -189,15 +189,13 @@ export const useUpdateOrder = (): [
             }
             mealPrice = Plan.getMealPriceFromCount(totalMealCount, plans.availablePlans);
           }
-          const isAllDonations = mealCount === 0 && donationCount > 0;
-          const isSkipped = totalMealCount === 0;
           const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
             if (order._id !== orderId) return order;
             const newOrder = Order.getIOrderFromUpdatedOrderInput(
               orderId,
               updateOptions,
               mealPrice,
-              (isAllDonations || isSkipped) ? 'Skipped' : order.status,
+              order.status,
               rest
             );
             //@ts-ignore

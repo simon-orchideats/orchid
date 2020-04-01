@@ -209,6 +209,7 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
+  const isAllDonations = order.DonationCount > 0 && Cart.getMealCount(order.Meals) === 0 ? true : false;
   useEffect(() => {
     if (updateOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -280,7 +281,7 @@ const DeliveryOverview: React.FC<{
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
   const onSkip = () => {
-    if (!order.MealPrice) {
+    if (!order.MealPrice || !isAllDonations ) {
       const err = new Error('No meal price');
       console.error(err.stack);
       throw err;
@@ -373,14 +374,14 @@ const DeliveryOverview: React.FC<{
           :
           <>
             {
-              order.Rest && 
+              (order.Rest || isAllDonations) && 
               <Button
                 variant='outlined'
                 color='primary'
                 className={classes.skip}
                 onClick={onSkip}
               >
-                Skip
+                {isAllDonations ? 'Cancel Donation' : 'Skip'}
               </Button>
             }
             <Button
