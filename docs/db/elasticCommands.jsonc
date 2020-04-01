@@ -356,7 +356,7 @@ PUT /orders/
               },
               "deliveryTime": {
                 "type": "keyword"
-              },
+              }
             }
           }
         }
@@ -561,6 +561,228 @@ PUT /consumers/
 
 ######### INSERTS ##########
 
+
+POST rests/_doc/
+{
+  "createdDate" : 1585714539021,
+  "location" : {
+    "address" : {
+      "address1" : "117 Tonelle Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07306"
+    },
+    "geo" : {
+      "lat" : 40.735060,
+      "lon" : -74.067220
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "h7EoC8AH8w8vnQbGc9lTV",
+      "img" : "/menu/canteen-dhaba/butter-chicken.jpg",
+      "name" : "Butter Chicken w/ Keema Naan",
+      "description" : "classic boneless chicken in makhani gravy",
+      "originalPrice" : 11.9
+    },
+    {
+      "_id" : "3wxzopyL5fnFS-HHUxb6f",
+      "img" : "/menu/canteen-dhaba/lamb-rogan-josh.jpg",
+      "name" : "Lamb Rogan Josh w/ Jalapeno Naan",
+      "originalPrice" : 11.9,
+      "tags": [],
+      "description" : "classic North Indian dish in cardamom sauce"
+    },
+    {
+      "_id" : "8HWCCbo0MdLRggszhJEbF",
+      "img" : "/menu/canteen-dhaba/paneer-tikka-masala.jpg",
+      "name" : "Paneer Tikka Masala w/ Dahi Bhalla",
+      "originalPrice" : 11.9,
+      "tags": ["Vegetarian"],
+      "description" : "homemade cubed cottage cheese in herbed creamy tomato sauce & lentil dumplings filled w/ cumin seeds and nuts in yogurt sauce w/ chutneys and chat masala"
+    },
+    {
+      "_id" : "OrY0ZaR-y4NcER8pZIByG",
+      "img" : "/menu/canteen-dhaba/shrimp-tandoori.jpg",
+      "name" : "Tandoori Shrimp",
+      "originalPrice" : 11.95,
+      "tags": [],
+      "description" : "shrimp marinated in authentic spiced yogurt & herbs in a charcoal oven"
+    },
+    {
+      "_id" : "R3R2E_khpEN57nXxvXCqn",
+      "img" : "/menu/canteen-dhaba/chicken-biryani.jpg",
+      "name" : "Chicken Biryani w/ Keema Naan",
+      "originalPrice" : 11.9,
+      "tags": [],
+      "description" : "basmati rice cooked with marinated chicken with Indian herbs spices & dry fruits"
+    },
+    {
+      "_id" : "AvvXsRFml8utI6icepmEK",
+      "img" : "/menu/canteen-dhaba/baigan-bartha.jpg",
+      "name" : "Baigan Bartha w/ Samosa Chat",
+      "tags": ["Vegan", "Vegetarian"],
+      "description" : "fresh roasted eggplant with sauteed ginger, garlic and red onions in vegetable oil & crispy turnovers with seasoned potatoes served with yogurt, chickpeas, & chutney",
+      "originalPrice" : 11.90
+    }
+  ],
+  "profile" : {
+    "name" : "Canteen Desi Dhaba",
+    "phone" : "(201) 434-0007",
+    "tags" : [
+      "Indian"
+    ]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate" : 1585714539021,
+  "location" : {
+    "address" : {
+      "address1" : "117 Tonelle Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07306"
+    },
+    "geo" : {
+      "lat" : 40.735060,
+      "lon" : -74.067220
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "LOeDflf4gWcqwstGKg3CN",
+      "img" : "/menu/china-spice/ginger-basil-chicken.jpg",
+      "name" : "Basil Ginger Chicken",
+      "description" : "boneless pieces of chicken breast stir-fried in ginger and basil sauce.",
+      "originalPrice" : 12.00,
+      "tags": []
+    },
+    {
+      "_id" : "zZ0HgS5QqD4qwedw40nEV",
+      "img" : "/menu/china-spice/thai-chicken.jpg",
+      "name" : "Thai Chicken Curry",
+      "originalPrice" : 12.00,
+      "tags": [],
+      "description" : "a traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce"
+    },
+    {
+      "_id" : "77CogU3SlD_xG5y9aSAJW",
+      "img" : "/menu/china-spice/coriander-chicken.jpg",
+      "name" : "Coriander Garlic Chicken",
+      "originalPrice" : 12.00,
+      "tags": [],
+      "description" : "wok-fried chicken with onions and green peppers in garlic coriander sauce"
+    },
+    {
+      "_id" : "ZlnsrAnkjppBwY64hCFWY",
+      "img" : "/menu/china-spice/curry-fried-rice.jpg",
+      "name" : "Vegetables Spicy Curry Fried Rice",
+      "originalPrice" : 12.00,
+      "tags": ["Vegetarian", "Vegan"],
+      "description" : "thai fried rice with onions, tomatoes, carrots, tofu, string beans & basil in light curry sauce"
+    },
+    {
+      "_id" : "EDjLDJejCNf75rYJj5NyW",
+      "img" : "/menu/china-spice/okra.jpg",
+      "name" : "Okra Pepper Salt Dry",
+      "originalPrice" : 11.00,
+      "tags": ["Vegetarian", "Vegan"],
+      "description" : "lady fingers sauteed w/ chilli, garlic, scallions, ginger, celery, & black pepper in soy"
+    },
+    {
+      "_id" : "RSwsSOm96-aRXYgwVK0Z6",
+      "img" : "/menu/china-spice/cauliflower.jpg",
+      "name" : "Cauliflower Manchurian",
+      "tags": ["Vegetarian", "Vegan"],
+      "description" : "flower buds roasted to perfection in our famous manchurian sauce",
+      "originalPrice" : 11.00
+    }
+  ],
+  "profile" : {
+    "name" : "China Spice",
+    "phone" : "(201) 653-7742",
+    "tags" : [
+      "Indian",
+      "Chinese"
+    ]
+  }
+}
+
+
+POST rests/_doc/
+{
+  "createdDate" : 1585714539021,
+  "location" : {
+    "address" : {
+      "address1" : "101 Greene St",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07302"
+    },
+    "geo" : {
+      "lat" : 40.716130,
+      "lon" : -74.036100
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "Pk-Iv_F8bFO74LauepKrC",
+      "img" : "/menu/pizza-pie/chicken-francaise.jpg",
+      "name" : "Linguine Puttanesca",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "-EvNC3R3J2-MrZoA16oJg",
+      "img" : "/menu/pizza-pie/lasagna.jpg",
+      "name" : "Penne Rustica",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "9zGAyZCYF6nwh9duZpM44",
+      "img" : "/menu/pizza-pie/linguine-puttanesca.jpg",
+      "name" : "Spaghetti & Meatball",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "5cjC3_BU1N4xw5gvaIZUc",
+      "img" : "/menu/pizza-pie/penne-rustica.jpg",
+      "name" : "Chicken Francaise",
+      "originalPrice": 12.95,
+      "tags": []
+    },
+    {
+      "_id" : "iNnWeh0mn_PmlF_0eaIG9",
+      "img" : "/menu/pizza-pie/spaghetti-meatball.jpg",
+      "name" : "Lasagna",
+      "originalPrice": 10.95,
+      "tags": []
+    },
+    {
+      "_id" : "o4dj6mqZL5DqHF_GXW_mc",
+      "img" : "/menu/pizza-pie/ziti-pomodoro.jpg",
+      "name" : "Ziti Pomodoro Al Forno",
+      "tags": [],
+      "originalPrice": 10.95
+    }
+  ],
+  "profile" : {
+    "name" : "Pizza Pie La Cantina Italiana",
+    "phone" : "(201) 360-2113",
+    "tags" : [
+      "Italian"
+    ]
+  }
+}
+
+
 POST rests/_doc/
 {
   "createdDate": 1585605623774,
@@ -613,6 +835,7 @@ POST rests/_doc/
     {
       "_id": "0nG7D5vDhwZJfo2mWSetk",
       "name": "Vegetarian Bento",
+      "img": "/menu/ozu/vegetarian-bento-box.png",
       "tags": ["Vegan", "Vegetarian"],
       "originalPrice": 11.75,
       "description": "bento box w/ Ozu Vegan selections, Cucumber-Wakame salad, and 7-grain rice"
@@ -1007,18 +1230,21 @@ POST rests/_doc/
       "img" : "/menu/vip-diner/turkey-triple.jpg",
       "name" : "Turkey & Bacon Triple Decker",
       "description" : "w/ lettuce & tomato",
+      "tags": [],
       "originalPrice" : 10.65
     },
     {
       "_id" : "SSZnRga_jPP8mHSK_eECe",
       "img" : "/menu/vip-diner/penne-rigate-ala-vodka.jpg",
       "name" : "Penne Rigate Ala Vodka",
+      "tags": [],
       "originalPrice" : 11.5
     },
     {
       "_id" : "FMHSwI21-jLwyGMeXnEK-",
       "img" : "/menu/vip-diner/philly-cheesesteak.jpg",
       "name" : "Philly Cheese Steak",
+      "tags": [],
       "originalPrice" : 8.95,
       "description" : "w/ fries, peppers, onions & american cheese on hero bread"
     },
@@ -1026,6 +1252,7 @@ POST rests/_doc/
       "_id" : "BYNB7K5ovjFDkjA2026Ur",
       "img" : "/menu/vip-diner/penne-with-broccoli.jpg",
       "name" : "Penne Rigate with Broccoli",
+      "tags": [],
       "originalPrice" : 10.95
     },
     {
@@ -1033,12 +1260,14 @@ POST rests/_doc/
       "img" : "/menu/vip-diner/chopped-sirloin.jpg",
       "name" : "Chopped Sirloin Steak",
       "description" : "w/ mushroom sauce",
+      "tags": [],
       "originalPrice" : 12.95
     },
     {
       "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
       "img" : "/menu/vip-diner/hero-chicken-parm.jpg",
       "name" : "Hero Chicken Parmigiana",
+      "tags": [],
       "description" : "on italian bread w/ fries",
       "originalPrice" : 8.95
     }
@@ -1051,6 +1280,9 @@ POST rests/_doc/
     ]
   }
 }
+
+
+###############################
 
 POST rest/_doc/
 {
@@ -1160,28 +1392,3 @@ POST rest/_doc/
     ]
   }
 }
-
-POST _bulk
-{ "index" : { "_index" : "tags", "_id": "American" } }
-{ "name" : "American", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "BBQ" } }
-{ "name" : "BBQ", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Chinese" } }
-{ "name" : "Chinese", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Indian" } }
-{ "name" : "Indian", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Italian" } }
-{ "name" : "Italian", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Japanese" } }
-{ "name" : "Japanese", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Mediterranean" } }
-{ "name" : "Mediterranean", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Mexican" } }
-{ "name" : "Mexican", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Thai" } }
-{ "name" : "Thai", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Vegan" } }
-{ "name" : "Vegan", "count": 0 }
-{ "index" : { "_index" : "tags", "_id": "Vegetarian" } }
-{ "name" : "Vegetarian", "count": 0 }
-############################
