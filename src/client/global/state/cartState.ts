@@ -341,17 +341,12 @@ export const cartMutationResolvers: cartMutationResolvers = {
   },
 
   setCart: (_, { order, planId }, { cache }) => {
-    if (!order.Rest) {
-      const err = new Error('Setting cart with null rest');
-      console.error(err.stack);
-      throw err;
-    }
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,
       deliveryTime: order.DeliveryTime,
       meals: order.Meals,
-      restId: order.Rest.Id,
-      restName: order.Rest.Profile.Name,
+      restId: order.Rest ? order.Rest.Id : null,
+      restName: order.Rest ? order.Rest.Profile.Name : null,
       stripePlanId: planId,
       deliveryDay: moment(order.DeliveryDate).day() as deliveryDay,
       zip: order.Destination.Address.Zip,

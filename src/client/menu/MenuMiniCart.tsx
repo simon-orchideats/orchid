@@ -1,7 +1,8 @@
-import { makeStyles, Typography, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button, IconButton, Popover, Paper } from "@material-ui/core";
 import MenuCart from "./MenuCart";
 import Counter from "./Counter";
-
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import { useState } from "react";
 const useStyles = makeStyles(theme => ({
   suggestion: {
     color: theme.palette.warning.main,
@@ -20,10 +21,22 @@ const useStyles = makeStyles(theme => ({
   heart: {
     height: 24,
   },
+  popper: {
+    width: 300,
+    padding: theme.spacing(2),
+  },
+  icon: {
+    paddingLeft: 0,
+  }
 }));
 
 const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleHelp = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
+  const isHelperOpen = Boolean(anchorEl);
   if (hideNext) return null;
   return (
     <MenuCart
@@ -38,6 +51,34 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       addDonationDisabled,
     ) => (
       <div className={classes.container}>
+        <Popover
+          open={isHelperOpen}
+          anchorEl={anchorEl}
+          onClose={() => setAnchorEl(null)} 
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+        >
+          <Paper className={classes.popper}>
+            <Typography variant='body1'>
+              Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
+              donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
+              3 meals on us so we can all help our heros on the frontline.
+            </Typography>
+          </Paper>
+        </Popover>
+        <IconButton
+          color='primary'
+          onClick={handleHelp}
+          className={classes.icon}
+        >
+          <HelpOutlineIcon />
+        </IconButton>
         <Counter
           subtractDisabled={!donationCount}
           onClickSubtract={decrementDonationCount}

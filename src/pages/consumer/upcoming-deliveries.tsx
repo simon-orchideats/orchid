@@ -229,16 +229,14 @@ const DeliveryOverview: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const onEdit = () => {
-    if (order.Rest) {
-      const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
-      const planId = Plan.getPlanId(mealCount, plans.data)
-      if (!planId) {
-        const err = new Error(`Missing planId for mealCount ${mealCount}`);
-        console.error(err.stack);
-        throw err;
-      }
-      setCart(order, planId);
+    const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
+    const planId = Plan.getPlanId(mealCount, plans.data)
+    if (!planId) {
+      const err = new Error(`Missing planId for mealCount ${mealCount}`);
+      console.error(err.stack);
+      throw err;
     }
+    setCart(order, planId);
     Router.push({
       pathname: menuRoute,
       query: { updating: 'true' }
