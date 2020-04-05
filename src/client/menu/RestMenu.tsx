@@ -4,7 +4,7 @@ import { Rest } from "../../rest/restModel";
 import { useRef, useState, ChangeEvent } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MenuMeal from "./MenuMeal";
-import { CartMeal } from '../../order/cartModel';
+import { DeliveryMeal } from '../../order/deliveryModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 
 const RestMenu: React.FC<{
   cartRestId: string | null
-  cartMeals: CartMeal[]
+  cartMeals: DeliveryMeal[]
   rest: Rest
 }> = ({
   cartMeals,

@@ -1,10 +1,9 @@
 import { IGeoService, getGeoService } from './../place/geoService';
-import moment from 'moment';
 import { getNotSignedInErr } from './../utils/error';
 import { MutationConsumerRes } from './../../utils/apolloUtils';
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch, { Response } from 'node-fetch';
-import { IOrderService, getOrderService, adjustmentDateFormat } from './../orders/orderService';
+import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
@@ -51,59 +50,60 @@ class ConsumerService implements IConsumerService {
     this.geoService = geoService;
   }
 
+  //@ts-ignore // todo simon: redo this entire fn
   private async prepareOrdersForCancelation(signedInUser: SignedInUser) {
-    try {
-      if (!this.orderService) throw new Error('No order service');
-      if (!signedInUser) throw getNotSignedInErr();
-      const stripeCustomerId = signedInUser.stripeCustomerId;
-      if (!stripeCustomerId) throw new Error('Missing stripe customer id');
+    // try {
+    //   if (!this.orderService) throw new Error('No order service');
+    //   if (!signedInUser) throw getNotSignedInErr();
+    //   const stripeCustomerId = signedInUser.stripeCustomerId;
+    //   if (!stripeCustomerId) throw new Error('Missing stripe customer id');
 
-      let pendingLineItems: Stripe.ApiList<Stripe.InvoiceItem>;
-      try {
-        pendingLineItems = await this.stripe.invoiceItems.list({
-          limit: 50,
-          pending: true,
-          customer: stripeCustomerId,
-        });
-      } catch (e) {
-        throw new Error(`Couldn't get future line items: ${e.stack}`)
-      }
-      const today = moment().valueOf();
-      return this.orderService.getMyUpcomingEOrders(signedInUser)
-        .then(orders => Promise.all(orders.map(async ({ _id, order }) => {
-          if (!this.orderService) throw new Error('OrderService not set');
-          if (order.invoiceDate > today) {
-            return Promise.all(pendingLineItems.data.map(line => {
-              if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
-                return this.stripe.invoiceItems.del(line.id).catch(e => {
-                  const msg = `Couldn't remove future adjustment id '${line.id}': ${e.stack}`
-                  console.error(msg);
-                  throw e;
-                });
-              }
-            }));
-          } else {
-            return this.orderService.updateOrder(signedInUser, _id, {
-              restId: null,
-              meals: [],
-              // todo 0: remove these !
-              phone: order.consumer.profile.phone!,
-              destination: order.consumer.profile.destination!,
-              deliveryDate: order.deliveryDate,
-              deliveryTime: order.deliveryTime,
-              donationCount: order.donationCount,
-              name: order.consumer.profile.name
-            }).catch(e => {
-              const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}': ${e.stack}`;
-              console.error(msg)
-              throw e;
-            })
-          }
-        })))
-    } catch (e) {
-      console.error(`[ConsumerService] failed to prepare cancelation for user '${signedInUser && signedInUser._id}'`, e.stack);
-      throw e;
-    }
+    //   let pendingLineItems: Stripe.ApiList<Stripe.InvoiceItem>;
+    //   try {
+    //     pendingLineItems = await this.stripe.invoiceItems.list({
+    //       limit: 50,
+    //       pending: true,
+    //       customer: stripeCustomerId,
+    //     });
+    //   } catch (e) {
+    //     throw new Error(`Couldn't get future line items: ${e.stack}`)
+    //   }
+    //   const today = moment().valueOf();
+    //   return this.orderService.getMyUpcomingEOrders(signedInUser)
+    //     .then(orders => Promise.all(orders.map(async ({ _id, order }) => {
+    //       if (!this.orderService) throw new Error('OrderService not set');
+    //       if (order.invoiceDate > today) {
+    //         return Promise.all(pendingLineItems.data.map(line => {
+    //           if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
+    //             return this.stripe.invoiceItems.del(line.id).catch(e => {
+    //               const msg = `Couldn't remove future adjustment id '${line.id}': ${e.stack}`
+    //               console.error(msg);
+    //               throw e;
+    //             });
+    //           }
+    //         }));
+    //       } else {
+    //         return this.orderService.updateOrder(signedInUser, _id, {
+    //           restId: null,
+    //           meals: [],
+    //           // todo 0: remove these !
+    //           phone: order.consumer.profile.phone!,
+    //           destination: order.consumer.profile.destination!,
+    //           deliveryDate: order.deliveryDate,
+    //           deliveryTime: order.deliveryTime,
+    //           donationCount: order.donationCount,
+    //           name: order.consumer.profile.name
+    //         }).catch(e => {
+    //           const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}': ${e.stack}`;
+    //           console.error(msg)
+    //           throw e;
+    //         })
+    //       }
+    //     })))
+    // } catch (e) {
+    //   console.error(`[ConsumerService] failed to prepare cancelation for user '${signedInUser && signedInUser._id}'`, e.stack);
+    //   throw e;
+    // }
   }
 
   public async cancelSubscription(
@@ -378,95 +378,97 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  //@ts-ignore
   async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number): Promise<MutationConsumerRes> {
-    try {
-      if (!signedInUser) throw getNotSignedInErr()
-      if (!this.orderService) throw new Error('OrderService not set');
-      if (!this.planService) throw new Error('PlanService not set');
-      if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-      let newConsumer: IConsumer;
-      try {
-        const res = await this.elastic.update({
-          index: CONSUMER_INDEX,
-          id: signedInUser._id,
-          _source: 'true',
-          body: {
-            doc: {
-              plan: newPlan,
-            }
-          }
-        });
-        newConsumer = {
-          _id: signedInUser._id,
-          ...res.body.get._source
-        };
-      } catch (e) {
-        const msg = `Failed to update elastic consumer plan for consumer '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
-        console.error(msg)
-        throw e;
-      }
-      let mealPrice;
-      let total;
-      let mealCount;
-      try {
-        const plan = await this.planService.getPlan(newPlan.stripePlanId);
-        if (!plan) throw new Error (`No plan found with id '${newPlan.stripePlanId}'`);
-        mealPrice = plan.mealPrice;
-        total = plan.weekPrice;
-        mealCount = plan.mealCount;
-      } catch (e) {
-        console.error(`Failed to getPlan with id '${newPlan.stripePlanId}': ${e.stack}`);
-        throw e;
-      }
+    //todo simon: redo this fn
+    //   try {
+  //     if (!signedInUser) throw getNotSignedInErr()
+  //     if (!this.orderService) throw new Error('OrderService not set');
+  //     if (!this.planService) throw new Error('PlanService not set');
+  //     if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
+  //     let newConsumer: IConsumer;
+  //     try {
+  //       const res = await this.elastic.update({
+  //         index: CONSUMER_INDEX,
+  //         id: signedInUser._id,
+  //         _source: 'true',
+  //         body: {
+  //           doc: {
+  //             plan: newPlan,
+  //           }
+  //         }
+  //       });
+  //       newConsumer = {
+  //         _id: signedInUser._id,
+  //         ...res.body.get._source
+  //       };
+  //     } catch (e) {
+  //       const msg = `Failed to update elastic consumer plan for consumer '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
+  //       console.error(msg)
+  //       throw e;
+  //     }
+  //     let mealPrice;
+  //     let total;
+  //     let mealCount;
+  //     try {
+  //       const plan = await this.planService.getPlan(newPlan.stripePlanId);
+  //       if (!plan) throw new Error (`No plan found with id '${newPlan.stripePlanId}'`);
+  //       mealPrice = plan.mealPrice;
+  //       total = plan.weekPrice;
+  //       mealCount = plan.mealCount;
+  //     } catch (e) {
+  //       console.error(`Failed to getPlan with id '${newPlan.stripePlanId}': ${e.stack}`);
+  //       throw e;
+  //     }
 
-      const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
-        signedInUser, 
-        mealPrice,
-        total,
-        mealCount,
-        newPlan,
-        nextDeliveryDate,
-      ).catch(e => {
-        console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
-        throw e;
-      });
+  //     const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
+  //       signedInUser, 
+  //       mealPrice,
+  //       total,
+  //       mealCount,
+  //       newPlan,
+  //       nextDeliveryDate,
+  //     ).catch(e => {
+  //       console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
+  //       throw e;
+  //     });
 
-      const canceler = this.prepareOrdersForCancelation(signedInUser).catch(e => {
-        console.error(`Failed to prepareOrdersForCancelation '${signedInUser && signedInUser._id}': ${e.stack}`);
-        throw e;
-      });
+  //     const canceler = this.prepareOrdersForCancelation(signedInUser).catch(e => {
+  //       console.error(`Failed to prepareOrdersForCancelation '${signedInUser && signedInUser._id}': ${e.stack}`);
+  //       throw e;
+  //     });
 
-      const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
-        throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
-      });
+  //     const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
+  //       throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
+  //     });
 
-      const res = await Promise.all([canceler, subscription])
+  //     const res = await Promise.all([canceler, subscription])
 
-      const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
-      const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
-        trial_end: newInvoiceDateSeconds,
-        proration_behavior: 'none',
-        items: [{
-          id: res[1].items.data[0].id,
-          plan: newPlan.stripePlanId,
-        }]
-      }).catch(e => {
-        console.error(`Failed to update subscription for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
-        throw e;
-      });
+  //     const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
+  //     const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
+  //       trial_end: newInvoiceDateSeconds,
+  //       proration_behavior: 'none',
+  //       items: [{
+  //         id: res[1].items.data[0].id,
+  //         plan: newPlan.stripePlanId,
+  //       }]
+  //     }).catch(e => {
+  //       console.error(`Failed to update subscription for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
+  //       throw e;
+  //     });
 
-      await Promise.all([updateUpcoming, updateSubscription])
-      return {
-        res: newConsumer,
-        error: null,
-      }
-    } catch (e) {
-      console.error(`
-        [ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
-        e.stack
-      );
-      throw new Error('Internal Server Error');
-    }
+  //     await Promise.all([updateUpcoming, updateSubscription])
+  //     return {
+  //       res: newConsumer,
+  //       error: null,
+  //     }
+  //   } catch (e) {
+  //     console.error(`
+  //       [ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
+  //       e.stack
+  //     );
+  //     throw new Error('Internal Server Error');
+  //   }
   }
 }
 
@@ -489,6 +491,7 @@ export const getConsumerService = () => {
       apiVersion: '2020-03-02',
     }),
   );
+  //@ts-ignore
   consumerService!.setOrderService(getOrderService());
   consumerService!.setPlanService(getPlanService());
   consumerService!.setGeoService(getGeoService());

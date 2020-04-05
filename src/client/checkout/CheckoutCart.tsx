@@ -2,11 +2,9 @@ import { makeStyles, Typography, Divider, Button } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
-import { getNextDeliveryDate } from "../../order/utils";
-import { Consumer, ConsumerPlan } from "../../consumer/consumerModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
-import { Cart, CartMeal } from "../../order/cartModel";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -48,14 +46,10 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
-  if (!cart.DeliveryTime) {
-    const err = new Error('Missing delivery time');
-    console.error(err.stack);
-    throw err;
-  }
   const groupedMeals = cart && cart.Meals;
-  const price = `$${Plan.getPlanPrice(cart.StripePlanId, plans.data).toFixed(2)}`
-  const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
+  const price = `$${Plan.getPlanPrice(Cart.getMealCount(cart), plans.data).toFixed(2)}`
+  // todo simon: figure out how to dispaly multiple deliveries on here
+  // const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
   const button = (
     <Button
       variant='contained'
@@ -76,37 +70,36 @@ const CheckoutCart: React.FC<props> = ({
       >
         Order summary
       </Typography>
-      <Typography
-        variant='h6'
-        className={classes.paddingBottom}
-      >
-        {cart && cart.RestName}
-      </Typography>
       {groupedMeals && groupedMeals.map(mealGroup => (
-        <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
+        <CartMealGroup
+          key={mealGroup.MealId}
+          mealId={mealGroup.MealId}
+          img={mealGroup.Img}
+          name={mealGroup.Name}
+          quantity={mealGroup.Quantity}
+        />
       ))}
       {
         cart && cart.DonationCount > 0 &&
         <CartMealGroup
-          mealGroup={new CartMeal({
-            mealId: 'donations',
-            img: '/heartHand.png',
-            name: 'Donation',
-            quantity: cart.DonationCount
-          })}
+          mealId='donations'
+          img='/heartHand.png'
+          name='Donation'
+          quantity={cart.DonationCount}
         />
       }
-      <Typography variant='body1'>
+      {/*   // todo simon: figure out how to dispaly multiple deliveries on here */}
+      {/* <Typography variant='body1'>
         Deliver on {deliveryDate.format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cart.DeliveryTime)}
-      </Typography>
-      <Typography variant='body1'>
+      </Typography> */}
+      {/* <Typography variant='body1'>
         Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}
-      </Typography>
+      </Typography> */}
       <Divider className={classes.divider} />
       <div className={classes.summary}>
         <div className={classes.row}>
           <Typography variant='body1'>
-            {Cart.getMealCount(cart.Meals)} meal plan
+            {Cart.getMealCount(cart)} meal plan
           </Typography>
           <Typography variant='body1'>
             {price}
@@ -129,11 +122,12 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
         </div>
         {buttonBottom && button}
-        <Typography variant='body2' className={classes.hint}>
+        {/* todo simon: edit this */}
+        {/* <Typography variant='body2' className={classes.hint}>
           You will be charged {price} on {deliveryDate.subtract(2, 'd').format('M/D/YY')}. Your plan will automatically
           renew every week unless you update or cancel your account before the cutoff
           (12:00 am EST, 2 days before delivery of next meal).
-        </Typography>
+        </Typography> */}
       </div>
     </>
   )

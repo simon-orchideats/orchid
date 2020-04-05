@@ -2,10 +2,8 @@ import { makeStyles, Typography, Button, Popover, IconButton, Paper } from "@mat
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
-import PlanFilter from "./PlanFilter";
 import { useState } from "react";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { CartMeal } from "../../order/cartModel";
 import Counter from "./Counter";
 
 const useStyles = makeStyles(theme => ({
@@ -72,17 +70,21 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       const meals = (
         <>
           {cart && cart.Meals && cart.Meals.map(mealGroup => (
-            <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
+            <CartMealGroup
+              key={mealGroup.MealId}
+              mealId={mealGroup.MealId}
+              name={mealGroup.Name}
+              img={mealGroup.Img}
+              quantity={mealGroup.Quantity}
+            />
           ))}
           {
             donationCount > 0 &&
             <CartMealGroup
-              mealGroup={new CartMeal({
-                mealId: 'donations',
-                img: '/heartHand.png',
-                name: 'Donation',
-                quantity: donationCount
-              })}
+              mealId='donations'
+              name='Donation'
+              img='/heartHand.png'
+              quantity={donationCount}
             />
           }
         </>
@@ -94,7 +96,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             color='primary'
             className={classes.title}
           >
-            {cart && cart.RestName ? `Meals from ${cart.RestName}` : 'Your meals'}
+            {/* figure out how to show mulitple meals */}
           </Typography>
             {hideNext && meals}
             {
@@ -152,7 +154,6 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                     />
                   </div>
                 </div>
-                <PlanFilter />
                 <Button
                   disabled={disabled}
                   variant='contained'

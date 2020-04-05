@@ -126,34 +126,49 @@ const deliveryTimes: {
   NinePToTenP: '9pm - 10pm',
 }
 
+export interface ISchedule {
+  readonly day: deliveryDay;
+  readonly time: deliveryTime;
+}
+
+export class Schedule implements ISchedule {
+  readonly day: deliveryDay;
+  readonly time: deliveryTime;
+
+  constructor(s: ISchedule) {
+    this.day = s.day;
+    this.time = s.time;
+  }
+
+  public get Day() { return this.day }
+  public get Time() { return this.time }
+
+  static getICopy(s: ISchedule): ISchedule {
+    return {
+      ...s
+    }
+  }
+}
+
 export interface IConsumerPlan {
-  readonly stripePlanId: string
-  readonly deliveryDay: deliveryDay
-  readonly deliveryTime: deliveryTime
   readonly cuisines: CuisineType[]
+  readonly schedule: ISchedule[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
-  readonly stripePlanId: string
-  readonly deliveryDay: deliveryDay
-  readonly deliveryTime: deliveryTime
   readonly cuisines: CuisineType[]
+  readonly schedule: ISchedule[]
 
   constructor(consumerPlan: IConsumerPlan) {
-    this.stripePlanId = consumerPlan.stripePlanId
-    this.deliveryDay = consumerPlan.deliveryDay;
     this.cuisines = consumerPlan.cuisines.map(c => c);
-    this.deliveryTime = consumerPlan.deliveryTime;
+    this.schedule = consumerPlan.schedule.map(s => Schedule.getICopy(s));
   }
 
-  public get DeliveryTime() { return this.deliveryTime }
-  public get StripePlanId() { return this.stripePlanId }
-  public get DeliveryDay() { return this.deliveryDay }
   public get Cuisines() { return this.cuisines }
-
+  public get Schedule() { return this.schedule }
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
-      ...plan,
+      schedule: plan.schedule.map(s => Schedule.getICopy(s)),
       cuisines: plan.cuisines.map(c => c),
     }
   }

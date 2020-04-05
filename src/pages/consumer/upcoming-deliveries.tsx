@@ -1,13 +1,12 @@
 import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
 import { useRouter } from "next/router";
-import { getNextDeliveryDate } from "../../order/utils";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
-import { Cart, CartMeal } from "../../order/cartModel";
+import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
-import moment from "moment";
+// import moment from "moment";
 import { Destination } from "../../place/destinationModel";
 import CartMealGroup from "../../client/order/CartMealGroup";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
@@ -22,9 +21,9 @@ import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { sendSkippedOrderMetrics, sendEditOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
+// import { sendSkippedOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { isServer } from "../../client/utils/isServer";
-import { ConsumerPlan } from "../../consumer/consumerModel";
+// import { ConsumerPlan } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -103,12 +102,7 @@ const Confirmation: React.FC<{
     if (!isServer()) Router.replace(upcomingDeliveriesRoute);
     return null;
   }
-  if (!cartRef.current.DeliveryTime) {
-    const err = Error('No delivery time');
-    console.warn(err.stack);
-    if (!isServer()) Router.replace(upcomingDeliveriesRoute);
-    return null;
-  }
+  // todo simon: determine how to show mulitple rests/deliveries
   const classes = useStyles();
   return (
     <Paper variant='outlined' className={classes.confirmation}>
@@ -124,12 +118,12 @@ const Confirmation: React.FC<{
       <Typography variant='body1'>
         We'll text you the day of your delivery
       </Typography>
-      <Typography variant='body1'>
+      {/* <Typography variant='body1'>
         Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cartRef.current.DeliveryTime)}
       </Typography>
       <Typography variant='subtitle1'>
         {cartRef.current.RestName}
-      </Typography>
+      </Typography> */}
       {groupedMeals && groupedMeals.map(mealGroup => (
         <Typography key={mealGroup.MealId} variant='body1'>
           {mealGroup.quantity} {mealGroup.Name}
@@ -209,7 +203,7 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
-  const isAllDonations = order.DonationCount > 0 && Cart.getMealCount(order.Meals) === 0 ? true : false;
+  // const isAllDonations = order.DonationCount === Order.getMealCount(order);
   useEffect(() => {
     if (updateOrderRes.error) {
       notify('Sorry, something went wrong', NotificationType.error, false);
@@ -225,18 +219,17 @@ const DeliveryOverview: React.FC<{
     }
 
   }, [updateOrderRes]);
-  const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
   const onEdit = () => {
-    const mealCount = Cart.getMealCount(order.Meals) + order.donationCount;
-    const planId = Plan.getPlanId(mealCount, plans.data)
-    if (!planId) {
-      const err = new Error(`Missing planId for mealCount ${mealCount}`);
+    if (!plans.data) {
+      const err = new Error('Missing plans');
       console.error(err.stack);
       throw err;
     }
-    setCart(order, planId);
+    // todo simon: update this.
+    setCart(order);
     Router.push({
       pathname: menuRoute,
       query: { updating: 'true' }
@@ -253,49 +246,42 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const cartMealCount = Cart.getMealCount(cart.Meals) + cart.DonationCount;
-    const cartPlanId = Plan.getPlanId(cartMealCount, plans.data);
-    if (!cartPlanId) {
-      const err = new Error('No car plan');
-      console.error(err.stack);
-      throw err;
-    }
-    const planMealPrice = Plan.getMealPrice(cartPlanId, plans.data);
-    const planMealCount = Plan.getPlanCount(cartPlanId, plans.data);
+    const cartMealCount = Cart.getMealCount(cart);
+    const planMealPrice = Plan.getMealPrice(cartMealCount, plans.data);
     if (!planMealPrice) {
       const err = new Error('No cart meal price');
       console.error(err.stack);
       throw err;
     }
-    
-    sendEditOrderMetrics(
-      order,
-      order.MealPrice && Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
-      cart,
-      planMealPrice,
-      planMealCount,
-      cart.RestName ? cart.RestName : undefined
-    );
+    // todo simon: use this
+    // sendEditOrderMetrics(
+    //   order,
+    //   order.MealPrice && Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
+    //   cart,
+    //   planMealPrice,
+    //   planMealCount,
+    //   cart.RestName ? cart.RestName : undefined
+    // );
     updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
   }
-  const onSkip = () => {
-    if (!order.MealPrice) {
-      const err = new Error('No meal price');
-      console.error(err.stack);
-      throw err;
-    }
-    if (!plans.data) {
-      const err = new Error('No plans');
-      console.error(err.stack);
-      throw err;
-    }
-    sendSkippedOrderMetrics(
-      order,
-      order.MealPrice,
-      Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
-    );
-    updateOrder(order._id, Order.getUpdatedOrderInput(order));
-  }
+  // const onSkip = () => {
+  //   if (!order.MealPrice) {
+  //     const err = new Error('No meal price');
+  //     console.error(err.stack);
+  //     throw err;
+  //   }
+  //   if (!plans.data) {
+  //     const err = new Error('No plans');
+  //     console.error(err.stack);
+  //     throw err;
+  //   }
+  //   sendSkippedOrderMetrics(
+  //     order,
+  //     order.MealPrice,
+  //     Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
+  //   );
+  //   updateOrder(order._id, Order.getUpdatedOrderInput(order));
+  // }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
@@ -306,7 +292,8 @@ const DeliveryOverview: React.FC<{
             Deliver on
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {moment(order.DeliveryDate).format('M/DD/Y')}, {ConsumerPlan.getDeliveryTimeStr(order.DeliveryTime)}
+            {/* todo simon update this */}
+            {/* {moment(order.DeliveryDate).format('M/DD/Y')}, {ConsumerPlan.getDeliveryTimeStr(order.DeliveryTime)} */}
           </Typography>
         </div>
         <div className={classes.column}>
@@ -314,11 +301,12 @@ const DeliveryOverview: React.FC<{
             Total
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {order.MealPrice ? `${Cart.getMealCount(order.Meals) + order.DonationCount} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
+            {order.MealPrice ? `${Order.getMealCount(order) + order.DonationCount} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
           </Typography>
         </div>
         <div className={classes.column}>
-          {
+          {/* todo simon update this */}
+          {/* {
             order.Rest ?
             <>
               <Typography variant='subtitle1'>
@@ -335,25 +323,34 @@ const DeliveryOverview: React.FC<{
             <Typography variant='body1' className={classes.hint}>
               {order.status}
             </Typography>
-          }
+          } */}
         </div>
       </div>
       <Divider />
       {
         <div className={classes.overviewSection}>
-          <Typography variant='h6'>
+          {/* todo simon update this */}
+          {/* <Typography variant='h6'>
             {order.Rest?.Profile.Name}
           </Typography>
-          {order.Meals.map(meal => <CartMealGroup key={meal.MealId} mealGroup={meal} />)}
+          {
+            order.Meals.map(meal =>
+              <CartMealGroup
+                key={meal.MealId}
+                mealId={meal.MealId}
+                name={meal.Name}
+                img={meal.Img}
+                quantity={meal.Quantity}
+              />
+            )
+          } */}
           {
             order.DonationCount > 0 &&
             <CartMealGroup
-              mealGroup={new CartMeal({
-                mealId: 'donations',
-                img: '/heartHand.png',
-                name: 'Donation',
-                quantity: order.DonationCount
-              })}
+              mealId='donations'
+              name='Donation'
+              img='/heartHand.png'
+              quantity={order.DonationCount}
             />
           }
         </div>
@@ -371,7 +368,8 @@ const DeliveryOverview: React.FC<{
           </Button>
           :
           <>
-            {
+            {/* todo simon update this */}
+            {/* {
               (order.Rest || isAllDonations) && 
               <Button
                 variant='outlined'
@@ -381,7 +379,7 @@ const DeliveryOverview: React.FC<{
               >
                 {isAllDonations ? 'Cancel Donation' : 'Skip'}
               </Button>
-            }
+            } */}
             <Button
               variant='contained'
               color='primary'

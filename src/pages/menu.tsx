@@ -11,7 +11,6 @@ import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-import PlanFilter from "../client/menu/PlanFilter";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -68,7 +67,8 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const cartRestId = cart ? cart.RestId : null;
+  // TODO SIMON: figure out how to handle mutliple rests. remove this null set
+  const cartRestId = null;
   const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
@@ -124,7 +124,6 @@ const menu = () => {
                   <Link className={classes.link} color='inherit' onClick={onClickZip}>
                     <LocationOnIcon />
                   </Link>
-                  <PlanFilter />
                 </div>
                 {rests.data && <MenuMiniCart />}
               </>

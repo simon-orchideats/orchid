@@ -1,4 +1,3 @@
-import { getNextDeliveryDate } from './../order/utils';
 import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
@@ -322,7 +321,9 @@ export const useUpdateMyPlan = (): [
     mutate({ 
       variables: {
         plan,
-        nextDeliveryDate: getNextDeliveryDate(plan.DeliveryDay).valueOf(),
+        // todo simon: update how to do this
+        // nextDeliveryDate: getNextDeliveryDate(plan.DeliveryDay).valueOf(),
+        getNextDeliveryDate: Date.now(),
       },
       optimisticResponse: {
         updateMyPlan: {

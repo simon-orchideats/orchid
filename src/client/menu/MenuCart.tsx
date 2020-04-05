@@ -4,19 +4,22 @@ import withClientApollo from "../utils/withClientApollo";
 import { Plan } from "../../plan/planModel";
 import { Cart } from "../../order/cartModel";
 import Router, { useRouter } from 'next/router'
-import { sendCartMenuMetrics } from "./menuMetrics";
+// import { sendCartMenuMetrics } from "./menuMetrics";
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 
-export const getSuggestion = (currCount: number, fixedMealCount: number | null) => {
-  if (fixedMealCount) {
-    const plural = Math.abs(currCount - fixedMealCount) > 1 ? 's' : '';
-    if (currCount < fixedMealCount) return `Add ${fixedMealCount - currCount} meal${plural} or donation${plural}`;
-    if (currCount === fixedMealCount) return '';
-    if (currCount > fixedMealCount) return `Remove ${currCount - fixedMealCount} meal${plural} or donation${plural}`;
-  }
-  return '';
+
+//@ts-ignore // todosimon; redo this
+export const getSuggestion = (currCount: number) => {
+  return 'sup';
+  // if (fixedMealCount) {
+  //   const plural = Math.abs(currCount - fixedMealCount) > 1 ? 's' : '';
+  //   if (currCount < fixedMealCount) return `Add ${fixedMealCount - currCount} meal${plural} or donation${plural}`;
+  //   if (currCount === fixedMealCount) return '';
+  //   if (currCount > fixedMealCount) return `Remove ${currCount - fixedMealCount} meal${plural} or donation${plural}`;
+  // }
+  // return '';
 }
 
 const MenuCart: React.FC<{
@@ -38,9 +41,8 @@ const MenuCart: React.FC<{
   const consumer = useGetConsumer();
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
-  const fixedMealCount = (cart && cart.StripePlanId) ? Plan.getPlanCount(cart.StripePlanId, sortedPlans.data || []) : 0;
   const donationCount = cart ? cart.DonationCount : 0;
-  const mealCount = cart ? Cart.getMealCount(cart.Meals) + donationCount : 0;
+  const mealCount = cart ? Cart.getMealCount(cart) + donationCount : 0;
   const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
@@ -71,18 +73,19 @@ const MenuCart: React.FC<{
         Router.push(deliveryRoute);
       }
     }
-    sendCartMenuMetrics(
-      cart,
-      cart && cart.RestName ? cart.RestName : null,
-      Plan.getMealPrice(stripePlanId, sortedPlans.data),
-      Plan.getPlanCount(stripePlanId, sortedPlans.data),
-    );
+    // todo simon enable metrics
+    // sendCartMenuMetrics(
+    //   cart,
+    //   cart && cart.RestName ? cart.RestName : null,
+    //   Plan.getMealPrice(stripePlanId, sortedPlans.data),
+    //   Plan.getPlanCount(stripePlanId, sortedPlans.data),
+    // );
   }
   const incrementDonationCount = useIncrementCartDonationCount();
   const decrementDonationCount = useDecrementCartDonationCount();
 
-  const disabled = cart === null || cart.Zip === null || (fixedMealCount > 0 && mealCount !== fixedMealCount)
-  const suggestion = getSuggestion(mealCount, fixedMealCount);
+  const disabled = false;
+  const suggestion = getSuggestion(mealCount);
   return (
     <>
       {render(
@@ -93,7 +96,7 @@ const MenuCart: React.FC<{
         donationCount,
         incrementDonationCount,
         decrementDonationCount,
-        donationCount === fixedMealCount,
+        false, // todo simon: update logic for this.
       )}
     </>
   );

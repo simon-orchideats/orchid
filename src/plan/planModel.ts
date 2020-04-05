@@ -48,22 +48,17 @@ export class Plan implements IPlan {
     throw err;
   }
 
-  public static getPlanPrice(stripePlanId: string | null, plans: Plan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].StripeId === stripePlanId) return plans[i].WeekPrice;
-    }
-    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
-    console.error(err.stack);
-    throw err;
+  //todo simon: remove this
+  //@ts-ignore
+  public static getPlanPrice(mealCount: number, plans: Plan[]) {
+    // todo simon: redo this to account for meal count...
+    return 10;
   }
 
-  public static getMealPrice(stripePlanId: string | null, plans: Plan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].StripeId === stripePlanId) return plans[i].MealPrice;
-    }
-    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
-    console.error(err.stack);
-    throw err;
+  //todo simon: remove this
+  //@ts-ignore
+  public static getMealPrice(mealCount: number, plans: Plan[]) {
+    return 10
   }
 
   public static getMealPriceFromCount(count: number, plans: IPlan[]) {
