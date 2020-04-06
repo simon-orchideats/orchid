@@ -46,6 +46,22 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // at 12am.
 // have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
 
+
+/**
+ * plan for anyMeals
+ * 
+ * placeOrder
+ *  - ui needs to support up to placing a cart -simon
+ *  - when placing an order, the following need to happen - alvin
+ *    - validate cart
+ *    - calculate total
+ *    - create subscription based on meal count
+ *    - enter data into orders
+ *    - create a future order with the same meal count and auto put them into deliveries
+ *    - confirm the subscription wont charge the consumer in stripe at the END of the week
+ * 
+ */
+
 init({
   dsn: activeConfig.server.sentry.dsn,
   integrations: [

@@ -4,8 +4,6 @@ import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
-import { Cart } from "../../order/cartModel";
-
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -46,8 +44,9 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
-  const groupedMeals = cart && cart.Meals;
-  const price = `$${Plan.getPlanPrice(Cart.getMealCount(cart), plans.data).toFixed(2)}`
+  const groupedMeals = cart && cart.RestMeals;
+  const mealCount = cart.getMealCount();
+  const price = `$${Plan.getPlanPrice(mealCount, plans.data).toFixed(2)}`
   // todo simon: figure out how to dispaly multiple deliveries on here
   // const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
   const button = (
@@ -70,7 +69,7 @@ const CheckoutCart: React.FC<props> = ({
       >
         Order summary
       </Typography>
-      {groupedMeals && groupedMeals.map(mealGroup => (
+      {groupedMeals && groupedMeals.meals.meals.map(mealGroup => (
         <CartMealGroup
           key={mealGroup.MealId}
           mealId={mealGroup.MealId}
@@ -99,7 +98,7 @@ const CheckoutCart: React.FC<props> = ({
       <div className={classes.summary}>
         <div className={classes.row}>
           <Typography variant='body1'>
-            {Cart.getMealCount(cart)} meal plan
+            {mealCount} meal plan
           </Typography>
           <Typography variant='body1'>
             {price}

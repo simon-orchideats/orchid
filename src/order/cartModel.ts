@@ -1,4 +1,4 @@
-import { ICartDelivery, CartDelivery, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
+import { ICartDelivery, CartDelivery, DeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
 import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/consumerModel';
@@ -15,10 +15,17 @@ export interface ICartInput {
   readonly deliveries: ICartDelivery[]
 };
 
+type meals = {
+  [key: string]: {
+    mealCount: number,
+    meals: DeliveryMeal[]
+  }
+};
+
 export interface ICart {
   readonly donationCount: number
   readonly deliveries: ICartDelivery[];
-  readonly meals: IDeliveryMeal[]
+  readonly restMeals: meals
   readonly schedule: ISchedule[];
   readonly zip: string | null;
 }
@@ -26,21 +33,27 @@ export interface ICart {
 export class Cart implements ICart {
   readonly donationCount: number
   readonly deliveries: CartDelivery[];
-  readonly meals: DeliveryMeal[]
+  readonly restMeals: meals
   readonly schedule: Schedule[];
   readonly zip: string | null;
 
   constructor(cart: ICart) {
     this.donationCount = cart.donationCount;
     this.deliveries = cart.deliveries.map(d => new CartDelivery(d));
-    this.meals = cart.meals.map(m => new DeliveryMeal(m));
+    this.restMeals = Object.entries(cart.restMeals).reduce<meals>((map, [restId, data]) => {
+      map[restId] = {
+        mealCount: data.mealCount,
+        meals: data.meals.map(m => new DeliveryMeal(m))
+      }
+      return map;
+    }, {});
     this.schedule = cart.schedule.map(s => new Schedule(s));
     this.zip = cart.zip;
   }
 
   public get DonationCount() { return this.donationCount }
   public get Deliveries() { return this.deliveries }
-  public get Meals() { return this.meals }
+  public get RestMeals() { return this.restMeals }
   public get Schedule() { return this.schedule }
   public get Zip() { return this.zip }
 
@@ -59,8 +72,8 @@ export class Cart implements ICart {
     }, [])
   }
 
-  public static getMealCount(cart: ICart) {
-    return cart.meals.reduce<number>((sum, meal) => sum + meal.quantity, 0) + cart.donationCount;
+  public getMealCount() {
+    return Object.values(this.restMeals).reduce<number>((sum, data) => sum + data.mealCount, 0) + this.donationCount;
   }
 
   // todo simon: enable this
@@ -75,34 +88,55 @@ export class Cart implements ICart {
   public addMeal(newMeal: Meal, restId: string, restName: string) {
     // todo simon: add logic to put the new meal into the deliveries if we already have deliveries
     const newCart = new Cart(this);
-    const index = newCart.Meals.findIndex(meal => meal.MealId === newMeal.Id);
-    if (index === -1) {
-      newCart.meals.push(DeliveryMeal.getDeliveryMeal(newMeal, restId, restName));
+    const restMeals = newCart.RestMeals[restId];
+    if (restMeals) {
+      newCart.RestMeals[restId].mealCount = restMeals.mealCount + 1;
+      const index = restMeals.meals.findIndex(meal => meal.MealId === newMeal.Id);
+      if (index === -1) {
+        restMeals.meals.push(DeliveryMeal.getDeliveryMeal(newMeal, restId, restName));
+      } else {
+        restMeals.meals[index] = DeliveryMeal.getDeliveryMeal(
+          newMeal,
+          restId,
+          restName,
+          restMeals.meals[index].Quantity + 1
+        )
+      }
     } else {
-      newCart.meals[index] = DeliveryMeal.getDeliveryMeal(
-        newMeal,
-        restId,
-        restName,
-        newCart.Meals[index].Quantity + 1
-      );
+      newCart.RestMeals[restId] = {
+        mealCount: 1,
+        meals: [
+          DeliveryMeal.getDeliveryMeal(
+            newMeal,
+            restId,
+            restName,
+          )
+        ]
+      }
     }
     return newCart;
   }
 
-  public removeMeal(mealId: string) {
+  public removeMeal(restId: string, mealId: string) {
     // todo simon: add logic to remove meal from the deliveries if if we already have deliviers
     const newCart = new Cart(this);
-    const index = newCart.Meals.findIndex(meal => meal.MealId === mealId);
+    const restMeals = newCart.RestMeals[restId];
+    const index = restMeals.meals.findIndex(meal => meal.MealId === mealId);
     if (index === -1) {
       const err = new Error(`MealId '${mealId}' not found in cart`);
       console.error(err.stack);
       throw err;
     }
-    const targetMeal = newCart.Meals[index];
+    restMeals.mealCount = restMeals.mealCount - 1;
+    if (restMeals.mealCount === 0) {
+      delete newCart.RestMeals[restId];
+      return newCart;
+    }
+    const targetMeal = restMeals.meals[index];
     if (targetMeal.Quantity === 1) {
-      newCart.Meals.splice(index, 1);
+      restMeals.meals.splice(index, 1);
     } else {
-      newCart.Meals[index] = new DeliveryMeal({
+      restMeals.meals[index] = new DeliveryMeal({
         ...targetMeal,
         quantity: targetMeal.Quantity - 1,
       })

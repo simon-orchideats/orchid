@@ -44,7 +44,8 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       cart,
       disabled,
       onNext,
-      suggestion,
+      suggestions,
+      _summary,
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
@@ -99,9 +100,17 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             <img src='menu/heartPlus.png' className={classes.heart} alt='heart' />
           }
         />
-        <Typography variant='body1' className={classes.suggestion}>
-          {cart && cart.Zip ? suggestion : 'Enter zip to continue'}
-        </Typography>
+        {/* left off here: make this mobile friendly */}
+        {(!cart || !cart.Zip) && (
+          <Typography variant='body1' className={classes.suggestion}>
+            Enter zip to continue
+          </Typography>
+        )}
+        {cart && cart.Zip && suggestions.map(suggestion => 
+          <Typography variant='body1' className={classes.suggestion}>
+            {suggestion}
+          </Typography>
+        )}
         <Button
           disabled={disabled}
           variant='contained'

@@ -7,18 +7,17 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
+import { Plan } from "../../plan/planModel";
 
-
-//@ts-ignore // todosimon; redo this
-export const getSuggestion = (currCount: number) => {
-  return 'sup';
-  // if (fixedMealCount) {
-  //   const plural = Math.abs(currCount - fixedMealCount) > 1 ? 's' : '';
-  //   if (currCount < fixedMealCount) return `Add ${fixedMealCount - currCount} meal${plural} or donation${plural}`;
-  //   if (currCount === fixedMealCount) return '';
-  //   if (currCount > fixedMealCount) return `Remove ${currCount - fixedMealCount} meal${plural} or donation${plural}`;
-  // }
-  // return '';
+export const getSuggestion = (cart: Cart | null, minMeals: number) => {
+  if (!cart) return [];
+  let suggestion: string[] = [];
+  Object.entries(cart.RestMeals).forEach(([_restId, restMeals]) => {
+    if (restMeals.mealCount < minMeals) {
+      suggestion.push(`${restMeals.mealCount}/${minMeals} for ${restMeals.meals[0].RestName}`);
+    }
+  });
+  return suggestion;
 }
 
 const MenuCart: React.FC<{
@@ -26,7 +25,8 @@ const MenuCart: React.FC<{
     cart: Cart | null,
     disabled: boolean | undefined,
     onNext: () => void,
-    suggestion: string | undefined,
+    suggestions: string[],
+    summary: string,
     donationCount: number,
     incrementDonationCount: () => void,
     decremetnDonationCount: () => void,
@@ -36,18 +36,17 @@ const MenuCart: React.FC<{
   render
 }) => {
   const cart = useGetCart();
-  const sortedPlans = useGetAvailablePlans();
+  const plans = useGetAvailablePlans();
   const consumer = useGetConsumer();
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const donationCount = cart ? cart.DonationCount : 0;
-  const mealCount = cart ? Cart.getMealCount(cart) : 0;
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
     query: { updating: 'true' }
   }
   const onNext = () => {
-    if (!sortedPlans.data) {
+    if (!plans.data) {
       const err = new Error('Missing plans');
       console.error(err.stack);
       throw err;
@@ -78,14 +77,27 @@ const MenuCart: React.FC<{
   const decrementDonationCount = useDecrementCartDonationCount();
 
   const disabled = false;
-  const suggestion = getSuggestion(mealCount);
+  const mealCount = cart ? cart.getMealCount() : 0;
+  let summary = '';
+  let suggestions: string[] = [];
+  if (plans.data) {
+    const minMeals = Plan.getMinMealCount(plans.data);
+    if (mealCount >= minMeals) {
+      const moreToNext = Plan.getCountTillNextPlan(mealCount, plans.data);
+      const nextPrice = Plan.getNextMealPrice(mealCount, plans.data);
+      const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
+      summary = `${mealCount} meals plan (${(Plan.getMealPrice(mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
+    }
+    suggestions = getSuggestion(cart, minMeals);
+  }
   return (
     <>
       {render(
         cart,
         disabled,
         onNext,
-        suggestion,
+        suggestions,
+        summary,
         donationCount,
         incrementDonationCount,
         decrementDonationCount,

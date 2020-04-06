@@ -4,6 +4,6 @@ export const PlanQL = gql`
   type Plan {
     mealPrice: Int!
     minMeals: Int!
-    maxMeals: Int!
+    maxMeals: Int
   }
 `;

@@ -48,6 +48,16 @@ export class DeliveryMeal implements IDeliveryMeal {
     });
   }
 
+  public equals(meal: DeliveryMeal) {
+    if (this.MealId !== meal.MealId) return false;
+    if (this.Img !== meal.Img) return false;
+    if (this.Name !== meal.Name) return false;
+    if (this.Quantity !== meal.Quantity) return false;
+    if (this.RestId !== meal.RestId) return false;
+    if (this.RestName !== meal.RestName) return false;
+    return true;
+  }
+
   static getICopy(meal: IDeliveryMeal): IDeliveryMeal {
     return {
       ...meal

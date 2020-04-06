@@ -95,7 +95,7 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
-  const groupedMeals = cartRef.current ? cartRef.current.Meals : [];
+  // const groupedMeals = cartRef.current ? cartRef.current.RestMeals : [];
   if (!cartRef.current) {
     const err = Error('Cart is null');
     console.warn(err.stack);
@@ -124,11 +124,11 @@ const Confirmation: React.FC<{
       <Typography variant='subtitle1'>
         {cartRef.current.RestName}
       </Typography> */}
-      {groupedMeals && groupedMeals.map(mealGroup => (
+      {/* {groupedMeals && groupedMeals.meals.map(mealGroup => (
         <Typography key={mealGroup.MealId} variant='body1'>
           {mealGroup.quantity} {mealGroup.Name}
         </Typography>
-      ))} 
+      ))}  */}
     </Paper>
   )
 }
@@ -246,7 +246,7 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const cartMealCount = Cart.getMealCount(cart);
+    const cartMealCount = cart.getMealCount();
     const planMealPrice = Plan.getMealPrice(cartMealCount, plans.data);
     if (!planMealPrice) {
       const err = new Error('No cart meal price');

@@ -27,7 +27,7 @@ export const cartQL = gql`
     addMealToCart(meal: Meal!, restId: ID!): CartState!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
-    removeMealFromCart(mealId: ID!): CartState!
+    removeMealFromCart(restId: ID!, mealId: ID!): CartState!
     setCart(order: Order!): CartState!
     updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
@@ -93,15 +93,15 @@ export const useAddMealToCart = (): (meal: Meal, restId: string, restName: strin
   }
 }
 
-export const useRemoveMealFromCart = (): (mealId: string) => void => {
-  type vars = { mealId: string };
+export const useRemoveMealFromCart = (): (restId: string, mealId: string) => void => {
+  type vars = { restId: string, mealId: string };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation removeMealFromCart($mealId: ID!) {
-      removeMealFromCart(mealId: $mealId) @client
+    mutation removeMealFromCart($restId: ID!, $mealId: ID!) {
+      removeMealFromCart(restId: $restId, mealId: $mealId) @client
     }
   `);
-  return (mealId: string) => {
-    mutate({ variables: { mealId } })
+  return (restId: string, mealId: string) => {
+    mutate({ variables: { restId, mealId } })
   }
 }
 
@@ -182,7 +182,7 @@ type cartMutationResolvers = {
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
-  removeMealFromCart: ClientResolver<{ mealId: string }, Cart | null>
+  removeMealFromCart: ClientResolver<{ restId: string, mealId: string }, Cart | null>
   setCart: ClientResolver<{ order: Order }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
@@ -207,16 +207,26 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         donationCount: 0,
         deliveries: [],
-        meals: [ newDeliveryMeal ],
+        restMeals: {
+          [restId]: {
+            mealCount: 1,
+            meals: [newDeliveryMeal]
+          }
+        },
         schedule: [],
         zip: null,
       }));
     }
     // todo simon: add logic to put the new meal into the deliveries
-    if (Cart.getMealCount(res.cart) === 0) {
+    if (res.cart.getMealCount() === 0) {
       return updateCartCache(cache, new Cart({
         donationCount: res.cart.DonationCount,
-        meals: [newDeliveryMeal],
+        restMeals: {
+          [restId]: {
+            mealCount: 1,
+            meals: [newDeliveryMeal]
+          }
+        },
         deliveries: res.cart.Deliveries,
         schedule: res.cart.Schedule,
         zip: res.cart.Zip,
@@ -225,7 +235,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const newCart = res.cart.addMeal(meal, restId, restName);
     return updateCartCache(cache, new Cart({
       donationCount: newCart.DonationCount,
-      meals: newCart.Meals,
+      restMeals: newCart.RestMeals,
       deliveries: newCart.Deliveries,
       schedule: newCart.Schedule,
       zip: newCart.Zip,
@@ -241,7 +251,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     return updateCartCache(cache, new Cart({
       donationCount: res.cart.DonationCount - 1,
-      meals: res.cart.Meals,
+      restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
       schedule: res.cart.Schedule,
       zip: res.cart.Zip,
@@ -253,7 +263,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
         donationCount: 1,
-        meals: [],
+        restMeals: {},
         deliveries: [],
         schedule: [],
         zip: null,
@@ -261,7 +271,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     return updateCartCache(cache, new Cart({
       donationCount: res.cart.DonationCount + 1,
-      meals: res.cart.Meals,
+      restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
       schedule: res.cart.Schedule,
       zip: res.cart.Zip,
@@ -276,26 +286,25 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     return updateCartCache(cache, new Cart({
       donationCount: 0,
-      meals: [],
+      restMeals: {},
       deliveries: [],
       schedule: [],
       zip: null,
     }));
   },
 
-  removeMealFromCart: (_, { mealId }, { cache }) => {
+  removeMealFromCart: (_, { restId, mealId }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       const err = new Error(`Cannot remove mealId '${mealId}' from null cart`);
       console.error(err.stack);
       throw err;
     }
-    let newCart = res.cart.removeMeal(mealId);
-    const mealCount = Cart.getMealCount(newCart);
-    if (mealCount === 0) {
+    let newCart = res.cart.removeMeal(restId, mealId);
+    if (newCart.getMealCount() === 0) {
       newCart = new Cart({
         donationCount: newCart.DonationCount,
-        meals: [],
+        restMeals: {},
         deliveries: [],
         schedule: newCart.schedule,
         zip: newCart.Zip,
@@ -307,7 +316,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
   setCart: (_, { order }, { cache }) => {
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,
-      meals: [],
+      restMeals: {},
       deliveries: [],
       schedule: [],
       // todo simon: figure out how to fill out meals given all deliveries
@@ -325,7 +334,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         donationCount: 0,
         deliveries: [],
-        meals: [],
+        restMeals: {},
         schedule: [],
         zip,
       }));
@@ -333,7 +342,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, new Cart({
       donationCount: res.cart.DonationCount,
       deliveries: res.cart.Deliveries,
-      meals: res.cart.Meals,
+      restMeals: res.cart.RestMeals,
       schedule: res.cart.Schedule,
       zip,
     }));

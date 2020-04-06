@@ -26,9 +26,9 @@ const PlanDetails: React.FC<{
     <Card className={classes.card}>
       <CardContent>
         <Typography variant='h6'>
-          {mealPlan.minMeals} - {mealPlan.maxMeals} meals a week
+          {mealPlan.minMeals}{mealPlan.MaxMeals !== null ? ` - ${mealPlan.maxMeals} meals a week` : '+ meals a week'}
         </Typography>
-        <Typography variant='body2' className={classes.cardSubtitle}>
+        <Typography variant='body1' className={classes.cardSubtitle}>
           ${(mealPlan.MealPrice / 100).toFixed(2)}/meal
         </Typography>
       </CardContent>

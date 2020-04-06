@@ -78,16 +78,37 @@ export class Plan implements IPlan {
     return [10]
   }
 
-  //todo simon: remove this
-  //@ts-ignore
-  public static getMealPrice(mealCount: number, plans: IPlan[]) {
-    return 10
+  public static getMinMealCount(plans: IPlan[]) {
+    return plans[0].minMeals;
   }
 
-  //todo simon: remove this
-  //@ts-ignore
-  public static getMealPriceFromCount(count: number, plans: IPlan[]) {
-  return 10;
+  public static getMealPrice(count: number, plans: IPlan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (count >= plans[i].minMeals && (plans[i].maxMeals === null || count <= plans[i].maxMeals!)) {
+        return plans[i].mealPrice;
+      }
+    }
+    const err = new Error(`Failed to get meal price from count '${count}'`);
+    console.error(err.stack);
+    throw err;
+  }
+
+  public static getNextMealPrice(count: number, plans: IPlan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (count < plans[i].minMeals) {
+        return plans[i].mealPrice;
+      }
+    }
+    return null
+  }
+
+  public static getCountTillNextPlan(count: number, plans: IPlan[]) {
+    for (let i = 0; i < plans.length; i++) {
+      if (count < plans[i].minMeals) {
+        return plans[i].minMeals - count;
+      }
+    }
+    return null
   }
 
   //todo simon: remove this

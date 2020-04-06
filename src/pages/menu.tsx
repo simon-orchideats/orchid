@@ -2,7 +2,7 @@ import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } f
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
@@ -67,22 +67,16 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  // TODO SIMON: figure out how to handle mutliple rests. remove this null set
-  const cartRestId = null;
-  const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
-  const RestMenus = useMemo(() => ( 
-    rests.data && rests.data.map(rest => 
-      <RestMenu
-        key={rest.Id}
-        rest={rest}
-        cartMeals={cartMeals}
-        cartRestId={cartRestId}
-      />
-    )
-  ), [rests.data, cartRestId]);
+  const RestMenus = rests.data && rests.data.map(rest => 
+    <RestMenu
+      key={rest.Id}
+      rest={rest}
+      cartMeals={cart?.RestMeals[rest.Id]?.meals}
+    />
+  )
   const hasNoRests = !rests.loading && !rests.error && rests.data && rests.data.length === 0;
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));

@@ -2,6 +2,8 @@ import { IPlan } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
+const MIN_MEALS = 4;
+
 export interface IPlanService {
   getAvailablePlans(): Promise<IPlan[]>
 }
@@ -20,7 +22,7 @@ class PlanService implements IPlanService {
         active: true,
       });
       if (!plans.data[0].tiers) throw new Error('Could not get tiers');
-      let min: number | null = 0;
+      let min: number | null = MIN_MEALS;
       return plans.data[0].tiers.map(tier => {
         if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);
         if (min === null) throw new Error('min is null');
@@ -29,7 +31,7 @@ class PlanService implements IPlanService {
           maxMeals: tier.up_to,
           mealPrice: tier.unit_amount
         };
-        min = res.maxMeals;
+        min = res.maxMeals && res.maxMeals + 1;
         return res;
       })
     } catch (e) {
