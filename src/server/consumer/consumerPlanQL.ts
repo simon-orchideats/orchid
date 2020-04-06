@@ -36,14 +36,12 @@ const DeliveryTimeQL = gql`
 
 const _ConsumerPlanQL = gql`
   type ConsumerPlan {
-    stripePlanId: ID!
     deliveryDay: Int!
     deliveryTime: DeliveryTime!
     cuisines: [CuisineType!]!
   }
 
   input ConsumerPlanInput {
-    stripePlanId: ID!
     deliveryDay: Int!
     deliveryTime: DeliveryTime!
     cuisines: [CuisineType!]!

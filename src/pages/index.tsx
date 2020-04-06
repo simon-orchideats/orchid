@@ -9,8 +9,6 @@ import StoreIcon from '@material-ui/icons/Storefront';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
-import { Plan } from "../plan/planModel";
-import { useUpdateCartPlanId } from '../client/global/state/cartState';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -211,11 +209,6 @@ const Donate = () => {
 };
 
 const Plans = withClientApollo(() => {
-  const setCartStripePlanId = useUpdateCartPlanId();
-  const onClick = (plan: Plan) => {
-    Router.push(menuRoute);
-    setCartStripePlanId(plan.stripeId);
-  };
   const classes = useStyles();
   return (
     <div className={`${classes.plans}`}>
@@ -226,7 +219,7 @@ const Plans = withClientApollo(() => {
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
           Each Orchid delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
         </Typography>
-        <PlanCards onClickCard={onClick}/>
+        <PlanCards />
         <Link href={menuRoute}>
           <Button
             variant='contained'

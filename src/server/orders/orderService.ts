@@ -238,25 +238,26 @@ class OrderService {
   //@ts-ignore // todo simon: do this
   private validatePlan(planId: string, cartMealCount: number) {
     if (!this.planService) return Promise.reject('PlanService not set');
-    return this.planService.getPlan(planId)
-      .then(stripePlan => {
-        if (!stripePlan) {
-          const msg = `Can't find plan '${planId}'`
-          console.warn('[OrderService]', msg);
-          return msg;
-        }
-        if (cartMealCount !== stripePlan.mealCount) {
-          const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
-          console.warn('[OrderService]', msg);
-          return msg;
-        }
-        return '';
-      })
-      .catch(e => {
-        const msg = `Couldn't verify plan '${planId}'`
-        console.warn('[OrderService]', msg, e.stack);
-        return msg;
-      })
+    return '';
+    // return this.planService.getPlan(planId)
+    //   .then(stripePlan => {
+    //     if (!stripePlan) {
+    //       const msg = `Can't find plan '${planId}'`
+    //       console.warn('[OrderService]', msg);
+    //       return msg;
+    //     }
+    //     if (cartMealCount !== stripePlan.mealCount) {
+    //       const msg = `Plan meal count '${stripePlan.mealCount}' does't match cart meal count '${cartMealCount}' for plan '${planId}'`
+    //       console.warn('[OrderService]', msg);
+    //       return msg;
+    //     }
+    //     return '';
+    //   })
+    //   .catch(e => {
+    //     const msg = `Couldn't verify plan '${planId}'`
+    //     console.warn('[OrderService]', msg, e.stack);
+    //     return msg;
+    //   })
   }
 
   private async validateCart(cart: ICartInput) {

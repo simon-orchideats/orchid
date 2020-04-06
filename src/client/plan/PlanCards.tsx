@@ -2,7 +2,6 @@ import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
 import PlanDetails from './PlanDetails';
-import { Plan } from '../../plan/planModel';
 
 const useStyles = makeStyles(() => ({
   item: {
@@ -12,13 +11,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PlanCards: React.FC <{
-  selectedPlanId?: string;
-  onClickCard?: (plan: Plan) => void
-}> = ({
-  selectedPlanId,
-  onClickCard = (_plan: Plan) => {}
-}) => {
+const PlanCards: React.FC = () => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   if (!plans.data) {
@@ -27,14 +20,8 @@ const PlanCards: React.FC <{
   return (
     <Grid container justify='center'>
       {plans.data.map(plan => (
-        <Grid key={plan.StripeId} item sm={12} md={4} className={classes.item}>
-          <PlanDetails
-            selected={!!selectedPlanId && selectedPlanId === plan.StripeId}
-            mealPlan={plan}
-            onClick={() => {
-              onClickCard(plan);
-            }}
-          />
+        <Grid key={plan.MealPrice} item sm={12} md={4} className={classes.item}>
+          <PlanDetails mealPlan={plan} />
         </Grid>
       ))}
     </Grid>

@@ -1,7 +1,6 @@
 import { useGetCart, useIncrementCartDonationCount, useDecrementCartDonationCount } from "../global/state/cartState";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
-import { Plan } from "../../plan/planModel";
 import { Cart } from "../../order/cartModel";
 import Router, { useRouter } from 'next/router'
 // import { sendCartMenuMetrics } from "./menuMetrics";
@@ -42,18 +41,12 @@ const MenuCart: React.FC<{
   const updatingParam = useRouter().query.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const donationCount = cart ? cart.DonationCount : 0;
-  const mealCount = cart ? Cart.getMealCount(cart) + donationCount : 0;
-  const stripePlanId = Plan.getPlanId(mealCount, sortedPlans.data);
+  const mealCount = cart ? Cart.getMealCount(cart) : 0;
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
     query: { updating: 'true' }
   }
   const onNext = () => {
-    if (!stripePlanId) {
-      const err = new Error('Missing stripePlanId');
-      console.error(err.stack);
-      throw err;
-    }
     if (!sortedPlans.data) {
       const err = new Error('Missing plans');
       console.error(err.stack);

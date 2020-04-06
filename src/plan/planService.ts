@@ -8,10 +8,9 @@ import { useMemo } from 'react';
 const AVAILABLE_PLANS_QUERY = gql`
   query availablePlans {
     availablePlans {
-      stripeId
+      maxMeals
+      minMeals
       mealPrice
-      mealCount
-      weekPrice
     }
   }
 `
@@ -34,8 +33,10 @@ export const useGetAvailablePlans = () => {
   const sortedPlans = useMemo(() => {
     const plans = res.data ? res.data.availablePlans.map(plan => new Plan(plan)) : res.data;
     return plans && plans.sort((p1, p2) => {
-      if (p1.MealCount === p2.MealCount) return 0;
-      if (p1.MealCount > p2.MealCount) return 1;
+      if (p1.maxMeals === p2.maxMeals) return 0;
+      if (p1.maxMeals === null) return 1;
+      if (p2.maxMeals === null) return -1;
+      if (p1.maxMeals > p2.maxMeals) return 1;
       return -1;
     });
   }, [res.data]);
