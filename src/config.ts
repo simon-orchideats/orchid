@@ -46,6 +46,11 @@ type config = {
         password?: string,
       }
     },
+    mailChimp: {
+      key: string,
+      audienceId: string,
+      dataCenter: string
+    },
     geo: {
       key: string
     },
@@ -128,6 +133,11 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
         password: undefined,
       }
     },
+    mailChimp: {
+      key: process.env.MAIL_CHIMP_KEY!,
+      audienceId: 'a58d64a3e9',
+      dataCenter: 'us19'
+    },
     stripe: {
       key: process.env.STRIPE_KEY!,
       hookSecret: process.env.STRIPE_HOOK_SECRET!
@@ -207,6 +217,11 @@ D8hc31R0UA==
         username: 'elastic',
         password: process.env.ELASTIC_PASS,
       }
+    },
+    mailChimp: {
+      key: process.env.MAIL_CHIMP_KEY!,
+      audienceId: 'a58d64a3e9',
+      dataCenter: 'us19'
     },
     stripe: {
       key: process.env.STRIPE_KEY!,

@@ -535,6 +535,14 @@ class OrderService {
       //     console.error('[OrderService] could not auto pick rests', e.stack);
       //   })
 
+      this.consumerService.upsertMarketingEmail(
+        signedInUser.profile.email,
+        signedInUser.profile.name,
+        cart.destination.address,
+      ).catch(e => {
+        console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
+      })
+
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
       if (req && res) await refetchAccessToken(req, res);
       return {

@@ -5,10 +5,15 @@ import { plansRoute } from './plans';
 import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
-import StoreIcon from '@material-ui/icons/Storefront';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
+import { Plan } from "../plan/planModel";
+import { useUpdateCartPlanId } from '../client/global/state/cartState';
+import Footer from '../client/general/Footer';
+import { useRef, createRef, useState } from 'react';
+import EmailInput from '../client/general/inputs/EmailInput';
+import { useAddMarketingEmail } from '../consumer/consumerService';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -17,9 +22,6 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
-  },
-  input: {
-    marginBottom: theme.spacing(2),
   },
   verticalCenter: {
     display: 'flex',
@@ -117,7 +119,34 @@ const useStyles = makeStyles(theme => ({
   donate: {
     backgroundColor: theme.palette.primary.main,
     color: 'white',
-  }
+  },
+  newsLetterInput: {
+    marginTop: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    display: 'flex',
+    width: '100%',
+    maxWidth: 500,
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column'
+    },
+  },
+  newsletterPaper: {
+    backgroundColor: theme.palette.common.white,
+    width: '60%',
+    paddingBottom: theme.spacing(4),
+    paddingTop: theme.spacing(4),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  emailInput: {
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.down('sm')]: {
+      marginRight: 0,
+      marginBottom: theme.spacing(2),
+    },
+  },
 }));
 
 const Welcome = withClientApollo(() => {
@@ -129,13 +158,15 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Chef-cooked healthy meals delivered weekly from local restaurants
+          Chef-cooked meals delivered weekly from local restaurants
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Offering meals starting at $9.99
+          Eat from your favorite restaurants and save.
+          <br />
+          Weekly meals starting at $9.99
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
-          GET STARTED
+          START SAVING
         </Button>
       </div>
     </div>
@@ -153,7 +184,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={6} md={3}>
+    <Grid item xs={12} sm={4} md={4}>
       <div className={classes.centered}>
         {
           img &&
@@ -175,19 +206,18 @@ const HowItWorks = () => {
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        How it works
+        How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Content description='Choose your plan of prepared meals' icon={<RestIcon className={classes.howIcon} />} />
-        <Content description='Choose when you want them' icon={<TodayIcon className={classes.howIcon} />} />
-        <Content description='Local restaurants cook, we deliver' icon={<StoreIcon className={classes.howIcon} />} />
-        <Content description='Enjoy immediately' img='home/microwave.png'/>
+        <Content description='Select Your Favorite Restaurant & Meals' icon={<RestIcon className={classes.howIcon} />} />
+        <Content description='Tell Us When to Deliver' icon={<TodayIcon className={classes.howIcon} />} />
+        <Content description='Eat Now or Save for Later' img='home/microwave.png' />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
-        Get in touch at simon.orchideats@gmail.com to learn more
+        Questions or Comments? Email us at emily@orchideats.com to learn more.
       </Typography>
       <Link href={howItWorksRoute}>
-        <Button variant='outlined' color='primary'>SEE DETAILS</Button>
+        <Button variant='outlined' color='primary'>Learn More</Button>
       </Link>
     </div>
   );
@@ -209,15 +239,30 @@ const Donate = () => {
 };
 
 const Plans = withClientApollo(() => {
+  const setCartStripePlanId = useUpdateCartPlanId();
+  const [addMarketingEmail] = useAddMarketingEmail();
+  const [isSubbed, setIsSubbed] = useState(false);
+  const onClick = (plan: Plan) => {
+    Router.push(menuRoute);
+    setCartStripePlanId(plan.stripeId);
+  };
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
+  const onSubscribe = () => {
+    if (!validateEmailRef.current!()) return;
+    const email = emailInputRef.current!.value;
+    addMarketingEmail(email);
+    setIsSubbed(true);
+  }
   const classes = useStyles();
   return (
-    <div className={`${classes.plans}`}>
+    <div className={classes.plans}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
         <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-          Flexible plans
+          Choose a Plan that Works for You
         </Typography>
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Each Orchid delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
+          Choose from 4, 8 or 12 meals per week
         </Typography>
         <PlanCards />
         <Link href={menuRoute}>
@@ -229,6 +274,35 @@ const Plans = withClientApollo(() => {
             SEE MENU
           </Button>
         </Link>
+        <Paper className={classes.newsletterPaper}>
+          <Typography variant='h6'>
+            Stay updated with Orchid's newsletter
+          </Typography>
+          {
+            isSubbed ?
+              <Typography variant='subtitle1'>
+                Thank you!
+              </Typography>
+            :
+              <div className={classes.newsLetterInput}>
+                <EmailInput
+                  variant='outlined'
+                  className={classes.emailInput}
+                  inputRef={emailInputRef}
+                  setValidator={(validator: () => boolean) => {
+                    validateEmailRef.current = validator;
+                  }}
+                />
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={onSubscribe}
+                >
+                  Subscribe
+                </Button>
+              </div>
+          }
+        </Paper>
       </Paper>
     </div>
   )
@@ -329,7 +403,7 @@ const Benefits = () => {
             <Explanation 
               title='Sustainable'
               description={sustainableDescription}
-              img='home/sustainable.jpeg'
+              img='/home/deliverySample.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
@@ -398,7 +472,6 @@ const Benefits = () => {
   )
 }
 
-
 const Index = () => {
   return (
     <>
@@ -407,6 +480,7 @@ const Index = () => {
       <HowItWorks />
       <Plans />
       <Benefits />
+      <Footer />
     </>
   )
 }

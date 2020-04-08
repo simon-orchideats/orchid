@@ -5,8 +5,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Link from 'next/link'
 import { Container, Typography, useMediaQuery, Button } from '@material-ui/core';
-import { howItWorksRoute } from '../../pages/how-it-works';
-import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
 import { indexRoute } from '../../pages';
 import { useRouter } from 'next/router';
@@ -15,6 +13,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
 import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
+import AboutPopper from './AboutPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService } from '../utils/analyticsService';
@@ -32,6 +31,11 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
+  },
+  about: {
+    minWidth: 50,
+    cursor: 'pointer',
+    display: 'flex',
   },
   hi: {
     minWidth: 95,
@@ -91,9 +95,13 @@ const Navbar: React.FC = () => {
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const consumer = useGetConsumer();
   const signIn = useSignIn();
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const [accountAnchor, setAccountAnchor] = useState<HTMLDivElement | null>(null);
+  const [aboutAnchor, setAboutAnchor] = useState<HTMLDivElement | null>(null);
   const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
+    setAccountAnchor(event.currentTarget);
+  };
+  const onClickAbout = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAboutAnchor(event.currentTarget);
   };
   useMemo(() => {
     const id = consumer.data && consumer.data.Id;
@@ -101,7 +109,8 @@ const Navbar: React.FC = () => {
       analyticsService.setUserId(id)
     }
   }, [consumer.data && consumer.data.Id]);
-  const open = !!anchorEl;
+  const accountOpen = !!accountAnchor;
+  const aboutOpen = !!aboutAnchor;
   const currRoute = useRouter().pathname;
   const menuStep = (
     <Link href={menuRoute}>
@@ -152,15 +161,13 @@ const Navbar: React.FC = () => {
   } else {
     bar = (
       <>
-        <Link href={plansRoute}>
-          <Typography variant='button' className={classes.link}>Plans</Typography>
-        </Link>
         <Link href={menuRoute}>
           <Typography variant='button' className={classes.link}>Menu</Typography>
         </Link>
-        <Link href={howItWorksRoute}>
-          <Typography variant='button' className={`${classes.link} ${classes.how}`}>How it works</Typography>
-        </Link>
+        <div className={classes.about} onClick={onClickAbout}>
+          <Typography variant='button' className={classes.link}>About</Typography>
+          <ExpandMoreIcon />
+        </div>
       </>
     )
   }
@@ -191,7 +198,7 @@ const Navbar: React.FC = () => {
       <AppBar
         position='sticky'
         color='default'
-        style={open ? { paddingRight: 17, width: '100vw'} : undefined}
+        style={accountOpen ? { paddingRight: 17, width: '100vw'} : undefined}
       >
         <Container className={classes.container} maxWidth='lg'>
           <Toolbar className={classes.toolbar}>
@@ -202,9 +209,14 @@ const Navbar: React.FC = () => {
             {account}
           </Toolbar>
           <ConsumerPopper
-            open={open}
-            onClose={() => setAnchorEl(null)}
-            anchorEl={anchorEl}
+            open={accountOpen}
+            onClose={() => setAccountAnchor(null)}
+            anchorEl={accountAnchor}
+          />
+          <AboutPopper
+            open={aboutOpen}
+            onClose={() => setAboutAnchor(null)}
+            anchorEl={aboutAnchor}
           />
         </Container>
       </AppBar>

@@ -18,7 +18,7 @@ class PlanService implements IPlanService {
   async getAvailablePlans(): Promise<IPlan[]> {
     try {
       const plans = await this.stripe.plans.list({
-        limit: 100,
+        limit: 3,
         active: true,
       });
       if (!plans.data[0].tiers) throw new Error('Could not get tiers');

@@ -1,3 +1,4 @@
+import { IAddress } from './../../place/addressModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
 import { MutationConsumerRes } from './../../utils/apolloUtils';
@@ -15,6 +16,7 @@ import { refetchAccessToken } from '../../utils/auth';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
+import crypto  from 'crypto';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
@@ -22,6 +24,7 @@ export interface IConsumerService {
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
@@ -104,6 +107,53 @@ class ConsumerService implements IConsumerService {
     //   console.error(`[ConsumerService] failed to prepare cancelation for user '${signedInUser && signedInUser._id}'`, e.stack);
     //   throw e;
     // }
+  }
+
+
+  public async upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes> {
+    try {
+      let emailId = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+      const merge_fields: any = {}
+      if (name) {
+        const split = name.split(' ', 2);
+        merge_fields.FNAME = split[0] ;
+        merge_fields.LNAME = split[1];
+      }
+
+      if (addr) {
+        merge_fields.ADDRESS = {
+          addr1: addr.address1,
+          city: addr.city,
+          state: addr.state,
+          zip: addr.zip,
+          country: 'US',
+        }
+      }
+      const res = await fetch(`https://${activeConfig.server.mailChimp.dataCenter}.api.mailchimp.com/3.0/lists/${activeConfig.server.mailChimp.audienceId}/members/${emailId}`, {
+        headers: {
+          authorization: `Basic ${Buffer.from(`anystring:${activeConfig.server.mailChimp.key}`, 'utf8').toString('base64')}`
+        },
+        method: 'PUT',
+        body: JSON.stringify({
+          email_address: email,
+          status_if_new: 'subscribed',
+          merge_fields,
+        })
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        const msg = `Error adding marketing email '${json.detail}'`;
+        console.error(msg);
+        throw new Error(msg)
+      }
+      return {
+        res: true,
+        error: null
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to add marketing email ${email}`, e.stack);
+      throw new Error('Internal Server Error');
+    }
   }
 
   public async cancelSubscription(
@@ -287,6 +337,9 @@ class ConsumerService implements IConsumerService {
         }
       }
       const consumer = await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
+      this.upsertMarketingEmail(email, name).catch(e => {
+        console.error(`[ConsumerService] failed to upsert marketing email '${email}' with name '${name}'`, e.stack);
+      });
       return {
         res: consumer,
         error: null,
@@ -367,7 +420,10 @@ class ConsumerService implements IConsumerService {
         _id: signedInUser._id,
         ...res.body.get._source
       };
-      await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile)
+      await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
+      this.upsertMarketingEmail(signedInUser.profile.email, profile.name, profile.destination.address).catch(e => {
+        console.error(`[ConsumerService] failed to upsert marketing email for email '${signedInUser.profile.email}'`, e.stack)
+      });
       return {
         res: newConsumer,
         error: null
