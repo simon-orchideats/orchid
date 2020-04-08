@@ -73,7 +73,8 @@ const ConsumerPopper: React.FC<{
         <div className={classes.row} onClick={() => {
           Router.push(upcomingDeliveriesRoute);
           onClose();
-        }}>          <EventIcon fontSize='large' />
+        }}>          
+          <EventIcon fontSize='large' />
           <Typography variant='h6'>
             Upcoming deliveries
           </Typography>
@@ -82,7 +83,7 @@ const ConsumerPopper: React.FC<{
           window.location.assign('/api/logout');
           onClose();
         }}>
-        <ExitToAppIcon fontSize='large' />
+          <ExitToAppIcon fontSize='large' />
           <Typography variant='h6'>
             Log out
           </Typography>
