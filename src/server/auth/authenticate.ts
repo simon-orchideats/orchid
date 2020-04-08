@@ -83,13 +83,16 @@ const redirectedSignIn = async (
     }
 
     if (!consumer) {
+      const email = decodedToken[`${activeConfig.server.auth.audience}/email`];
+      const name = decodedToken[`${activeConfig.server.auth.audience}/name`];
       getConsumerService().insertConsumer(
         decodedToken.sub,
-        decodedToken[`${activeConfig.server.auth.audience}/name`],
-        decodedToken[`${activeConfig.server.auth.audience}/email`]
+        name,
+        email
       ).catch(e => {
         console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
-      })
+      });
+      getConsumerService().upsertMarketingEmail(email, name);
     };
     
     setCookie(res, [

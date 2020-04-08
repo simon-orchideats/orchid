@@ -32,6 +32,7 @@ const mutation = gql`
   type Mutation {
     cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
+    addMarketingEmail(email: String!): BoolRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
     updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
     updateMyPlan(plan: ConsumerPlanInput!, nextDeliveryDate: Float!): ConsumerRes!

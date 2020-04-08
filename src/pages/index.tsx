@@ -11,6 +11,9 @@ import withClientApollo from '../client/utils/withClientApollo';
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import Footer from '../client/general/Footer';
+import { useRef, createRef, useState } from 'react';
+import EmailInput from '../client/general/inputs/EmailInput';
+import { useAddMarketingEmail } from '../consumer/consumerService';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -19,9 +22,6 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
-  },
-  input: {
-    marginBottom: theme.spacing(2),
   },
   verticalCenter: {
     display: 'flex',
@@ -119,7 +119,34 @@ const useStyles = makeStyles(theme => ({
   donate: {
     backgroundColor: theme.palette.primary.main,
     color: 'white',
-  }
+  },
+  newsLetterInput: {
+    marginTop: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    display: 'flex',
+    width: '100%',
+    maxWidth: 500,
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column'
+    },
+  },
+  newsletterPaper: {
+    backgroundColor: theme.palette.common.white,
+    width: '60%',
+    paddingBottom: theme.spacing(4),
+    paddingTop: theme.spacing(4),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  emailInput: {
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.down('sm')]: {
+      marginRight: 0,
+      marginBottom: theme.spacing(2),
+    },
+  },
 }));
 
 const Welcome = withClientApollo(() => {
@@ -213,13 +240,23 @@ const Donate = () => {
 
 const Plans = withClientApollo(() => {
   const setCartStripePlanId = useUpdateCartPlanId();
+  const [addMarketingEmail] = useAddMarketingEmail();
+  const [isSubbed, setIsSubbed] = useState(false);
   const onClick = (plan: Plan) => {
     Router.push(menuRoute);
     setCartStripePlanId(plan.stripeId);
   };
+  const validateEmailRef = useRef<() => boolean>();
+  const emailInputRef = createRef<HTMLInputElement>();
+  const onSubscribe = () => {
+    if (!validateEmailRef.current!()) return;
+    const email = emailInputRef.current!.value;
+    addMarketingEmail(email);
+    setIsSubbed(true);
+  }
   const classes = useStyles();
   return (
-    <div className={`${classes.plans}`}>
+    <div className={classes.plans}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
         <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
           Choose a Plan that Works for You
@@ -237,6 +274,35 @@ const Plans = withClientApollo(() => {
             SEE MENU
           </Button>
         </Link>
+        <Paper className={classes.newsletterPaper}>
+          <Typography variant='h6'>
+            Stay updated with Orchid's newsletter
+          </Typography>
+          {
+            isSubbed ?
+              <Typography variant='subtitle1'>
+                Thank you!
+              </Typography>
+            :
+              <div className={classes.newsLetterInput}>
+                <EmailInput
+                  variant='outlined'
+                  className={classes.emailInput}
+                  inputRef={emailInputRef}
+                  setValidator={(validator: () => boolean) => {
+                    validateEmailRef.current = validator;
+                  }}
+                />
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={onSubscribe}
+                >
+                  Subscribe
+                </Button>
+              </div>
+          }
+        </Paper>
       </Paper>
     </div>
   )
@@ -337,7 +403,7 @@ const Benefits = () => {
             <Explanation 
               title='Sustainable'
               description={sustainableDescription}
-              img='home/sustainable.jpeg'
+              img='/home/deliverySample.jpeg'
               imgLeft={true}
             />
             <Grid item xs={12} className={classes.largeVerticalMargin} />
@@ -405,7 +471,6 @@ const Benefits = () => {
     </>
   )
 }
-
 
 const Index = () => {
   return (

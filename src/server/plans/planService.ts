@@ -21,7 +21,7 @@ class PlanService implements IPlanService {
   async getAvailablePlans(): Promise<IPlan[]> {
     try {
       const plans = await this.stripe.plans.list({
-        limit: 100,
+        limit: 3,
         active: true,
       });
       return plans.data.map(plan => ({
