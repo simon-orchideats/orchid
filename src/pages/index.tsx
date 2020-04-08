@@ -5,12 +5,12 @@ import { plansRoute } from './plans';
 import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
-import StoreIcon from '@material-ui/icons/Storefront';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
+import Footer from '../client/general/Footer';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -131,13 +131,15 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Chef-cooked healthy meals delivered weekly from local restaurants
+          Chef-cooked meals delivered weekly from local restaurants
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Offering meals starting at $9.99
+          Eat from your favorite restaurants and save.
+          <br />
+          Weekly meals starting at $9.99
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
-          GET STARTED
+          START SAVING
         </Button>
       </div>
     </div>
@@ -155,7 +157,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={6} md={3}>
+    <Grid item xs={12} sm={4} md={4}>
       <div className={classes.centered}>
         {
           img &&
@@ -177,19 +179,18 @@ const HowItWorks = () => {
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        How it works
+        How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Content description='Choose your plan of prepared meals' icon={<RestIcon className={classes.howIcon} />} />
-        <Content description='Choose when you want them' icon={<TodayIcon className={classes.howIcon} />} />
-        <Content description='Local restaurants cook, we deliver' icon={<StoreIcon className={classes.howIcon} />} />
-        <Content description='Enjoy immediately' img='home/microwave.png'/>
+        <Content description='Select Your Favorite Restaurant & Meals' icon={<RestIcon className={classes.howIcon} />} />
+        <Content description='Tell Us When to Deliver' icon={<TodayIcon className={classes.howIcon} />} />
+        <Content description='Eat Now or Save for Later' img='home/microwave.png' />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
-        Get in touch at simon.orchideats@gmail.com to learn more
+        Questions or Comments? Email us at emily@orchideats.com to learn more.
       </Typography>
       <Link href={howItWorksRoute}>
-        <Button variant='outlined' color='primary'>SEE DETAILS</Button>
+        <Button variant='outlined' color='primary'>Learn More</Button>
       </Link>
     </div>
   );
@@ -221,10 +222,10 @@ const Plans = withClientApollo(() => {
     <div className={`${classes.plans}`}>
       <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
         <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-          Flexible plans
+          Choose a Plan that Works for You
         </Typography>
         <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Each Orchid delicious meal is fully prepared by restaurants near you. Fresh. Local. Always.
+          Choose from 4, 8 or 12 meals per week
         </Typography>
         <PlanCards onClickCard={onClick}/>
         <Link href={menuRoute}>
@@ -414,6 +415,7 @@ const Index = () => {
       <HowItWorks />
       <Plans />
       <Benefits />
+      <Footer />
     </>
   )
 }

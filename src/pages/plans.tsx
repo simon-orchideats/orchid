@@ -1,12 +1,13 @@
 import { Container, makeStyles, Typography, Divider, Hidden, Button } from "@material-ui/core";
 import PlanCards from "../client/plan/PlanCards";
-import Faq from "../client/general/Faq";
+import Faq from "../client/general/CommonQuestions";
 import Link from "next/link";
 import { menuRoute } from "./menu";
 import Router from "next/router";
 import { Plan } from "../plan/planModel";
 import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import withClientApollo from '../client/utils/withClientApollo';
+import Footer from "../client/general/Footer";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
@@ -103,6 +104,7 @@ const plans = () => {
         </Link>
       </Container>
       <Faq />
+      <Footer />
     </>
   )
 }

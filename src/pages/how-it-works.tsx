@@ -1,7 +1,8 @@
 import { makeStyles, Container, Grid, Typography, Avatar, Hidden, Button, Paper } from '@material-ui/core';
-import Faq from '../client/general/Faq';
+import Faq from '../client/general/CommonQuestions';
 import Link from 'next/link';
 import { menuRoute } from './menu';
+import Footer from '../client/general/Footer';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -212,7 +213,7 @@ const HowItWorks = () => {
     <>
       <Container maxWidth='lg' className={classes.explainations}>
         <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
-          How it works
+          How it Works
         </Typography>
         <Grid container>
           <Explanation
@@ -296,6 +297,7 @@ const HowItWorks = () => {
           <Button variant='contained' color='primary'>GET STARTED</Button>
         </Link>
       </Paper>
+      <Footer />
     </>
   )
 }

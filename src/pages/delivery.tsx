@@ -1,5 +1,5 @@
 import { Container, makeStyles, Typography, Button } from "@material-ui/core";
-import Faq from "../client/general/Faq";
+import Faq from "../client/general/CommonQuestions";
 import { useGetCart, useUpdateDeliveryDay, useUpdateDeliveryTime } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import Link from "next/link";

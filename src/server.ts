@@ -6,7 +6,6 @@ import { initGeoService } from './server/place/geoService';
 import { getContext } from './utils/apolloUtils';
 import { initOrderService } from './server/orders/orderService';
 import express from 'express';
-import path from 'path';
 import next from 'next';
 import { initElastic } from './server/elasticConnector';
 import { initPlanService } from './server/plans/planService';
@@ -110,9 +109,6 @@ const start = async () => {
   app.use('/login', handleLoginRoute);
   app.use(universalAuthCB, handleAuthCallback);
   app.use(popupSocialAuthCB, handlePopupSocialAuth);
-  app.use('/privacy', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../public/html', 'privacy.html'));
-  })
   app.all('*', (req, res) => ssrHandler(req, res));
 
   const webServer = createServer(app);
