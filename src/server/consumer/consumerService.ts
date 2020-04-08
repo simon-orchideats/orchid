@@ -76,7 +76,7 @@ class ConsumerService implements IConsumerService {
         .then(orders => Promise.all(orders.map(async ({ _id, order }) => {
           if (!this.orderService) throw new Error('OrderService not set');
           if (order.invoiceDate > today) {
-            return Promise.all(pendingLineItems.data.map(line => {
+            await Promise.all(pendingLineItems.data.map(line => {
               if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
                 return this.stripe.invoiceItems.del(line.id).catch(e => {
                   const msg = `Couldn't remove future adjustment id '${line.id}': ${e.stack}`
@@ -85,6 +85,7 @@ class ConsumerService implements IConsumerService {
                 });
               }
             }));
+            return _id;
           } else {
             return this.orderService.updateOrder(signedInUser, _id, {
               restId: null,
@@ -96,6 +97,8 @@ class ConsumerService implements IConsumerService {
               deliveryTime: order.deliveryTime,
               donationCount: order.donationCount,
               name: order.consumer.profile.name
+            }).then(() => {
+              return _id;
             }).catch(e => {
               const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}': ${e.stack}`;
               console.error(msg)
@@ -173,6 +176,16 @@ class ConsumerService implements IConsumerService {
         }
       }
       const p1 = this.prepareOrdersForCancelation(signedInUser)
+        .then(orderIds => {
+          return Promise.all(orderIds.map(id => {
+            if (!this.orderService) throw new Error('Missing order service');
+            return this.orderService.deleteOrder(id).catch(e => {
+              const msg = `Failed to delete order '${id}' from for user '${signedInUser._id}'. ${e.stack}`;
+              console.error(msg)
+              throw e;
+            })
+          }))
+        })
         .then(() => {
           return this.stripe.subscriptions.del(subscriptionId, { invoice_now: true })
             .catch(e => {
@@ -475,6 +488,17 @@ class ConsumerService implements IConsumerService {
         throw e;
       }
 
+      const canceler = this.prepareOrdersForCancelation(signedInUser).catch(e => {
+        console.error(`Failed to prepareOrdersForCancelation '${signedInUser && signedInUser._id}': ${e.stack}`);
+        throw e;
+      });
+
+      const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
+        throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
+      });
+
+      const res = await Promise.all([canceler, subscription])
+
       const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
         signedInUser, 
         mealPrice,
@@ -486,17 +510,6 @@ class ConsumerService implements IConsumerService {
         console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
         throw e;
       });
-
-      const canceler = this.prepareOrdersForCancelation(signedInUser).catch(e => {
-        console.error(`Failed to prepareOrdersForCancelation '${signedInUser && signedInUser._id}': ${e.stack}`);
-        throw e;
-      });
-
-      const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
-        throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
-      });
-
-      const res = await Promise.all([canceler, subscription])
 
       const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
       const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
