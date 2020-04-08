@@ -9,6 +9,7 @@ type config = {
       domain: string,
       clientId: string,
       audience: string,
+      logOut: string,
     },
     stripe: {
       key: string,
@@ -70,6 +71,7 @@ const development: config = {
       domain: 'orchideats-dev.auth0.com',
       clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
       audience: 'https://orchideats.com',
+      logOut: `https://orchideats-dev.auth0.com/v2/logout?returnTo=http%3A%2F%2Flocalhost:8443&client_id=el63cM5rBcTbDSHRubPkc02pxYUsNiLU`,
     },
     stripe: {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
@@ -153,6 +155,7 @@ const production: config = {
       domain: 'orchideats.auth0.com',
       clientId: 'xjM2bZ6zvBl6u4OzjDRGxeAV5hvZQHOK',
       audience: 'https://orchideats.com',
+      logOut: `https://orchideats.auth0.com/v2/logout?returnTo=https://orchideats.com&client_id=xjM2bZ6zvBl6u4OzjDRGxeAV5hvZQHOK`,
     },
     stripe: {
       key: 'pk_live_ssYCk7PkKuv7b817RsAnJnsZ00dDcwl5JM',
@@ -199,7 +202,7 @@ vSew4L/i6dbzBOCzmrigLtzyqpIa/jDMbWoj7PV5LNxPuLR4z1a3BssW7VYYavfq
 K9iDSwnGyysGsDPn0tkAYa+FNSZ9KzbC7peZ2OnXQOF19TP3yB1PoDW/fLXu4hQF
 4QmCN+vJ6FB/jY2si61hGEoVl95zA8NOgfyONFp8193a5Pzg3nyQL/liC6WTP0O4
 D8hc31R0UA==
------END CERTIFICATE-----`,
+-----END CERTIFICATE-----`
     },
     elastic: {
       node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',

@@ -5,6 +5,7 @@ import EventIcon from '@material-ui/icons/Event';
 import PersonIcon from '@material-ui/icons/Person';
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
 import { profileRoute } from '../../pages/consumer/profile';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
 import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
@@ -75,6 +76,15 @@ const ConsumerPopper: React.FC<{
         }}>          <EventIcon fontSize='large' />
           <Typography variant='h6'>
             Upcoming deliveries
+          </Typography>
+        </div>
+        <div className={classes.row} onClick={() => {
+          window.location.assign('/api/logout');
+          onClose();
+        }}>
+        <ExitToAppIcon fontSize='large' />
+          <Typography variant='h6'>
+            Log out
           </Typography>
         </div>
       </Paper>
