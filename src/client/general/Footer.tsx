@@ -1,8 +1,10 @@
-import { makeStyles, Container, Typography, Paper, Grid } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, Grid, IconButton } from '@material-ui/core';
 import Link from 'next/link'
 import { privacyRoute } from '../../pages/privacy';
 import { faqsRoute } from '../../pages/faq';
 import { termsRoute } from '../../pages/terms';
+import FacebookIcon from '@material-ui/icons/Facebook';
+import InstagramIcon from '@material-ui/icons/Instagram';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -18,6 +20,11 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  column: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
   logo: {
     width: 110,
   },
@@ -25,13 +32,20 @@ const useStyles = makeStyles(theme => ({
 
 const Footer = () => {
   const classes = useStyles();
+  const onClickFb = () => {
+    window.location.href = 'https://www.facebook.com/orchidFB'
+  }
+  const onClickIg = () => {
+    window.location.href = 'https://www.instagram.com/orchidIG'
+  }
   return (
     <Paper elevation={0} className={classes.paper}>
       <Container maxWidth='lg'>
         <Grid container>
           <Grid
             item
-            xs={3}
+            xs={6}
+            sm={3}
             className={classes.item}
           >
             <div>
@@ -47,8 +61,9 @@ const Footer = () => {
           </Grid>
           <Grid
             item
-            xs={3}
-            className={classes.item}
+            xs={6}
+            sm={3}
+            className={classes.column}
           >
             <Link href={privacyRoute}>
               <Typography
@@ -58,12 +73,6 @@ const Footer = () => {
                 Privacy
               </Typography>
             </Link>
-          </Grid>
-          <Grid
-            item
-            xs={3}
-            className={classes.item}
-          >
             <Link href={termsRoute}>
               <Typography
                 variant='button'
@@ -75,9 +84,10 @@ const Footer = () => {
           </Grid>
           <Grid
             item
-            xs={3}
+            xs={6}
+            sm={3}
             className={classes.item}
-          > 
+          >
             <Link href={faqsRoute}>
               <Typography
                 variant='button'
@@ -86,6 +96,21 @@ const Footer = () => {
                 FAQ
               </Typography>
             </Link>
+          </Grid>
+          <Grid
+            item
+            xs={6}
+            sm={3}
+            className={classes.item}
+          >
+            <div className={classes.item}>
+              <IconButton onClick={onClickFb}>
+                <FacebookIcon />
+              </IconButton>
+              <IconButton onClick={onClickIg}>
+                <InstagramIcon />
+              </IconButton>
+            </div>
           </Grid>
         </Grid>
       </Container>

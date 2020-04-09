@@ -82,7 +82,7 @@ const Faq = () => {
                   variant='body1'
                   className={classes.link}
                 >
-                  <a href='https://example.com'>Facebook</a>
+                  <a href='https://www.facebook.com/orchidFB'>Facebook</a>
                 </Link>
                 &nbsp;or&nbsp;
                 <Link
@@ -90,7 +90,7 @@ const Faq = () => {
                   variant='body1'
                   className={classes.link}
                 >
-                  <a href='https://example.com'>Instagram</a>
+                  <a href='https://www.instagram.com/orchidIG'>Instagram</a>
                 </Link>
                 &nbsp;to be the first to hear about updates and new features.
               </Typography>
