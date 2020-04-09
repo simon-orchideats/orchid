@@ -26,7 +26,7 @@ export const _OrderQL = gql`
     quantity: Int!
   }
 
-  type DeliveryInput {
+  input DeliveryInput {
     deliveryTime: DeliveryTime!
     deliveryDate: Float!
     discount: Int
