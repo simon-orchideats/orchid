@@ -8,8 +8,8 @@ import TodayIcon from '@material-ui/icons/Today';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
-import { Plan } from "../plan/planModel";
-import { useUpdateCartPlanId } from '../client/global/state/cartState';
+// import { Plan } from "../plan/planModel";
+// import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import Footer from '../client/general/Footer';
 import { useRef, createRef, useState } from 'react';
 import EmailInput from '../client/general/inputs/EmailInput';
@@ -239,13 +239,13 @@ const Donate = () => {
 };
 
 const Plans = withClientApollo(() => {
-  const setCartStripePlanId = useUpdateCartPlanId();
+  // const setCartStripePlanId = useUpdateCartPlanId();
   const [addMarketingEmail] = useAddMarketingEmail();
   const [isSubbed, setIsSubbed] = useState(false);
-  const onClick = (plan: Plan) => {
-    Router.push(menuRoute);
-    setCartStripePlanId(plan.stripeId);
-  };
+  // const onClick = (plan: Plan) => {
+  //   Router.push(menuRoute);
+  //   setCartStripePlanId(plan.stripeId);
+  // };
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
   const onSubscribe = () => {

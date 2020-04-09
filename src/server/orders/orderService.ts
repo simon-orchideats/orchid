@@ -263,7 +263,6 @@ class OrderService {
   private async validateCart(cart: ICartInput) {
     const phoneValidation = validatePhone(cart.phone);
     if (phoneValidation) return phoneValidation;
-    // todo simon: revalidate again
     // const deliveryDateValidation = validateDeliveryDate(cart.deliveryDate);
     // if (deliveryDateValidation) return deliveryDateValidation;
 
