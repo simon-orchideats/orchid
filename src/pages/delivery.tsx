@@ -5,14 +5,14 @@ import withClientApollo from "../client/utils/withClientApollo";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useSetScheduleAndAutoDeliveries } from "../client/global/state/cartState";
 import DeliveryDateChooser from "../client/general/DeliveryDateChooser";
 import { useState } from "react";
 // import { DeliveryInput } from "../order/deliveryModel";
 // import { checkoutRoute } from "./checkout";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Schedule } from "../consumer/consumerModel";
-// import ScheduledMeals from "../client/general/inputs/ScheduledMeals";
+import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -54,6 +54,7 @@ const delivery = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([
     Schedule.getDefaultSchedule()
   ]);
+  const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
   const updateDeliveries = (s: Schedule, i: number) => {
     const newSchedules = schedules.map(s => new Schedule(s));
     newSchedules[i] = s;
@@ -73,6 +74,7 @@ const delivery = () => {
     if (isExpanded) setExpanded(panel);
   };
   const setDates = () => {
+    setScheduleAndAutoDeliveries(schedules);
     setExpanded('assignments');
   }
   if (!cart) {
@@ -164,7 +166,7 @@ const delivery = () => {
             </Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            {/* <ScheduledMeals meals={cart.deliveries}/> */}
+            <ScheduleDeliveries deliveries={cart.Deliveries}/>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </Container>

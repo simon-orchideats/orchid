@@ -1,3 +1,4 @@
+import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
@@ -26,15 +27,53 @@ export interface ICart {
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[];
   readonly restMeals: meals
-  readonly schedule: ISchedule[];
+  readonly schedules: ISchedule[];
   readonly zip: string | null;
+}
+
+const getNextMealsIterator = (meals: DeliveryMeal[]) => {
+  let uniqueMealIndex = 0;
+  let sameMealIndex;
+  return (numDesiredMeals: number) => {
+    const res = [];
+    while (uniqueMealIndex < meals.length) {
+      const uniqueMeal = meals[uniqueMealIndex];
+      sameMealIndex = 0;
+      while (sameMealIndex < uniqueMeal.Quantity) {
+        sameMealIndex++;
+        res.push(new DeliveryMeal({
+          ...uniqueMeal,
+          quantity: 1,
+        }));
+        if (res.length === numDesiredMeals) return res;
+      }
+      uniqueMealIndex++;
+    }
+    return res;
+  };
+}
+
+const addMealsToDelivery = (newMeals: DeliveryMeal[], deliveryInput: DeliveryInput) => {
+  const deliveryMeals = deliveryInput.Meals;
+  newMeals.forEach(newMeal => {
+    for (let i = 0; i < deliveryMeals.length; i++) {
+      if (deliveryMeals[i].MealId === newMeal.MealId) {
+        deliveryMeals[i] = new DeliveryMeal({
+          ...newMeal,
+          quantity: deliveryMeals[i].quantity + 1,
+        });
+        return;
+      }
+    }
+    deliveryMeals.push(newMeal);
+  })
 }
 
 export class Cart implements ICart {
   readonly donationCount: number
   readonly deliveries: DeliveryInput[];
   readonly restMeals: meals
-  readonly schedule: Schedule[];
+  readonly schedules: Schedule[];
   readonly zip: string | null;
 
   constructor(cart: ICart) {
@@ -47,39 +86,47 @@ export class Cart implements ICart {
       }
       return map;
     }, {});
-    this.schedule = cart.schedule.map(s => new Schedule(s));
+    this.schedules = cart.schedules.map(s => new Schedule(s));
     this.zip = cart.zip;
   }
 
   public get DonationCount() { return this.donationCount }
   public get Deliveries() { return this.deliveries }
   public get RestMeals() { return this.restMeals }
-  public get Schedule() { return this.schedule }
+  public get Schedules() { return this.schedules }
   public get Zip() { return this.zip }
 
-  public autoSetMealsInDeliveries(deliveries: DeliveryInput[]) {
+  public setScheduleAndAutoDeliveries(schedules: Schedule[]) {
     const newCart = new Cart({
       ...this,
-      deliveries,
+      schedules,
+      deliveries: schedules.map(s => new DeliveryInput({
+        deliveryTime: s.Time,
+        deliveryDate: getNextDeliveryDate(s.Day).valueOf(),
+        discount: null,
+        meals: [],
+      }))
     });
     
-    /**
-     * 
-     * // left off here
-     * get the total number of actual meals. then get the number of delivery days.
-     * 
-     * days / meals = meals per day.
-     * 
-     * loop through rests. for each rest
-     *  - divide count by 4 and floor it
-     *  - this gives us the number of deliviries you can spread this accross
-     *  - loop across this spread starting at i = 0
-     *    - get next 4 meals (by looping through the meals and doublly looping through quantity)
-     *    - put them into schedule[i]
-     *  - put remaining meals into schedule[0]
-     * 
-     */
-
+    let scheduleIndex = 0;
+    Object.entries(this.RestMeals).forEach(([_restId, restMeals]) => {
+      const numMeals = restMeals.mealCount;
+      // todo replace 4 with a variable
+      const numDeliveries = Math.floor(numMeals / 4);
+      const numLeftOverMeals = numMeals % 4;
+      const getNextMeals = getNextMealsIterator(restMeals.meals);
+      for (let i = 0; i < numDeliveries; i++) {
+        let meals;
+        if (i === numDeliveries - 1) {
+          meals = getNextMeals(4 + numLeftOverMeals);
+        } else {
+          meals = getNextMeals(4);
+        }
+        scheduleIndex = scheduleIndex % schedules.length;
+        addMealsToDelivery(meals, newCart.deliveries[scheduleIndex]);
+        scheduleIndex++;
+      }                                                                                         
+    })
     return newCart;
   }
 
@@ -160,7 +207,7 @@ export class Cart implements ICart {
       card,
       phone,
       consumerPlan: {
-        schedule: this.Schedule,
+        schedule: this.Schedules,
         cuisines,
       },
       destination: {
