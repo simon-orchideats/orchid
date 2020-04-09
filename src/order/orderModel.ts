@@ -173,6 +173,10 @@ export class Order implements IOrder{
       throw err;
     }
     const now = moment();
+    const EDeliveries = cart.deliveries.map((delivery)=>{
+      const status:IDelivery = {...delivery, status:'Open'};
+      return status;
+    })
     return {
       consumer: {
         userId: signedInUser._id,
@@ -197,7 +201,7 @@ export class Order implements IOrder{
         flatRateFee: 0,
       },
       // todo simon: actually do this
-      deliveries: [],
+      deliveries: EDeliveries,
       donationCount: cart.donationCount
     }
   }

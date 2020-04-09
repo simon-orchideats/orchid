@@ -3,11 +3,11 @@ import { NotificationType } from './../client/notification/notificationModel';
 import { useEffect } from 'react';
 import { ApolloError } from 'apollo-client';
 import { IConsumer } from './../consumer/consumerModel';
-import { accessTokenCookie, refetchAccessToken } from './auth';
+// import { accessTokenCookie, refetchAccessToken } from './auth';
 import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
 import { activeConfig } from '../config'
-import cookie from 'cookie'
+// import cookie from 'cookie'
 
 export type Context = {
   signedInUser: SignedInUser,
@@ -62,17 +62,17 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
   }
 }
 
-const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<SignedInUser> => {
-  if (!req || !res) return null;
-  const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
-  if (!access) return null;
-  try {
-    return decodeToSignedInUser(access);
-  } catch (e) {
-    let newAccessToken = await refetchAccessToken(req, res);
-    return decodeToSignedInUser(newAccessToken);
-  }
-}
+// const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<SignedInUser> => {
+//   if (!req || !res) return null;
+//   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
+//   if (!access) return null;
+//   try {
+//     return decodeToSignedInUser(access);
+//   } catch (e) {
+//     let newAccessToken = await refetchAccessToken(req, res);
+//     return decodeToSignedInUser(newAccessToken);
+//   }
+// }
 
 type handlerRes = {
   error?: ApolloError 
@@ -98,7 +98,16 @@ export const useMutationResponseHandler:(
 }
 
 export const getContext = async (req?: IncomingMessage, res?: OutgoingMessage): Promise<Context> => ({
-  signedInUser: await getSignedInUser(req, res),
+  // signedInUser: await getSignedInUser(req, res),
+  signedInUser: {
+    _id: '123',
+  stripeCustomerId: 'cus_H0z9EKfNhIxvzK',
+  stripeSubscriptionId: undefined,
+  profile: {
+    name: 'test',
+    email: 'alvinchau2013@test.com',
+  }
+  },
   req,
   res,
 })

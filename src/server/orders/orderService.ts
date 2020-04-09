@@ -413,6 +413,7 @@ class OrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes> {
+    
     if (!signedInUser) throw getNotSignedInErr()
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
