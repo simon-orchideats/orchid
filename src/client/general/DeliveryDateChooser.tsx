@@ -1,9 +1,9 @@
 import ToggleButton from '@material-ui/lab/ToggleButton';
-import { makeStyles, FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
+import { makeStyles, FormControl, Select, MenuItem, Typography } from "@material-ui/core";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { deliveryDay, deliveryTime, ConsumerPlan } from "../../consumer/consumerModel";
-import { useState, useRef, useEffect } from "react";
 import withClientApollo from '../utils/withClientApollo';
+import { getNextDeliveryDate } from '../../order/utils';
 
 const useStyles = makeStyles(theme => ({
   smallPaddingBottom: {
@@ -30,11 +30,6 @@ const DeliveryDateChooser: React.FC<{
   time,
 }) => {
   const classes = useStyles();
-  const inputLabel = useRef<HTMLLabelElement>(null);
-  const [labelWidth, setLabelWidth] = useState(0);
-  useEffect(() => {
-    setLabelWidth(inputLabel.current!.offsetWidth);
-  }, []);
   return (
     <>
       <ToggleButtonGroup
@@ -48,34 +43,31 @@ const DeliveryDateChooser: React.FC<{
         }}
       >
         <ToggleButton value={0}>
-          Sun
+          Su
+        </ToggleButton>
+        <ToggleButton value={1}>
+          M
+        </ToggleButton>
+        <ToggleButton value={2}>
+          T
         </ToggleButton>
         <ToggleButton value={3}>
-          Wed
+          W
+        </ToggleButton>
+        <ToggleButton value={4}>
+          Th
         </ToggleButton>
         <ToggleButton value={5}>
-          Fri
+          F
+        </ToggleButton>
+        <ToggleButton value={6}>
+          Sa
         </ToggleButton>
       </ToggleButtonGroup>
+      <Typography variant='body1'>
+        First delivery day: <b>{getNextDeliveryDate(day).format('M/D/YY')}</b>
+      </Typography>
       <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-        <InputLabel ref={inputLabel}>
-          Another day
-        </InputLabel>
-        <Select
-          labelWidth={labelWidth}
-          value={day === 0 || day === 3 || day === 5 ? '' : day}
-          onChange={e => onDayChange(e.target.value as deliveryDay)}
-        >
-          <MenuItem value={1}>Mon</MenuItem>
-          <MenuItem value={2}>Tue</MenuItem>
-          <MenuItem value={4}>Thur</MenuItem>
-          <MenuItem value={6}>Sat</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-        <InputLabel>
-          Preferred delivery time
-        </InputLabel>
         <Select
           value={time}
           onChange={e => onTimeChange(e.target.value as deliveryTime)}

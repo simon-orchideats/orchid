@@ -35,15 +35,23 @@ const DeliveryTimeQL = gql`
 `
 
 const _ConsumerPlanQL = gql`
-  type ConsumerPlan {
-    deliveryDay: Int!
-    deliveryTime: DeliveryTime!
-    cuisines: [CuisineType!]!
+  input ScheduleInput {
+    day: Int!
+    time: DeliveryTime!
   }
 
   input ConsumerPlanInput {
-    deliveryDay: Int!
-    deliveryTime: DeliveryTime!
+    schedule: [ScheduleInput!]!
+    cuisines: [CuisineType!]!
+  }
+
+  type Schedule {
+    day: Int!
+    time: DeliveryTime!
+  }
+
+  type ConsumerPlan {
+    schedule: [Schedule!]!
     cuisines: [CuisineType!]!
   }
 `

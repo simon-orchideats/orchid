@@ -1,4 +1,4 @@
-import { IOrderDelivery, OrderDelivery, ICartDelivery } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
@@ -15,14 +15,14 @@ export interface EOrder {
   readonly costs: ICost
   readonly createdDate: number
   readonly invoiceDate: number
-  readonly deliveries: IOrderDelivery[]
+  readonly deliveries: IDelivery[]
   readonly stripeSubscriptionId: string
   readonly donationCount: number
 }
 
 export interface IOrder {
   readonly _id: string
-  readonly deliveries: IOrderDelivery[]
+  readonly deliveries: IDelivery[]
   // destination will be removed when we support a desitnation per delivery
   readonly destination: IDestination
   readonly mealPrice: number
@@ -32,7 +32,7 @@ export interface IOrder {
 }
 
 export interface IUpdateOrderInput {
-  readonly deliveries: ICartDelivery[]
+  readonly deliveries: IDeliveryInput[]
   readonly phone: string
   readonly destination: IDestination
   readonly name: string
@@ -41,7 +41,7 @@ export interface IUpdateOrderInput {
 
 export class Order implements IOrder{
   readonly _id: string
-  readonly deliveries: OrderDelivery[]
+  readonly deliveries: Delivery[]
   readonly destination: Destination
   readonly mealPrice: number
   readonly phone: string
@@ -50,7 +50,7 @@ export class Order implements IOrder{
 
   constructor(order: IOrder) {
     this._id = order._id;
-    this.deliveries = order.deliveries.map(d => new OrderDelivery(d))
+    this.deliveries = order.deliveries.map(d => new Delivery(d))
     this.destination = new Destination(order.destination);
     this.mealPrice = order.mealPrice;
     this.phone = order.phone;

@@ -1,6 +1,5 @@
 import { IMeal } from './../rest/mealModel';
-import { IDestination, Destination } from './../place/destinationModel';
-import { ISchedule, Schedule } from './../consumer/consumerModel';
+import { deliveryTime } from './../consumer/consumerModel';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
 
@@ -65,63 +64,58 @@ export class DeliveryMeal implements IDeliveryMeal {
   }
 }
 
-export interface ICartDelivery {
-  readonly schedule: ISchedule
-  readonly deliveryDate: number
-  // storing destination inside destination so that eventually we can support mulitple destinations
-  readonly destination: IDestination;
-  readonly discount: number
+export interface IDeliveryInput {
+  readonly deliveryTime: deliveryTime
+  readonly deliveryDate: number;
+  // eventually we can support mulitple destinations
+  // readonly destination: IDestination | null;
+  readonly discount: number | null
   readonly meals: IDeliveryMeal[]
 }
 
-export class CartDelivery implements ICartDelivery {
-  readonly schedule: Schedule
+export class DeliveryInput implements IDeliveryInput {
+  readonly deliveryTime: deliveryTime
   readonly deliveryDate: number
-  readonly destination: Destination
-  readonly discount: number
+  readonly discount: number | null
   readonly meals: DeliveryMeal[]
 
-  constructor(delivery: ICartDelivery) {
-    this.destination = new Destination(delivery.destination);
+  constructor(delivery: IDeliveryInput) {
     this.deliveryDate = delivery.deliveryDate;
     this.discount = delivery.discount;
     this.meals = delivery.meals.map(m => new DeliveryMeal(m));
-    this.schedule = new Schedule(delivery.schedule);
+    this.deliveryTime = delivery.deliveryTime;
   }
 
-  public get Destination() { return this.destination }
+  public get DeliveryTime() { return this.deliveryTime }
   public get DeliveryDate() { return this.deliveryDate }
   public get Discount() { return this.discount }
   public get Meals() { return this.meals }
-  public get Schedule() { return this.schedule }
 
-  static getICopy(d: ICartDelivery): ICartDelivery {
+  static getICopy(d: IDeliveryInput): IDeliveryInput {
     return {
       ...d,
-      destination: Destination.getICopy(d.destination),
       meals: d.meals.map(m => DeliveryMeal.getICopy(m)),
-      schedule: Schedule.getICopy(d.schedule),
     }
   }
 }
 
-export interface IOrderDelivery extends ICartDelivery {
+export interface IDelivery extends IDeliveryInput {
   readonly status: DeliveryStatus
 }
 
-export class OrderDelivery extends CartDelivery implements IOrderDelivery {
+export class Delivery extends DeliveryInput implements IDelivery {
   readonly status: DeliveryStatus
   
-  constructor(delivery: IOrderDelivery) {
+  constructor(delivery: IDelivery) {
     super(delivery);
     this.status = delivery.status;
   }
 
   public get Status() { return this.status }
 
-  static getICopy(d: IOrderDelivery): IOrderDelivery {
+  static getICopy(d: IDelivery): IDelivery {
     return {
-      ...CartDelivery.getICopy(d),
+      ...DeliveryInput.getICopy(d),
       status: d.status,
     }
   }
