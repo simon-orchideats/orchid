@@ -33,13 +33,15 @@ GET /rests/_search?
   "query" : {
     "bool": {
       "filter": {
-        "terms": {
-          "profile.tags.keyword": ["Chinese"]
+        "term": {
+          "profile.name": "Malibu Diner"
         }
       }
     }
   }
 }
+
+GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
 ############################
 
@@ -53,6 +55,31 @@ POST orders/_update_by_query
     "match_all": {}
   }
 }
+
+POST rests/_update_by_query
+{
+  "doc": {
+    "status": "Skipped"
+  },
+  "query": {
+    "match": {
+      "profile.name": "Malibu Diner"
+    }
+  }
+}
+
+POST /rests/_update/-SFhNnEBBGf1BFEfbEWg
+{
+  "script" : {
+    "source": """
+      ctx._source.menu[3].img = "/menu/malibu-diner/pastrami.png";
+      ctx._source.menu[3].img = "/menu/malibu-diner/reuben-sandwhich.png";
+      ctx._source.profile.phone = "(201) 656-1595"
+    """,
+    "lang": "painless"
+  }
+}
+
 
 ############################
 
@@ -89,6 +116,16 @@ POST orders/_delete_by_query
     "match_all": {}
   }
 }
+
+POST /rests/_delete_by_query
+{
+  "query": {
+    "match": {
+      "profile.name": "Precious Chinese Cuisine"
+    }
+  }
+}
+
 
 ############################
 
@@ -696,9 +733,9 @@ POST rests/_doc/
     {
       "_id" : "RSwsSOm96-aRXYgwVK0Z6",
       "img" : "/menu/china-spice/cauliflower.jpg",
-      "name" : "Cauliflower Manchurian",
+      "name" : "Cauliflower Manchurian & Chili Paneer",
       "tags": ["Vegetarian", "Vegan"],
-      "description" : "flower buds roasted to perfection in our famous manchurian sauce",
+      "description" : "flower buds roasted to perfection in our famous manchurian sauce & cubes of cottage cheese sauteed with fresh chili, onions, in light soy sauce",
       "originalPrice" : 11.00
     }
   ],
@@ -1178,7 +1215,7 @@ POST rests/_doc/
     },
     {
       "_id": "FmoCjgnlAeKVBrt0CJlc8",
-      "img": "/menu/malibu-diner/turkey-burger.png",
+      "img": "/menu/malibu-diner/pastrami.png",
       "name": "Hot Pastrami Sandwich",
       "originalPrice": 9.95,
       "tags": [],
@@ -1203,7 +1240,7 @@ POST rests/_doc/
   ],
   "profile": {
     "name": "Malibu Diner",
-    "phone": "(201) 656-1595",
+    "phone": "(201) 656-7595",
     "tags": ["American"]
   }
 }
@@ -1281,6 +1318,80 @@ POST rests/_doc/
   }
 }
 
+POST rests/_doc/
+{
+  "createdDate" : 1586452540236,
+  "location" : {
+    "address" : {
+      "address1" : "219 Washington St",
+      "city" : "Hoboken",
+      "state" : "NJ",
+      "zip" : "07030"
+    },
+    "geo" : {
+      "lat" : 40.739250,
+      "lon" : -74.029970
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "QkdAnotH_vlV3DS20s6QX",
+      "img" : "/menu/south-street/ahi-tuna-sushirito.jpeg",
+      "name" : "Ahi Tuna Sushirito",
+      "description" : "sushi burrito - ahi tuna, rice, masago, seaweed salad, cucumbers, lettuce, furikake, spicy mayo",
+      "tags": [],
+      "originalPrice" : 11.00
+    },
+    {
+      "_id" : "CDjPVPS-aYryMw4IgOp-g",
+      "img" : "/menu/south-street/salmon-sushirito.jpeg",
+      "description" : "sushi burrito - salmon, rice, tamago, masago, seaweed salad, kimchi, furikake, spicy mayo",
+      "name" : "Salmon Sushirito",
+      "tags": [],
+      "originalPrice" : 11.00
+    },
+    {
+      "_id" : "UEI91oRqzN8kelLOB0BVL",
+      "img" : "/menu/south-street/ahi-tuna-poke-bowl.jpg",
+      "name" : "Ahi Tuna Poke Bowl",
+      "tags": [],
+      "originalPrice" : 11.00,
+      "description" : "ahi tuna, rice, masago, tamago, scallions, seaweed salad, tempura flakes, furikake, poke sauce"
+    },
+    {
+      "_id" : "Zy2J1W8CXgv72C38DbTJs",
+      "img" : "/menu/south-street/spicy-tuna-poke-bowl.jpg",
+      "name" : "Spicy Tuna Poke Bowl",
+      "tags": [],
+      "originalPrice" : 11.00,
+      "description" : "spicy tuna, rice, masago, corn, kimchi, scallions, tempura flakes, furikake, spicy mayo"
+    },
+    {
+      "_id" : "2rnfQlMFn07eyJWTDebxE",
+      "img" : "/menu/south-street/salmon-tropical-poke-bowl.jpg",
+      "name" : "Salmon Tropical Poke Bowl",
+      "description" : "salmon, rice, tamago, corn, mango, guacamole, tempura flakes, furikake, spicy mayo",
+      "tags": [],
+      "originalPrice" : 11.00
+    },
+    {
+      "_id" : "xWp3HOISfefgYVRJ8NWHE",
+      "img" : "/menu/south-street/ahi-tuna-tropical-salad.jpg",
+      "name" : "Ahi Tuna Tropical Salad",
+      "tags": [],
+      "description" : "spicy tuna, lettuce, edamame, guacamole, seaweed salad, cucumbers, tempura flakes, furikake, spicy mayo",
+      "originalPrice" : 11.00
+    }
+  ],
+  "profile" : {
+    "name" : "South Street Fish Co",
+    "phone" : "(201) 683-9879",
+    "tags" : [
+      "Japanese"
+    ]
+  }
+}
 
 ###############################
 
