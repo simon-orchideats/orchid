@@ -1,7 +1,7 @@
 import { makeStyles, Container, Typography, Paper, Grid } from '@material-ui/core';
 import Link from 'next/link'
 import { privacyRoute } from '../../pages/privacy';
-import { faqsRoute } from '../../pages/faqs';
+import { faqsRoute } from '../../pages/faq';
 import { termsRoute } from '../../pages/terms';
 
 const useStyles = makeStyles(theme => ({

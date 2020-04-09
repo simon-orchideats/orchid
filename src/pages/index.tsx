@@ -276,7 +276,10 @@ const Plans = withClientApollo(() => {
         </Link>
         <Paper className={classes.newsletterPaper}>
           <Typography variant='h6'>
-            Stay updated with Orchid's newsletter
+            Schedule Your Meals
+          </Typography>
+          <Typography variant='h6'>
+            sign up for offers, new restaurants and more
           </Typography>
           {
             isSubbed ?
@@ -294,7 +297,7 @@ const Plans = withClientApollo(() => {
                   }}
                 />
                 <Button
-                  variant='outlined'
+                  variant='contained'
                   color='primary'
                   onClick={onSubscribe}
                 >

@@ -1,6 +1,5 @@
-import { makeStyles, Container, Typography, Paper } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, Link } from '@material-ui/core';
 import Footer from '../client/general/Footer';
-import Link from 'next/link';
 import { plansRoute } from './plans';
 
 const useStyles = makeStyles(theme => ({
@@ -23,6 +22,7 @@ const useStyles = makeStyles(theme => ({
   link: {
     textDecoration: 'underline',
     cursor: 'pointer',
+    color: theme.palette.common.link,
   },
   container: {
     paddingTop: theme.spacing(2),
@@ -78,7 +78,7 @@ const faqs = () => {
             q='What is Orchid?'
             a="Orchid allows YOU to receive your favorite restaurant meals every week at one low cost. We're a weekly
             subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
-            fully cooked, all you have to is heat them up. We started Orchid to save you time, energy, and money."
+            fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
           />
           <Qa
             q='What makes Orchid different from other delivery websites?'
@@ -88,9 +88,31 @@ const faqs = () => {
           />
           <Qa
             q='How many restaurants can I pick?'
-            a="Currently we only offer 1 restaurant per week, but we understand that variety is important! We're quickly
-            adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed to our emails
-            or follow our social channels like Facebook or Instagram to be the first to hear about updates and new features."
+            n={
+              <>
+                <Typography variant='body1'>
+                  Currently we only offer 1 restaurant per week, but we understand that variety is important! We're
+                  quickly adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed
+                  to our emails or follow us on&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  > 
+                    <a href='https://example.com'>Facebook</a>
+                  </Link>
+                  &nbsp;or&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  >
+                    <a href='https://example.com'>Instagram</a>
+                  </Link>
+                  &nbsp;to be the first to hear about updates and new features.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q="Do I need to pick meals every week?"
@@ -122,18 +144,17 @@ const faqs = () => {
             n={
               <>
                 <Typography variant='body1'>
-                  To read more about meals and pricing, click&nbsp;
+                  To read more about meals and pricing, see our plan&nbsp;
                   <Link href={plansRoute}>
-                    <Typography variant='button' className={classes.link}>
-                      here
+                    <Typography
+                      variant='body1'
+                      className={classes.link}
+                      component='span'
+                    >
+                      page.
                     </Typography>
                   </Link>
                 </Typography>
-                {/* <Link href={plansRoute}>
-                  <Typography variant='button'>
-                    HERE
-                  </Typography>
-                </Link> */}
               </>
             }
           />
@@ -176,7 +197,7 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What days of the week do you deliver?'
-            a="Every day"
+            a="Every day."
           />
           <Qa
             q='Who delivers my meals?'
@@ -249,4 +270,4 @@ const faqs = () => {
 
 export default faqs;
 
-export const faqsRoute = '/faqs';
+export const faqsRoute = '/faq';
