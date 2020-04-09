@@ -126,6 +126,9 @@ const deliveryTimes: {
   NinePToTenP: '9pm - 10pm',
 }
 
+export const defaultDeliveryDay: deliveryDay = 0;
+export const defaultDeliveryTime: deliveryTime = 'ThreePToFourP';
+
 export interface ISchedule {
   readonly day: deliveryDay;
   readonly time: deliveryTime;
@@ -147,6 +150,13 @@ export class Schedule implements ISchedule {
     return {
       ...s
     }
+  }
+
+  static getDefaultSchedule() {
+    return new Schedule({
+      day: defaultDeliveryDay,
+      time: defaultDeliveryTime,
+    })
   }
 }
 

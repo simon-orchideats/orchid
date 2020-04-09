@@ -1,4 +1,4 @@
-import { DeliveryMeal } from './../../../order/deliveryModel';
+import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
 import { deliveryDay, deliveryTime } from './../../../consumer/consumerModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
@@ -25,6 +25,7 @@ export const cartQL = gql`
   extend type Mutation {
     clearCartMeals: CartState
     addMealToCart(meal: Meal!, restId: ID!): CartState!
+    autoSetMealsInDeliveries(deliveries: [Delivery!]!): CartState!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
     removeMealFromCart(restId: ID!, mealId: ID!): CartState!
@@ -42,6 +43,18 @@ const CART_QUERY = gql`
     cart @client
   }
 `
+
+export const useAutoSetMealsInDeliveries = (): (deliveries: DeliveryInput[]) => void => {
+  type vars = { deliveries: DeliveryInput[] };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation autoSetMealsInDeliveries($deliveries: [Deliveries!]!) {
+      autoSetMealsInDeliveries(deliveries: $deliveries) @client
+    }
+  `);
+  return (deliveries: DeliveryInput[]) => {
+    mutate({ variables: { deliveries } })
+  }
+}
 
 export const useGetCart = () => {
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
@@ -179,6 +192,7 @@ export const useUpdateZip = (): (zip: string) => void => {
 
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string }, Cart | null>
+  autoSetMealsInDeliveries: ClientResolver<{ deliveries: DeliveryInput[] }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
@@ -233,6 +247,24 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     const newCart = res.cart.addMeal(meal, restId, restName);
+    return updateCartCache(cache, new Cart({
+      donationCount: newCart.DonationCount,
+      restMeals: newCart.RestMeals,
+      deliveries: newCart.Deliveries,
+      schedule: newCart.Schedule,
+      zip: newCart.Zip,
+    }));
+  },
+
+  autoSetMealsInDeliveries: (_, { deliveries }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      const err = new Error(`Cannot auto set meals in deliveries from null cart`);
+      console.error(err.stack);
+      throw err;
+    }
+    // todo simon: add logic to put the new meal into the deliveries
+    const newCart = res.cart.autoSetMealsInDeliveries(deliveries);;
     return updateCartCache(cache, new Cart({
       donationCount: newCart.DonationCount,
       restMeals: newCart.RestMeals,

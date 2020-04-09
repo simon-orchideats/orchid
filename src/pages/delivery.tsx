@@ -1,16 +1,18 @@
-import { Container, makeStyles, Typography, Button } from "@material-ui/core";
+import { Container, makeStyles, Typography, Button, ExpansionPanelSummary, ExpansionPanel, ExpansionPanelDetails } from "@material-ui/core";
 import Faq from "../client/general/CommonQuestions";
-import { useGetCart, useUpdateDeliveryDay, useUpdateDeliveryTime } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
-import Link from "next/link";
+// import Link from "next/link";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
-import DeliveryDateChooser from '../client/general/DeliveryDateChooser'
-import { getNextDeliveryDate } from '../order/utils';
-import { checkoutRoute } from "./checkout";
+import { useGetCart } from "../client/global/state/cartState";
+import DeliveryDateChooser from "../client/general/DeliveryDateChooser";
 import { useState } from "react";
-import { deliveryDay, deliveryTime, ConsumerPlan } from "../consumer/consumerModel";
+// import { DeliveryInput } from "../order/deliveryModel";
+// import { checkoutRoute } from "./checkout";
+import DeleteIcon from '@material-ui/icons/Delete';
+import { Schedule } from "../consumer/consumerModel";
+// import ScheduledMeals from "../client/general/inputs/ScheduledMeals";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -20,76 +22,151 @@ const useStyles = makeStyles(theme => ({
     background: 'none',
     paddingBottom: theme.spacing(4),
   },
-  header: {
-    paddingBottom: theme.spacing(4),
+  panel: {
+    width: '100%'
   },
-  smallPaddingBottom: {
-    paddingBottom: theme.spacing(2),
+  addDelivery: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    color: theme.palette.warning.main,
   },
-  toggleButtonGroup: {
-    width: '100%',
-    marginBottom: theme.spacing(2),
+  addButton: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
-  input: {
-    alignSelf: 'stretch',
+  deliveryCount: {
+    paddingLeft: theme.spacing(2),
   },
-  row: {
+  deliveryHeader: {
     display: 'flex',
+    paddingBottom: theme.spacing(2),
+    alignItems: 'center',
   },
-
+  dates: {
+    flexDirection: 'column',
+  },
 }));
 
 const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const [day, setDay] = useState<deliveryDay>(0);
-  const [time, setTime] = useState<deliveryTime>(ConsumerPlan.getDefaultDeliveryTime());
-  const updateDeliveryDay = useUpdateDeliveryDay();
-  const updateDeliveryTime = useUpdateDeliveryTime();
-  if (!cart && !isServer()) Router.replace(`${menuRoute}`);
+  const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
+  const [schedules, setSchedules] = useState<Schedule[]>([
+    Schedule.getDefaultSchedule()
+  ]);
+  const updateDeliveries = (s: Schedule, i: number) => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules[i] = s;
+    setSchedules(newSchedules);
+  }
+  const addDelivery = () => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules.push(Schedule.getDefaultSchedule());
+    setSchedules(newSchedules);
+  }
+  const removeDelivery = (i: number) => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules.splice(i, 1);
+    setSchedules(newSchedules);
+  }
+  const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    if (isExpanded) setExpanded(panel);
+  };
+  const setDates = () => {
+    setExpanded('assignments');
+  }
+  if (!cart) {
+    if (!isServer()) Router.replace(`${menuRoute}`);
+    return null;
+  }
+  const remainingDeliveries = Math.floor(cart.getMealCount() / 4) - schedules.length;
   return (
     <>
       <Container className={classes.container}>
-        <Typography
-          variant='h3'
-          color='primary'
-          className={classes.header}
+        <ExpansionPanel
+          expanded={expanded === 'deliveries'}
+          className={classes.panel}
+          onChange={handleExpander('deliveries')}
         >
-          Choose a repeat delivery day
-        </Typography>
-        <DeliveryDateChooser
-          day={day}
-          onDayChange={day => setDay(day)}
-          time={time}
-          onTimeChange={time => setTime(time)}
-        />
-        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-          <Typography variant='subtitle1'>
-            First delivery:&nbsp;
-          </Typography>
-          <Typography variant='subtitle1'>
-            {getNextDeliveryDate(day).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(time)}
-          </Typography>
-          <br/>
-        </div>
-        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-          <Typography variant='body1' align='center'>
-            We'll do our best to meet your delivery schedule and email you if we need to reschedule your order to the next best time.
-          </Typography>
-        </div>
-        <Link href={checkoutRoute}>
-          <Button
-            variant='contained'
-            color='primary'
-            fullWidth
-            onClick={() => {
-              updateDeliveryDay(day);
-              updateDeliveryTime(time);
-            }}
-          >
-            Next
-          </Button>
-        </Link>
+          <ExpansionPanelSummary>
+            <Typography variant='h4' color='primary'>
+              1. Choose dates
+            </Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.dates}>
+            {schedules.map((s, i) => (
+              <>
+                <div className={classes.deliveryHeader}>
+                  <DeleteIcon onClick={() => removeDelivery(i)} />
+                  <Typography variant='h5' className={classes.deliveryCount}>
+                    Delivery {i + 1}
+                  </Typography>
+                </div>
+                <DeliveryDateChooser
+                  day={s.Day}
+                  onDayChange={day => updateDeliveries(
+                    new Schedule({
+                      ...s,
+                      day,
+                    }),
+                    i
+                  )}
+                  time={s.Time}
+                  onTimeChange={time => updateDeliveries(
+                    new Schedule({
+                      ...s,
+                      time,
+                    }),
+                    i
+                  )}
+                />
+              </>
+            ))}
+            {
+              remainingDeliveries === 0 ?
+              <Typography variant='body1' className={classes.addDelivery}>
+                Max deliveries reached
+              </Typography>
+              :
+              <>
+                <Typography variant='body1' className={classes.addDelivery}>
+                  {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
+                </Typography>
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  fullWidth
+                  onClick={addDelivery}
+                  className={classes.addButton}
+                >
+                  Add a delivery
+                </Button>
+              </>
+            }
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              onClick={setDates}
+            >
+              Next
+            </Button>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel
+          expanded={expanded === 'assignments'} 
+          className={classes.panel}
+          onChange={handleExpander('assignments')}
+        >
+          <ExpansionPanelSummary>
+            <Typography variant='h4' color='primary'>
+              2. Schedule meals
+            </Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            {/* <ScheduledMeals meals={cart.deliveries}/> */}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       </Container>
       <Faq />
     </>

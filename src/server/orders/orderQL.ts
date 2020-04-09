@@ -1,63 +1,76 @@
 import { gql } from 'apollo-server';
 
-export const CartMealQL = gql`
-  type CartMeal {
-    mealId: ID!
-    img: String
-    name: String!
-    quantity: Int!
-  }
-
-  input CartMealInput {
-    mealId: ID!
-    img: String
-    name: String!
-    quantity: Int!
-  }
-`
-
-export const OrderStatus = gql`
-  enum OrderStatus {
+export const _OrderQL = gql`
+  enum DeliveryStatus {
     Complete
     Confirmed
     Open
     Returned
     Skipped
   }
-`
 
-export const _OrderQL = gql`
   input CartInput {
-    restId: ID # null for if cart is all donated
-    consumerPlan: ConsumerPlanInput!
-    paymentMethodId: String!
     card: CardInput!
-    meals: [CartMealInput!]!
-    phone: String!
-    destination: DestinationInput!
-    deliveryDate: Float!
+    consumerPlan: ConsumerPlanInput!
     donationCount: Int!
-  }
-  input UpdateOrderInput {
-    restId: ID # null for skip order
-    meals: [CartMealInput!]!
-    phone: String!
+    deliveries: [DeliveryInput!]!
     destination: DestinationInput!
-    deliveryDate: Float!
+    paymentMethodId: String!
+    phone: String!
+  }
+  
+  input CartMealInput {
+    mealId: ID!
+    img: String
+    name: String!
+    quantity: Int!
+  }
+
+  input DeliveryInput {
     deliveryTime: DeliveryTime!
+    deliveryDate: Float!
+    discount: Int
+    meals: [DeliveryMealInput!]!
+  }
+
+  input DeliveryMealInput {
+    mealId: ID!
+    img: String
+    name: String!
+    quantity: Int!
+    restId: ID!
+    restName: String!
+  }
+
+  input UpdateOrderInput {
+    deliveries: [DeliveryInput!]!
     donationCount: Int!
     name: String!
+    phone: String!
   }
+
+  type DeliveryMeal {
+    mealId: ID!
+    img: String
+    name: String!
+    quantity: Int!
+    restId: ID!
+    restName: String!
+  }
+
+  type Delivery {
+    deliveryTime: DeliveryTime!
+    deliveryDate: Float!
+    discount: Int
+    meals: [DeliveryMeal!]!
+    status: DeliveryStatus!
+  }
+
   type Order {
     _id: ID!
-    deliveryDate: Float!
-    deliveryTime: DeliveryTime!
-    destination: Destination!
+    deliveries: [Delivery!]!
     mealPrice: Float
-    meals: [CartMeal!]!
     phone: String!
-    rest: Rest
-    status: OrderStatus!
     name: String!
     donationCount:Int!
   }
@@ -65,8 +78,6 @@ export const _OrderQL = gql`
 
 
 export const OrderQL = () => [
-  CartMealQL,
-  OrderStatus,
   _OrderQL,
 ]
 

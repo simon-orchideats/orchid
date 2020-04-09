@@ -261,9 +261,6 @@ const Plans = withClientApollo(() => {
         <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
           Choose a Plan that Works for You
         </Typography>
-        <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Choose from 4, 8 or 12 meals per week
-        </Typography>
         <PlanCards />
         <Link href={menuRoute}>
           <Button
