@@ -32,22 +32,28 @@ export interface ICart {
 }
 
 const getNextMealsIterator = (meals: DeliveryMeal[]) => {
+  const copy = meals.map(m => new DeliveryMeal(m));
   let uniqueMealIndex = 0;
-  let sameMealIndex;
   return (numDesiredMeals: number) => {
     const res = [];
-    while (uniqueMealIndex < meals.length) {
-      const uniqueMeal = meals[uniqueMealIndex];
-      sameMealIndex = 0;
-      while (sameMealIndex < uniqueMeal.Quantity) {
-        sameMealIndex++;
-        res.push(new DeliveryMeal({
+    while (uniqueMealIndex < copy.length) {
+      const uniqueMeal = copy[uniqueMealIndex];
+      res.push(new DeliveryMeal({
+        ...uniqueMeal,
+        quantity: 1,
+      }));
+      if (uniqueMeal.Quantity === 1) {
+        copy.splice(uniqueMealIndex, 1);
+        uniqueMealIndex--;
+      } else {
+        copy[uniqueMealIndex] = new DeliveryMeal({
           ...uniqueMeal,
-          quantity: 1,
-        }));
-        if (res.length === numDesiredMeals) return res;
+          quantity: uniqueMeal.Quantity - 1,
+        })
       }
       uniqueMealIndex++;
+      if (uniqueMealIndex === copy.length) uniqueMealIndex = 0;
+      if (res.length === numDesiredMeals) return res;
     }
     return res;
   };
@@ -222,6 +228,34 @@ export class Cart implements ICart {
       },
       deliveries: this.deliveries,
     }
+  }
+
+  public moveMealToNewDelivery(meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) {
+    const newCart = new Cart(this);
+    const fromDeliveryMeals = newCart.Deliveries[fromDeliveryIndex].Meals
+    const fromMealIndex = fromDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    if (meal.Quantity > 1) {
+      fromDeliveryMeals[fromMealIndex] = new DeliveryMeal({
+        ...meal,
+        quantity: meal.Quantity - 1,
+      });
+    } else {
+      fromDeliveryMeals.splice(fromMealIndex, 1);
+    }
+    const newDeliveryMeals = newCart.Deliveries[toDeliveryIndex].Meals;
+    const toMealIndex = newDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    if (toMealIndex === -1) {
+      newDeliveryMeals.push(new DeliveryMeal({
+        ...meal,
+        quantity: 1,
+      }))
+    } else {
+      newDeliveryMeals[toMealIndex] = new DeliveryMeal({
+        ...meal,
+        quantity: newDeliveryMeals[toMealIndex].Quantity + 1,
+      })
+    }
+    return newCart;
   }
 
   public removeMeal(restId: string, mealId: string) {

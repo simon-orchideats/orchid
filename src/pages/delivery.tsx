@@ -7,7 +7,7 @@ import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useSetScheduleAndAutoDeliveries } from "../client/global/state/cartState";
 import DeliveryDateChooser from "../client/general/DeliveryDateChooser";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 // import { DeliveryInput } from "../order/deliveryModel";
 // import { checkoutRoute } from "./checkout";
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -25,14 +25,11 @@ const useStyles = makeStyles(theme => ({
   panel: {
     width: '100%'
   },
-  addDelivery: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    color: theme.palette.warning.main,
-  },
   addButton: {
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+  },
+  nextButton: {
+    marginTop: theme.spacing(1),
   },
   deliveryCount: {
     paddingLeft: theme.spacing(2),
@@ -42,8 +39,14 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
     alignItems: 'center',
   },
-  dates: {
+  col: {
     flexDirection: 'column',
+  },
+  scheduleDeliveries: {
+    minHeight: 600,
+    maxHeight: 800,
+    overflow: 'scroll',
+    display: 'flex',
   },
 }));
 
@@ -77,11 +80,21 @@ const delivery = () => {
     setScheduleAndAutoDeliveries(schedules);
     setExpanded('assignments');
   }
+  const setDeliveries = () => {
+    console.log('yoooo');
+  }
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
   }
-  const remainingDeliveries = Math.floor(cart.getMealCount() / 4) - schedules.length;
+  const allowedDeliveries = useMemo(() => 
+    Object.values(cart.RestMeals).reduce(
+      (sum, restMeal) => sum + Math.floor(restMeal.mealCount / 4),
+      0
+    ),
+    []
+  );
+  const remainingDeliveries = allowedDeliveries - schedules.length;
   return (
     <>
       <Container className={classes.container}>
@@ -91,11 +104,16 @@ const delivery = () => {
           onChange={handleExpander('deliveries')}
         >
           <ExpansionPanelSummary>
-            <Typography variant='h4' color='primary'>
-              1. Choose dates
-            </Typography>
+            <div>
+              <Typography variant='h4' color='primary'>
+                1. Choose preferred repeat delivery dates
+              </Typography>
+              <Typography variant='body1' color='textSecondary'>
+                Orchid will deliver meals at these times each week
+              </Typography>
+            </div>
           </ExpansionPanelSummary>
-          <ExpansionPanelDetails className={classes.dates}>
+          <ExpansionPanelDetails className={classes.col}>
             {schedules.map((s, i) => (
               <>
                 <div className={classes.deliveryHeader}>
@@ -126,13 +144,17 @@ const delivery = () => {
             ))}
             {
               remainingDeliveries === 0 ?
-              <Typography variant='body1' className={classes.addDelivery}>
-                Max deliveries reached
-              </Typography>
+                allowedDeliveries > 1 &&
+                <Typography variant='body1'>
+                  *Max deliveries reached
+                </Typography>
               :
               <>
-                <Typography variant='body1' className={classes.addDelivery}>
-                  {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
+                <Typography variant='body1' color='textSecondary'>
+                  * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
+                </Typography>
+                <Typography variant='body1' color='textSecondary'>
+                  (1 delivery for every 4 meals from the <i>same</i> restaurant)
                 </Typography>
                 <Button
                   variant='outlined'
@@ -150,6 +172,7 @@ const delivery = () => {
               color='primary'
               fullWidth
               onClick={setDates}
+              className={classes.nextButton}
             >
               Next
             </Button>
@@ -161,12 +184,29 @@ const delivery = () => {
           onChange={handleExpander('assignments')}
         >
           <ExpansionPanelSummary>
-            <Typography variant='h4' color='primary'>
-              2. Schedule meals
-            </Typography>
+            <div>
+              <Typography variant='h4' color='primary'>
+                2. Schedule meals for the first week
+              </Typography>
+              <Typography variant='body1' color='textSecondary'>
+                Orchid will automatically pick <i>next week's</i> meals based on your schedule. You can
+                always edit 2 days prior to your delivery.
+              </Typography>
+            </div>
           </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
-            <ScheduleDeliveries deliveries={cart.Deliveries}/>
+          <ExpansionPanelDetails className={classes.col}>
+            <div className={classes.scheduleDeliveries} >
+              <ScheduleDeliveries deliveries={cart.Deliveries} />
+            </div>
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              onClick={setDeliveries}
+              className={classes.nextButton}
+            >
+              Next
+            </Button>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </Container>

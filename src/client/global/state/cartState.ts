@@ -24,10 +24,11 @@ export const cartQL = gql`
   }
   extend type Mutation {
     clearCartMeals: CartState
-    addMealToCart(meal: Meal!, restId: ID!): CartState!
+    addMealToCart(meal: DeliveryMeal!, restId: ID!): CartState!
     setScheduleAndAutoDeliveries(schedules: [Schedule!]!): CartState!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
+    moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
     removeMealFromCart(restId: ID!, mealId: ID!): CartState!
     setCart(order: Order!): CartState!
     updateCartPlanId(id: ID!): CartState!
@@ -103,6 +104,18 @@ export const useAddMealToCart = (): (meal: Meal, restId: string, restName: strin
   `);
   return (meal: Meal, restId: string, restName: string) => {
     mutate({ variables: { meal, restId, restName } })
+  }
+}
+
+export const useMoveMealToNewDeliveryInCart = (): (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => void => {
+  type vars = { meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation moveMealToNewDelivery($meal: ID!, $fromDeliveryIndex: ID!, $toDeliveryIndex: ID!) {
+      moveMealToNewDelivery(meal: $meal, fromDeliveryIndex: $fromDeliveryIndex, toDeliveryIndex: $toDeliveryIndex) @client
+    }
+  `);
+  return (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
+    mutate({ variables: { meal, fromDeliveryIndex, toDeliveryIndex } })
   }
 }
 
@@ -196,6 +209,7 @@ type cartMutationResolvers = {
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
+  moveMealToNewDelivery: ClientResolver<{ meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number }, Cart | null>
   removeMealFromCart: ClientResolver<{ restId: string, mealId: string }, Cart | null>
   setCart: ClientResolver<{ order: Order }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
@@ -311,6 +325,17 @@ export const cartMutationResolvers: cartMutationResolvers = {
       schedules: [],
       zip: null,
     }));
+  },
+
+  moveMealToNewDelivery: (_, { meal, fromDeliveryIndex, toDeliveryIndex }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      const err = new Error(`Cannot move meal '${meal.MealId}' to new delivery from null cart`);
+      console.error(err.stack);
+      throw err;
+    }
+    const newCart = res.cart.moveMealToNewDelivery(meal, fromDeliveryIndex, toDeliveryIndex);
+    return updateCartCache(cache, newCart);
   },
 
   removeMealFromCart: (_, { restId, mealId }, { cache }) => {

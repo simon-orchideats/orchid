@@ -99,7 +99,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             color='primary'
             className={classes.title}
           >
-            Your meals
+            Your first week
           </Typography>
           {hideNext && meals}
           {

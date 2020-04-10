@@ -42,8 +42,8 @@ class AnalyticsService {
   public async init(): Promise<void> {
     if (this.didInit) {
       const err = new Error('AnalyticsService aleady initialized');
-      console.error(err.stack);
-      throw err;
+      console.warn(err.stack);
+      return;
     }
     await amplitude.getInstance().init(activeConfig.client.analytics.amplitude.key, undefined, {
       includeUtm: true,
