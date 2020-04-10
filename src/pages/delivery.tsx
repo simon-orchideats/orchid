@@ -13,6 +13,8 @@ import { useState, useMemo } from "react";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Schedule } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
+import { RestMeals } from "../order/cartModel";
+import { DeliveryMeal } from "../order/deliveryModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -94,6 +96,28 @@ const delivery = () => {
     ),
     []
   );
+  const restMeals = cart.Deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
+    const restMeals = groupings[meal.RestId];
+    if (restMeals) {
+      const mealIndex = restMeals.meals.findIndex(m => m.MealId === meal.MealId);
+      if (mealIndex === -1) {
+        restMeals.mealCount += meal.Quantity;
+        restMeals.meals.push(meal);
+      } else {
+        restMeals.mealCount += meal.Quantity;
+        restMeals.meals[mealIndex] = new DeliveryMeal({
+          ...restMeals.meals[mealIndex],
+          quantity: restMeals.meals[mealIndex].Quantity + meal.Quantity,
+        })
+      }
+    } else {
+      groupings[meal.RestId] = {
+        mealCount: meal.Quantity,
+        meals: [meal]
+      };
+    }
+    return groupings;
+  }, {}));
   const remainingDeliveries = allowedDeliveries - schedules.length;
   return (
     <>
@@ -196,7 +220,7 @@ const delivery = () => {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
             <div className={classes.scheduleDeliveries} >
-              <ScheduleDeliveries deliveries={cart.Deliveries} />
+              <ScheduleDeliveries deliveries={cart.Deliveries} restMeals={restMeals} />
             </div>
             <Button
               variant='contained'

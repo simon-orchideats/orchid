@@ -16,7 +16,7 @@ export interface ICartInput {
   readonly deliveries: IDeliveryInput[]
 };
 
-type meals = {
+export type RestMeals = {
   [key: string]: {
     mealCount: number,
     meals: DeliveryMeal[]
@@ -26,7 +26,7 @@ type meals = {
 export interface ICart {
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[];
-  readonly restMeals: meals
+  readonly restMeals: RestMeals
   readonly schedules: ISchedule[];
   readonly zip: string | null;
 }
@@ -78,14 +78,14 @@ const addMealsToDelivery = (newMeals: DeliveryMeal[], deliveryInput: DeliveryInp
 export class Cart implements ICart {
   readonly donationCount: number
   readonly deliveries: DeliveryInput[];
-  readonly restMeals: meals
+  readonly restMeals: RestMeals
   readonly schedules: Schedule[];
   readonly zip: string | null;
 
   constructor(cart: ICart) {
     this.donationCount = cart.donationCount;
     this.deliveries = cart.deliveries.map(d => new DeliveryInput(d));
-    this.restMeals = Object.entries(cart.restMeals).reduce<meals>((map, [restId, data]) => {
+    this.restMeals = Object.entries(cart.restMeals).reduce<RestMeals>((map, [restId, data]) => {
       map[restId] = {
         mealCount: data.mealCount,
         meals: data.meals.map(m => new DeliveryMeal(m))
@@ -115,7 +115,7 @@ export class Cart implements ICart {
     });
     
     let scheduleIndex = 0;
-    Object.entries(this.RestMeals).forEach(([_restId, restMeals]) => {
+    Object.values(this.RestMeals).forEach(restMeals => {
       const numMeals = restMeals.mealCount;
       // todo replace 4 with a variable
       const numDeliveries = Math.floor(numMeals / 4);
