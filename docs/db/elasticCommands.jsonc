@@ -1393,6 +1393,82 @@ POST rests/_doc/
   }
 }
 
+POST rests/_doc/
+{
+  "createdDate" : 1586547901639,
+  "location" : {
+    "address" : {
+      "address1" : "187 Newark Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07302"
+    },
+    "geo" : {
+      "lat" : 40.721200,
+      "lon" : -74.045770
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "UozYT3u0kYJplEKysteo4",
+      "img" : "/menu/gypsy-grill/beef-kabob-box.jpeg",
+      "name" : "Beef Kabob Box",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "tags": [],
+      "originalPrice" : 11.99
+    },
+    {
+      "_id" : "HMmpBH4ix9Qk7Fq8iX-lf",
+      "img" : "/menu/gypsy-grill/kofta-kabob-box.jpeg",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "name" : "Kofta Kabob Box",
+      "tags": [],
+      "originalPrice" : 11.99
+    },
+    {
+      "_id" : "J1gVLaxJVKBsGjpowMnH5",
+      "img" : "/menu/gypsy-grill/lamb-and-beef-shawarma-box.jpeg",
+      "name" : "Lamb and Beef Shawarma Box",
+      "tags": [],
+      "originalPrice" : 11.99,
+      "description" : "w/ rice, veggies & tahini sauce"
+    },
+    {
+      "_id" : "CRC12VTuKnRJLEP4R0riB",
+      "img" : "/menu/gypsy-grill/chicken-shawafel-box.jpeg",
+      "name" : "Chicken Shawafel Box",
+      "tags": [],
+      "originalPrice" : 11.99,
+      "description" : "w/ rice, veggies & tahini sauce"
+    },
+    {
+      "_id" : "7a7jbpcXVNvcUi7YIo3h0",
+      "img" : "/menu/gypsy-grill/chicken-kabob-box.jpeg",
+      "name" : "Chicken Kabob Box",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "tags": [],
+      "originalPrice" : 10.99
+    },
+    {
+      "_id" : "KjN9jtg2ubJ2-dsLuUFf7",
+      "img" : "/menu/gypsy-grill/chicken-shawarma-box.jpeg",
+      "name" : "Chicken Shawarma Box",
+      "tags": [],
+      "description" : "w/ rice, veggies & tahini sauce",
+      "originalPrice" : 10.99
+    }
+  ],
+  "profile" : {
+    "name" : "Gypsy Grill",
+    "phone" : "(201) 839-5115",
+    "tags" : [
+      "Mediterranean"
+    ]
+  }
+}
+
+
 ###############################
 
 POST rest/_doc/
