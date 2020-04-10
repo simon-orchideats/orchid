@@ -1,4 +1,4 @@
-import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Link } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const useStyles = makeStyles(theme => ({
@@ -17,14 +17,19 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
+  link: {
+    color: theme.palette.common.link
+  },
 }))
 
 const Expander: React.FC<{
   q: string,
-  a: string
+  a?: string,
+  n?: JSX.Element,
 }> = ({
   q,
-  a
+  a,
+  n,
 }) => {
   return (
     <ExpansionPanel>
@@ -32,9 +37,13 @@ const Expander: React.FC<{
         <Typography variant='subtitle1'>{q}</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails>
+      {
+        a && 
         <Typography variant='body1'>
           {a}
         </Typography>
+      }
+      {n && n}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   )
@@ -52,7 +61,7 @@ const Faq = () => {
           q='What is Orchid?'
           a="Orchid allows YOU to receive your favorite restaurant meals every week at one low cost. We're a weekly
           subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
-          fully cooked, all you have to is heat them up. We started Orchid to save you time, energy, and money."
+          fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
         />
         <Expander
           q='What makes Orchid different from other delivery websites?'
@@ -62,9 +71,31 @@ const Faq = () => {
         />
         <Expander
           q='How many restaurants can I pick?'
-          a="Currently we only offer 1 restaurant per week, but we understand that variety is important! We're quickly
-          adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed to our emails
-          or follow our social channels like Facebook or Instagram to be the first to hear about updates and new features."
+          n={
+            <>
+              <Typography variant='body1'>
+                Currently we only offer 1 restaurant per week, but we understand that variety is important! We're
+                quickly adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed
+                to our emails or follow us on&nbsp;
+                <Link
+                  component='button'
+                  variant='body1'
+                  className={classes.link}
+                >
+                  <a href='https://www.facebook.com/orchidFB'>Facebook</a>
+                </Link>
+                &nbsp;or&nbsp;
+                <Link
+                  component='button'
+                  variant='body1'
+                  className={classes.link}
+                >
+                  <a href='https://www.instagram.com/orchidIG'>Instagram</a>
+                </Link>
+                &nbsp;to be the first to hear about updates and new features.
+              </Typography>
+            </>
+          }
         />
         <Expander
           q="Do I need to pick meals every week?"

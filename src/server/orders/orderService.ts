@@ -120,6 +120,7 @@ export interface IOrderService {
     weekPrice: number,
     mealPrice: number
   ): Promise<void>
+  deleteOrder: (orderId: string) => Promise<void>
   placeOrder(
     signedInUser: SignedInUser,
     cart: ICartInput,
@@ -405,6 +406,18 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${iDate}`, e.stack);
       throw new Error('Internal Server Error');
+    }
+  }
+
+  public async deleteOrder(orderId: string) {
+    try {
+      await this.elastic.delete({
+        index: ORDER_INDEX,
+        id: orderId,
+      })
+    } catch (e) {
+      console.error(`Failed to delete orderId '${orderId}'`, e.stack);
+      throw e;
     }
   }
 
