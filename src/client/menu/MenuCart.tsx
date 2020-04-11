@@ -7,7 +7,7 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
-import { Plan } from "../../plan/planModel";
+import { Plan, MIN_MEALS } from "../../plan/planModel";
 
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
@@ -81,14 +81,13 @@ const MenuCart: React.FC<{
   let summary = '';
   let suggestions: string[] = [];
   if (plans.data) {
-    const minMeals = Plan.getMinMealCount(plans.data);
-    if (mealCount >= minMeals) {
+    if (mealCount >= MIN_MEALS) {
       const moreToNext = Plan.getCountTillNextPlan(mealCount, plans.data);
       const nextPrice = Plan.getNextMealPrice(mealCount, plans.data);
       const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
       summary = `${mealCount} meals plan (${(Plan.getMealPrice(mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
     }
-    suggestions = getSuggestion(cart, minMeals);
+    suggestions = getSuggestion(cart, MIN_MEALS);
   }
   return (
     <>

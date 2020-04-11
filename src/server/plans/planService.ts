@@ -1,8 +1,6 @@
-import { IPlan } from './../../plan/planModel';
+import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
-
-const MIN_MEALS = 4;
 
 export interface IPlanService {
   getAvailablePlans(): Promise<IPlan[]>

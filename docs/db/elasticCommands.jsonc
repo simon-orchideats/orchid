@@ -43,6 +43,27 @@ GET /rests/_search?
 
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": "now",
+                }
+              },
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 ############################
 
 ######### UPDATE ###########

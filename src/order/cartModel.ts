@@ -1,3 +1,4 @@
+import { MIN_MEALS } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
@@ -117,16 +118,15 @@ export class Cart implements ICart {
     let scheduleIndex = 0;
     Object.values(this.RestMeals).forEach(restMeals => {
       const numMeals = restMeals.mealCount;
-      // todo replace 4 with a variable
-      const numDeliveries = Math.floor(numMeals / 4);
-      const numLeftOverMeals = numMeals % 4;
+      const numDeliveries = Math.floor(numMeals / MIN_MEALS);
+      const numLeftOverMeals = numMeals % MIN_MEALS;
       const getNextMeals = getNextMealsIterator(restMeals.meals);
       for (let i = 0; i < numDeliveries; i++) {
         let meals;
         if (i === numDeliveries - 1) {
-          meals = getNextMeals(4 + numLeftOverMeals);
+          meals = getNextMeals(MIN_MEALS + numLeftOverMeals);
         } else {
-          meals = getNextMeals(4);
+          meals = getNextMeals(MIN_MEALS);
         }
         scheduleIndex = scheduleIndex % schedules.length;
         addMealsToDelivery(meals, newCart.deliveries[scheduleIndex]);

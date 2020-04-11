@@ -4,6 +4,8 @@ import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Plan } from "../../plan/planModel";
+import moment from "moment";
+import { ConsumerPlan } from "../../consumer/consumerModel";
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -28,7 +30,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     marginBottom: theme.spacing(2),
-  }
+  },
 }));
 
 type props = {
@@ -44,11 +46,9 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
-  const groupedMeals = cart && cart.RestMeals;
   const mealCount = cart.getMealCount();
-  const price = `$${Plan.getPlanPrice(mealCount, plans.data).toFixed(2)}`
-  // todo simon: figure out how to dispaly multiple deliveries on here
-  // const deliveryDate = getNextDeliveryDate(cart.DeliveryDay);
+  const mealPrice = Plan.getMealPrice(mealCount, plans.data);
+  const planPrice = Plan.getPlanPrice(mealCount, plans.data)
   const button = (
     <Button
       variant='contained'
@@ -69,17 +69,8 @@ const CheckoutCart: React.FC<props> = ({
       >
         Order summary
       </Typography>
-      {groupedMeals && groupedMeals.meals.meals.map(mealGroup => (
-        <CartMealGroup
-          key={mealGroup.MealId}
-          mealId={mealGroup.MealId}
-          img={mealGroup.Img}
-          name={mealGroup.Name}
-          quantity={mealGroup.Quantity}
-        />
-      ))}
       {
-        cart && cart.DonationCount > 0 &&
+        cart.DonationCount > 0 &&
         <CartMealGroup
           mealId='donations'
           img='/heartHand.png'
@@ -87,13 +78,31 @@ const CheckoutCart: React.FC<props> = ({
           quantity={cart.DonationCount}
         />
       }
-      {/*   // todo simon: figure out how to dispaly multiple deliveries on here */}
-      {/* <Typography variant='body1'>
-        Deliver on {deliveryDate.format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cart.DeliveryTime)}
-      </Typography> */}
-      {/* <Typography variant='body1'>
-        Deliver again on {Consumer.getWeekday(cart.DeliveryDay)}
-      </Typography> */}
+      {
+        cart.Deliveries.map(d => (
+          <>
+            <Typography variant='h6' className={classes.paddingBottom}>
+              {moment(d.DeliveryDate).format('ddd M/D')}, {ConsumerPlan.getDeliveryTimeStr(d.DeliveryTime)}
+            </Typography>
+            {d.Meals.map((meal, i) => (
+              <>
+                {
+                  (i == 0 || d.Meals[i].RestId !== meal.RestId) &&  
+                  <Typography variant='subtitle1' className={classes.paddingBottom}>
+                    {meal.RestName}
+                  </Typography>
+                }
+                <CartMealGroup
+                  mealId={meal.MealId}
+                  name={meal.Name}
+                  img={meal.Img}
+                  quantity={meal.Quantity}
+                />
+              </>
+            ))}
+          </>
+        )) 
+      }
       <Divider className={classes.divider} />
       <div className={classes.summary}>
         <div className={classes.row}>
@@ -101,7 +110,7 @@ const CheckoutCart: React.FC<props> = ({
             {mealCount} meal plan
           </Typography>
           <Typography variant='body1'>
-            {price}
+            ${(mealPrice / 100).toFixed(2)} ea
           </Typography>
         </div>
         <div className={classes.row}>
@@ -117,16 +126,15 @@ const CheckoutCart: React.FC<props> = ({
             Total
           </Typography>
           <Typography variant='body1' color='primary'>
-            {price}
+            ${(planPrice / 100).toFixed(2)}
           </Typography>
         </div>
         {buttonBottom && button}
-        {/* todo simon: edit this */}
-        {/* <Typography variant='body2' className={classes.hint}>
-          You will be charged {price} on {deliveryDate.subtract(2, 'd').format('M/D/YY')}. Your plan will automatically
-          renew every week unless you update or cancel your account before the cutoff
-          (12:00 am EST, 2 days before delivery of next meal).
-        </Typography> */}
+        <Typography variant='body2' className={classes.hint}>
+          Your first payment will occur on {moment().add(1, 'w').format('M/D')} and will automatically renew every week
+          unless canceled. Your price per meal is determined by the actual number of meals received per week, not
+          by your subscription. This way you can make adjustments each week as necessary and be fairly charged.
+        </Typography>
       </div>
     </>
   )

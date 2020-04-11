@@ -1,5 +1,6 @@
 import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Link } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { MIN_MEALS } from '../../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -75,7 +76,7 @@ const Faq = () => {
             <>
               <Typography variant='body1'>
                 Currently we only offer 1 restaurant per week, but we understand that variety is important! We're
-                quickly adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed
+                quickly adding the option to pick additional restaurants for every {MIN_MEALS} meals in your plan. Stay subscribed
                 to our emails or follow us on&nbsp;
                 <Link
                   component='button'

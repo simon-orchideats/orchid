@@ -8,6 +8,7 @@ import moment from "moment";
 import { ConsumerPlan } from "../../../consumer/consumerModel";
 import { useMoveMealToNewDeliveryInCart } from "../../global/state/cartState";
 import { RestMeals } from "../../../order/cartModel";
+import { MIN_MEALS } from "../../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   col: {
@@ -77,13 +78,13 @@ const ScheduleDeliveries: React.FC<{
                   {restMeal.meals[0].RestName}
                 </Typography>
                 {
-                  restMeal.mealCount < 4 &&
+                  restMeal.mealCount < MIN_MEALS &&
                   <Typography
                     variant='body1'
                     className={`${classes.orange} ${classes.paddingBottom}`}
                     align='center'
                   >
-                    Minimum 4 meals per restaurant
+                    Minimum {MIN_MEALS} meals per restaurant
                   </Typography>
                 }
                 {restMeal.meals.map(m => (

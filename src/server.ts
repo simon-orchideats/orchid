@@ -41,8 +41,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
 // to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
-// payment day if the consumer updated the delivery date. for now we'll just do it each day
-// at 12am.
+// payment day if the consumer updated the delivery date. for now we'll just do it each day at 12am.
 // have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
 
 

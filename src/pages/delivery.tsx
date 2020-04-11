@@ -1,20 +1,20 @@
 import { Container, makeStyles, Typography, Button, ExpansionPanelSummary, ExpansionPanel, ExpansionPanelDetails } from "@material-ui/core";
 import Faq from "../client/general/CommonQuestions";
 import withClientApollo from "../client/utils/withClientApollo";
-// import Link from "next/link";
 import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useSetScheduleAndAutoDeliveries } from "../client/global/state/cartState";
 import DeliveryDateChooser from "../client/general/DeliveryDateChooser";
 import { useState, useMemo } from "react";
-// import { DeliveryInput } from "../order/deliveryModel";
-// import { checkoutRoute } from "./checkout";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Schedule } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 import { RestMeals } from "../order/cartModel";
 import { DeliveryMeal } from "../order/deliveryModel";
+import { MIN_MEALS } from "../plan/planModel";
+import Link from "next/link";
+import { checkoutRoute } from "./checkout";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -82,21 +82,18 @@ const delivery = () => {
     setScheduleAndAutoDeliveries(schedules);
     setExpanded('assignments');
   }
-  const setDeliveries = () => {
-    console.log('yoooo');
-  }
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
   }
   const allowedDeliveries = useMemo(() => 
     Object.values(cart.RestMeals).reduce(
-      (sum, restMeal) => sum + Math.floor(restMeal.mealCount / 4),
+      (sum, restMeal) => sum + Math.floor(restMeal.mealCount / MIN_MEALS),
       0
     ),
     []
   );
-  const restMeals = cart.Deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
+  const restMealsPerDelivery: RestMeals[] = cart.Deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
     const restMeals = groupings[meal.RestId];
     if (restMeals) {
       const mealIndex = restMeals.meals.findIndex(m => m.MealId === meal.MealId);
@@ -118,6 +115,9 @@ const delivery = () => {
     }
     return groupings;
   }, {}));
+  const hasErrors = restMealsPerDelivery
+    .find(restMealsInDeliveries => Object.values(restMealsInDeliveries)
+    .find(restMeal => restMeal.mealCount < MIN_MEALS));
   const remainingDeliveries = allowedDeliveries - schedules.length;
   return (
     <>
@@ -178,7 +178,7 @@ const delivery = () => {
                   * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  (1 delivery for every 4 meals from the <i>same</i> restaurant)
+                  (1 delivery for every {MIN_MEALS} meals from the <i>same</i> restaurant)
                 </Typography>
                 <Button
                   variant='outlined'
@@ -220,17 +220,19 @@ const delivery = () => {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
             <div className={classes.scheduleDeliveries} >
-              <ScheduleDeliveries deliveries={cart.Deliveries} restMeals={restMeals} />
+              <ScheduleDeliveries deliveries={cart.Deliveries} restMeals={restMealsPerDelivery} />
             </div>
-            <Button
-              variant='contained'
-              color='primary'
-              fullWidth
-              onClick={setDeliveries}
-              className={classes.nextButton}
-            >
-              Next
-            </Button>
+            <Link href={checkoutRoute}>
+              <Button
+                variant='contained'
+                color='primary'
+                fullWidth
+                className={classes.nextButton}
+                disabled={!!hasErrors}
+              >
+                Next
+              </Button>
+            </Link>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </Container>
