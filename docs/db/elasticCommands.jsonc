@@ -83,13 +83,41 @@ POST rests/_update_by_query
   }
 }
 
-POST /rests/_update/-SFhNnEBBGf1BFEfbEWg
+
+POST orders/_update_by_query
 {
   "script" : {
     "source": """
-      ctx._source.menu[3].img = "/menu/malibu-diner/pastrami.png";
-      ctx._source.menu[3].img = "/menu/malibu-diner/reuben-sandwhich.png";
-      ctx._source.profile.phone = "(201) 656-1595"
+      ctx._source.status = "Open"
+    """,
+    "lang": "painless"
+  },
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": 1586668138057
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
+{
+  "script" : {
+    "source": """
+      ctx._source.menu[0].img = "/menu/canteen-dhaba/chicken-tikka.jpg";
+      ctx._source.menu[0].description = "chicken tikka cooked with fenugreek sauce with Indian spices";
+      ctx._source.menu[0].name = "Chicken Tikka Masala w/ rice";
     """,
     "lang": "painless"
   }

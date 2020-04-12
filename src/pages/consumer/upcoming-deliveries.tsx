@@ -296,6 +296,47 @@ const DeliveryOverview: React.FC<{
     );
     updateOrder(order._id, Order.getUpdatedOrderInput(order));
   }
+  let buttons;
+  if (isUpdating) {
+    buttons = (
+      <Button
+        variant='contained'
+        color='primary'
+        onClick={onUpdateOrder}
+      >
+        Update order
+      </Button>
+    )
+  } else if (order.status === 'Confirmed') {
+    buttons = (
+      <Typography variant='body1' color='primary'>
+        Your order has been placed with {order.Rest?.Profile.Name}
+      </Typography>
+    )
+  } else {
+    buttons = (
+      <>
+        {
+          (order.Rest || isAllDonations) && 
+          <Button
+            variant='outlined'
+            color='primary'
+            className={classes.skip}
+            onClick={onSkip}
+          >
+            {isAllDonations ? 'Cancel Donation' : 'Skip'}
+          </Button>
+        }
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onEdit}
+        >
+          Edit meals
+        </Button>
+      </>
+    )
+  }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
@@ -360,37 +401,7 @@ const DeliveryOverview: React.FC<{
       }
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
-        {
-          isUpdating ?
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={onUpdateOrder}
-          >
-            Update order
-          </Button>
-          :
-          <>
-            {
-              (order.Rest || isAllDonations) && 
-              <Button
-                variant='outlined'
-                color='primary'
-                className={classes.skip}
-                onClick={onSkip}
-              >
-                {isAllDonations ? 'Cancel Donation' : 'Skip'}
-              </Button>
-            }
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={onEdit}
-            >
-              Edit meals
-            </Button>
-          </>
-        }
+        {buttons}
       </div>
       <DestinationPopper
         destination={order.Destination}
