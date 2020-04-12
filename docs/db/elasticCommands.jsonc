@@ -41,6 +41,28 @@ GET /rests/_search?
   }
 }
 
+
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": "1586582584180"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
 ############################
@@ -83,7 +105,6 @@ POST rests/_update_by_query
   }
 }
 
-
 POST orders/_update_by_query
 {
   "script" : {
@@ -100,7 +121,9 @@ POST orders/_update_by_query
             {
               "range": {
                 "deliveryDate": {
-                  "gte": 1586668138057
+                  "gte": 1586668138057,
+                  // moment(Date.now()).add(3, 'd').valueOf();
+                  "lt" : 1586928738625
                 }
               }
             }
@@ -110,7 +133,6 @@ POST orders/_update_by_query
     }
   }
 }
-
 POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
 {
   "script" : {
