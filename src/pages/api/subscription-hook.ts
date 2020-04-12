@@ -38,6 +38,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return
     }
 
+    // todo simon: logic here needs to be updated to listen for invoice.created. whenever this happens, check
+    // to see if there is a final delivery to be confirmed and if so, confirm it and add # of meals to usage.
+    // for example if today is 4/11 and consumer signs up with monday delivery, then teh first deliveyr is 4/20.
+    // on 4/18 we get an invoice.created and we also need to confirm the delivery if it's not already confirmed.
+
     // Use invoice upcoming instead of invoice created because when a consumer cancels that creates an invoice
     // and we dont wanna create an automatically generated order for someone who is cancelling
     if (event.type !== 'invoice.upcoming') {

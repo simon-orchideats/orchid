@@ -4,7 +4,7 @@ import { Paper, Typography, Popover } from '@material-ui/core';
 import Router from 'next/router'
 import { howItWorksRoute } from '../../pages/how-it-works';
 import { plansRoute } from '../../pages/plans';
-import { faqsRoute } from '../../pages/faqs';
+import { faqsRoute } from '../../pages/faq';
 
 const useStyles = makeStyles(theme => ({
   row: {

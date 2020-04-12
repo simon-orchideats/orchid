@@ -1,5 +1,5 @@
-import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
-import { deliveryDay, deliveryTime } from './../../../consumer/consumerModel';
+import { DeliveryMeal } from './../../../order/deliveryModel';
+import { deliveryDay, deliveryTime, Schedule } from './../../../consumer/consumerModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
 import { Cart } from '../../../order/cartModel';
@@ -15,7 +15,7 @@ type cartQueryRes = {
 export const cartQL = gql`
   type CartState {
     donationCount: Int!
-    deliveries: [Delivery!]!
+    deliveries: [DeliveryInput!]!
     schedule: Schedule
     zip: String
   }
@@ -24,10 +24,11 @@ export const cartQL = gql`
   }
   extend type Mutation {
     clearCartMeals: CartState
-    addMealToCart(meal: Meal!, restId: ID!): CartState!
-    autoSetMealsInDeliveries(deliveries: [Delivery!]!): CartState!
+    addMealToCart(meal: DeliveryMeal!, restId: ID!): CartState!
+    setScheduleAndAutoDeliveries(schedules: [Schedule!]!): CartState!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
+    moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
     removeMealFromCart(restId: ID!, mealId: ID!): CartState!
     setCart(order: Order!): CartState!
     updateCartPlanId(id: ID!): CartState!
@@ -44,15 +45,15 @@ const CART_QUERY = gql`
   }
 `
 
-export const useAutoSetMealsInDeliveries = (): (deliveries: DeliveryInput[]) => void => {
-  type vars = { deliveries: DeliveryInput[] };
+export const useSetScheduleAndAutoDeliveries = (): (schedules: Schedule[]) => void => {
+  type vars = { schedules: Schedule[] };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation autoSetMealsInDeliveries($deliveries: [Deliveries!]!) {
-      autoSetMealsInDeliveries(deliveries: $deliveries) @client
+    mutation setScheduleAndAutoDeliveries($schedules: [Schedule!]!) {
+      setScheduleAndAutoDeliveries(schedules: $schedules) @client
     }
   `);
-  return (deliveries: DeliveryInput[]) => {
-    mutate({ variables: { deliveries } })
+  return (schedules: Schedule[]) => {
+    mutate({ variables: { schedules } })
   }
 }
 
@@ -103,6 +104,18 @@ export const useAddMealToCart = (): (meal: Meal, restId: string, restName: strin
   `);
   return (meal: Meal, restId: string, restName: string) => {
     mutate({ variables: { meal, restId, restName } })
+  }
+}
+
+export const useMoveMealToNewDeliveryInCart = (): (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => void => {
+  type vars = { meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation moveMealToNewDelivery($meal: ID!, $fromDeliveryIndex: ID!, $toDeliveryIndex: ID!) {
+      moveMealToNewDelivery(meal: $meal, fromDeliveryIndex: $fromDeliveryIndex, toDeliveryIndex: $toDeliveryIndex) @client
+    }
+  `);
+  return (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
+    mutate({ variables: { meal, fromDeliveryIndex, toDeliveryIndex } })
   }
 }
 
@@ -192,10 +205,11 @@ export const useUpdateZip = (): (zip: string) => void => {
 
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string }, Cart | null>
-  autoSetMealsInDeliveries: ClientResolver<{ deliveries: DeliveryInput[] }, Cart | null>
+  setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[] }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
+  moveMealToNewDelivery: ClientResolver<{ meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number }, Cart | null>
   removeMealFromCart: ClientResolver<{ restId: string, mealId: string }, Cart | null>
   setCart: ClientResolver<{ order: Order }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
@@ -227,7 +241,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
             meals: [newDeliveryMeal]
           }
         },
-        schedule: [],
+        schedules: [],
         zip: null,
       }));
     }
@@ -242,21 +256,15 @@ export const cartMutationResolvers: cartMutationResolvers = {
           }
         },
         deliveries: res.cart.Deliveries,
-        schedule: res.cart.Schedule,
+        schedules: res.cart.Schedules,
         zip: res.cart.Zip,
       }));
     }
     const newCart = res.cart.addMeal(meal, restId, restName);
-    return updateCartCache(cache, new Cart({
-      donationCount: newCart.DonationCount,
-      restMeals: newCart.RestMeals,
-      deliveries: newCart.Deliveries,
-      schedule: newCart.Schedule,
-      zip: newCart.Zip,
-    }));
+    return updateCartCache(cache, newCart);
   },
 
-  autoSetMealsInDeliveries: (_, { deliveries }, { cache }) => {
+  setScheduleAndAutoDeliveries: (_, { schedules }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       const err = new Error(`Cannot auto set meals in deliveries from null cart`);
@@ -264,14 +272,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     // todo simon: add logic to put the new meal into the deliveries
-    const newCart = res.cart.autoSetMealsInDeliveries(deliveries);;
-    return updateCartCache(cache, new Cart({
-      donationCount: newCart.DonationCount,
-      restMeals: newCart.RestMeals,
-      deliveries: newCart.Deliveries,
-      schedule: newCart.Schedule,
-      zip: newCart.Zip,
-    }));
+    const newCart = res.cart.setScheduleAndAutoDeliveries(schedules);;
+    return updateCartCache(cache, newCart);
   },
 
   decrementDonationCount: (_, _args, { cache }) => {
@@ -285,7 +287,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: res.cart.DonationCount - 1,
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
-      schedule: res.cart.Schedule,
+      schedules: res.cart.Schedules,
       zip: res.cart.Zip,
     }));
   },
@@ -297,7 +299,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         donationCount: 1,
         restMeals: {},
         deliveries: [],
-        schedule: [],
+        schedules: [],
         zip: null,
       }));
     }
@@ -305,7 +307,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: res.cart.DonationCount + 1,
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
-      schedule: res.cart.Schedule,
+      schedules: res.cart.Schedules,
       zip: res.cart.Zip,
     }));
   },
@@ -320,9 +322,20 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: 0,
       restMeals: {},
       deliveries: [],
-      schedule: [],
+      schedules: [],
       zip: null,
     }));
+  },
+
+  moveMealToNewDelivery: (_, { meal, fromDeliveryIndex, toDeliveryIndex }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      const err = new Error(`Cannot move meal '${meal.MealId}' to new delivery from null cart`);
+      console.error(err.stack);
+      throw err;
+    }
+    const newCart = res.cart.moveMealToNewDelivery(meal, fromDeliveryIndex, toDeliveryIndex);
+    return updateCartCache(cache, newCart);
   },
 
   removeMealFromCart: (_, { restId, mealId }, { cache }) => {
@@ -338,7 +351,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         donationCount: newCart.DonationCount,
         restMeals: {},
         deliveries: [],
-        schedule: newCart.schedule,
+        schedules: newCart.schedules,
         zip: newCart.Zip,
       });
     }
@@ -350,7 +363,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: order.DonationCount,
       restMeals: {},
       deliveries: [],
-      schedule: [],
+      schedules: [],
       // todo simon: figure out how to fill out meals given all deliveries
       // todo simon: do these
       // meals: order.Meals, 
@@ -367,7 +380,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         donationCount: 0,
         deliveries: [],
         restMeals: {},
-        schedule: [],
+        schedules: [],
         zip,
       }));
     }
@@ -375,7 +388,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: res.cart.DonationCount,
       deliveries: res.cart.Deliveries,
       restMeals: res.cart.RestMeals,
-      schedule: res.cart.Schedule,
+      schedules: res.cart.Schedules,
       zip,
     }));
   },

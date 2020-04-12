@@ -209,7 +209,7 @@ vSew4L/i6dbzBOCzmrigLtzyqpIa/jDMbWoj7PV5LNxPuLR4z1a3BssW7VYYavfq
 K9iDSwnGyysGsDPn0tkAYa+FNSZ9KzbC7peZ2OnXQOF19TP3yB1PoDW/fLXu4hQF
 4QmCN+vJ6FB/jY2si61hGEoVl95zA8NOgfyONFp8193a5Pzg3nyQL/liC6WTP0O4
 D8hc31R0UA==
------END CERTIFICATE-----`,
+-----END CERTIFICATE-----`
     },
     elastic: {
       node: 'https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243',
