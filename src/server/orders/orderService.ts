@@ -459,12 +459,26 @@ class OrderService {
         }
       }
       try {
+
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
           // todo simon: grab planId from a stripe call
-          items: [{ plan: 'plan_H2Ob1XWdwg73bM' }]
+          items: [{ plan: 'plan_H2Ob1XWdwg73bM' }],
+          //billing_cycle_anchor: 158655341
         });
+
+      //   console.log('test',subscription.items.data[0].id);
+      //  await this.stripe.subscriptionItems.createUsageRecord(
+      //   subscription.items.data[0].id,
+      //     {
+      //       quantity: 100,
+      //       timestamp: 1586553541,
+      //       action: 'increment',
+      //     }
+      //   );
+
+
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
@@ -504,7 +518,7 @@ class OrderService {
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       // todo simon: figure out how to do auto meals
-      // const nextDeliveryDate = moment(cart.deliveryDate).add(1, 'w').valueOf();
+      const nextDeliveryDate = moment(cart.).add(1, 'w').valueOf();
       // // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
       // // placed order
       // const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
