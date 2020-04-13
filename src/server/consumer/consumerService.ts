@@ -20,6 +20,7 @@ import crypto  from 'crypto';
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
+  getConsumer: (_id: string) => Promise<IConsumer | null>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>

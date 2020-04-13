@@ -655,14 +655,15 @@ PUT /consumers/
       },
       "plan": {
         "properties": {
-          "stripePlanId": {
-            "type": "keyword"
-          },
-          "deliveryDay": {
-            "type": "integer"
-          },
-          "deliveryTime": {
-            "type": "keyword"
+          "schedule": {
+            "properties": {
+              "day": {
+                "type": "integer"
+              },
+              "time": {
+                "type": "keyword"
+              }
+            }
           },
           "cuisines": {
             "type": "keyword"
