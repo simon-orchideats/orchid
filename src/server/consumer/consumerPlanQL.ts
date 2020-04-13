@@ -8,11 +8,11 @@ const CuisineTypeQL = gql`
     Indian
     Italian
     Japanese
-    # Mediterranean
+    Mediterranean
     Mexican
     # Thai
     # Vegan
-    Vegetarian
+    # Vegetarian
   }
 `
 
