@@ -41,6 +41,28 @@ GET /rests/_search?
   }
 }
 
+
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": "1586582584180"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
 GET /orders/_search?
@@ -79,6 +101,21 @@ POST orders/_update_by_query
 
 POST rests/_update_by_query
 {
+  "script" : {
+    "source": """
+      ctx._source.createdDate = ctx._source.createdDate
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match": {
+      "profile.name": "Malibu Diner"
+    }
+  }
+}
+
+POST rests/_update_by_query
+{
   "doc": {
     "status": "Skipped"
   },
@@ -89,13 +126,41 @@ POST rests/_update_by_query
   }
 }
 
-POST /rests/_update/-SFhNnEBBGf1BFEfbEWg
+POST orders/_update_by_query
 {
   "script" : {
     "source": """
-      ctx._source.menu[3].img = "/menu/malibu-diner/pastrami.png";
-      ctx._source.menu[3].img = "/menu/malibu-diner/reuben-sandwhich.png";
-      ctx._source.profile.phone = "(201) 656-1595"
+      ctx._source.status = "Open"
+    """,
+    "lang": "painless"
+  },
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": 1586668138057,
+                  // moment(Date.now()).add(3, 'd').valueOf();
+                  "lt" : 1586928738625
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
+{
+  "script" : {
+    "source": """
+      ctx._source.menu[0].img = "/menu/canteen-dhaba/chicken-tikka.jpg";
+      ctx._source.menu[0].description = "chicken tikka cooked with fenugreek sauce with Indian spices";
+      ctx._source.menu[0].name = "Chicken Tikka Masala w/ rice";
     """,
     "lang": "painless"
   }
@@ -131,18 +196,12 @@ POST consumers/_delete_by_query
   }
 }
 
-POST orders/_delete_by_query
-{
-  "query": { 
-    "match_all": {}
-  }
-}
 
-POST /rests/_delete_by_query
+POST rests/_delete_by_query
 {
   "query": {
-    "match": {
-      "profile.name": "Precious Chinese Cuisine"
+    "term": {
+      "profile.name.keyword": "Shadman"
     }
   }
 }
@@ -596,14 +655,15 @@ PUT /consumers/
       },
       "plan": {
         "properties": {
-          "stripePlanId": {
-            "type": "keyword"
-          },
-          "deliveryDay": {
-            "type": "integer"
-          },
-          "deliveryTime": {
-            "type": "keyword"
+          "schedule": {
+            "properties": {
+              "day": {
+                "type": "integer"
+              },
+              "time": {
+                "type": "keyword"
+              }
+            }
           },
           "cuisines": {
             "type": "keyword"
@@ -767,142 +827,6 @@ POST rests/_doc/
       "Indian",
       "Chinese"
     ]
-  }
-}
-
-
-POST rests/_doc/
-{
-  "createdDate" : 1585714539021,
-  "location" : {
-    "address" : {
-      "address1" : "101 Greene St",
-      "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07302"
-    },
-    "geo" : {
-      "lat" : 40.716130,
-      "lon" : -74.036100
-    }
-  },
-  "managers" : [ ],
-  "menu" : [
-    {
-      "_id" : "Pk-Iv_F8bFO74LauepKrC",
-      "img" : "/menu/pizza-pie/chicken-francaise.jpg",
-      "name" : "Linguine Puttanesca",
-      "originalPrice": 11.95,
-      "tags": []
-    },
-    {
-      "_id" : "-EvNC3R3J2-MrZoA16oJg",
-      "img" : "/menu/pizza-pie/lasagna.jpg",
-      "name" : "Penne Rustica",
-      "originalPrice": 11.95,
-      "tags": []
-    },
-    {
-      "_id" : "9zGAyZCYF6nwh9duZpM44",
-      "img" : "/menu/pizza-pie/linguine-puttanesca.jpg",
-      "name" : "Spaghetti & Meatball",
-      "originalPrice": 11.95,
-      "tags": []
-    },
-    {
-      "_id" : "5cjC3_BU1N4xw5gvaIZUc",
-      "img" : "/menu/pizza-pie/penne-rustica.jpg",
-      "name" : "Chicken Francaise",
-      "originalPrice": 12.95,
-      "tags": []
-    },
-    {
-      "_id" : "iNnWeh0mn_PmlF_0eaIG9",
-      "img" : "/menu/pizza-pie/spaghetti-meatball.jpg",
-      "name" : "Lasagna",
-      "originalPrice": 10.95,
-      "tags": []
-    },
-    {
-      "_id" : "o4dj6mqZL5DqHF_GXW_mc",
-      "img" : "/menu/pizza-pie/ziti-pomodoro.jpg",
-      "name" : "Ziti Pomodoro Al Forno",
-      "tags": [],
-      "originalPrice": 10.95
-    }
-  ],
-  "profile" : {
-    "name" : "Pizza Pie La Cantina Italiana",
-    "phone" : "(201) 360-2113",
-    "tags" : [
-      "Italian"
-    ]
-  }
-}
-
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "106 Hutton St",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07307"
-    },
-    "geo": {
-      "lat": 40.744920,
-      "lon": -74.050520
-    }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "Uo9a1o0eHJEOKc2_PaBRH",
-      "img": "/menu/ozu/chicken-yasai-bowl.jpg",
-      "name": "Chicken-Yasai Bowl",
-      "description": "Yuan-yaki (cooked with yuzu, soy sauce and mirin) of chicken and vegetables over rice",
-      "tags": [],
-      "originalPrice": 9.00
-    },
-    {
-      "_id": "OGvDiIy5NCn2o6U21UI9d",
-      "img": "/menu/ozu/yaki-soba.jpg",
-      "name": "Yaki Soba",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 10.50,
-      "description": "Japanese stir-fried noodle"
-    },
-    {
-      "_id": "nAaGh-QQF36XuZBgIFwOL",
-      "img": "/menu/ozu/rainbow-roll.jpg",
-      "name": "Rainbow Roll",
-      "tags": [],
-      "originalPrice": 12.50,
-      "description": "sushi roll with salmon, tuna and avocado"
-    },
-    {
-      "_id": "aTTARK_fbw0jN73OYa0nU",
-      "img": "/menu/ozu/vegan-bowl.jpeg",
-      "name": "Vegan Bowl",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 10.50,
-      "description": "Ozu vegan selections over rice"
-    },
-    {
-      "_id": "0nG7D5vDhwZJfo2mWSetk",
-      "name": "Vegetarian Bento",
-      "img": "/menu/ozu/vegetarian-bento-box.png",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 11.75,
-      "description": "bento box w/ Ozu Vegan selections, Cucumber-Wakame salad, and 7-grain rice"
-    }
-  ],
-  "profile": {
-    "name": "Ozu Foods",
-    "phone": "(201) 205-2323",
-    "tags": ["Japanese", "Vegetarian"]
   }
 }
 
@@ -1117,79 +1041,6 @@ POST rests/_doc/
     "name": "Precious Chinese Cuisine",
     "phone": "(201) 798-8827",
     "tags": ["Chinese"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "293 1/2 Grove St",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.718520,
-      "lon": -74.043920
-    }
-  },
-  "managers": [],
-  "menu": [
-    {
-      "_id": "_Kd1x3O4mEABkROx7qoYm",
-      "img": "/menu/shadman/kebab-rolls.png",
-      "name": "3x Chicken Kebab Rolls",
-      "originalPrice": 9.25,
-      "tags": [],
-      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
-    },
-    {
-      "_id": "pscX2KLhfmEMuIj_Xj1kL",
-      "img": "/menu/shadman/kebab-rolls.png",
-      "name": "3x Beef Kebab Rolls",
-      "originalPrice": 10.00,
-      "tags": [],
-      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
-    },
-    {
-      "_id": "rKW6c14bAp9Ruelt4zQ5C",
-      "img": "/menu/shadman/chana-curry-pakora-platter.png",
-      "name": "Chana and Curry Pakora Platter",
-      "originalPrice": 8.00,
-      "tags": ["Vegetarian"],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "dJDbVkelvsJjy28slHRW0",
-      "img": "/menu/shadman/palak-paneer-curry-pakora-platter.png",
-      "name": "Palak Paneer and Curry Pakora Platter",
-      "originalPrice": 8.00,
-      "tags": ["Vegetarian"],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "vpsuG02HBkhEwhfTFm_kw",
-      "img": "/menu/shadman/chicken-masala-curry-platter.png",
-      "name": "Chicken Tikki Masala and Curry Pakora Platter",
-      "originalPrice": 9.00,
-      "tags": [],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "cerbwhVozaWN00zTPggJm",
-      "img": "/menu/shadman/chicken-karahi-lamb-curry-platter.png",
-      "name": "Chicken Karahi and Lamb Curry Platter",
-      "originalPrice": 10.00,
-      "tags": [],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    }
-  ],
-  "profile": {
-    "name": "Shadman",
-    "phone": "(201) 200-0333",
-    "tags": ["Indian"]
   }
 }
 
@@ -1414,7 +1265,292 @@ POST rests/_doc/
   }
 }
 
+POST rests/_doc/
+{
+  "createdDate" : 1586547901639,
+  "location" : {
+    "address" : {
+      "address1" : "187 Newark Ave",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07302"
+    },
+    "geo" : {
+      "lat" : 40.721200,
+      "lon" : -74.045770
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "UozYT3u0kYJplEKysteo4",
+      "img" : "/menu/gypsy-grill/beef-kabob-box.jpeg",
+      "name" : "Beef Kabob Box",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "tags": [],
+      "originalPrice" : 11.99
+    },
+    {
+      "_id" : "HMmpBH4ix9Qk7Fq8iX-lf",
+      "img" : "/menu/gypsy-grill/kofta-kabob-box.jpeg",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "name" : "Kofta Kabob Box",
+      "tags": [],
+      "originalPrice" : 11.99
+    },
+    {
+      "_id" : "J1gVLaxJVKBsGjpowMnH5",
+      "img" : "/menu/gypsy-grill/lamb-and-beef-shawarma-box.jpeg",
+      "name" : "Lamb and Beef Shawarma Box",
+      "tags": [],
+      "originalPrice" : 11.99,
+      "description" : "w/ rice, veggies & tahini sauce"
+    },
+    {
+      "_id" : "CRC12VTuKnRJLEP4R0riB",
+      "img" : "/menu/gypsy-grill/chicken-shawafel-box.jpeg",
+      "name" : "Chicken Shawafel Box",
+      "tags": [],
+      "originalPrice" : 11.99,
+      "description" : "w/ rice, veggies & tahini sauce"
+    },
+    {
+      "_id" : "7a7jbpcXVNvcUi7YIo3h0",
+      "img" : "/menu/gypsy-grill/chicken-kabob-box.jpeg",
+      "name" : "Chicken Kabob Box",
+      "description" : "w/ rice, veggies & tahini sauce",
+      "tags": [],
+      "originalPrice" : 10.99
+    },
+    {
+      "_id" : "KjN9jtg2ubJ2-dsLuUFf7",
+      "img" : "/menu/gypsy-grill/chicken-shawarma-box.jpeg",
+      "name" : "Chicken Shawarma Box",
+      "tags": [],
+      "description" : "w/ rice, veggies & tahini sauce",
+      "originalPrice" : 10.99
+    }
+  ],
+  "profile" : {
+    "name" : "Gypsy Grill",
+    "phone" : "(201) 839-5115",
+    "tags" : [
+      "Mediterranean"
+    ]
+  }
+}
+
+
 ###############################
+
+POST rests/_doc/
+{
+  "createdDate": 1585605623774,
+  "location": {
+    "address": {
+      "address1": "106 Hutton St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07307"
+    },
+    "geo": {
+      "lat": 40.744920,
+      "lon": -74.050520
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "Uo9a1o0eHJEOKc2_PaBRH",
+      "img": "/menu/ozu/chicken-yasai-bowl.jpg",
+      "name": "Chicken-Yasai Bowl",
+      "description": "Yuan-yaki (cooked with yuzu, soy sauce and mirin) of chicken and vegetables over rice",
+      "tags": [],
+      "originalPrice": 9.00
+    },
+    {
+      "_id": "OGvDiIy5NCn2o6U21UI9d",
+      "img": "/menu/ozu/yaki-soba.jpg",
+      "name": "Yaki Soba",
+      "tags": ["Vegan", "Vegetarian"],
+      "originalPrice": 10.50,
+      "description": "Japanese stir-fried noodle"
+    },
+    {
+      "_id": "nAaGh-QQF36XuZBgIFwOL",
+      "img": "/menu/ozu/rainbow-roll.jpg",
+      "name": "Rainbow Roll",
+      "tags": [],
+      "originalPrice": 12.50,
+      "description": "sushi roll with salmon, tuna and avocado"
+    },
+    {
+      "_id": "aTTARK_fbw0jN73OYa0nU",
+      "img": "/menu/ozu/vegan-bowl.jpeg",
+      "name": "Vegan Bowl",
+      "tags": ["Vegan", "Vegetarian"],
+      "originalPrice": 10.50,
+      "description": "Ozu vegan selections over rice"
+    },
+    {
+      "_id": "0nG7D5vDhwZJfo2mWSetk",
+      "name": "Vegetarian Bento",
+      "img": "/menu/ozu/vegetarian-bento-box.png",
+      "tags": ["Vegan", "Vegetarian"],
+      "originalPrice": 11.75,
+      "description": "bento box w/ Ozu Vegan selections, Cucumber-Wakame salad, and 7-grain rice"
+    }
+  ],
+  "profile": {
+    "name": "Ozu Foods",
+    "phone": "(201) 205-2323",
+    "tags": ["Japanese", "Vegetarian"]
+  }
+}
+
+
+
+POST rests/_doc/
+{
+  "createdDate" : 1585714539021,
+  "location" : {
+    "address" : {
+      "address1" : "101 Greene St",
+      "city" : "Jersey City",
+      "state" : "NJ",
+      "zip" : "07302"
+    },
+    "geo" : {
+      "lat" : 40.716130,
+      "lon" : -74.036100
+    }
+  },
+  "managers" : [ ],
+  "menu" : [
+    {
+      "_id" : "Pk-Iv_F8bFO74LauepKrC",
+      "img" : "/menu/pizza-pie/linguine-puttanesca.jpg",
+      "name" : "Linguine Puttanesca",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "-EvNC3R3J2-MrZoA16oJg",
+      "img" : "/menu/pizza-pie/penne-rustica.jpg",
+      "name" : "Penne Rustica",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "9zGAyZCYF6nwh9duZpM44",
+      "img" : "/menu/pizza-pie/spaghetti-meatball.jpg",
+      "name" : "Spaghetti & Meatball",
+      "originalPrice": 11.95,
+      "tags": []
+    },
+    {
+      "_id" : "5cjC3_BU1N4xw5gvaIZUc",
+      "img" : "/menu/pizza-pie/chicken-francaise.jpg",
+      "name" : "Chicken Francaise",
+      "originalPrice": 12.95,
+      "tags": []
+    },
+    {
+      "_id" : "iNnWeh0mn_PmlF_0eaIG9",
+      "img" : "/menu/pizza-pie/lasagna.jpg",
+      "name" : "Lasagna",
+      "originalPrice": 10.95,
+      "tags": []
+    },
+    {
+      "_id" : "o4dj6mqZL5DqHF_GXW_mc",
+      "img" : "/menu/pizza-pie/ziti-pomodoro.jpg",
+      "name" : "Ziti Pomodoro Al Forno",
+      "tags": [],
+      "originalPrice": 10.95
+    }
+  ],
+  "profile" : {
+    "name" : "Pizza Pie La Cantina Italiana",
+    "phone" : "(201) 360-2113",
+    "tags" : [
+      "Italian"
+    ]
+  }
+}
+
+POST rests/_doc/
+{
+  "createdDate": 1585605623774,
+  "location": {
+    "address": {
+      "address1": "293 1/2 Grove St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.718520,
+      "lon": -74.043920
+    }
+  },
+  "managers": [],
+  "menu": [
+    {
+      "_id": "_Kd1x3O4mEABkROx7qoYm",
+      "img": "/menu/shadman/kebab-rolls.png",
+      "name": "3x Chicken Kebab Rolls",
+      "originalPrice": 9.25,
+      "tags": [],
+      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
+    },
+    {
+      "_id": "pscX2KLhfmEMuIj_Xj1kL",
+      "img": "/menu/shadman/kebab-rolls.png",
+      "name": "3x Beef Kebab Rolls",
+      "originalPrice": 10.00,
+      "tags": [],
+      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
+    },
+    {
+      "_id": "rKW6c14bAp9Ruelt4zQ5C",
+      "img": "/menu/shadman/chana-curry-pakora-platter.png",
+      "name": "Chana and Curry Pakora Platter",
+      "originalPrice": 8.00,
+      "tags": ["Vegetarian"],
+      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
+    },
+    {
+      "_id": "dJDbVkelvsJjy28slHRW0",
+      "img": "/menu/shadman/palak-paneer-curry-pakora-platter.png",
+      "name": "Palak Paneer and Curry Pakora Platter",
+      "originalPrice": 8.00,
+      "tags": ["Vegetarian"],
+      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
+    },
+    {
+      "_id": "vpsuG02HBkhEwhfTFm_kw",
+      "img": "/menu/shadman/chicken-masala-curry-platter.png",
+      "name": "Chicken Tikki Masala and Curry Pakora Platter",
+      "originalPrice": 9.00,
+      "tags": [],
+      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
+    },
+    {
+      "_id": "cerbwhVozaWN00zTPggJm",
+      "img": "/menu/shadman/chicken-karahi-lamb-curry-platter.png",
+      "name": "Chicken Karahi and Lamb Curry Platter",
+      "originalPrice": 10.00,
+      "tags": [],
+      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
+    }
+  ],
+  "profile": {
+    "name": "Shadman",
+    "phone": "(201) 200-0333",
+    "tags": ["Indian"]
+  }
+}
 
 POST rest/_doc/
 {

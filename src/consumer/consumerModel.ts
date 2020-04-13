@@ -61,11 +61,11 @@ export const CuisineTypes: {
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
-  // Mediterranean: 'Mediterranean',
+  Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
   // Thai: 'Thai',
   // Vegan: 'Vegan',
-  Vegetarian: 'Vegetarian'
+  // Vegetarian: 'Vegetarian'
 } = {
   American: 'American',
   // Bbq: 'Bbq',
@@ -73,11 +73,11 @@ export const CuisineTypes: {
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
-  // Mediterranean: 'Mediterranean',
+  Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
   // Thai: 'Thai',
   // Vegan: 'Vegan',
-  Vegetarian: 'Vegetarian'
+  // Vegetarian: 'Vegetarian'
 }
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;

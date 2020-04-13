@@ -1,0 +1,34 @@
+consumers db
+
+
+create consumers2
+
+POST _reindex
+{
+  "source": {
+    "index": "consumers",
+    "_source": {
+      "excludes": [
+        "plan.stripePlanId",
+        "plan.deliveryDay",
+        "plan.deliveryTime"
+      ]
+    }
+  },
+  "dest": {
+    "index": "consumers2"
+  }
+}
+
+delete consumers
+create consumers
+
+POST _reindex
+{
+  "source": {
+    "index": "consumers2"
+  },
+  "dest": {
+    "index": "consumers"
+  }
+}

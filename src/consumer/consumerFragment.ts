@@ -6,9 +6,10 @@ export const consumerFragment = gql`
     stripeCustomerId
     stripeSubscriptionId
     plan {
-      stripePlanId
-      deliveryDay
-      deliveryTime
+      schedule {
+        day
+        time
+      }
       cuisines
     }
     profile {

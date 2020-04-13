@@ -226,7 +226,7 @@ export class Cart implements ICart {
         },
         instructions,
       },
-      deliveries: this.deliveries,
+      deliveries: this.Deliveries,
     }
   }
 
