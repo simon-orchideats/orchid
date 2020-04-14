@@ -59,6 +59,7 @@ const delivery = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([
     Schedule.getDefaultSchedule()
   ]);
+  const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
   const updateDeliveries = (s: Schedule, i: number) => {
     const newSchedules = schedules.map(s => new Schedule(s));
@@ -93,31 +94,6 @@ const delivery = () => {
     ),
     []
   );
-  const restMealsPerDelivery: RestMeals[] = cart.Deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
-    const restMeals = groupings[meal.RestId];
-    if (restMeals) {
-      const mealIndex = restMeals.meals.findIndex(m => m.MealId === meal.MealId);
-      if (mealIndex === -1) {
-        restMeals.mealCount += meal.Quantity;
-        restMeals.meals.push(meal);
-      } else {
-        restMeals.mealCount += meal.Quantity;
-        restMeals.meals[mealIndex] = new DeliveryMeal({
-          ...restMeals.meals[mealIndex],
-          quantity: restMeals.meals[mealIndex].Quantity + meal.Quantity,
-        })
-      }
-    } else {
-      groupings[meal.RestId] = {
-        mealCount: meal.Quantity,
-        meals: [meal]
-      };
-    }
-    return groupings;
-  }, {}));
-  const hasErrors = restMealsPerDelivery
-    .find(restMealsInDeliveries => Object.values(restMealsInDeliveries)
-    .find(restMeal => restMeal.mealCount < MIN_MEALS));
   const remainingDeliveries = allowedDeliveries - schedules.length;
   return (
     <>
@@ -220,7 +196,11 @@ const delivery = () => {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
             <div className={classes.scheduleDeliveries} >
-              <ScheduleDeliveries deliveries={cart.Deliveries} restMeals={restMealsPerDelivery} />
+              <ScheduleDeliveries
+                deliveries={cart.Deliveries}
+                onChange={hasError => setHasScheduleError(hasError)}
+                editable
+              />
             </div>
             <Link href={checkoutRoute}>
               <Button
@@ -228,7 +208,7 @@ const delivery = () => {
                 color='primary'
                 fullWidth
                 className={classes.nextButton}
-                disabled={!!hasErrors}
+                disabled={hasScheduleError}
               >
                 Next
               </Button>

@@ -1,5 +1,5 @@
 import { makeStyles, IconButton, useTheme, Typography } from "@material-ui/core";
-import { DeliveryInput } from "../../../order/deliveryModel";
+import { DeliveryInput, Delivery, DeliveryMeal } from "../../../order/deliveryModel";
 import CartMealGroup from "../../order/CartMealGroup";
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
@@ -26,7 +26,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
   },
   colHeader: {
-    paddingBottom: theme.spacing(3),
+    paddingBottom: theme.spacing(2),
   },
   orange: {
     color: theme.palette.warning.main,
@@ -41,14 +41,54 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const ScheduleDeliveries: React.FC<{
-  deliveries: DeliveryInput[],
-  restMeals: RestMeals[],
+  deliveries: Array<DeliveryInput | Delivery>
+  editable?: boolean
+  onChange?: (hasError: boolean) => void
 }> = ({
   deliveries,
-  restMeals,
+  editable = false,
+  onChange,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
+  const restMealsPerDelivery: RestMeals[] = deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
+    const restMeals = groupings[meal.RestId];
+    if (restMeals) {
+      const mealIndex = restMeals.meals.findIndex(m => m.MealId === meal.MealId);
+      if (mealIndex === -1) {
+        restMeals.mealCount += meal.Quantity;
+        restMeals.meals.push(meal);
+      } else {
+        restMeals.mealCount += meal.Quantity;
+        restMeals.meals[mealIndex] = new DeliveryMeal({
+          ...restMeals.meals[mealIndex],
+          quantity: restMeals.meals[mealIndex].Quantity + meal.Quantity,
+        })
+      }
+    } else {
+      groupings[meal.RestId] = {
+        mealCount: meal.Quantity,
+        meals: [meal]
+      };
+    }
+    return groupings;
+  }, {}));
+  const moveMeal = (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
+    moveMealToNewDelivery(
+      meal,
+      fromDeliveryIndex,
+      toDeliveryIndex
+    );
+    if (onChange) {
+      if (restMealsPerDelivery[fromDeliveryIndex][meal.RestId].mealCount < 4) {
+        onChange(false);
+      } else if (restMealsPerDelivery[toDeliveryIndex][meal.RestId].mealCount < 4) {
+        onChange(false);
+      } else {
+        onChange(true);
+      }
+    }
+  }
   const moveMealToNewDelivery = useMoveMealToNewDeliveryInCart();
   return (
     <>
@@ -58,9 +98,17 @@ const ScheduleDeliveries: React.FC<{
           style={{
             borderLeft: deliveryIndex === 0 ? 0 : `1px solid ${theme.palette.divider}`,
           }}>
-          <Typography variant='h6' className={classes.colHeader}>
-            {moment(d.DeliveryDate).format('ddd M/D')}, {ConsumerPlan.getDeliveryTimeStr(d.DeliveryTime)}
-          </Typography>
+          <div className={classes.colHeader}>
+            <Typography variant='h6'>
+              {moment(d.DeliveryDate).format('ddd M/D')}, {ConsumerPlan.getDeliveryTimeStr(d.DeliveryTime)}
+            </Typography>
+            {
+              'Status' in d && d.Status !== 'Open' &&
+              <Typography variant='body1' align='center'>
+                (Delivery {d.Status.toLowerCase()})
+              </Typography>
+            }
+          </div>
           {
             d.Meals.length === 0 ?
             <Typography
@@ -72,8 +120,10 @@ const ScheduleDeliveries: React.FC<{
               scheduling future orders for you
             </Typography>
           :
-            Object.values(restMeals[deliveryIndex]).map(restMeal => (
-              <>
+            Object.values(restMealsPerDelivery[deliveryIndex]).map(restMeal => (
+              <div style={{
+                opacity: ('Status' in d && d.Status !== 'Open') ? 0.30 : 1
+              }}>
                 <Typography variant='subtitle1' className={`${classes.row} ${classes.paddingBottom}`}>
                   {restMeal.meals[0].RestName}
                 </Typography>
@@ -90,10 +140,8 @@ const ScheduleDeliveries: React.FC<{
                 {restMeal.meals.map(m => (
                   <div key={m.MealId} className={classes.row}>
                     {
-                      deliveryIndex !== 0 &&
-                      <IconButton onClick={() => {
-                        moveMealToNewDelivery(m, deliveryIndex, deliveryIndex - 1)
-                      }}>
+                      deliveryIndex !== 0 && editable &&
+                      <IconButton onClick={() => moveMeal(m, deliveryIndex, deliveryIndex - 1)}>
                         <KeyboardArrowLeftIcon />
                       </IconButton>
                     }
@@ -104,16 +152,14 @@ const ScheduleDeliveries: React.FC<{
                       quantity={m.Quantity}
                     />
                     {
-                      deliveryIndex !== deliveries.length - 1 &&
-                      <IconButton onClick={() => {
-                        moveMealToNewDelivery(m, deliveryIndex, deliveryIndex + 1)
-                      }}>
+                      deliveryIndex !== deliveries.length - 1 && editable &&
+                      <IconButton onClick={() => moveMeal(m, deliveryIndex, deliveryIndex + 1)}>
                         <KeyboardArrowRightIcon />
                       </IconButton>
                     }
                   </div>
                 ))}
-              </>
+              </div>
             ))
           }
         </div>

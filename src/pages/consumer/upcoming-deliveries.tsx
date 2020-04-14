@@ -2,7 +2,7 @@ import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, use
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
-// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
 import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
@@ -23,6 +23,8 @@ import { Plan } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 // import { sendSkippedOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { isServer } from "../../client/utils/isServer";
+import { useMutationResponseHandler } from "../../utils/apolloUtils";
+import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 // import { ConsumerPlan } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
@@ -204,24 +206,14 @@ const DeliveryOverview: React.FC<{
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
   // const isAllDonations = order.DonationCount === Order.getMealCount(order);
-  useEffect(() => {
-    if (updateOrderRes.error) {
-      notify('Sorry, something went wrong', NotificationType.error, false);
-    }
-    if (updateOrderRes.data !== undefined) {
-      if (updateOrderRes.data.error) {
-        notify(updateOrderRes.data.error, NotificationType.error, false);
-      } else {
-        Router.replace(upcomingDeliveriesRoute)
-        notify('Order updated', NotificationType.success, true);
-        clearCartMeals();
-      }
-    }
-
-  }, [updateOrderRes]);
-  // const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
-  //   setAnchorEl(event.currentTarget);
-  // };
+  useMutationResponseHandler(updateOrderRes, () => {
+    Router.replace(upcomingDeliveriesRoute)
+    notify('Order updated', NotificationType.success, true);
+    clearCartMeals();
+  });
+  const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
   const onEdit = () => {
     if (!plans.data) {
       const err = new Error('Missing plans');
@@ -305,9 +297,8 @@ const DeliveryOverview: React.FC<{
           </Typography>
         </div>
         <div className={classes.column}>
-          {/* todo simon update this */}
-          {/* {
-            order.Rest ?
+          {
+            order.Deliveries.length > 1 &&
             <>
               <Typography variant='subtitle1'>
                 Deliver to
@@ -319,11 +310,7 @@ const DeliveryOverview: React.FC<{
                 <ExpandMoreIcon />
               </div>
             </>
-            :
-            <Typography variant='body1' className={classes.hint}>
-              {order.status}
-            </Typography>
-          } */}
+          }
         </div>
       </div>
       <Divider />
@@ -344,6 +331,7 @@ const DeliveryOverview: React.FC<{
               />
             )
           } */}
+          <ScheduleDeliveries deliveries={order.Deliveries} />
           {
             order.DonationCount > 0 &&
             <CartMealGroup
