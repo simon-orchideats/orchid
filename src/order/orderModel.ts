@@ -173,10 +173,7 @@ export class Order implements IOrder{
       throw err;
     }
     const now = moment();
-    const EDeliveries = cart.deliveries.map((delivery)=>{
-      const status: IDelivery = { ...delivery, status: 'Open' };
-      return status;
-    })
+    const EDeliveries = cart.deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }))
     return {
       consumer: {
         userId: signedInUser._id,
