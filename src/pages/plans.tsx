@@ -4,8 +4,6 @@ import Faq from "../client/general/CommonQuestions";
 import Link from "next/link";
 import { menuRoute } from "./menu";
 import withPageApollo from '../client/utils/withPageApollo';
-// import { Plan } from "../plan/planModel";
-// import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import Footer from "../client/general/Footer";
 
 const useStyles = makeStyles(theme => ({

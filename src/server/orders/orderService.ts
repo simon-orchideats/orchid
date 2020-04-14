@@ -20,17 +20,18 @@ import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment';
 import { isDate2DaysLater } from '../../order/utils';
 import { IDeliveryMeal, IDeliveryInput, DeliveryMeal } from '../../order/deliveryModel';
+import { IRest } from '../../rest/restModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
-const chooseRandomMeals = (menu: IMeal[], mealCount: number, restId: string, restName: string, mealQuantity: number) => {
+const chooseRandomMeals = (menu: IMeal[], mealCount: number, restId: string, restName: string) => {
   const chooseRandomly = getItemChooser<IMeal>(menu);
   const meals: IMeal[] = [];
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
-  return Cart.getDeliveryMeals(meals, restId, restName, mealQuantity);
+  return Cart.getDeliveryMeals(meals, restId, restName);
 }
 
 /**
@@ -178,14 +179,16 @@ class OrderService {
   }
 
   //@ts-ignore todo simon: do we still need this?
-  private async chooseRandomRestAndMeals(cuisines: CuisineType[], deliveryCount:number, mealQuantity: number) {
+  private async chooseRandomRestAndMeals(cuisines: CuisineType[], mealCount: number) {
     try {
       if (!this.restService) throw new Error('No rest service');
-      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu','profile'])
+      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu'])
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
       const rest = rests[Math.floor(Math.random() * rests.length)];
-      console.log(rest)
-      return chooseRandomMeals(rest.menu, deliveryCount, rest._id, rest.profile.name, mealQuantity);
+      return {
+        restId: rest._id,
+        meals: chooseRandomMeals(rest.menu, mealCount, rest._id, rest.profile.name),
+      };
     } catch (e) {
       console.error(`[OrderService] could not auto pick rests and meals`, e.stack)
       throw e;
@@ -262,6 +265,7 @@ class OrderService {
   private async validateCart(cart: ICartInput) {
     const phoneValidation = validatePhone(cart.phone);
     if (phoneValidation) return phoneValidation;
+    // todo simon: revalidate again
     // const deliveryDateValidation = validateDeliveryDate(cart.deliveryDate);
     // if (deliveryDateValidation) return deliveryDateValidation;
 
@@ -424,7 +428,6 @@ class OrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes> {
-    
     if (!signedInUser) throw getNotSignedInErr()
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
@@ -470,26 +473,12 @@ class OrderService {
         }
       }
       try {
-
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
           // todo simon: grab planId from a stripe call
-          items: [{ plan: 'plan_H4mjyvjuE1fObC' }],
-          //billing_cycle_anchor: 158655341
+          items: [{ plan: 'plan_H4mjyvjuE1fObC' }]
         });
-
-      //   console.log('test',subscription.items.data[0].id);
-      //  await this.stripe.subscriptionItems.createUsageRecord(
-      //   subscription.items.data[0].id,
-      //     {
-      //       quantity: 100,
-      //       timestamp: 1586553541,
-      //       action: 'increment',
-      //     }
-      //   );
-
-
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
@@ -529,16 +518,25 @@ class OrderService {
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       // todo simon: figure out how to do auto meals
+      let rests: IRest[] = [];
+      try {
+        if (!this.restService) throw new Error('No rest service');
+        rests = await this.restService.getRestsByCuisines(cuisines, ['menu','profile'])
+        if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+      } catch (e) {
+        console.error(`[OrderService] could not rests by cuisines`, e.stack)
+      }
       let deliveries: IDeliveryInput[] = [];
       let deliveryDate = moment().add(1, 'w').valueOf();
-      for ( let i = 0; i< cart.deliveries.length;i++) {
+      for (let i = 0; i < cart.deliveries.length;i++) {
         let deliveryMeal: DeliveryMeal[] = [];
-        for ( let j = 0;j < cart.deliveries[i].meals.length;j++)
-        {
-        let meal = await this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, 1, cart.deliveries[i].meals[j].quantity)
-        deliveryMeal.push(meal[0]);
-        console.log('DELIVERYMEAL',JSON.stringify(deliveryMeal,null,4))
-         
+        const rest = rests[Math.floor(Math.random() * rests.length)];
+        for ( let j = 0;j < cart.deliveries[i].meals.length;j++) {
+          const mealQuantity = cart.deliveries[i].meals[j].quantity
+          const chooseRandomly = getItemChooser<IMeal>(rest.menu);
+          const randomMeal = chooseRandomly();
+          const meal = DeliveryMeal.getDeliveryMeal(randomMeal, rest._id, rest.profile.name, mealQuantity);
+          deliveryMeal.push(meal);       
         }
         deliveries.push({
           deliveryDate,
@@ -547,12 +545,11 @@ class OrderService {
           meals: deliveryMeal
         })
       }
-
-      console.log('NEXTDELIVER',JSON.stringify(deliveries,null,4));
+      
       const nextInvoiceInSeconds = Math.round(moment(deliveryDate).add(1, 'w').valueOf() / 1000) * 1000
       const automatedOrder = Order.getNewOrderFromCartInput(
         signedInUser,
-        {...cart, deliveries, donationCount:0},
+        { ...cart, deliveries, donationCount: 0 },
         nextInvoiceInSeconds,
         subscription.id,
         parseFloat(subscription.plan!.metadata.mealPrice),
@@ -563,35 +560,6 @@ class OrderService {
         index: ORDER_INDEX,
         body: automatedOrder
       })
-      // // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
-      // // placed order
-      // const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      // this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals) + cart.donationCount)
-      //   .then(({ restId, meals }) => {
-      //     const newCart: ICartInput = {
-      //       ...cart,
-      //       donationCount: 0,
-      //       restId: restId,
-      //       meals,
-      //       deliveryDate: nextDeliveryDate
-      //     }
-
-      //     const order = Order.getNewOrderFromCartInput(
-      //       signedInUser,
-      //       newCart,
-      //       nextInvoice,
-      //       subscription.id,
-      //       parseFloat(subscription.plan!.metadata.mealPrice),
-      //       subscription.plan!.amount! / 100,
-      //     );
-      //     return this.elastic.index({
-      //       index: ORDER_INDEX,
-      //       body: order
-      //     })
-      //   })
-      //   .catch(e => {
-      //     console.error('[OrderService] could not auto pick rests', e.stack);
-      //   })
 
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,

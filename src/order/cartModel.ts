@@ -38,14 +38,14 @@ const getNextMealsIterator = (meals: DeliveryMeal[]) => {
   return (numDesiredMeals: number) => {
     const res = [];
     while (uniqueMealIndex < copy.length) {
-      const uniqueMeal = copy[uniqueMealIndex]; // grabs uniqueMeal
-      res.push(new DeliveryMeal({  //places it in resArrayy with quanitty 1
+      const uniqueMeal = copy[uniqueMealIndex];
+      res.push(new DeliveryMeal({
         ...uniqueMeal,
         quantity: 1,
       }));
-      if (uniqueMeal.Quantity === 1) { // if the uniqueMeal already has quantity of 1
-        copy.splice(uniqueMealIndex, 1); // remove it from the copy
-        uniqueMealIndex--; // and move back an index
+      if (uniqueMeal.Quantity === 1) {
+        copy.splice(uniqueMealIndex, 1);
+        uniqueMealIndex--;
       } else {
         copy[uniqueMealIndex] = new DeliveryMeal({
           ...uniqueMeal,
@@ -169,11 +169,11 @@ export class Cart implements ICart {
     return newCart;
   }
 
-  public static getDeliveryMeals(meals: IMeal[], restId: string, restName: string, mealQuantity:number) {
+  public static getDeliveryMeals(meals: IMeal[], restId: string, restName: string) {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName, mealQuantity));
+        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName));
       } else {
         groupings[groupIndex] = new DeliveryMeal({
           ...groupings[groupIndex],

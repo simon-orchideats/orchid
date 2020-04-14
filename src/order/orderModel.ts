@@ -174,7 +174,7 @@ export class Order implements IOrder{
     }
     const now = moment();
     const EDeliveries = cart.deliveries.map((delivery)=>{
-      const status:IDelivery = {...delivery, status:'Open'};
+      const status: IDelivery = { ...delivery, status: 'Open' };
       return status;
     })
     return {
