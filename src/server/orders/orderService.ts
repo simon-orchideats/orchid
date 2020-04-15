@@ -20,7 +20,6 @@ import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment';
 import { isDate2DaysLater } from '../../order/utils';
 import { IDeliveryMeal, IDeliveryInput, DeliveryMeal } from '../../order/deliveryModel';
-import { IRest } from '../../rest/restModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
@@ -473,23 +472,27 @@ class OrderService {
         }
       }
       try {
+        const stripePlan = await this.stripe.plans.list();
+        const plan = stripePlan.data.find( plan => plan.nickname === 'standard-tiered' )
+        if (!plan) {
+          throw new Error('[OrderService]: Standard-tiered plan not found');
+        }
+        console.log('FOUND STRIPE',plan)
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
-          // todo simon: grab planId from a stripe call
-          items: [{ plan: 'plan_H4mjyvjuE1fObC' }]
+          items: [{ plan: plan.id }]
         });
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
         throw e;
       }
-      const invoiceDateSeconds = Math.round(moment().add(1, 'w').valueOf() / 1000)
 
       const order = Order.getNewOrderFromCartInput(
         signedInUser,
         cart,
-        invoiceDateSeconds * 1000,
+        subscription.current_period_start,
         subscription.id,
         parseFloat(subscription.plan!.metadata.mealPrice),
         subscription.plan!.amount! / 100,
@@ -516,51 +519,50 @@ class OrderService {
       };
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
-
-      // todo simon: figure out how to do auto meals
-      let rests: IRest[] = [];
+      
       try {
-        if (!this.restService) throw new Error('No rest service');
-        rests = await this.restService.getRestsByCuisines(cuisines, ['menu','profile'])
-        if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+        this.restService.getRestsByCuisines(cuisines, ['menu','profile']).then( rests => {
+          if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+          const deliveries: IDeliveryInput[] = [];
+          for (let i = 0; i < cart.deliveries.length; i++) {
+            const deliveryMeals: DeliveryMeal[] = [];
+            const rest = rests[Math.floor(Math.random() * rests.length)];
+            for (let j = 0; j < cart.deliveries[i].meals.length; j++) {
+              const mealQuantity = cart.deliveries[i].meals[j].quantity
+              const chooseRandomly = getItemChooser<IMeal>(rest.menu);
+              const randomMeal = chooseRandomly();
+              const meal = DeliveryMeal.getDeliveryMeal(randomMeal, rest._id, rest.profile.name, mealQuantity);
+              deliveryMeals.push(meal);       
+            }
+            deliveries.push({
+              deliveryDate: moment(cart.deliveries[i].deliveryDate).add(1, 'w').valueOf(),
+              deliveryTime: cart.deliveries[i].deliveryTime,
+              discount: cart.deliveries[i].discount,
+              meals: deliveryMeals
+            })
+          }
+          const automatedOrder = Order.getNewOrderFromCartInput(
+            signedInUser,
+            { ...cart, deliveries, donationCount: 0 },
+            subscription.current_period_end,
+            subscription.id,
+            parseFloat(subscription.plan!.metadata.mealPrice),
+            subscription.plan!.amount! / 100,
+          );
+          try {
+            this.elastic.index({
+              index: ORDER_INDEX,
+              body: automatedOrder
+            })
+          } catch (e) {
+            console.error(`[OrderService] failed to insert automated order`, e.stack);
+            throw e;
+          }
+        })
       } catch (e) {
         console.error(`[OrderService] could not rests by cuisines`, e.stack)
       }
-      let deliveries: IDeliveryInput[] = [];
-      let deliveryDate = moment().add(1, 'w').valueOf();
-      for (let i = 0; i < cart.deliveries.length;i++) {
-        let deliveryMeal: DeliveryMeal[] = [];
-        const rest = rests[Math.floor(Math.random() * rests.length)];
-        for ( let j = 0;j < cart.deliveries[i].meals.length;j++) {
-          const mealQuantity = cart.deliveries[i].meals[j].quantity
-          const chooseRandomly = getItemChooser<IMeal>(rest.menu);
-          const randomMeal = chooseRandomly();
-          const meal = DeliveryMeal.getDeliveryMeal(randomMeal, rest._id, rest.profile.name, mealQuantity);
-          deliveryMeal.push(meal);       
-        }
-        deliveries.push({
-          deliveryDate,
-          deliveryTime: cart.deliveries[i].deliveryTime,
-          discount: cart.deliveries[i].discount,
-          meals: deliveryMeal
-        })
-      }
       
-      const nextInvoiceInSeconds = Math.round(moment(deliveryDate).add(1, 'w').valueOf() / 1000) * 1000
-      const automatedOrder = Order.getNewOrderFromCartInput(
-        signedInUser,
-        { ...cart, deliveries, donationCount: 0 },
-        nextInvoiceInSeconds,
-        subscription.id,
-        parseFloat(subscription.plan!.metadata.mealPrice),
-        subscription.plan!.amount! / 100,
-      );
-
-      this.elastic.index({
-        index: ORDER_INDEX,
-        body: automatedOrder
-      })
-
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
         signedInUser.profile.name,
