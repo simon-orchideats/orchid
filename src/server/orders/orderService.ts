@@ -473,11 +473,8 @@ class OrderService {
       }
       try {
         const stripePlan = await this.stripe.plans.list();
-        const plan = stripePlan.data.find( plan => plan.nickname === 'standard-tiered' )
-        if (!plan) {
-          throw new Error('[OrderService]: Standard-tiered plan not found');
-        }
-        console.log('FOUND STRIPE',plan)
+        const plan = stripePlan.data.find(plan => plan.nickname === 'standard-tiered')
+        if (!plan) throw new Error('[OrderService]: Standard-tiered plan not found');
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
@@ -519,7 +516,7 @@ class OrderService {
       };
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
-      
+
       try {
         this.restService.getRestsByCuisines(cuisines, ['menu','profile']).then( rests => {
           if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
