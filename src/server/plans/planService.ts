@@ -27,7 +27,8 @@ class PlanService implements IPlanService {
         const res = {
           minMeals: min,
           maxMeals: tier.up_to,
-          mealPrice: tier.unit_amount
+          mealPrice: tier.unit_amount,
+          stripeId: plans.data[0].id
         };
         min = res.maxMeals && res.maxMeals + 1;
         return res;

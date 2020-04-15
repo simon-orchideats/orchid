@@ -4,22 +4,26 @@ export interface IPlan {
   readonly maxMeals: number | null;
   readonly minMeals: number;
   readonly mealPrice: number;
+  readonly stripeId: string;
 }
 
 export class Plan implements IPlan {
   readonly mealPrice: number;
   readonly minMeals: number;
   readonly maxMeals: number | null;
+  readonly stripeId: string;
 
   constructor(plan: IPlan) {
     this.mealPrice = plan.mealPrice;
     this.minMeals = plan.minMeals;
     this.maxMeals = plan.maxMeals;
+    this.stripeId= plan.stripeId;
   }
 
   public get MaxMeals() { return this.maxMeals }
   public get MinMeals() { return this.minMeals }
   public get MealPrice() { return this.mealPrice }
+  public get StripeId() { return this.stripeId }
 
   public static getMealPrice(count: number, plans: IPlan[]) {
     for (let i = 0; i < plans.length; i++) {
