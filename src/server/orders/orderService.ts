@@ -472,13 +472,12 @@ class OrderService {
         }
       }
       try {
-        const stripePlan = await this.stripe.plans.list();
-        const plan = stripePlan.data.find(plan => plan.nickname === 'standard-tiered')
-        if (!plan) throw new Error('[OrderService]: Standard-tiered plan not found');
+        if (!this.planService) return Promise.reject('PlanService not set');
+        const plans = await this.planService.getAvailablePlans();
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
-          items: [{ plan: plan.id }]
+          items: [{ plan: plans[0].stripeId }]
         });
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
@@ -489,7 +488,7 @@ class OrderService {
       const order = Order.getNewOrderFromCartInput(
         signedInUser,
         cart,
-        subscription.current_period_start,
+        subscription.current_period_end / 1000,
         subscription.id,
         parseFloat(subscription.plan!.metadata.mealPrice),
         subscription.plan!.amount! / 100,
@@ -541,20 +540,16 @@ class OrderService {
           const automatedOrder = Order.getNewOrderFromCartInput(
             signedInUser,
             { ...cart, deliveries, donationCount: 0 },
-            subscription.current_period_end,
+            moment(subscription.current_period_end / 1000).add(1, 'w').valueOf(),
             subscription.id,
             parseFloat(subscription.plan!.metadata.mealPrice),
             subscription.plan!.amount! / 100,
           );
-          try {
-            this.elastic.index({
-              index: ORDER_INDEX,
-              body: automatedOrder
-            })
-          } catch (e) {
-            console.error(`[OrderService] failed to insert automated order`, e.stack);
-            throw e;
-          }
+       
+          return this.elastic.index({
+            index: ORDER_INDEX,
+            body: automatedOrder
+          })
         })
       } catch (e) {
         console.error(`[OrderService] could not rests by cuisines`, e.stack)
