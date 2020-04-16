@@ -97,6 +97,14 @@ export class DeliveryInput implements IDeliveryInput {
       meals: d.meals.map(m => DeliveryMeal.getICopy(m)),
     }
   }
+
+  static getMealCount(deliveryInputs: IDeliveryInput[]) {
+    return deliveryInputs.reduce<number>(
+      (sum, deliveryInput) => sum + deliveryInput.meals.reduce<number>(
+        (innerSum, meal) => innerSum + meal.quantity, 0
+      ),
+      0)
+  }
 }
 
 export interface IDelivery extends IDeliveryInput {

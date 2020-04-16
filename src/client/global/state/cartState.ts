@@ -2,11 +2,12 @@ import { DeliveryMeal } from './../../../order/deliveryModel';
 import { deliveryDay, deliveryTime, Schedule } from './../../../consumer/consumerModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
-import { Cart } from '../../../order/cartModel';
+import { Cart, RestMeals } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Order } from '../../../order/orderModel';
+import moment from 'moment';
 
 type cartQueryRes = {
   cart: Cart | null
@@ -228,6 +229,9 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 });
 
 export const cartMutationResolvers: cartMutationResolvers = {
+  // left off here. test that after setting scheudle, i can go back to menu and add or remove meals
+  // when adding meals, it should just add the meals to the first delivery
+  // when removin gmeals it should remove the first meal found
   addMealToCart: (_, { meal, restId, restName }, { cache }) => {
     const res = getCart(cache);
     const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
@@ -245,7 +249,6 @@ export const cartMutationResolvers: cartMutationResolvers = {
         zip: null,
       }));
     }
-    // todo simon: add logic to put the new meal into the deliveries
     if (res.cart.getMealCount() === 0) {
       return updateCartCache(cache, new Cart({
         donationCount: res.cart.DonationCount,
@@ -271,7 +274,6 @@ export const cartMutationResolvers: cartMutationResolvers = {
       console.error(err.stack);
       throw err;
     }
-    // todo simon: add logic to put the new meal into the deliveries
     const newCart = res.cart.setScheduleAndAutoDeliveries(schedules);;
     return updateCartCache(cache, newCart);
   },
@@ -359,16 +361,37 @@ export const cartMutationResolvers: cartMutationResolvers = {
   },
 
   setCart: (_, { order }, { cache }) => {
+    const restMeals: RestMeals = {};
+    order.Deliveries.forEach(d => {
+      d.Meals.forEach(newMeal => {
+        const rest = restMeals[newMeal.RestId];
+        if (rest) {
+          rest.mealCount =+ newMeal.Quantity;
+          const i = rest.meals.findIndex(m => m.MealId === newMeal.MealId);
+          if (i > -1) {
+            rest.meals[i] = new DeliveryMeal({
+              ...newMeal,
+              quantity: rest.meals[i].Quantity + newMeal.Quantity,
+            });
+          } else {
+            rest.meals.push(newMeal);
+          }
+        } else {
+          restMeals[newMeal.RestId] = {
+            mealCount: newMeal.Quantity,
+            meals: [newMeal],
+          }
+        }
+      })
+    })
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,
-      restMeals: {},
-      deliveries: [],
-      schedules: [],
-      // todo simon: figure out how to fill out meals given all deliveries
-      // todo simon: do these
-      // meals: order.Meals, 
-      // deliveries: order.Deliveries,
-      // schedule: order.Delivieries.map(d => d.Schedule),
+      restMeals,
+      deliveries: order.Deliveries,
+      schedules: order.Deliveries.map(d => new Schedule({
+        time: d.DeliveryTime,
+        day: moment(d.DeliveryDate).day() as deliveryDay,
+      })),
       zip: order.Destination.Address.Zip,
     }));
   },

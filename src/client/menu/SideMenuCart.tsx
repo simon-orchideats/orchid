@@ -61,7 +61,6 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
-      addDonationDisabled,
     ) => {
       const meals = (
         <>
@@ -146,14 +145,8 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                     }
                     chipLabel={donationCount}
                     chipDisabled={!donationCount}
-                    addDisabled={addDonationDisabled}
                     onClickAdd={incrementDonationCount}
-                    addIcon={
-                      addDonationDisabled ?
-                      <img src='menu/heartPlusDisabled.png' className={classes.heart} alt='heart' />
-                      :
-                      <img src='menu/heartPlus.png' className={classes.heart} alt='heart' />
-                    }
+                    addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
                   />
                 </div>
               </div>

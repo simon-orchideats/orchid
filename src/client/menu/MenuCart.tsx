@@ -30,7 +30,6 @@ const MenuCart: React.FC<{
     donationCount: number,
     incrementDonationCount: () => void,
     decremetnDonationCount: () => void,
-    addDonationDisabled: boolean,
   ) => React.ReactNode
 }> = ({
   render
@@ -100,7 +99,6 @@ const MenuCart: React.FC<{
         donationCount,
         incrementDonationCount,
         decrementDonationCount,
-        false, // todo simon: update logic for this.
       )}
     </>
   );

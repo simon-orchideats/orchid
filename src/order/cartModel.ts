@@ -136,9 +136,7 @@ export class Cart implements ICart {
     return newCart;
   }
 
-  // todo simon: add a fn for setting deliveries, make sure when setting delivery we use getNextDeliveryDate
   public addMeal(newMeal: Meal, restId: string, restName: string) {
-    // todo simon: add logic to put the new meal into the deliveries if we already have deliveries
     const newCart = new Cart(this);
     const restMeals = newCart.RestMeals[restId];
     if (restMeals) {
@@ -166,6 +164,25 @@ export class Cart implements ICart {
         ]
       }
     }
+
+    if (newCart.Deliveries.length > 0) {
+      const firstDelivery = newCart.Deliveries[0];
+      const newMealIndex = firstDelivery.meals.findIndex(m => m.MealId === newMeal.Id);
+      if (newMealIndex === -1) {
+        firstDelivery.Meals.push(
+          DeliveryMeal.getDeliveryMeal(
+            newMeal,
+            restId,
+            restName,
+        ));
+      } else {
+        firstDelivery.Meals[newMealIndex] = new DeliveryMeal({
+          ...firstDelivery.Meals[newMealIndex],
+          quantity: firstDelivery.Meals[newMealIndex].quantity + 1,
+        })
+      }
+    }
+
     return newCart;
   }
 
@@ -259,7 +276,6 @@ export class Cart implements ICart {
   }
 
   public removeMeal(restId: string, mealId: string) {
-    // todo simon: add logic to remove meal from the deliveries if if we already have deliviers
     const newCart = new Cart(this);
     const restMeals = newCart.RestMeals[restId];
     const index = restMeals.meals.findIndex(meal => meal.MealId === mealId);
@@ -282,6 +298,34 @@ export class Cart implements ICart {
         quantity: targetMeal.Quantity - 1,
       })
     }
+
+    let removedMealDeliveryIndex = -1;
+    let removedMealMealsIndex = -1;
+
+    for (let i = 0; i < newCart.Deliveries.length; i++) {
+      const meals = newCart.Deliveries[i].Meals;
+      for (let j = 0; j < meals.length; j++) {
+        if (meals[j].MealId === mealId) {
+          removedMealDeliveryIndex = i;
+          removedMealMealsIndex = j;
+          break;
+        }
+      }
+      if (removedMealDeliveryIndex > -1) break;
+    }
+
+    if (removedMealDeliveryIndex > -1) {
+      const targetMeal = newCart.Deliveries[removedMealDeliveryIndex].Meals[removedMealMealsIndex];
+      if (targetMeal.Quantity > 1) {
+        newCart.Deliveries[removedMealDeliveryIndex].Meals[removedMealMealsIndex] = new DeliveryMeal({
+          ...targetMeal,
+          quantity: targetMeal.Quantity - 1,
+        });
+      } else {
+        newCart.Deliveries[removedMealDeliveryIndex].Meals.splice(removedMealMealsIndex, 1);
+      }
+    }
+
     return newCart;
   }
 }

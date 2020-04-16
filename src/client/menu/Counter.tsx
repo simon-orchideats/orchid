@@ -25,7 +25,7 @@ const Counter: React.FC<{
   subractIcon: React.ReactNode,
   chipLabel: number,
   chipDisabled: boolean,
-  addDisabled: boolean,
+  addDisabled?: boolean,
   onClickAdd: () => void,
   addIcon: React.ReactNode,
 }> = ({
@@ -34,7 +34,7 @@ const Counter: React.FC<{
   subractIcon,
   chipLabel,
   chipDisabled,
-  addDisabled,
+  addDisabled = false,
   onClickAdd,
   addIcon,
 }) => {

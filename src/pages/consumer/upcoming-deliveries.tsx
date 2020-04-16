@@ -104,7 +104,6 @@ const Confirmation: React.FC<{
     if (!isServer()) Router.replace(upcomingDeliveriesRoute);
     return null;
   }
-  // todo simon: determine how to show mulitple rests/deliveries
   const classes = useStyles();
   return (
     <Paper variant='outlined' className={classes.confirmation}>
@@ -115,22 +114,15 @@ const Confirmation: React.FC<{
         <Close className={classes.close} onClick={onClose} />
       </div>
       <Typography variant='body1'>
-        You will be billed 2 days before your delivery day. Feel free to update your order before you're billed.
+        You will be billed a week from today, based on the number of meals confirmed. A delivery's meals are confirmed
+        2 days before its delivery.
       </Typography>
       <Typography variant='body1'>
         We'll text you the day of your delivery
       </Typography>
-      {/* <Typography variant='body1'>
-        Deliver on {getNextDeliveryDate(cartRef.current.DeliveryDay).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(cartRef.current.DeliveryTime)}
+      <Typography variant='body1'>
+        You can review your order below. Feel free to edit your meals before they're confirmed.
       </Typography>
-      <Typography variant='subtitle1'>
-        {cartRef.current.RestName}
-      </Typography> */}
-      {/* {groupedMeals && groupedMeals.meals.map(mealGroup => (
-        <Typography key={mealGroup.MealId} variant='body1'>
-          {mealGroup.quantity} {mealGroup.Name}
-        </Typography>
-      ))}  */}
     </Paper>
   )
 }
@@ -205,7 +197,7 @@ const DeliveryOverview: React.FC<{
   const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
-  // const isAllDonations = order.DonationCount === Order.getMealCount(order);
+  const orderMealCount = Order.getMealCount(order);
   useMutationResponseHandler(updateOrderRes, () => {
     Router.replace(upcomingDeliveriesRoute)
     notify('Order updated', NotificationType.success, true);
@@ -220,7 +212,6 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    // todo simon: update this.
     setCart(order);
     Router.push({
       pathname: menuRoute,
@@ -274,6 +265,62 @@ const DeliveryOverview: React.FC<{
   //   );
   //   updateOrder(order._id, Order.getUpdatedOrderInput(order));
   // }
+  let isAllDeliveriesSkipped = true;
+  let isAllDeliveriesConfirmed = true;
+
+  order.Deliveries.forEach(d => {
+    if (d.Status === 'Open') {
+      isAllDeliveriesSkipped = false;
+      isAllDeliveriesConfirmed = false;
+    } else if (d.Status === 'Confirmed') {
+      isAllDeliveriesSkipped = false;
+    } else if (d.Status === 'Skipped') {
+      isAllDeliveriesConfirmed = false;
+    }
+  });
+
+  let buttons;
+  if (isUpdating) {
+    buttons = (
+      <Button
+        variant='contained'
+        color='primary'
+        onClick={onUpdateOrder}
+      >
+        Update order
+      </Button>
+    )
+  } else if (!isAllDeliveriesConfirmed) {
+    buttons = (
+      <>
+        {
+          !isAllDeliveriesSkipped &&
+          <Button
+            variant='outlined'
+            color='primary'
+            className={classes.skip}
+            // onClick={onSkip}
+          >
+            {order.DonationCount === orderMealCount ? 'Cancel Donation' : 'Skip unconfirmed deliveries'}
+          </Button>
+        }
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onEdit}
+        >
+          Edit unconfirmed meals
+        </Button>
+      </>
+    )
+  } else {
+    buttons = (
+      <Typography variant='body1' color='primary'>
+        All deliveries have been placed with their restaurants
+      </Typography>
+    )
+  }
+
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
@@ -281,19 +328,15 @@ const DeliveryOverview: React.FC<{
       <div className={`${classes.row} ${classes.overviewSection}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
-            Deliver on
-          </Typography>
-          <Typography variant='body1' className={classes.hint}>
-            {/* todo simon update this */}
-            {/* {moment(order.DeliveryDate).format('M/DD/Y')}, {ConsumerPlan.getDeliveryTimeStr(order.DeliveryTime)} */}
-          </Typography>
-        </div>
-        <div className={classes.column}>
-          <Typography variant='subtitle1'>
             Total
           </Typography>
           <Typography variant='body1' className={classes.hint}>
-            {order.MealPrice ? `${Order.getMealCount(order) + order.DonationCount} meals (${order.MealPrice.toFixed(2)} ea)` : '0 meals'}
+            {
+              orderMealCount > 0?
+              `${orderMealCount} meals (${order.MealPrice.toFixed(2)} ea)`
+              :
+              '0 meals'
+            }
           </Typography>
         </div>
         <div className={classes.column}>
@@ -316,22 +359,6 @@ const DeliveryOverview: React.FC<{
       <Divider />
       {
         <div className={classes.overviewSection}>
-          {/* todo simon update this */}
-          {/* <Typography variant='h6'>
-            {order.Rest?.Profile.Name}
-          </Typography>
-          {
-            order.Meals.map(meal =>
-              <CartMealGroup
-                key={meal.MealId}
-                mealId={meal.MealId}
-                name={meal.Name}
-                img={meal.Img}
-                quantity={meal.Quantity}
-              />
-            )
-          } */}
-          <ScheduleDeliveries deliveries={order.Deliveries} />
           {
             order.DonationCount > 0 &&
             <CartMealGroup
@@ -341,42 +368,12 @@ const DeliveryOverview: React.FC<{
               quantity={order.DonationCount}
             />
           }
+          <ScheduleDeliveries deliveries={order.Deliveries} />
         </div>
       }
       <Divider />
       <div className={`${classes.overviewSection} ${classes.buttons}`}>
-        {
-          isUpdating ?
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={onUpdateOrder}
-          >
-            Update order
-          </Button>
-          :
-          <>
-            {/* todo simon update this */}
-            {/* {
-              (order.Rest || isAllDonations) && 
-              <Button
-                variant='outlined'
-                color='primary'
-                className={classes.skip}
-                onClick={onSkip}
-              >
-                {isAllDonations ? 'Cancel Donation' : 'Skip'}
-              </Button>
-            } */}
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={onEdit}
-            >
-              Edit meals
-            </Button>
-          </>
-        }
+        {buttons}
       </div>
       <DestinationPopper
         destination={order.Destination}

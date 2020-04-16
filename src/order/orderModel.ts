@@ -1,4 +1,4 @@
-import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryInput, DeliveryInput } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
@@ -66,12 +66,8 @@ export class Order implements IOrder{
   public get DonationCount() { return this.donationCount}
   public get Name() { return this.name}
 
-  // todo simon: do this
-  //@ts-ignore
   static getMealCount(order: IOrder) {
-    // simon: update this to use deliveries
-    // return order.meals.reduce<number>((sum, meal) => sum + meal.quantity, 0) + order.donationCount;
-    return 10;
+    return DeliveryInput.getMealCount(order.deliveries) + order.donationCount;
   }
 
   // todo simon do this.

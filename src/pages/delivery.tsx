@@ -10,8 +10,6 @@ import { useState, useMemo } from "react";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Schedule } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
-import { RestMeals } from "../order/cartModel";
-import { DeliveryMeal } from "../order/deliveryModel";
 import { MIN_MEALS } from "../plan/planModel";
 import Link from "next/link";
 import { checkoutRoute } from "./checkout";
@@ -56,9 +54,9 @@ const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
-  const [schedules, setSchedules] = useState<Schedule[]>([
-    Schedule.getDefaultSchedule()
-  ]);
+  const [schedules, setSchedules] = useState<Schedule[]>(
+    cart?.Schedules || [ Schedule.getDefaultSchedule() ]
+  );
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
   const updateDeliveries = (s: Schedule, i: number) => {
@@ -80,7 +78,9 @@ const delivery = () => {
     if (isExpanded) setExpanded(panel);
   };
   const setDates = () => {
-    setScheduleAndAutoDeliveries(schedules);
+    if (cart && !Schedule.equalsLists(schedules, cart.Schedules)) {
+      setScheduleAndAutoDeliveries(schedules);
+    }
     setExpanded('assignments');
   }
   if (!cart) {

@@ -22,8 +22,6 @@ const useStyles = makeStyles(theme => ({
   row: {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
   },
   colHeader: {
     paddingBottom: theme.spacing(2),
@@ -37,6 +35,9 @@ const useStyles = makeStyles(theme => ({
   },
   paddingBottom: {
     paddingBottom: theme.spacing(1),
+  },
+  fullWidth: {
+    width: '100%',
   }
 }));
 
@@ -80,9 +81,10 @@ const ScheduleDeliveries: React.FC<{
       toDeliveryIndex
     );
     if (onChange) {
+      const toDestination = restMealsPerDelivery[toDeliveryIndex][meal.RestId];
       if (restMealsPerDelivery[fromDeliveryIndex][meal.RestId].mealCount < 4) {
         onChange(false);
-      } else if (restMealsPerDelivery[toDeliveryIndex][meal.RestId].mealCount < 4) {
+      } else if (toDestination && toDestination.mealCount < 4) {
         onChange(false);
       } else {
         onChange(true);
@@ -121,9 +123,12 @@ const ScheduleDeliveries: React.FC<{
             </Typography>
           :
             Object.values(restMealsPerDelivery[deliveryIndex]).map(restMeal => (
-              <div style={{
-                opacity: ('Status' in d && d.Status !== 'Open') ? 0.30 : 1
-              }}>
+              <div
+                className={classes.fullWidth}
+                style={{
+                  opacity: ('Status' in d && d.Status !== 'Open') ? 0.30 : 1
+                }}
+              >
                 <Typography variant='subtitle1' className={`${classes.row} ${classes.paddingBottom}`}>
                   {restMeal.meals[0].RestName}
                 </Typography>

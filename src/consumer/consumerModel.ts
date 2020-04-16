@@ -152,6 +152,27 @@ export class Schedule implements ISchedule {
     }
   }
 
+  static equals(s1: ISchedule, s2: ISchedule) {
+    return s1.day === s2.day && s1.time === s2.time
+  }
+
+  static equalsLists(s1s: ISchedule[], s2s: ISchedule[]) {
+    if (s1s.length !== s2s.length) return false;
+    const s1sCopy = [...s1s];
+    const s2sCopy = [...s2s];
+    for (let i = 0; i < s1s.length; i++) {
+      const findIndex = s2sCopy.findIndex(s2 => Schedule.equals(s1s[i], s2));
+      if (findIndex === -1) return false;
+      s2sCopy.slice(findIndex, 1);
+    }
+    for (let i = 0; i < s2s.length; i++) {
+      const findIndex = s1sCopy.findIndex(s1 => Schedule.equals(s2s[i], s1));
+      if (findIndex === -1) return false;
+      s1sCopy.slice(findIndex, 1);
+    }
+    return true;
+  }
+
   static getDefaultSchedule() {
     return new Schedule({
       day: defaultDeliveryDay,

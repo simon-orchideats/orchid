@@ -49,7 +49,6 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
-      addDonationDisabled,
     ) => (
       <div className={classes.container}>
         <Popover
@@ -91,14 +90,8 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           }
           chipLabel={donationCount}
           chipDisabled={!donationCount}
-          addDisabled={addDonationDisabled}
           onClickAdd={incrementDonationCount}
-          addIcon={
-            addDonationDisabled ?
-            <img src='menu/heartPlusDisabled.png' className={classes.heart} alt='heart' />
-            :
-            <img src='menu/heartPlus.png' className={classes.heart} alt='heart' />
-          }
+          addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
         />
         {/* left off here: make this mobile friendly */}
         {(!cart || !cart.Zip) && (
