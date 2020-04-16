@@ -7,7 +7,7 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
-import { Plan, MIN_MEALS } from "../../plan/planModel";
+import { Tier, MIN_MEALS, PlanTypes } from "../../plan/planModel";
 
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
@@ -76,15 +76,15 @@ const MenuCart: React.FC<{
   const decrementDonationCount = useDecrementCartDonationCount();
 
   const disabled = false;
-  const mealCount = cart ? cart.getMealCount() : 0;
+  const mealCount = cart ? cart.getStandardMealCount() : 0;
   let summary = '';
   let suggestions: string[] = [];
   if (plans.data) {
     if (mealCount >= MIN_MEALS) {
-      const moreToNext = Plan.getCountTillNextPlan(mealCount, plans.data);
-      const nextPrice = Plan.getNextMealPrice(mealCount, plans.data);
+      const moreToNext = Tier.getCountTillNextPlan(PlanTypes.Standard, mealCount, plans.data);
+      const nextPrice = Tier.getNextMealPrice(PlanTypes.Standard, mealCount, plans.data);
       const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
-      summary = `${mealCount} meals plan (${(Plan.getMealPrice(mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
+      summary = `${mealCount} meals plan (${(Tier.getMealPrice(PlanTypes.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
     }
     suggestions = getSuggestion(cart, MIN_MEALS);
   }

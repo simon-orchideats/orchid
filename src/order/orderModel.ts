@@ -92,8 +92,7 @@ export class Order implements IOrder{
   static getIOrderFromEOrder(_id: string, order: EOrder): IOrder {
     return {
       _id,
-      // todo simon: do this.
-      deliveries: [],
+      deliveries: order.deliveries,
       destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
       mealPrice: order.costs.mealPrice,
       phone: order.consumer.profile.phone!,

@@ -73,6 +73,7 @@ export const _OrderQL = gql`
     phone: String!
     name: String!
     donationCount:Int!
+    destination: Destination
   }
 `;
 

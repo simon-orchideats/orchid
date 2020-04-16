@@ -1,3 +1,4 @@
+import { Tier, Plan, PlanTypes } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -73,8 +74,8 @@ const getUpcomingOrdersQuery = (signedInUserId: string) => ({
         must: [
           {
             range: {
-              deliveryDate: {
-                gte: Date.now(),
+              invoiceDate: {
+                gte: 'now',
               }
             },
           },
@@ -431,6 +432,7 @@ class OrderService {
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
       if (!this.restService) throw new Error ('RestService not set');
+      if (!this.planService) throw new Error('PlanService not set');
 
       const validation = await this.validateCart(cart);
       if (validation) {
@@ -471,27 +473,45 @@ class OrderService {
           throw e;
         }
       }
+
+      let plans;
       try {
-        if (!this.planService) return Promise.reject('PlanService not set');
-        const plans = await this.planService.getAvailablePlans();
+        plans = await this.planService.getAvailablePlans();
+      } catch (e) {
+        console.error(`Failed to get available plans: '${e.stack}'`);
+        throw e;
+      }
+
+      try {
+        const standardPlan = Plan.getPlan(PlanTypes.Standard, plans);
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
-          items: [{ plan: plans[0].stripeId }]
+          items: [{ plan: standardPlan.stripePlanId }]
         });
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
         throw e;
       }
-
+      const standardMealCount = Cart.getStandardMealCountFromICartInput(cart);
+      const mealPrice = Tier.getMealPrice(
+        PlanTypes.Standard,
+        standardMealCount,
+        plans
+      );
+      const total = mealPrice * standardMealCount;
       const order = Order.getNewOrderFromCartInput(
         signedInUser,
         cart,
-        subscription.current_period_end / 1000,
+        subscription.current_period_end * 1000,
         subscription.id,
-        parseFloat(subscription.plan!.metadata.mealPrice),
-        subscription.plan!.amount! / 100,
+        Tier.getMealPrice(
+          PlanTypes.Standard,
+          Cart.getStandardMealCountFromICartInput(cart),
+          plans
+        ),
+        total,
       );
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
@@ -540,10 +560,10 @@ class OrderService {
           const automatedOrder = Order.getNewOrderFromCartInput(
             signedInUser,
             { ...cart, deliveries, donationCount: 0 },
-            moment(subscription.current_period_end / 1000).add(1, 'w').valueOf(),
+            moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
             subscription.id,
-            parseFloat(subscription.plan!.metadata.mealPrice),
-            subscription.plan!.amount! / 100,
+            mealPrice,
+            total,
           );
        
           return this.elastic.index({
@@ -585,7 +605,7 @@ class OrderService {
           query: getUpcomingOrdersQuery(signedInUser._id),
           sort: [
             {
-              deliveryDate: {
+              invoiceDate: {
                 order: 'asc',
               }
             }
@@ -606,7 +626,7 @@ class OrderService {
     if (!signedInUser) throw getNotSignedInErr()
     try {
       const res = await this.getMyUpcomingEOrders(signedInUser);
-      return await Promise.all(res.map(async ({ _id, order }) => Order.getIOrderFromEOrder(_id, order)))
+      return res.map(({ _id, order }) => Order.getIOrderFromEOrder(_id, order))
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');

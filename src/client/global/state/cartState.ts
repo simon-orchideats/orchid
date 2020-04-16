@@ -249,7 +249,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         zip: null,
       }));
     }
-    if (res.cart.getMealCount() === 0) {
+    if (res.cart.getStandardMealCount() === 0) {
       return updateCartCache(cache, new Cart({
         donationCount: res.cart.DonationCount,
         restMeals: {
@@ -348,7 +348,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     let newCart = res.cart.removeMeal(restId, mealId);
-    if (newCart.getMealCount() === 0) {
+    if (newCart.getStandardMealCount() === 0) {
       newCart = new Cart({
         donationCount: newCart.DonationCount,
         restMeals: {},

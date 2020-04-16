@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
-import { Plan } from '../../plan/planModel';
+import { Tier } from '../../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -19,17 +19,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const PlanDetails: React.FC<{
-  mealPlan: Plan;
-}> = ({ mealPlan }) => {
+  tier: Tier;
+}> = ({ tier }) => {
   const classes = useStyles();
   return (
     <Card className={classes.card}>
       <CardContent>
         <Typography variant='h6'>
-          {mealPlan.minMeals}{mealPlan.MaxMeals !== null ? ` - ${mealPlan.maxMeals} meals a week` : '+ meals a week'}
+          {tier.minMeals}{tier.MaxMeals !== null ? ` - ${tier.maxMeals} meals a week` : '+ meals a week'}
         </Typography>
         <Typography variant='body1' className={classes.cardSubtitle}>
-          ${(mealPlan.MealPrice / 100).toFixed(2)}/meal
+          ${(tier.MealPrice / 100).toFixed(2)}/meal
         </Typography>
       </CardContent>
     </Card>

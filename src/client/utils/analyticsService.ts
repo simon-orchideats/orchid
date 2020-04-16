@@ -61,7 +61,6 @@ class AnalyticsService {
       window.gtag('config', activeConfig.client.analytics.ga.trackingId, {
         page_path: url,
       })
-
     });
   }
 

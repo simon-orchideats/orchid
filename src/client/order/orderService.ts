@@ -7,15 +7,12 @@ import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
-import { restFragment } from '../../rest/restFragment';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
     myUpcomingOrders {
       _id
-      deliveryDate
-      deliveryTime
       destination {
         address {
           address1
@@ -27,22 +24,24 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         instructions
       }
       mealPrice
-      meals {
-        mealId
-        img
-        name
-        quantity
+      deliveries {
+        deliveryTime
+        deliveryDate
+        meals {
+          mealId
+          img
+          name
+          quantity
+          restId
+          restName
+        }
+        status
       }
       phone
-      rest {
-        ...restFragment
-      }
-      status
       donationCount
       name
     }
   }
-  ${restFragment}
 `
 
 type newConsumer = {

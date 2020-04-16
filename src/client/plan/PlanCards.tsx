@@ -18,13 +18,17 @@ const PlanCards: React.FC = () => {
     return <div>loading</div>
   }
   return (
-    <Grid container justify='center'>
+    <>
       {plans.data.map(plan => (
-        <Grid key={plan.MealPrice} item sm={12} md={4} className={classes.item}>
-          <PlanDetails mealPlan={plan} />
+        <Grid container justify='center'>
+          {plan.Tiers.map(t => (
+            <Grid key={t.MealPrice} item sm={12} md={4} className={classes.item}>
+              <PlanDetails tier={t} />
+            </Grid>
+          ))}
         </Grid>
       ))}
-    </Grid>
+    </>
   );
 }
 

@@ -80,7 +80,8 @@ const development: config = {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
     logRocket: {
-      key: 'ugxrrj/orchid-dev',
+      // key: 'ugxrrj/orchid-dev',
+      key: '',
     },
     analytics: {
       amplitude: {

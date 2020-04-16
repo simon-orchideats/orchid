@@ -443,9 +443,19 @@ PUT /orders/
   "mappings": {
     "dynamic": false,
     "properties": {
-      "rest": {
+      "deliveries": {
         "properties": {
-          "restId": {
+          "deliveryTime": {
+            "type": "keyword"
+          },
+          "deliveryDate": {
+            "type": "date",
+            "format": "epoch_millis"
+          },
+          "discount": {
+            "type": "float"
+          },
+          "status": {
             "type": "keyword"
           },
           "meals": {
@@ -468,18 +478,12 @@ PUT /orders/
               "restId": {
                 "type": "keyword"
               },
-              "deliveryDate": {
-                "type": "float"
-              },
-              "deliveryTime": {
+              "restName": {
                 "type": "keyword"
               }
             }
           }
         }
-      },
-      "status": {
-        "type": "keyword"
       },
       "consumer": {
         "properties": {
@@ -573,11 +577,9 @@ PUT /orders/
           }
         }
       },
-      "deliveryDate": {
-        "type": "float"
-      },
-      "deliveryTime": {
-        "type": "keyword"
+      "invoiceDate": {
+        "type": "date",
+        "format": "epoch_millis"
       },
       "donationCount": {
         "type": "float"

@@ -201,13 +201,13 @@ export class Cart implements ICart {
     }, [])
   }
 
-  public getMealCount() {
+  public getStandardMealCount() {
     return Object.values(this.restMeals).reduce<number>((sum, data) => sum + data.mealCount, 0) + this.donationCount;
   }
 
   // todo simon: enable this
   //@ts-ignore
-  public static getMealCountFromICartInput(cart: ICartInput) {
+  public static getStandardMealCountFromICartInput(cart: ICartInput) {
     // todo simon: do this
     return 8;
   }

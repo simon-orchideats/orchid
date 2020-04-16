@@ -1,4 +1,4 @@
-import { IPlan, MIN_MEALS } from './../../plan/planModel';
+import { MIN_MEALS, IPlan, PlanType } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
@@ -19,19 +19,25 @@ class PlanService implements IPlanService {
         limit: 3,
         active: true,
       });
-      if (!plans.data[0].tiers) throw new Error('Could not get tiers');
       let min: number | null = MIN_MEALS;
-      return plans.data[0].tiers.map(tier => {
-        if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);
-        if (min === null) throw new Error('min is null');
-        const res = {
-          minMeals: min,
-          maxMeals: tier.up_to,
-          mealPrice: tier.unit_amount,
-          stripeId: plans.data[0].id
-        };
-        min = res.maxMeals && res.maxMeals + 1;
-        return res;
+      return plans.data.map(p => {
+        if (!p.tiers) throw new Error('Could not get tiers');
+        if (!p.nickname) throw new Error('No plan nickname');
+        return {
+          stripePlanId: p.id,
+          type: p.nickname as PlanType,
+          tiers: p.tiers.map(tier => {
+            if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);
+            if (min === null) throw new Error('min is null');
+            const res = {
+              minMeals: min,
+              maxMeals: tier.up_to,
+              mealPrice: tier.unit_amount,
+            };
+            min = res.maxMeals && res.maxMeals + 1;
+            return res;
+          })
+        }
       })
     } catch (e) {
       console.error(`[PlanService] could not get plans. '${e.stack}'`);

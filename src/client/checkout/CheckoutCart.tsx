@@ -3,7 +3,7 @@ import { useGetCart } from "../global/state/cartState";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { Plan } from "../../plan/planModel";
+import { Tier, PlanTypes } from "../../plan/planModel";
 import moment from "moment";
 import { ConsumerPlan } from "../../consumer/consumerModel";
 const useStyles = makeStyles(theme => ({
@@ -46,9 +46,9 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
-  const mealCount = cart.getMealCount();
-  const mealPrice = Plan.getMealPrice(mealCount, plans.data);
-  const planPrice = Plan.getPlanPrice(mealCount, plans.data)
+  const mealCount = cart.getStandardMealCount();
+  const mealPrice = Tier.getMealPrice(PlanTypes.Standard, mealCount, plans.data);
+  const planPrice = Tier.getPlanPrice(PlanTypes.Standard, mealCount, plans.data)
   const button = (
     <Button
       variant='contained'

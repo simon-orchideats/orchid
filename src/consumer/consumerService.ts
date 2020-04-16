@@ -24,7 +24,15 @@ type myConsumerRes = { myConsumer: IConsumer | null }
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
   //@ts-ignore
-  if (newConsumer.plan) newConsumer.plan.__typename = 'ConsumerPlan';
+  if (newConsumer.plan) {
+    //@ts-ignore
+    newConsumer.plan.__typename = 'ConsumerPlan';
+    //@ts-ignore
+    newConsumer.plan.schedule.map(s => ({
+      ...s,
+      __typename: 'Schedule',
+    }));
+  }
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';
   //@ts-ignore

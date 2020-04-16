@@ -55,7 +55,7 @@ const delivery = () => {
   const cart = useGetCart();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
   const [schedules, setSchedules] = useState<Schedule[]>(
-    cart?.Schedules || [ Schedule.getDefaultSchedule() ]
+    cart && cart.Schedules.length > 0 ? cart.Schedules : [ Schedule.getDefaultSchedule() ]
   );
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();

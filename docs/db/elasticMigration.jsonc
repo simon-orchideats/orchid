@@ -1,6 +1,5 @@
 consumers db
 
-
 create consumers2
 
 POST _reindex
@@ -30,5 +29,55 @@ POST _reindex
   },
   "dest": {
     "index": "consumers"
+  }
+}
+
+
+////////////
+
+create orders2
+
+POST _reindex
+{
+  "source": {
+    "index": "orders"
+  },
+  "dest": {
+    "index": "orders2"
+  },
+  "script": {
+    "source": """
+      ctx._source.deliveries = [];
+      params.delivery.deliveryTime = ctx._source.deliveryTime;
+      params.delivery.deliveryDate = ctx._source.deliveryDate;
+      params.delivery.meals = ctx._source.rest.meals;
+      params.delivery.status = ctx._source.status;
+      for (int i = 0; i < params.delivery.meals.length; i++) {
+        params.delivery.meals[i].tags = [];
+        params.delivery.meals[i].restId = ctx._source.rest.restId;
+        params.delivery.meals[i].restName = "name";
+      }
+      ctx._source.deliveries.add(params.delivery);
+      ctx._source.remove("status");
+      ctx._source.remove("rest");
+      ctx._source.remove("deliveryTime");
+      ctx._source.remove("deliveryDate");
+    """,
+    "params": {
+      "delivery": {}
+    }
+  }
+}
+
+delete orders
+create orders
+
+POST _reindex
+{
+  "source": {
+    "index": "orders2"
+  },
+  "dest": {
+    "index": "orders"
   }
 }

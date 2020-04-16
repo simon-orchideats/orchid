@@ -19,7 +19,7 @@ import SideMenuCart from "../../client/menu/SideMenuCart";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { Plan } from "../../plan/planModel";
+import { Tier, PlanTypes } from "../../plan/planModel";
 import { useGetAvailablePlans } from "../../plan/planService";
 // import { sendSkippedOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { isServer } from "../../client/utils/isServer";
@@ -114,14 +114,11 @@ const Confirmation: React.FC<{
         <Close className={classes.close} onClick={onClose} />
       </div>
       <Typography variant='body1'>
-        You will be billed a week from today, based on the number of meals confirmed. A delivery's meals are confirmed
-        2 days before its delivery.
+        You will be billed a week from today, based on the number of meals confirmed. Meals are confirmed
+        2 days before their delivery.
       </Typography>
       <Typography variant='body1'>
-        We'll text you the day of your delivery
-      </Typography>
-      <Typography variant='body1'>
-        You can review your order below. Feel free to edit your meals before they're confirmed.
+        You can review and edit your order below. We'll text you the day of your delivery.
       </Typography>
     </Paper>
   )
@@ -229,8 +226,8 @@ const DeliveryOverview: React.FC<{
       console.error(err.stack);
       throw err;
     }
-    const cartMealCount = cart.getMealCount();
-    const planMealPrice = Plan.getMealPrice(cartMealCount, plans.data);
+    const cartMealCount = cart.getStandardMealCount();
+    const planMealPrice = Tier.getMealPrice(PlanTypes.Standard, cartMealCount, plans.data);
     if (!planMealPrice) {
       const err = new Error('No cart meal price');
       console.error(err.stack);
@@ -333,7 +330,7 @@ const DeliveryOverview: React.FC<{
           <Typography variant='body1' className={classes.hint}>
             {
               orderMealCount > 0?
-              `${orderMealCount} meals (${order.MealPrice.toFixed(2)} ea)`
+              `${orderMealCount} meals (${(order.MealPrice / 100).toFixed(2)} ea)`
               :
               '0 meals'
             }
