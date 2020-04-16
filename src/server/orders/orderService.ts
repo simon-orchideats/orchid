@@ -19,7 +19,7 @@ import { activeConfig } from '../../config';
 import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment';
 import { isDate2DaysLater } from '../../order/utils';
-import { IDeliveryMeal } from '../../order/deliveryModel';
+import { IDeliveryMeal, IDeliveryInput, DeliveryMeal } from '../../order/deliveryModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
@@ -472,23 +472,23 @@ class OrderService {
         }
       }
       try {
+        if (!this.planService) return Promise.reject('PlanService not set');
+        const plans = await this.planService.getAvailablePlans();
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           customer: stripeCustomerId,
-          // todo simon: grab planId from a stripe call
-          items: [{ plan: 'plan_H2Ob1XWdwg73bM' }]
+          items: [{ plan: plans[0].stripeId }]
         });
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
         throw e;
       }
-      const invoiceDateSeconds = Math.round(moment().add(1, 'w').valueOf() / 1000)
 
       const order = Order.getNewOrderFromCartInput(
         signedInUser,
         cart,
-        invoiceDateSeconds * 1000,
+        subscription.current_period_end / 1000,
         subscription.id,
         parseFloat(subscription.plan!.metadata.mealPrice),
         subscription.plan!.amount! / 100,
@@ -516,38 +516,45 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
-      // todo simon: figure out how to do auto meals
-      // const nextDeliveryDate = moment(cart.deliveryDate).add(1, 'w').valueOf();
-      // // divide by 1000, then mulitply by 1000 to keep calculation consistent with how invoiceDate is calculated for the
-      // // placed order
-      // const nextInvoice = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000) * 1000;
-      // this.chooseRandomRestAndMeals(cart.consumerPlan.cuisines, Cart.getMealCount(cart.meals) + cart.donationCount)
-      //   .then(({ restId, meals }) => {
-      //     const newCart: ICartInput = {
-      //       ...cart,
-      //       donationCount: 0,
-      //       restId: restId,
-      //       meals,
-      //       deliveryDate: nextDeliveryDate
-      //     }
-
-      //     const order = Order.getNewOrderFromCartInput(
-      //       signedInUser,
-      //       newCart,
-      //       nextInvoice,
-      //       subscription.id,
-      //       parseFloat(subscription.plan!.metadata.mealPrice),
-      //       subscription.plan!.amount! / 100,
-      //     );
-      //     return this.elastic.index({
-      //       index: ORDER_INDEX,
-      //       body: order
-      //     })
-      //   })
-      //   .catch(e => {
-      //     console.error('[OrderService] could not auto pick rests', e.stack);
-      //   })
-
+      try {
+        this.restService.getRestsByCuisines(cuisines, ['menu','profile']).then( rests => {
+          if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+          const deliveries: IDeliveryInput[] = [];
+          for (let i = 0; i < cart.deliveries.length; i++) {
+            const deliveryMeals: DeliveryMeal[] = [];
+            const rest = rests[Math.floor(Math.random() * rests.length)];
+            for (let j = 0; j < cart.deliveries[i].meals.length; j++) {
+              const mealQuantity = cart.deliveries[i].meals[j].quantity
+              const chooseRandomly = getItemChooser<IMeal>(rest.menu);
+              const randomMeal = chooseRandomly();
+              const meal = DeliveryMeal.getDeliveryMeal(randomMeal, rest._id, rest.profile.name, mealQuantity);
+              deliveryMeals.push(meal);       
+            }
+            deliveries.push({
+              deliveryDate: moment(cart.deliveries[i].deliveryDate).add(1, 'w').valueOf(),
+              deliveryTime: cart.deliveries[i].deliveryTime,
+              discount: cart.deliveries[i].discount,
+              meals: deliveryMeals
+            })
+          }
+          const automatedOrder = Order.getNewOrderFromCartInput(
+            signedInUser,
+            { ...cart, deliveries, donationCount: 0 },
+            moment(subscription.current_period_end / 1000).add(1, 'w').valueOf(),
+            subscription.id,
+            parseFloat(subscription.plan!.metadata.mealPrice),
+            subscription.plan!.amount! / 100,
+          );
+       
+          return this.elastic.index({
+            index: ORDER_INDEX,
+            body: automatedOrder
+          })
+        })
+      } catch (e) {
+        console.error(`[OrderService] could not rests by cuisines`, e.stack)
+      }
+      
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
         signedInUser.profile.name,

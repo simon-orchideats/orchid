@@ -193,7 +193,7 @@ export class Order implements IOrder{
         flatRateFee: 0,
       },
       // todo simon: actually do this
-      deliveries: [],
+      deliveries: cart.deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' })),
       donationCount: cart.donationCount
     }
   }
