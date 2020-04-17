@@ -634,10 +634,9 @@ class OrderService {
   }
 
   async updateOrder(
-    //@ts-ignore
     signedInUser: SignedInUser,
-    //@ts-ignore
     orderId: string,
+    deliveryIndex: number,
     //@ts-ignore
     updateOptions: IUpdateOrderInput,
     //@ts-ignore
@@ -646,35 +645,35 @@ class OrderService {
   ): Promise<MutationBoolRes> {
   // TODO SIMON: need to redo all of this
   // 
-  //   try {
-  //     if (!signedInUser) throw getNotSignedInErr()
-  //     if (!this.planService) throw new Error ('RestService not set');
-  //     const stripeCustomerId = signedInUser.stripeCustomerId;
-  //     const subscriptionId = signedInUser.stripeSubscriptionId
-  //     if (!stripeCustomerId) {
-  //       const msg = 'Missing stripe customer id';
-  //       console.warn('[OrderService]', msg)
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
-  //     if (!subscriptionId) {
-  //       const msg = 'Missing subscription id';
-  //       console.warn('[OrderService]', msg)
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
-  //     if (!orderId) {
-  //       const msg = `No order id user`;
-  //       console.warn('[OrderService]', msg)
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
+    try {
+      if (!signedInUser) throw getNotSignedInErr()
+      if (!this.planService) throw new Error ('RestService not set');
+      const stripeCustomerId = signedInUser.stripeCustomerId;
+      const subscriptionId = signedInUser.stripeSubscriptionId
+      if (!stripeCustomerId) {
+        const msg = 'Missing stripe customer id';
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      if (!subscriptionId) {
+        const msg = 'Missing subscription id';
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      if (!orderId) {
+        const msg = `No order id user`;
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
   //     const validation = await this.validateUpdateOrderInput(updateOptions, now);
   //     if (validation) {
   //       return {
@@ -683,29 +682,29 @@ class OrderService {
   //       };
   //     }
 
-  //     const targetOrder = await this.getOrder(orderId);
-  //     if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
+      const targetOrder = await this.getOrder(orderId);
+      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
 
-  //     if (targetOrder.consumer.userId !== signedInUser._id) {
-  //       const msg = 'Can only update your own orders';
-  //       console.warn(
-  //         '[OrderService]',
-  //         `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-  //       )
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
-
-  //     if (targetOrder.status !== 'Open' && targetOrder.status !== 'Skipped') {
-  //       const msg = `Trying to update order with status '${targetOrder.status}'. Can only update 'Open' or 'Skipped' orders.`;
-  //       console.warn(`[OrderService] ${msg}`);
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
+      if (targetOrder.consumer.userId !== signedInUser._id) {
+        const msg = 'Can only update your own orders';
+        console.warn(
+          '[OrderService]',
+          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+        )
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      
+      if (targetOrder.deliveries[deliveryIndex].status !== 'Open' && targetOrder.deliveries[deliveryIndex].status !== 'Skipped') {
+        const msg = `Trying to update order with status '${targetOrder.deliveries[deliveryIndex].status}'. Can only update 'Open' or 'Skipped' orders.`;
+        console.warn(`[OrderService] ${msg}`);
+        return {
+          res: false,
+          error: msg
+        }
+      }
 
   //     const targetOrderInvoiceDate = targetOrder.invoiceDate
   //     if (updateOptions.deliveryDate > moment(targetOrderInvoiceDate).add(8, 'd').valueOf()) {
@@ -817,10 +816,10 @@ class OrderService {
   //       res: true,
   //       error: null,
   //     }
-  //   } catch (e) {
-  //     console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
-  //     throw new Error('Internal Server Error');
-  //   }
+    } catch (e) {
+      console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
   }
 
   async updateUpcomingOrdersPlans(
