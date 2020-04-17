@@ -115,7 +115,7 @@ const delivery = () => {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
             {schedules.map((s, i) => (
-              <>
+              <div key={i}>
                 <div className={classes.deliveryHeader}>
                   <DeleteIcon onClick={() => removeDelivery(i)} />
                   <Typography variant='h5' className={classes.deliveryCount}>
@@ -140,7 +140,7 @@ const delivery = () => {
                     i
                   )}
                 />
-              </>
+              </div>
             ))}
             {
               remainingDeliveries === 0 ?
