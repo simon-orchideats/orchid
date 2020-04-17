@@ -31,7 +31,7 @@ export const cartQL = gql`
     incrementDonationCount: CartState!
     moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
     removeMealFromCart(restId: ID!, mealId: ID!): CartState!
-    setCart(order: Order!): CartState!
+    setCart(order: Order!, deliveryIndex: number): CartState!
     updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
     updateZip(zip: String!): CartState!
@@ -132,15 +132,15 @@ export const useRemoveMealFromCart = (): (restId: string, mealId: string) => voi
   }
 }
 
-export const useSetCart = (): (order: Order) => void => {
-  type vars = { order: Order };
+export const useSetCart = (): (order: Order, deliveryIndex: number) => void => {
+  type vars = { order: Order, deliveryIndex: number };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setCart($order: Order!, $planId: ID!) {
-      setCart(order: $order, planId: $planId) @client
+    mutation setCart($order: Order!, $deliveryIndex: ID!) {
+      setCart(order: $order, deliveryIndex: $deliveryIndex) @client
     }
   `);
-  return (order: Order) => {
-    mutate({ variables: { order } })
+  return (order: Order, deliveryIndex: number) => {
+    mutate({ variables: { order, deliveryIndex } })
   }
 }
 
@@ -212,7 +212,7 @@ type cartMutationResolvers = {
   incrementDonationCount: ClientResolver<undefined, Cart | null>
   moveMealToNewDelivery: ClientResolver<{ meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number }, Cart | null>
   removeMealFromCart: ClientResolver<{ restId: string, mealId: string }, Cart | null>
-  setCart: ClientResolver<{ order: Order }, Cart | null>
+  setCart: ClientResolver<{ order: Order, deliveryIndex: number }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
 
@@ -360,29 +360,28 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setCart: (_, { order }, { cache }) => {
+  setCart: (_, { order, deliveryIndex }, { cache }) => {
     const restMeals: RestMeals = {};
-    order.Deliveries.forEach(d => {
-      d.Meals.forEach(newMeal => {
-        const rest = restMeals[newMeal.RestId];
-        if (rest) {
-          rest.mealCount =+ newMeal.Quantity;
-          const i = rest.meals.findIndex(m => m.MealId === newMeal.MealId);
-          if (i > -1) {
-            rest.meals[i] = new DeliveryMeal({
-              ...newMeal,
-              quantity: rest.meals[i].Quantity + newMeal.Quantity,
-            });
-          } else {
-            rest.meals.push(newMeal);
-          }
+    const delivery = order.Deliveries[deliveryIndex];
+    delivery.Meals.forEach(newMeal => {
+      const rest = restMeals[newMeal.RestId];
+      if (rest) {
+        rest.mealCount += newMeal.Quantity;
+        const i = rest.meals.findIndex(m => m.MealId === newMeal.MealId);
+        if (i > -1) {
+          rest.meals[i] = new DeliveryMeal({
+            ...newMeal,
+            quantity: rest.meals[i].Quantity + newMeal.Quantity,
+          });
         } else {
-          restMeals[newMeal.RestId] = {
-            mealCount: newMeal.Quantity,
-            meals: [newMeal],
-          }
+          rest.meals.push(newMeal);
         }
-      })
+      } else {
+        restMeals[newMeal.RestId] = {
+          mealCount: newMeal.Quantity,
+          meals: [newMeal],
+        }
+      }
     })
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,

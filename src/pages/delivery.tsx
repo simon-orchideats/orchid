@@ -195,13 +195,11 @@ const delivery = () => {
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
-            <div className={classes.scheduleDeliveries} >
-              <ScheduleDeliveries
-                deliveries={cart.Deliveries}
-                onChange={hasError => setHasScheduleError(hasError)}
-                editable
-              />
-            </div>
+            <ScheduleDeliveries
+              deliveries={cart.Deliveries}
+              onMove={hasError => setHasScheduleError(hasError)}
+              movable
+            />
             <Link href={checkoutRoute}>
               <Button
                 variant='contained'

@@ -1,14 +1,11 @@
-import { makeStyles, Typography, Container, Paper, Divider, Popover, Button, useTheme, useMediaQuery, Theme, Grid } from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, Divider, Popover, useTheme, useMediaQuery, Theme, Grid, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
-import { Cart } from "../../order/cartModel";
 import { Order } from "../../order/orderModel";
-// import moment from "moment";
 import { Destination } from "../../place/destinationModel";
-import CartMealGroup from "../../client/order/CartMealGroup";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
 import { menuRoute } from "../menu";
@@ -19,13 +16,10 @@ import SideMenuCart from "../../client/menu/SideMenuCart";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { Tier, PlanTypes } from "../../plan/planModel";
-import { useGetAvailablePlans } from "../../plan/planService";
-// import { sendSkippedOrderMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { isServer } from "../../client/utils/isServer";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
-// import { ConsumerPlan } from "../../consumer/consumerModel";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -35,8 +29,12 @@ const useStyles = makeStyles(theme => ({
     background: 'none',
     marginTop: -theme.mixins.navbar.marginBottom,
   },
-  paddingTop: {
+  deliveries: {
     paddingTop: theme.spacing(2),
+    display: 'flex',
+  },
+  paddingTop: {
+    paddingTop: theme.spacing(2)
   },
   marginBottom: {
     marginBottom: theme.spacing(3),
@@ -46,12 +44,8 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(3),
     borderColor: theme.palette.primary.main
   },
-  overviewSection: {
+  padding: {
     padding: theme.spacing(2),
-  },
-  divider: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
   },
   popover: {
     paddingLeft: theme.spacing(3),
@@ -64,6 +58,16 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  img: {
+    width: 30,
+    marginLeft: theme.spacing(1),
+  },
+  donation: {
+    display: 'flex',
+    alignItems: 'center',
+    paddingTop: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+  },
   close: {
     cursor: 'pointer'
   },
@@ -73,13 +77,6 @@ const useStyles = makeStyles(theme => ({
   link: {
     color: theme.palette.common.link,
     cursor: 'pointer',
-  },
-  skip:{
-    marginRight: theme.spacing(2),
-  },
-  buttons: {
-    display: 'flex',
-    justifyContent: 'flex-end'
   },
   column: {
     display: 'flex',
@@ -97,7 +94,6 @@ const Confirmation: React.FC<{
   const cartRef = useRef(cart);
   const clearCartMeals = useClearCartMeals();
   useEffect(() => clearCartMeals(), []);
-  // const groupedMeals = cartRef.current ? cartRef.current.RestMeals : [];
   if (!cartRef.current) {
     const err = Error('Cart is null');
     console.warn(err.stack);
@@ -177,21 +173,20 @@ const DestinationPopper: React.FC<{
 }
 
 const DeliveryOverview: React.FC<{
-  cart?: Cart
-  isUpdating: boolean
-  name: string
-  order: Order
+  cart?: Cart,
+  name: string,
+  order: Order,
+  isUpdating: boolean,
 }> = ({
   cart,
-  isUpdating,
   name,
   order,
+  isUpdating,
 }) => {
   const classes = useStyles();
   const setCart = useSetCart();
   const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
-  const plans = useGetAvailablePlans();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
   const orderMealCount = Order.getMealCount(order);
@@ -203,126 +198,40 @@ const DeliveryOverview: React.FC<{
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const onEdit = () => {
-    if (!plans.data) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
-    setCart(order);
+  const onEdit = (deliveryIndex: number) => {
+    setCart(order, deliveryIndex);
     Router.push({
       pathname: menuRoute,
-      query: { updating: 'true' }
+      query: {
+        updating: 'true',
+        orderId: order.Id,
+        deliveryIndex: deliveryIndex
+      }
     });
   };
-  const onUpdateOrder = () => {
-    if (!plans.data) {
-      const err = new Error('No plans');
-      console.error(err.stack);
-      throw err;
-    }
-    if (!cart) {
-      const err = new Error('No cart');
-      console.error(err.stack);
-      throw err;
-    }
-    const cartMealCount = cart.getStandardMealCount();
-    const planMealPrice = Tier.getMealPrice(PlanTypes.Standard, cartMealCount, plans.data);
-    if (!planMealPrice) {
-      const err = new Error('No cart meal price');
-      console.error(err.stack);
-      throw err;
-    }
-    // todo simon: use this
-    // sendEditOrderMetrics(
-    //   order,
-    //   order.MealPrice && Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
-    //   cart,
-    //   planMealPrice,
-    //   planMealCount,
-    //   cart.RestName ? cart.RestName : undefined
-    // );
-    updateOrder(order._id, Order.getUpdatedOrderInput(order, cart));
+  const onSkip = (deliveryIndex: number) => {
+    // todo simon: metrics for this
+    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex));
   }
-  // const onSkip = () => {
-  //   if (!order.MealPrice) {
-  //     const err = new Error('No meal price');
-  //     console.error(err.stack);
-  //     throw err;
-  //   }
-  //   if (!plans.data) {
-  //     const err = new Error('No plans');
-  //     console.error(err.stack);
-  //     throw err;
-  //   }
-  //   sendSkippedOrderMetrics(
-  //     order,
-  //     order.MealPrice,
-  //     Plan.getMealCountFromMealPrice(order.MealPrice, plans.data),
-  //   );
-  //   updateOrder(order._id, Order.getUpdatedOrderInput(order));
-  // }
-  let isAllDeliveriesSkipped = true;
-  let isAllDeliveriesConfirmed = true;
-
-  order.Deliveries.forEach(d => {
-    if (d.Status === 'Open') {
-      isAllDeliveriesSkipped = false;
-      isAllDeliveriesConfirmed = false;
-    } else if (d.Status === 'Confirmed') {
-      isAllDeliveriesSkipped = false;
-    } else if (d.Status === 'Skipped') {
-      isAllDeliveriesConfirmed = false;
-    }
-  });
-
-  let buttons;
-  if (isUpdating) {
-    buttons = (
-      <Button
-        variant='contained'
-        color='primary'
-        onClick={onUpdateOrder}
-      >
-        Update order
-      </Button>
-    )
-  } else if (!isAllDeliveriesConfirmed) {
-    buttons = (
-      <>
-        {
-          !isAllDeliveriesSkipped &&
-          <Button
-            variant='outlined'
-            color='primary'
-            className={classes.skip}
-            // onClick={onSkip}
-          >
-            {order.DonationCount === orderMealCount ? 'Cancel Donation' : 'Skip unconfirmed deliveries'}
-          </Button>
-        }
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={onEdit}
-        >
-          Edit unconfirmed meals
-        </Button>
-      </>
-    )
-  } else {
-    buttons = (
-      <Typography variant='body1' color='primary'>
-        All deliveries have been placed with their restaurants
-      </Typography>
-    )
+  const onUpdate = (deliveryIndex: number) => {
+    // todo simon: metrics for this
+    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex, cart));
   }
-
+  const onRemoveDonations = () => {
+    updateOrder(order._id, Order.getUpdatedOrderInput());
+  }
   const open = !!anchorEl;
   return (
     <Paper className={classes.marginBottom}>
       <Notifier />
-      <div className={`${classes.row} ${classes.overviewSection}`}>
+      <DestinationPopper
+        destination={order.Destination}
+        open={open}
+        onClose={() => setAnchorEl(null)}
+        anchorEl={anchorEl}
+        name={name}
+      />
+      <div className={`${classes.row} ${classes.padding}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
             Total
@@ -338,7 +247,7 @@ const DeliveryOverview: React.FC<{
         </div>
         <div className={classes.column}>
           {
-            order.Deliveries.length > 1 &&
+            order.Deliveries.length > 0 &&
             <>
               <Typography variant='subtitle1'>
                 Deliver to
@@ -355,30 +264,33 @@ const DeliveryOverview: React.FC<{
       </div>
       <Divider />
       {
-        <div className={classes.overviewSection}>
-          {
-            order.DonationCount > 0 &&
-            <CartMealGroup
-              mealId='donations'
-              name='Donation'
-              img='/heartHand.png'
-              quantity={order.DonationCount}
-            />
-          }
-          <ScheduleDeliveries deliveries={order.Deliveries} />
+        order.DonationCount > 0 &&
+        <div className={classes.donation}>
+          <Typography variant='h6'>
+            {order.DonationCount} donations
+          </Typography>
+          <img
+            src='/heartHand.png'
+            alt='heartHand'
+            className={classes.img}
+          />
+           <Button
+            className={classes.link}
+            onClick={onRemoveDonations}
+          >
+            Remove all donations
+          </Button>
         </div>
       }
-      <Divider />
-      <div className={`${classes.overviewSection} ${classes.buttons}`}>
-        {buttons}
+      <div className={classes.paddingTop}>
+        <ScheduleDeliveries
+          deliveries={order.Deliveries}
+          onSkip={onSkip}
+          onEdit={onEdit}
+          onUpdate={onUpdate}
+          isUpdating={isUpdating}
+        />
       </div>
-      <DestinationPopper
-        destination={order.Destination}
-        open={open}
-        onClose={() => setAnchorEl(null)}
-        anchorEl={anchorEl}
-        name={name}
-      />
     </Paper>
   )
 }
@@ -430,7 +342,7 @@ const UpcomingDeliveries = () => {
   }
   if (needsCart) {
     return (
-      <Container maxWidth='lg' className={classes.needsCartContainer}>
+      <Container maxWidth='xl' className={classes.needsCartContainer}>
         <Grid container alignItems='stretch'>
           <Grid
             item
@@ -460,7 +372,7 @@ const UpcomingDeliveries = () => {
     )
   }
   return (
-    <Container maxWidth='lg' className={classes.container}>
+    <Container maxWidth='xl' className={classes.container}>
       {
         needsConfirmation 
         && needsConfirmation === 'true'

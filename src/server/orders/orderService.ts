@@ -644,6 +644,7 @@ class OrderService {
     now = Date.now(),
     //@ts-ignore
   ): Promise<MutationBoolRes> {
+    console.log(orderId, updateOptions);
   // TODO SIMON: need to redo all of this
   // 
   //   try {
