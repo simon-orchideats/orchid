@@ -27,11 +27,14 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   if (newConsumer.plan) {
     //@ts-ignore
     newConsumer.plan.__typename = 'ConsumerPlan';
-    //@ts-ignore
-    newConsumer.plan.schedule.map(s => ({
-      ...s,
-      __typename: 'Schedule',
-    }));
+    newConsumer.plan.schedule.forEach(s => {
+      //@ts-ignore
+      s.__typename = 'Schedule';
+    });
+    newConsumer.plan.mealPlans.forEach(mp => {
+      //@ts-ignore
+      mp.__typename = 'MealPlan';
+    });
   }
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';

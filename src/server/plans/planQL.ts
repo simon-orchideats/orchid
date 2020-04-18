@@ -1,7 +1,7 @@
 import { gql } from 'apollo-server';
 
 export const PlanQL = gql`
-  enum PlanType {
+  enum PlanName {
     Standard
     Gourmet
   }
@@ -11,7 +11,7 @@ export const PlanQL = gql`
     maxMeals: Int
   }
   type Plan {
-    type: PlanType!
+    name: PlanName!
     stripePlanId: ID!
     tiers: [Tier!]!
   }

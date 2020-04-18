@@ -18,6 +18,8 @@ const restFragment = gql`
       name
       description
       originalPrice
+      stripePlanId
+      planName
     }
     profile {
       name

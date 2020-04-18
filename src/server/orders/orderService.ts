@@ -1,8 +1,8 @@
-import { Tier, Plan, PlanTypes } from './../../plan/planModel';
+import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, IUpdateOrderInput } from './../../order/orderModel';
+import { EOrder, IOrder, IUpdateOrderInput, IMealPrice } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
@@ -369,7 +369,8 @@ class OrderService {
     //@ts-ignore todo simon: do this
     mealCount: number,
     weekPrice: number,
-    mealPrice: number
+    //@ts-ignore todo simon: do this
+    _mealPrice: number
   ) {
     try {
       if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
@@ -386,7 +387,8 @@ class OrderService {
         costs: {
           tax: 0,
           tip: 0,
-          mealPrice,
+          // todo simon: sshould not be mealPrices: []
+          mealPrices: [],
           total: weekPrice,
           percentFee: 0,
           flatRateFee: 0,
@@ -445,6 +447,7 @@ class OrderService {
       const {
         cuisines,
         schedule,
+        mealPlans
       } = cart.consumerPlan;
 
       let stripeCustomerId = signedInUser.stripeCustomerId;
@@ -474,7 +477,20 @@ class OrderService {
         }
       }
 
-      let plans;
+
+      try {
+        subscription = await this.stripe.subscriptions.create({
+          proration_behavior: 'none',
+          customer: stripeCustomerId,
+          items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
+        });
+      } catch (e) {
+        console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+                      + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+        throw e;
+      }
+
+      let plans: IPlan[];
       try {
         plans = await this.planService.getAvailablePlans();
       } catch (e) {
@@ -482,35 +498,28 @@ class OrderService {
         throw e;
       }
 
-      try {
-        const standardPlan = Plan.getPlan(PlanTypes.Standard, plans);
-        subscription = await this.stripe.subscriptions.create({
-          proration_behavior: 'none',
-          customer: stripeCustomerId,
-          items: [{ plan: standardPlan.stripePlanId }]
-        });
-      } catch (e) {
-        console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
-                      + `with stripe customerId '${stripeCustomerId}'`, e.stack);
-        throw e;
-      }
-      const standardMealCount = Cart.getStandardMealCountFromICartInput(cart);
-      const mealPrice = Tier.getMealPrice(
-        PlanTypes.Standard,
-        standardMealCount,
-        plans
-      );
-      const total = mealPrice * standardMealCount;
+      const mealPrices: IMealPrice[] = [];
+      let total = 0;
+      mealPlans.forEach(mp => {
+        const mealPrice = Tier.getMealPrice(
+          mp.planName,
+          mp.mealCount,
+          plans
+        );
+        total += mealPrice * mp.mealCount;
+        mealPrices.push({
+          stripePlanId: mp.stripePlanId,
+          planName: mp.planName,
+          mealPrice,
+        })
+      });
+
       const order = Order.getNewOrderFromCartInput(
         signedInUser,
         cart,
         subscription.current_period_end * 1000,
         subscription.id,
-        Tier.getMealPrice(
-          PlanTypes.Standard,
-          Cart.getStandardMealCountFromICartInput(cart),
-          plans
-        ),
+        mealPrices,
         total,
       );
       const indexer = this.elastic.index({
@@ -522,6 +531,7 @@ class OrderService {
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
         plan: {
+          mealPlans,
           schedule,
           cuisines,
         },
@@ -537,6 +547,8 @@ class OrderService {
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
       try {
+        // todo left off here: when deciding auto meals, we also need to account for donations by adding an equal
+        // number of meals. can do this by using mealPlan instead of deliveries
         this.restService.getRestsByCuisines(cuisines, ['menu','profile']).then( rests => {
           if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
           const deliveries: IDeliveryInput[] = [];
@@ -562,7 +574,7 @@ class OrderService {
             { ...cart, deliveries, donationCount: 0 },
             moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
             subscription.id,
-            mealPrice,
+            mealPrices,
             total,
           );
        

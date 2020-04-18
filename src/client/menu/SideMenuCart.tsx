@@ -61,7 +61,8 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
-      title
+      title,
+      confirmText,
     ) => {
       const meals = (
         <>
@@ -162,7 +163,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                 fullWidth
                 onClick={onNext}
               >
-                Next
+                {confirmText}
               </Button>
               <Typography variant='body1' className={classes.suggestion}>
                 {cart && cart.Zip ? null : 'Enter zip to continue'}

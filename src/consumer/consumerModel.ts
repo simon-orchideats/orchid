@@ -1,3 +1,4 @@
+import { PlanName } from './../plan/planModel';
 import { IDestination, Destination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 import moment from 'moment';
@@ -44,16 +45,16 @@ export class ConsumerProfile implements IConsumerProfile {
 
 export type CuisineType =
   'American'
-  | 'Bbq'
+  // | 'Bbq'
   | 'Chinese'
   | 'Indian'
   | 'Italian'
   | 'Japanese'
   | 'Mediterranean'
   | 'Mexican'
-  | 'Thai'
-  | 'Vegan'
-  | 'Vegetarian'
+  // | 'Thai'
+  // | 'Vegan'
+  // | 'Vegetarian'
 
 export const CuisineTypes: {
   American: 'American',
@@ -186,25 +187,58 @@ export class Schedule implements ISchedule {
   }
 }
 
+export interface IMealPlan {
+  readonly stripePlanId: string;
+  readonly planName: PlanName;
+  readonly mealCount: number;
+}
+
+export class MealPlan implements IMealPlan {
+  readonly stripePlanId: string;
+  readonly planName: PlanName;
+  readonly mealCount: number;
+
+  constructor(plan: IMealPlan) {
+    this.stripePlanId = plan.stripePlanId;
+    this.planName = plan.planName;
+    this.mealCount = plan.mealCount;
+  }
+
+  public get StripePlanId() { return this.stripePlanId }
+  public get PlanName() { return this.planName }
+  public get MealCount() { return this.mealCount }
+
+  static getICopy(plan: IMealPlan): IMealPlan {
+    return {
+      ...plan
+    }
+  }
+}
+
 export interface IConsumerPlan {
+  readonly mealPlans: IMealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedule: ISchedule[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
+  readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedule: ISchedule[]
 
   constructor(consumerPlan: IConsumerPlan) {
+    this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
     this.cuisines = consumerPlan.cuisines.map(c => c);
     this.schedule = consumerPlan.schedule.map(s => Schedule.getICopy(s));
   }
 
   public get Cuisines() { return this.cuisines }
+  public get MealPlans() { return this.mealPlans }
   public get Schedule() { return this.schedule }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
+      mealPlans: plan.mealPlans.map(p => MealPlan.getICopy(p)),
       schedule: plan.schedule.map(s => Schedule.getICopy(s)),
       cuisines: plan.cuisines.map(c => c),
     }

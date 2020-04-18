@@ -1,4 +1,4 @@
-import { MIN_MEALS, IPlan, PlanType } from './../../plan/planModel';
+import { MIN_MEALS, IPlan, PlanName } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
@@ -25,7 +25,7 @@ class PlanService implements IPlanService {
         if (!p.nickname) throw new Error('No plan nickname');
         return {
           stripePlanId: p.id,
-          type: p.nickname as PlanType,
+          name: p.nickname as PlanName,
           tiers: p.tiers.map(tier => {
             if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);
             if (min === null) throw new Error('min is null');

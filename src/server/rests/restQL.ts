@@ -7,6 +7,8 @@ const MealQL = gql`
     name: String!
     description: String
     originalPrice: Float
+    stripePlanId: ID!
+    planName: ID!
   }
 `
 

@@ -1,7 +1,7 @@
-import { makeStyles, Button, Chip } from "@material-ui/core";
+import { makeStyles, Button, Chip, ButtonProps } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
-  donationButton: {
+  button: {
     flex: 0.15,
     boxShadow: 'none',
     color: `${theme.palette.common.white} !important`,
@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
 
 const Counter: React.FC<{
   subtractDisabled: boolean,
+  subtractButtonProps?: ButtonProps,
   onClickSubtract: () => void,
   subractIcon: React.ReactNode,
   chipLabel: number,
@@ -28,8 +29,10 @@ const Counter: React.FC<{
   addDisabled?: boolean,
   onClickAdd: () => void,
   addIcon: React.ReactNode,
+  addButtonProps?: ButtonProps,
 }> = ({
   subtractDisabled,
+  subtractButtonProps = {},
   onClickSubtract,
   subractIcon,
   chipLabel,
@@ -37,16 +40,26 @@ const Counter: React.FC<{
   addDisabled = false,
   onClickAdd,
   addIcon,
+  addButtonProps = {},
 }) => {
   const classes = useStyles();
+  const {
+    className: subClassName,
+    ...subRemainingPRops
+  } = subtractButtonProps
+  const {
+    className: addClassName,
+    ...addRemainingProps
+  } = addButtonProps
   return (
     <>
       <Button
         size='small'
         variant='text'
         disabled={subtractDisabled}
-        className={classes.donationButton}
+        className={`${classes.button} ${subClassName}`}
         onClick={onClickSubtract}
+        {...subRemainingPRops}
       >
         {subractIcon}
       </Button>
@@ -62,9 +75,10 @@ const Counter: React.FC<{
       <Button
         size='small'
         variant='text'
-        className={classes.donationButton}
+        className={`${classes.button} ${addClassName}`}
         disabled={addDisabled}
         onClick={onClickAdd}
+        {...addRemainingProps}
       >
         {addIcon}
       </Button>

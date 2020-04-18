@@ -31,7 +31,6 @@ const useStyles = makeStyles(theme => ({
   zipPlan: {
     alignSelf: 'stretch',
     flexBasis: '100%',
-    paddingBottom: theme.spacing(2),
     display: 'flex',
     alignItems: 'center',
   },
@@ -113,14 +112,16 @@ const menu = () => {
                 <ArrowDropDownIcon />
               </Link>
             :
-              <>
-                <div className={classes.zipPlan}>
-                  <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                    <LocationOnIcon />
-                  </Link>
-                </div>
+              <div className={classes.zipPlan}>
+                <Link
+                  className={classes.link}
+                  color='inherit'
+                  onClick={onClickZip}
+                >
+                  <LocationOnIcon />
+                </Link>
                 {rests.data && <MenuMiniCart />}
-              </>
+              </div>
             }
           </div>
           {rests.loading && <Typography>Loading...</Typography>}

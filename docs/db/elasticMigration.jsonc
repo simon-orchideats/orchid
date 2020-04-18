@@ -1,3 +1,45 @@
+rest db
+
+create rests2
+
+POST _reindex
+{
+  "source": {
+    "index": "rests"
+  },
+  "dest": {
+    "index": "rests2"
+  },
+  "script": {
+    "source": """
+      def menu = ctx._source.menu;
+      for (int i = 0; i < menu.length; i++) {
+        menu[i].planName = 'Standard';
+        menu[i].stripePlanId = 'plan_H4mjyvjuE1fObC';
+      }
+    """,
+    "params": {
+      "delivery": {}
+    }
+  }
+}
+
+DELETE rests
+create rests
+
+POST _reindex
+{
+  "source": {
+    "index": "rests2"
+  },
+  "dest": {
+    "index": "rests"
+  }
+}
+
+
+
+/////////
 consumers db
 
 create consumers2
@@ -5,7 +47,7 @@ create consumers2
 POST _reindex
 {
   "source": {
-    "index": "consumers",
+    "index": "consumers2",
     "_source": {
       "excludes": [
         "plan.stripePlanId",
@@ -15,11 +57,25 @@ POST _reindex
     }
   },
   "dest": {
-    "index": "consumers2"
+    "index": "consumers"
+  },
+  "script": {
+    "source": """
+      ctx._source.plan.mealPlans = params.mealPlans;
+      ctx._source.plan.mealPlans.add(params.mealPlan);
+    """,
+    "params": {
+      "mealPlans": [],
+      "mealPlan": {
+        "stripePlanId": "plan_H4mjyvjuE1fObC",
+        "planName": "Standard",
+        "mealCount": 4
+      }
+    }
   }
 }
 
-delete consumers
+DELETE consumers
 create consumers
 
 POST _reindex
@@ -56,20 +112,30 @@ POST _reindex
         params.delivery.meals[i].tags = [];
         params.delivery.meals[i].restId = ctx._source.rest.restId;
         params.delivery.meals[i].restName = "name";
+        params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
+        params.delivery.meals[i].planName = "Standard";
       }
       ctx._source.deliveries.add(params.delivery);
       ctx._source.remove("status");
       ctx._source.remove("rest");
       ctx._source.remove("deliveryTime");
       ctx._source.remove("deliveryDate");
+      ctx._source.costs.mealPrices = [];
+      params.mealPrice.mealPrice = ctx._source.costs.mealPrice;
+      ctx._source.costs.mealPrices.add(params.mealPrice);
+      ctx._source.remove("costs.mealPrice");
     """,
     "params": {
-      "delivery": {}
+      "delivery": {},
+      "mealPrice": {
+        "stripePlanId": "plan_H4mjyvjuE1fObC",
+        "planName": "Standard"
+      }
     }
   }
 }
 
-delete orders
+DELETE orders
 create orders
 
 POST _reindex
