@@ -1,8 +1,8 @@
 export const MIN_MEALS = 4;
 
-export type PlanType = 'Standard' | 'Gourmet';
+export type PlanName = 'Standard' | 'Gourmet';
 
-export const PlanTypes: {
+export const PlanNames: {
   Standard: 'Standard',
   Gourmet: 'Gourmet',
 } = {
@@ -12,26 +12,26 @@ export const PlanTypes: {
 
 export interface IPlan {
   readonly stripePlanId: string;
-  readonly type: PlanType;
+  readonly name: PlanName;
   readonly tiers: ITier[]
 }
 
 export class Plan implements IPlan {
   readonly stripePlanId: string;
-  readonly type: PlanType;
+  readonly name: PlanName;
   readonly tiers: Tier[]
 
   constructor(plan: IPlan) {
     this.stripePlanId = plan.stripePlanId;
-    this.type = plan.type;
+    this.name = plan.name;
     this.tiers = plan.tiers.map(t => new Tier(t));
   }
 
   public get StripePlanId() { return this.stripePlanId }
-  public get Type() { return this.type }
+  public get Name() { return this.name }
   public get Tiers() { return this.tiers }
 
-  public static getPlan(type: PlanType, plans: IPlan[]) {
+  public static getPlan(type: PlanName, plans: IPlan[]) {
     return getPlanByType(type, plans);
   }
 }
@@ -43,8 +43,8 @@ export interface ITier {
   readonly mealPrice: number;
 }
 
-const getPlanByType = (type: PlanType, plans: IPlan[]) => {
-  const plan = plans.find(p => p.type === type);
+const getPlanByType = (type: PlanName, plans: IPlan[]) => {
+  const plan = plans.find(p => p.name === type);
   if (!plan) {
     const err = new Error(`Failed to find plan type '${type}'`);
     console.error(err.stack);
@@ -68,7 +68,7 @@ export class Tier implements ITier {
   public get MinMeals() { return this.minMeals }
   public get MealPrice() { return this.mealPrice }
 
-  public static getMealPrice(type: PlanType, count: number, plans: IPlan[]) {
+  public static getMealPrice(type: PlanName, count: number, plans: IPlan[]) {
     const plan = getPlanByType(type, plans);
     const tiers = plan.tiers;
     for (let i = 0; i < tiers.length; i++) {
@@ -81,7 +81,7 @@ export class Tier implements ITier {
     throw err;
   }
 
-  public static getNextMealPrice(type: PlanType, count: number, plans: IPlan[]) {
+  public static getNextMealPrice(type: PlanName, count: number, plans: IPlan[]) {
     const plan = getPlanByType(type, plans);
     const tiers = plan.tiers;
     for (let i = 0; i < tiers.length; i++) {
@@ -92,7 +92,7 @@ export class Tier implements ITier {
     return null
   }
 
-  public static getCountTillNextPlan(type: PlanType, count: number, plans: IPlan[]) {
+  public static getCountTillNextPlan(type: PlanName, count: number, plans: IPlan[]) {
     const plan = getPlanByType(type, plans);
     const tiers = plan.tiers;
     for (let i = 0; i < tiers.length; i++) {
@@ -103,7 +103,7 @@ export class Tier implements ITier {
     return null
   }
 
-  public static getPlanPrice(type: PlanType, count: number, plans: IPlan[]) {
+  public static getPlanPrice(type: PlanName, count: number, plans: IPlan[]) {
     const price = Tier.getMealPrice(type, count, plans);
     return price * count;
   }

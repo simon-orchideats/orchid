@@ -6,7 +6,7 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
-import { Tier, MIN_MEALS, PlanTypes } from "../../plan/planModel";
+import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
 import { Schedule } from "../../consumer/consumerModel";
 import { useUpdateOrder } from "../order/orderService";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
@@ -15,9 +15,10 @@ import { Order } from "../../order/orderModel";
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
   let suggestion: string[] = [];
-  Object.entries(cart.RestMeals).forEach(([_restId, restMeals]) => {
-    if (restMeals.mealCount < minMeals) {
-      suggestion.push(`${restMeals.mealCount}/${minMeals} meals for ${restMeals.meals[0].RestName}`);
+  Object.values(cart.RestMeals).forEach(restMeals => {
+    const numMealsFromRest = Cart.getRestMealCount(restMeals.mealPlans);
+    if (numMealsFromRest < minMeals) {
+      suggestion.push(`${numMealsFromRest}/${minMeals} meals for ${restMeals.meals[0].RestName}`);
     }
   });
   return suggestion;
@@ -33,7 +34,8 @@ const MenuCart: React.FC<{
     donationCount: number,
     incrementDonationCount: () => void,
     decremetnDonationCount: () => void,
-    title: string
+    title: string,
+    confirmText: string, 
   ) => React.ReactNode
 }> = ({
   render
@@ -97,19 +99,19 @@ const MenuCart: React.FC<{
     }
   }
 
+  // left off here. handle all donations
   const incrementDonationCount = useIncrementCartDonationCount();
   const decrementDonationCount = useDecrementCartDonationCount();
 
-  const disabled = false;
   const mealCount = cart ? cart.getStandardMealCount() : 0;
   let summary = '';
   let suggestions: string[] = [];
   if (plans.data) {
     if (mealCount >= MIN_MEALS) {
-      const moreToNext = Tier.getCountTillNextPlan(PlanTypes.Standard, mealCount, plans.data);
-      const nextPrice = Tier.getNextMealPrice(PlanTypes.Standard, mealCount, plans.data);
+      const moreToNext = Tier.getCountTillNextPlan(PlanNames.Standard, mealCount, plans.data);
+      const nextPrice = Tier.getNextMealPrice(PlanNames.Standard, mealCount, plans.data);
       const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
-      summary = `${mealCount} meals plan (${(Tier.getMealPrice(PlanTypes.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
+      summary = `${mealCount} meals plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
     }
     suggestions = getSuggestion(cart, MIN_MEALS);
   }
@@ -117,7 +119,7 @@ const MenuCart: React.FC<{
     <>
       {render(
         cart,
-        disabled,
+        suggestions.length > 0 || mealCount === 0,
         onNext,
         suggestions,
         summary,
@@ -125,6 +127,7 @@ const MenuCart: React.FC<{
         incrementDonationCount,
         decrementDonationCount,
         title,
+        isUpdating && cart ? 'Update delivery' : 'Next', 
       )}
     </>
   );

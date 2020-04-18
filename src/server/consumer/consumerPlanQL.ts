@@ -40,7 +40,14 @@ const _ConsumerPlanQL = gql`
     time: DeliveryTime!
   }
 
+  input MealPlanInput {
+    stripePlanId: ID!
+    planName: ID!
+    mealCount: Int!
+  }
+
   input ConsumerPlanInput {
+    mealPlans: [MealPlanInput!]!
     schedule: [ScheduleInput!]!
     cuisines: [CuisineType!]!
   }
@@ -50,7 +57,14 @@ const _ConsumerPlanQL = gql`
     time: DeliveryTime!
   }
 
+  type MealPlan {
+    stripePlanId: ID!
+    planName: ID!
+    mealCount: Int!
+  }
+
   type ConsumerPlan {
+    mealPlans: [MealPlan!]!
     schedule: [Schedule!]!
     cuisines: [CuisineType!]!
   }

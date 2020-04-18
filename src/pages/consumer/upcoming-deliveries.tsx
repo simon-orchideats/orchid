@@ -189,7 +189,6 @@ const DeliveryOverview: React.FC<{
   const clearCartMeals = useClearCartMeals();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
-  const orderMealCount = Order.getMealCount(order);
   useMutationResponseHandler(updateOrderRes, () => {
     Router.replace(upcomingDeliveriesRoute)
     notify('Order updated', NotificationType.success, true);
@@ -238,8 +237,10 @@ const DeliveryOverview: React.FC<{
           </Typography>
           <Typography variant='body1' className={classes.hint}>
             {
-              orderMealCount > 0?
-              `${orderMealCount} meals (${(order.MealPrice / 100).toFixed(2)} ea)`
+              order.MealPrices.length > 0 ?
+              order.MealPrices.map(mp => (
+                `${Order.getMealCount(order, mp.PlanName)} meals (${(mp.MealPrice / 100).toFixed(2)} ea)`
+              ))
               :
               '0 meals'
             }

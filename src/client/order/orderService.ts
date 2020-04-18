@@ -23,7 +23,11 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         }
         instructions
       }
-      mealPrice
+      mealPrices {
+        stripePlanId
+        planName
+        mealPrice
+      }
       deliveries {
         deliveryTime
         deliveryDate
@@ -34,6 +38,8 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
           quantity
           restId
           restName
+          stripePlanId
+          planName
         }
         status
       }

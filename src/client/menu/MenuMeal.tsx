@@ -1,10 +1,11 @@
 import React from 'react';
 import { Meal } from "../../rest/mealModel";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Button, Chip, Typography } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { useState } from "react";
+import Counter from './Counter';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -49,10 +50,6 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.primary.main
   },
   button: {
-    flex: 0.15,
-    boxShadow: 'none',
-    color: `${theme.palette.common.white} !important`,
-    minWidth: theme.spacing(4),
     borderRadius: 10,
   },
   chip: {
@@ -108,33 +105,24 @@ const MenuMeal: React.FC<{
       </div>
       <CardContent className={classes.content}>
         <div className={classes.actionBar}>
-          <Button
-            size='small'
-            variant='contained'
-            disabled={!count}
-            className={`${classes.button} ${classes.minusButton}`}
-            onClick={() => onRemoveMeal()}
-          >
-            <RemoveIcon />
-          </Button>
-          <Chip
-            className={classes.chip}
-            disabled={!count}
-            label={count}
-            variant='outlined'
-            classes={{
-              disabled: classes.disabledChip
+          <Counter
+            subtractDisabled={!count}
+            onClickSubtract={onRemoveMeal}
+            subtractButtonProps={{
+              variant: 'contained',
+              className: `${classes.button} ${classes.minusButton}`
+            }}
+            subractIcon={<RemoveIcon />}
+            chipLabel={count}
+            chipDisabled={!count}
+            onClickAdd={onAddMeal}
+            addIcon={<AddIcon />}
+            addButtonProps={{
+              variant: 'contained',
+              color: 'primary',
+              className: classes.button
             }}
           />
-          <Button
-            size='small'
-            variant='contained'
-            color='primary'
-            className={classes.button}
-            onClick={() => onAddMeal()}
-          >
-            <AddIcon />
-          </Button>
         </div>
         <Typography
           gutterBottom

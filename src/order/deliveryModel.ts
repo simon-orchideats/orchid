@@ -1,12 +1,11 @@
+import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
 import { deliveryTime } from './../consumer/consumerModel';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
-
-export interface IDeliveryMeal {
+ 
+export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'originalPrice'>{
   readonly mealId: string
-  readonly name: string
-  readonly img?: string
   readonly quantity: number
   readonly restId: string
   readonly restName: string
@@ -19,6 +18,8 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly quantity: number
   readonly restId: string
   readonly restName: string
+  readonly stripePlanId: string;
+  readonly planName: PlanName;
 
   constructor(meal: IDeliveryMeal) {
     this.mealId = meal.mealId;
@@ -27,6 +28,8 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.quantity = meal.quantity;
     this.restId = meal.restId;
     this.restName = meal.restName;
+    this.stripePlanId = meal.stripePlanId;
+    this.planName = meal.planName;
   }
 
   public get MealId() { return this.mealId }
@@ -35,6 +38,8 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get Quantity() { return this.quantity }
   public get RestId() { return this.restId }
   public get RestName() { return this.restName }
+  public get StripePlanId() { return this.stripePlanId }
+  public get PlanName() { return this.planName }
 
   static getDeliveryMeal(meal: IMeal, restId: string, restName: string, quantity: number = 1) {
     return new DeliveryMeal({
@@ -44,6 +49,8 @@ export class DeliveryMeal implements IDeliveryMeal {
       quantity,
       restId,
       restName,
+      stripePlanId: meal.stripePlanId,
+      planName: meal.planName,
     });
   }
 

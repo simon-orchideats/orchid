@@ -1,5 +1,5 @@
 import { DeliveryMeal } from './../../../order/deliveryModel';
-import { deliveryDay, deliveryTime, Schedule } from './../../../consumer/consumerModel';
+import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
 import { Cart, RestMeals } from '../../../order/cartModel';
@@ -235,13 +235,18 @@ export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal, restId, restName }, { cache }) => {
     const res = getCart(cache);
     const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
+    const newMealPlans = [new MealPlan({
+      stripePlanId: meal.StripePlanId,
+      planName: meal.PlanName,
+      mealCount: 1
+    })];
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
         donationCount: 0,
         deliveries: [],
         restMeals: {
           [restId]: {
-            mealCount: 1,
+            mealPlans: newMealPlans,
             meals: [newDeliveryMeal]
           }
         },
@@ -254,7 +259,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         donationCount: res.cart.DonationCount,
         restMeals: {
           [restId]: {
-            mealCount: 1,
+            mealPlans: newMealPlans,
             meals: [newDeliveryMeal]
           }
         },
@@ -364,24 +369,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const restMeals: RestMeals = {};
     const delivery = order.Deliveries[deliveryIndex];
     delivery.Meals.forEach(newMeal => {
-      const rest = restMeals[newMeal.RestId];
-      if (rest) {
-        rest.mealCount += newMeal.Quantity;
-        const i = rest.meals.findIndex(m => m.MealId === newMeal.MealId);
-        if (i > -1) {
-          rest.meals[i] = new DeliveryMeal({
-            ...newMeal,
-            quantity: rest.meals[i].Quantity + newMeal.Quantity,
-          });
-        } else {
-          rest.meals.push(newMeal);
-        }
-      } else {
-        restMeals[newMeal.RestId] = {
-          mealCount: newMeal.Quantity,
-          meals: [newMeal],
-        }
-      }
+      Cart.addMealToRestMeals(restMeals, newMeal);
     })
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,

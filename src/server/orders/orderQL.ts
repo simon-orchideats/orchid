@@ -18,12 +18,14 @@ export const _OrderQL = gql`
     paymentMethodId: String!
     phone: String!
   }
-  
+
   input CartMealInput {
     mealId: ID!
     img: String
     name: String!
     quantity: Int!
+    stripePlanId: ID!
+    planName: ID!
   }
 
   input DeliveryInput {
@@ -40,6 +42,8 @@ export const _OrderQL = gql`
     quantity: Int!
     restId: ID!
     restName: String!
+    stripePlanId: ID!
+    planName: ID!
   }
 
   input UpdateOrderInput {
@@ -55,6 +59,8 @@ export const _OrderQL = gql`
     quantity: Int!
     restId: ID!
     restName: String!
+    stripePlanId: ID!
+    planName: ID!
   }
 
   type Delivery {
@@ -65,10 +71,16 @@ export const _OrderQL = gql`
     status: DeliveryStatus!
   }
 
+  type MealPrice {
+    stripePlanId: ID!
+    planName: ID!
+    mealPrice: Float!
+  }
+
   type Order {
     _id: ID!
     deliveries: [Delivery!]!
-    mealPrice: Float
+    mealPrices: [MealPrice!]!
     phone: String!
     name: String!
     donationCount:Int!

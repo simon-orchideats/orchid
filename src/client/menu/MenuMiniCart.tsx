@@ -49,6 +49,8 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
+      _title,
+      confirmText,
     ) => (
       <div className={classes.container}>
         <Popover
@@ -93,14 +95,17 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           onClickAdd={incrementDonationCount}
           addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
         />
-        {/* left off here: make this mobile friendly */}
         {(!cart || !cart.Zip) && (
           <Typography variant='body1' className={classes.suggestion}>
             Enter zip to continue
           </Typography>
         )}
-        {cart && cart.Zip && suggestions.map(suggestion => 
-          <Typography variant='body1' className={classes.suggestion}>
+        {cart && cart.Zip && suggestions.map((suggestion, i) => 
+          <Typography
+            key={i}
+            variant='body1'
+            className={classes.suggestion}
+          >
             {suggestion}
           </Typography>
         )}
@@ -111,7 +116,7 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           className={classes.button}
           onClick={onNext}
         >
-          Next
+          {confirmText}
         </Button>
       </div>
     )} />

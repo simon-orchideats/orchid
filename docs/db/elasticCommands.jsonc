@@ -327,6 +327,12 @@ PUT /rests/
           },
           "originalPrice": {
             "type": "float"
+          },
+          "stripePlanId": {
+            "type": "keyword"
+          },
+          "planName": {
+            "type": "keyword"
           }
         }
       },
@@ -480,6 +486,12 @@ PUT /orders/
               },
               "restName": {
                 "type": "keyword"
+              },
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
               }
             }
           }
@@ -563,8 +575,18 @@ PUT /orders/
           "tip": {
             "type": "float"
           },
-          "mealPrice": {
-            "type": "float"
+          "mealPrices": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealPrice": {
+                "type": "float"
+              }
+            }
           },
           "total": {
             "type": "float"
@@ -657,6 +679,19 @@ PUT /consumers/
       },
       "plan": {
         "properties": {
+          "mealPlans": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealCount": {
+                "type": "keyword"
+              }
+            }
+          },
           "schedule": {
             "properties": {
               "day": {

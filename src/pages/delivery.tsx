@@ -13,6 +13,7 @@ import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 import { MIN_MEALS } from "../plan/planModel";
 import Link from "next/link";
 import { checkoutRoute } from "./checkout";
+import { Cart } from "../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -89,7 +90,7 @@ const delivery = () => {
   }
   const allowedDeliveries = useMemo(() => 
     Object.values(cart.RestMeals).reduce(
-      (sum, restMeal) => sum + Math.floor(restMeal.mealCount / MIN_MEALS),
+      (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
       0
     ),
     []

@@ -6,7 +6,7 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import React from "react";
 import { Schedule } from "../../../consumer/consumerModel";
 import { useMoveMealToNewDeliveryInCart } from "../../global/state/cartState";
-import { RestMeals } from "../../../order/cartModel";
+import { RestMeals, Cart } from "../../../order/cartModel";
 import { MIN_MEALS } from "../../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
@@ -70,26 +70,9 @@ const ScheduleDeliveries: React.FC<{
 }) => {
   const classes = useStyles();
   const theme = useTheme();
+
   const restMealsPerDelivery: RestMeals[] = deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
-    const restMeals = groupings[meal.RestId];
-    if (restMeals) {
-      const mealIndex = restMeals.meals.findIndex(m => m.MealId === meal.MealId);
-      if (mealIndex === -1) {
-        restMeals.mealCount += meal.Quantity;
-        restMeals.meals.push(meal);
-      } else {
-        restMeals.mealCount += meal.Quantity;
-        restMeals.meals[mealIndex] = new DeliveryMeal({
-          ...restMeals.meals[mealIndex],
-          quantity: restMeals.meals[mealIndex].Quantity + meal.Quantity,
-        })
-      }
-    } else {
-      groupings[meal.RestId] = {
-        mealCount: meal.Quantity,
-        meals: [meal]
-      };
-    }
+    Cart.addMealToRestMeals(groupings, meal);
     return groupings;
   }, {}));
   const moveMeal = (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
@@ -100,9 +83,12 @@ const ScheduleDeliveries: React.FC<{
     );
     if (onMove) {
       const toDestination = restMealsPerDelivery[toDeliveryIndex][meal.RestId];
-      if (restMealsPerDelivery[fromDeliveryIndex][meal.RestId].mealCount < 4) {
+      const fromDestination = restMealsPerDelivery[fromDeliveryIndex][meal.RestId];
+      // left off here. fix this validation. it's problematic because we previous errors
+      // are overwritten by subsequent successes
+      if (Cart.getRestMealCount(fromDestination.mealPlans) < MIN_MEALS) {
         onMove(false);
-      } else if (toDestination && toDestination.mealCount < 4) {
+      } else if (toDestination && Cart.getRestMealCount(toDestination.mealPlans) < MIN_MEALS) {
         onMove(false);
       } else {
         onMove(true);
@@ -194,7 +180,7 @@ const ScheduleDeliveries: React.FC<{
                   {restMeal.meals[0].RestName}
                 </Typography>
                 {
-                  restMeal.mealCount < MIN_MEALS &&
+                  Cart.getRestMealCount(restMeal.mealPlans) < MIN_MEALS &&
                   <Typography
                     variant='body1'
                     className={`${classes.orange} ${classes.paddingBottom}`}

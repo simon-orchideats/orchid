@@ -6,6 +6,11 @@ export const consumerFragment = gql`
     stripeCustomerId
     stripeSubscriptionId
     plan {
+      mealPlans {
+        stripePlanId
+        planName
+        mealCount
+      }
       schedule {
         day
         time

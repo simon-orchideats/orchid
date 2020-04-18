@@ -9,7 +9,7 @@ const AVAILABLE_PLANS_QUERY = gql`
   query availablePlans {
     availablePlans {
       stripePlanId
-      type
+      name
       tiers {
         maxMeals
         minMeals
