@@ -636,7 +636,6 @@ class OrderService {
   async updateOrder(
     signedInUser: SignedInUser,
     orderId: string,
-    deliveryIndex: number,
     //@ts-ignore
     updateOptions: IUpdateOrderInput,
     //@ts-ignore
@@ -675,6 +674,14 @@ class OrderService {
           error: msg
         }
       }
+      if (!updateOptions.deliveryIndex) {
+        const msg = `No deliveryIndex given`;
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
   //     const validation = await this.validateUpdateOrderInput(updateOptions, now);
   //     if (validation) {
   //       return {
@@ -698,8 +705,8 @@ class OrderService {
         }
       }
       
-      if (targetOrder.deliveries[deliveryIndex].status !== 'Open' && targetOrder.deliveries[deliveryIndex].status !== 'Skipped') {
-        const msg = `Trying to update order with status '${targetOrder.deliveries[deliveryIndex].status}'. Can only update 'Open' or 'Skipped' orders.`;
+      if (targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Open' && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Skipped') {
+        const msg = `Trying to update order with status '${targetOrder.deliveries[updateOptions.deliveryIndex].status}'. Can only update 'Open' or 'Skipped' orders.`;
         console.warn(`[OrderService] ${msg}`);
         return {
           res: false,
@@ -707,15 +714,15 @@ class OrderService {
         }
       }
 
-  //     const targetOrderInvoiceDate = targetOrder.invoiceDate
-  //     if (updateOptions.deliveryDate > moment(targetOrderInvoiceDate).add(8, 'd').valueOf()) {
-  //       const msg = 'Delivery date cannot exceed 8 days after the payment';
-  //       console.warn('[OrderService]', msg)
-  //       return {
-  //         res: false,
-  //         error: msg
-  //       }
-  //     }
+      // const targetOrderInvoiceDate = targetOrder.invoiceDate
+      // if (targetOrder.deliveries[updateOptions.deliveryIndex].deliveryDate > moment(targetOrderInvoiceDate).add(8, 'd').valueOf()) {
+      //   const msg = 'Delivery date cannot exceed 8 days after the payment';
+      //   console.warn('[OrderService]', msg)
+      //   return {
+      //     res: false,
+      //     error: msg
+      //   }
+      // }
 
   //     const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format(adjustmentDateFormat);
   //     let pendingLineItems;
@@ -796,27 +803,27 @@ class OrderService {
   //       }
   //     }
       
-  //     try {
-  //       await this.elastic.update({
-  //         index: ORDER_INDEX,
-  //         id: orderId,
-  //         body: {
-  //           doc: Order.getEOrderFromUpdatedOrder(
-  //             targetOrder,
-  //             newPlan ? newPlan.mealPrice : null,
-  //             newPlan ? newPlan.weekPrice : 0,
-  //             updateOptions
-  //           ),
-  //         }
-  //       })
-  //     } catch (e) {
-  //       throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
-  //     }
+      try {
+        await this.elastic.update({
+          index: ORDER_INDEX,
+          id: orderId,
+          body: {
+            doc: Order.getEOrderFromUpdatedOrder(
+              targetOrder,
+              newPlan ? newPlan.mealPrice : null,
+              newPlan ? newPlan.weekPrice : 0,
+              updateOptions
+            ),
+          }
+        })
+      } catch (e) {
+        throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
+      }
 
-  //     return {
-  //       res: true,
-  //       error: null,
-  //     }
+      return {
+        res: true,
+        error: null,
+      }
     } catch (e) {
       console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
       throw new Error('Internal Server Error');

@@ -116,47 +116,40 @@ export class Order implements IOrder{
   }
 
   // todo simon do this
-  // static getEOrderFromUpdatedOrder(
-  //   {
-  //     consumer,
-  //   }: EOrder,
-  //   mealPrice: number,
-  //   total: number,
-  //   {
-  //     // todo simon: do this
-  //     // deliveries,
-  //     phone,
-  //     destination,
-  //     donationCount
-  //   }: IUpdateOrderInput
-  // ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-  //   return {
-  //     cartUpdatedDate: Date.now(),
-  //     costs: {
-  //       tax: 0,
-  //       tip: 0,
-  //       mealPrice,
-  //       total,
-  //       percentFee: 0,
-  //       flatRateFee: 0,
-  //     },
-  //     consumer: {
-  //       userId: consumer.userId,
-  //       profile: {
-  //         name: consumer.profile.name,
-  //         email: consumer.profile.email,
-  //         phone,
-  //         card: consumer.profile.card,
-  //         destination,
-  //       }
-  //     },
-  //     // todo simon. when copying over the deliveirs of time ICartDelivery to IOrderDelivery, we need to add a status,
-  //     // so how do we do that? can we just put all status as Open...? no we can only set the ones open if it has NOT
-  //     // been delivered.
-  //     deliveries: [],
-  //     donationCount
-  //   }
-  // }
+  static getEOrderFromUpdatedOrder(
+    {
+      consumer,
+      deliveries,
+    }: EOrder,
+    mealPrice: number,
+    total: number,
+    {
+      // todo simon: do this
+      // deliveries,
+      meals,
+      deliveryIndex,
+      donationCount
+    }: IUpdateOrderInput
+  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
+    if (!meals && deliveryIndex) deliveries.splice(deliveryIndex, 1);
+    return {
+      cartUpdatedDate: Date.now(),
+      costs: {
+        tax: 0,
+        tip: 0,
+        mealPrice,
+        total,
+        percentFee: 0,
+        flatRateFee: 0,
+      },
+      consumer,
+      // todo simon. when copying over the deliveirs of time ICartDelivery to IOrderDelivery, we need to add a status,
+      // so how do we do that? can we just put all status as Open...? no we can only set the ones open if it has NOT
+      // been delivered.
+      deliveries,
+      donationCount
+    }
+  }
 
   static getNewOrderFromCartInput(
     signedInUser: SignedInUser,
