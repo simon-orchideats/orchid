@@ -61,11 +61,12 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
+      title
     ) => {
       const meals = (
         <>
-          {cart && Object.entries(cart.RestMeals).map(([_restId, restMeals]) => (
-            <>
+          {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
+            <div key={restId}>
               <Typography variant='h6'>
                 {restMeals.meals[0].restName}
               </Typography>
@@ -78,7 +79,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                   quantity={mealGroup.Quantity}
                 />
               ))}
-            </>
+            </div>
           ))}
           {
             donationCount > 0 &&
@@ -98,7 +99,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             color='primary'
             className={classes.title}
           >
-            Your first week
+            {title}
           </Typography>
           {hideNext && meals}
           {

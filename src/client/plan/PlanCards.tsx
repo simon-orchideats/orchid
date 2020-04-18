@@ -7,7 +7,6 @@ const useStyles = makeStyles(() => ({
   item: {
     display: 'flex',
     justifyContent: 'center',
-    cursor: 'pointer',
   },
 }));
 
@@ -20,9 +19,19 @@ const PlanCards: React.FC = () => {
   return (
     <>
       {plans.data.map(plan => (
-        <Grid container justify='center'>
+        <Grid
+          key={plan.StripePlanId}
+          container
+          justify='center'
+        >
           {plan.Tiers.map(t => (
-            <Grid key={t.MealPrice} item sm={12} md={4} className={classes.item}>
+            <Grid
+              key={t.MealPrice}
+              item
+              sm={12}
+              md={4}
+              className={classes.item}
+            >
               <PlanDetails tier={t} />
             </Grid>
           ))}

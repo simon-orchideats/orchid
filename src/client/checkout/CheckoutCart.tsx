@@ -5,7 +5,7 @@ import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Tier, PlanTypes } from "../../plan/planModel";
 import moment from "moment";
-import { ConsumerPlan } from "../../consumer/consumerModel";
+import { Schedule } from "../../consumer/consumerModel";
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -82,7 +82,7 @@ const CheckoutCart: React.FC<props> = ({
         cart.Deliveries.map(d => (
           <>
             <Typography variant='h6' className={classes.paddingBottom}>
-              {moment(d.DeliveryDate).format('ddd M/D')}, {ConsumerPlan.getDeliveryTimeStr(d.DeliveryTime)}
+              {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
             </Typography>
             {d.Meals.map((meal, i) => (
               <>

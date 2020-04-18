@@ -1,5 +1,6 @@
 import { IDestination, Destination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
+import moment from 'moment';
 
 export interface IConsumerProfile {
   readonly name: string
@@ -152,6 +153,10 @@ export class Schedule implements ISchedule {
     }
   }
 
+  static getDateTimeStr(date: number, time: deliveryTime) {
+    return `${moment(date).format('ddd M/D')}, ${ConsumerPlan.getDeliveryTimeStr(time)}`
+  }
+
   static equals(s1: ISchedule, s2: ISchedule) {
     return s1.day === s2.day && s1.time === s2.time
   }
@@ -197,6 +202,7 @@ export class ConsumerPlan implements IConsumerPlan {
 
   public get Cuisines() { return this.cuisines }
   public get Schedule() { return this.schedule }
+
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
       schedule: plan.schedule.map(s => Schedule.getICopy(s)),

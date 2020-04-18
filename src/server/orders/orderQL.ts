@@ -43,10 +43,9 @@ export const _OrderQL = gql`
   }
 
   input UpdateOrderInput {
-    deliveries: [DeliveryInput!]!
+    meals: [DeliveryMealInput!]
+    deliveryIndex: Int
     donationCount: Int!
-    name: String!
-    phone: String!
   }
 
   type DeliveryMeal {
