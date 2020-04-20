@@ -21,6 +21,10 @@ export const getSuggestion = (cart: Cart | null, minMeals: number) => {
       suggestion.push(`${numMealsFromRest}/${minMeals} meals for ${restMeals.meals[0].RestName}`);
     }
   });
+  const mealCount = cart.getStandardMealCount()
+  if (cart.DonationCount < minMeals && cart.DonationCount > 0 && mealCount === cart.DonationCount) {
+    suggestion.push(`Min ${minMeals} donations when missing other meals`)
+  }
   return suggestion;
 }
 
@@ -99,7 +103,6 @@ const MenuCart: React.FC<{
     }
   }
 
-  // left off here. handle all donations
   const incrementDonationCount = useIncrementCartDonationCount();
   const decrementDonationCount = useDecrementCartDonationCount();
 
@@ -111,7 +114,7 @@ const MenuCart: React.FC<{
       const moreToNext = Tier.getCountTillNextPlan(PlanNames.Standard, mealCount, plans.data);
       const nextPrice = Tier.getNextMealPrice(PlanNames.Standard, mealCount, plans.data);
       const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
-      summary = `${mealCount} meals plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
+      summary = `${mealCount} meal plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
     }
     suggestions = getSuggestion(cart, MIN_MEALS);
   }

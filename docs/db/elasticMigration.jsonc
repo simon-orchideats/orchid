@@ -17,6 +17,7 @@ POST _reindex
         menu[i].planName = 'Standard';
         menu[i].stripePlanId = 'plan_H4mjyvjuE1fObC';
       }
+      ctx._source.location.timezone = 'America/New_York';
     """,
     "params": {
       "delivery": {}

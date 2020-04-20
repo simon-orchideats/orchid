@@ -79,9 +79,7 @@ const delivery = () => {
     if (isExpanded) setExpanded(panel);
   };
   const setDates = () => {
-    if (cart && !Schedule.equalsLists(schedules, cart.Schedules)) {
-      setScheduleAndAutoDeliveries(schedules);
-    }
+    setScheduleAndAutoDeliveries(schedules);
     setExpanded('assignments');
   }
   if (!cart) {
@@ -89,12 +87,21 @@ const delivery = () => {
     return null;
   }
   const allowedDeliveries = useMemo(() => 
-    Object.values(cart.RestMeals).reduce(
-      (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
-      0
+    Math.max(
+      Object.values(cart.RestMeals).reduce(
+        (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
+        0
+      ),
+      1
     ),
     []
   );
+  if (schedules.length > allowedDeliveries) {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    const removeCount = schedules.length - allowedDeliveries;
+    newSchedules.splice(newSchedules.length - removeCount);
+    setSchedules(newSchedules);
+  }
   const remainingDeliveries = allowedDeliveries - schedules.length;
   return (
     <>
@@ -198,7 +205,7 @@ const delivery = () => {
           <ExpansionPanelDetails className={classes.col}>
             <ScheduleDeliveries
               deliveries={cart.Deliveries}
-              onMove={hasError => setHasScheduleError(hasError)}
+              setError={setHasScheduleError}
               movable
             />
             <Link href={checkoutRoute}>

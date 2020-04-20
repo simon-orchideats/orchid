@@ -503,6 +503,7 @@ class ConsumerService implements IConsumerService {
 
   // const res = await Promise.all([canceler, subscription])
 
+  // todo simon: if this succeeds but has an err response, do something about it.
   // const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
   //   signedInUser, 
   //   mealPrice,

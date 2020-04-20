@@ -248,6 +248,9 @@ PUT /rests/
               }
             }
           },
+          "timezone": {
+            "type": "keyword"
+          },
           "geo": {
             "type": "geo_point"
           }

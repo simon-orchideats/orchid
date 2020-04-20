@@ -1,3 +1,5 @@
+import { getNextDeliveryDate } from './../../order/utils';
+import { DeliveryInput } from './../../order/deliveryModel';
 import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
@@ -18,16 +20,21 @@ import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer, IConsumer } from '../../consumer/consumerModel';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { isDate2DaysLater } from '../../order/utils';
-import { IDeliveryMeal, IDeliveryInput, DeliveryMeal } from '../../order/deliveryModel';
+import { IDeliveryMeal, IDeliveryInput } from '../../order/deliveryModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
-const chooseRandomMeals = (menu: IMeal[], mealCount: number, restId: string, restName: string) => {
+const chooseRandomMeals = (
+  menu: IMeal[],
+  mealCount: number,
+  restId: string,
+  restName: string
+): IDeliveryMeal[] => {
   const chooseRandomly = getItemChooser<IMeal>(menu);
   const meals: IMeal[] = [];
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
@@ -477,7 +484,6 @@ class OrderService {
         }
       }
 
-
       try {
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
@@ -546,46 +552,48 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
-      try {
-        // todo left off here: when deciding auto meals, we also need to account for donations by adding an equal
-        // number of meals. can do this by using mealPlan instead of deliveries
-        this.restService.getRestsByCuisines(cuisines, ['menu','profile']).then( rests => {
-          if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
-          const deliveries: IDeliveryInput[] = [];
-          for (let i = 0; i < cart.deliveries.length; i++) {
-            const deliveryMeals: DeliveryMeal[] = [];
-            const rest = rests[Math.floor(Math.random() * rests.length)];
-            for (let j = 0; j < cart.deliveries[i].meals.length; j++) {
-              const mealQuantity = cart.deliveries[i].meals[j].quantity
-              const chooseRandomly = getItemChooser<IMeal>(rest.menu);
-              const randomMeal = chooseRandomly();
-              const meal = DeliveryMeal.getDeliveryMeal(randomMeal, rest._id, rest.profile.name, mealQuantity);
-              deliveryMeals.push(meal);       
-            }
-            deliveries.push({
-              deliveryDate: moment(cart.deliveries[i].deliveryDate).add(1, 'w').valueOf(),
-              deliveryTime: cart.deliveries[i].deliveryTime,
-              discount: cart.deliveries[i].discount,
-              meals: deliveryMeals
-            })
-          }
-          const automatedOrder = Order.getNewOrderFromCartInput(
-            signedInUser,
-            { ...cart, deliveries, donationCount: 0 },
-            moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
-            subscription.id,
-            mealPrices,
-            total,
+      this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location']).then(rests => {
+        if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+        const deliveries: IDeliveryInput[] = [];
+        const totalMeals = DeliveryInput.getMealCount(cart.deliveries) + cart.donationCount;
+        const schedule = cart.consumerPlan.schedule;
+        const numDeliveries = schedule.length;
+        const mealsPerDelivery = Math.floor(totalMeals / numDeliveries);
+        let remainingMeals = totalMeals % numDeliveries;
+        const chooseRandomRest = getItemChooser(rests);
+        for (let i = 0; i < numDeliveries; i++) {
+          const rest = chooseRandomRest();
+          const meals = chooseRandomMeals(
+            rest.menu,
+            mealsPerDelivery + remainingMeals,
+            rest._id,
+            rest.profile.name
           );
-       
-          return this.elastic.index({
-            index: ORDER_INDEX,
-            body: automatedOrder
+          remainingMeals = 0;
+          deliveries.push({
+            deliveryDate: getNextDeliveryDate(schedule[i].day, rest.location.timezone).add(1, 'w').valueOf(),
+            deliveryTime: schedule[i].time,
+            discount: null,
+            meals,
           })
+        }
+
+        const automatedOrder = Order.getNewOrderFromCartInput(
+          signedInUser,
+          { ...cart, deliveries, donationCount: 0 },
+          moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
+          subscription.id,
+          mealPrices,
+          total,
+        );
+      
+        return this.elastic.index({
+          index: ORDER_INDEX,
+          body: automatedOrder
         })
-      } catch (e) {
-        console.error(`[OrderService] could not rests by cuisines`, e.stack)
-      }
+      }).catch(e => {
+        console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
+      });
       
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
