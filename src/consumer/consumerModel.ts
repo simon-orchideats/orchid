@@ -224,12 +224,12 @@ export interface IConsumerPlan {
 export class ConsumerPlan implements IConsumerPlan {
   readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
-  readonly schedule: ISchedule[]
+  readonly schedule: Schedule[]
 
   constructor(consumerPlan: IConsumerPlan) {
     this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
     this.cuisines = consumerPlan.cuisines.map(c => c);
-    this.schedule = consumerPlan.schedule.map(s => Schedule.getICopy(s));
+    this.schedule = consumerPlan.schedule.map(s => new Schedule(s));
   }
 
   public get Cuisines() { return this.cuisines }
