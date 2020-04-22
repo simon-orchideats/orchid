@@ -1,4 +1,4 @@
-import { Tier, IPlan } from './../../plan/planModel';
+import { Tier, IPlan, PlanNames } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -686,14 +686,6 @@ class OrderService {
           error: msg
         }
       }
-      if (!updateOptions.deliveryIndex) {
-        const msg = `No deliveryIndex given`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
   //     const validation = await this.validateUpdateOrderInput(updateOptions, now);
   //     if (validation) {
   //       return {
@@ -717,7 +709,7 @@ class OrderService {
         }
       }
       
-      if (targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Open' && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Skipped') {
+      if (updateOptions.deliveryIndex && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Open' && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Skipped') {
         const msg = `Trying to update order with status '${targetOrder.deliveries[updateOptions.deliveryIndex].status}'. Can only update 'Open' or 'Skipped' orders.`;
         console.warn(`[OrderService] ${msg}`);
         return {
@@ -725,37 +717,27 @@ class OrderService {
           error: msg
         }
       }
-
-      // const targetOrderInvoiceDate = targetOrder.invoiceDate
-      // if (targetOrder.deliveries[updateOptions.deliveryIndex].deliveryDate > moment(targetOrderInvoiceDate).add(8, 'd').valueOf()) {
-      //   const msg = 'Delivery date cannot exceed 8 days after the payment';
-      //   console.warn('[OrderService]', msg)
-      //   return {
-      //     res: false,
-      //     error: msg
+      // const targetOrderInvoiceDate =targetOrder.deliveries[updateOptions.deliveryIndex].deliveryDate;
+      // const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format(adjustmentDateFormat);
+      // let pendingLineItems;
+      // try {
+      //   pendingLineItems = await this.stripe.invoiceItems.list({
+      //     limit: 50,
+      //     pending: true,
+      //     customer: stripeCustomerId,
+      //   });
+      // } catch (e) {
+      //   throw new Error(`Couldn't get future line items'. ${e.stack}`)
+      // }
+      // console.log(pendingLineItems);
+      // const targetAdjustment = pendingLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
+      // if (targetAdjustment) {
+      //   try {
+      //     await this.stripe.invoiceItems.del(targetAdjustment.id);
+      //   } catch (e) {
+      //     throw new Error (`Couldn't remove previous adjustment. ${e.stack}`)
       //   }
       // }
-
-  //     const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format(adjustmentDateFormat);
-  //     let pendingLineItems;
-  //     try {
-  //       pendingLineItems = await this.stripe.invoiceItems.list({
-  //         limit: 50,
-  //         pending: true,
-  //         customer: stripeCustomerId,
-  //       });
-  //     } catch (e) {
-  //       throw new Error(`Couldn't get future line items'. ${e.stack}`)
-  //     }
-
-  //     const targetAdjustment = pendingLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
-  //     if (targetAdjustment) {
-  //       try {
-  //         await this.stripe.invoiceItems.del(targetAdjustment.id);
-  //       } catch (e) {
-  //         throw new Error (`Couldn't remove previous adjustment. ${e.stack}`)
-  //       }
-  //     }
 
   //     let originalPrice;
   //     let prevInvoices;
@@ -785,9 +767,93 @@ class OrderService {
   //       if (!prevPlanLine) throw new Error(`Couldn't get previous plan for consumer '${stripeCustomerId}' in invoice '${prevInvoice.id}'`);
   //       originalPrice = prevPlanLine.amount + prevAdjustment;
   //     }
-  //     let newPlan;
-  //     let amount;
-  //     const mealCount = Cart.getMealCount(updateOptions.meals) + updateOptions.donationCount;
+      const mealPrices: IMealPrice[] = [];
+    
+      const plans = await this.planService.getAvailablePlans();
+      // totalTargetQuantity += targetOrder.donationCount;
+      // update delivery
+      if(updateOptions.meals && updateOptions.deliveryIndex !== null) {
+        targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals: updateOptions.meals };   
+        Object.values(PlanNames).forEach(planName => {
+          if (updateOptions.meals) {
+            const meals = updateOptions.meals.filter(meal=> meal.planName === planName);
+            if(meals.length > 0) {
+              let mealQuantity = meals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);
+              let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat();
+              console.log('TARGETED MEALS',targetMeals);
+              let filteredTargetedMeals = targetMeals.filter(meal => meal.planName === planName);
+              let targetMealQuantity = filteredTargetedMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t)
+              console.log('targetmealQuantity',targetMealQuantity);
+              console.log('mealQuantity',mealQuantity);
+              const mealCount =  targetMealQuantity + updateOptions.donationCount;   
+              mealPrices.push({
+                stripePlanId: meals[0].stripePlanId,
+                planName: meals[0].planName,
+                mealPrice: Tier.getMealPrice(
+                  planName,
+                  mealCount,
+                  plans
+                ),
+              })
+            }
+          } else { //all donations
+            let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat();
+            console.log('TARGETED MEALS',targetMeals);
+              let filteredTargetedMeals = targetMeals.filter(meal => meal.planName === planName);
+              let targetMealQuantity = filteredTargetedMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t)
+              const mealCount =  targetMealQuantity + updateOptions.donationCount;   
+              mealPrices.push({
+                stripePlanId: targetMeals[0].stripePlanId,
+                planName: targetMeals[0].planName,
+                mealPrice: Tier.getMealPrice(
+                  planName,
+                  mealCount,
+                  plans
+                ),
+              })
+          }
+        })
+        console.log('UPDATED MEALPRICES',JSON.stringify(mealPrices,null,4))
+      } else if(updateOptions.deliveryIndex !== null) { // skip delivery
+        targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals:[], status:'Skipped' };
+        Object.values(PlanNames).forEach(planName => {
+          let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat();
+          console.log('TARGETED MEALS',targetMeals);
+          let filteredTargetedMeals = targetMeals.filter(meal => meal.planName === planName);
+          if(filteredTargetedMeals.length > 0) {
+            let targetMealQuantity = filteredTargetedMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);   
+            mealPrices.push({
+              stripePlanId: filteredTargetedMeals[0].stripePlanId,
+              planName: filteredTargetedMeals[0].planName,
+              mealPrice: Tier.getMealPrice(
+                planName,
+                targetMealQuantity,
+                plans
+              ),
+            })
+          }
+        })
+      console.log('SKIPPED MEALPRICES',JSON.stringify(mealPrices,null,4))
+      } else { // cancel donations
+        updateOptions = {...updateOptions, donationCount: 0};
+        Object.values(PlanNames).forEach(planName => {
+          let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat();
+          console.log('TARGETED MEALS',targetMeals);
+          let filteredTargetedMeals = targetMeals.filter(meal => meal.planName === planName);
+          if(filteredTargetedMeals.length > 0) {
+            let targetMealQuantity = filteredTargetedMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);  
+            mealPrices.push({
+              stripePlanId: filteredTargetedMeals[0].stripePlanId,
+              planName: filteredTargetedMeals[0].planName,
+              mealPrice: Tier.getMealPrice(
+                planName,
+                targetMealQuantity,
+                plans
+              ),
+            })
+          }
+        })
+      }
   //     if (mealCount > 0) {
   //       newPlan = await this.planService.getPlanByCount(mealCount);
   //       if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
@@ -795,7 +861,7 @@ class OrderService {
   //     } else {
   //       amount = 0 - originalPrice;
   //     }
-  //     if (amount !== 0) {
+  //     if (amount !== 0) { 
   //       try {
   //         await this.stripe.invoiceItems.create({
   //           amount,
@@ -822,8 +888,7 @@ class OrderService {
           body: {
             doc: Order.getEOrderFromUpdatedOrder(
               targetOrder,
-              newPlan ? newPlan.mealPrice : null,
-              newPlan ? newPlan.weekPrice : 0,
+              mealPrices,
               updateOptions
             ),
           }

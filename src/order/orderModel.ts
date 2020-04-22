@@ -132,6 +132,8 @@ export class Order implements IOrder{
     deliveryIndex?: number, 
     cart?: Cart,
   ): IUpdateOrderInput {
+    console.log('CART',cart);
+    // meals is sent empty for some rason
     return {
       meals: cart ?
         Object.values(cart.RestMeals).reduce<IDeliveryMeal[]>((sum, restMeals) => (
@@ -149,27 +151,33 @@ export class Order implements IOrder{
     {
       consumer,
       deliveries,
+      costs,
     }: EOrder,
-    mealPrice: number,
-    total: number,
+    mealPrices: IMealPrice[],
     {
-      // todo simon: do this
-      // deliveries,
       meals,
-      deliveryIndex,
       donationCount
     }: IUpdateOrderInput
   ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    if (!meals && deliveryIndex) deliveries.splice(deliveryIndex, 1);
+    console.log('BEFORE UPDATING',deliveries);
+    // if (deliveryIndex == null) {
+    // //   if (!meals) {
+    // //     deliveries[deliveryIndex] = { ...deliveries[deliveryIndex], meals:[] };
+    // //  } else {
+    // //     // deliveries[deliveryIndex] = { ...deliveries[deliveryIndex], meals };   
+    // //  }
+    // // } else {
+    //   donationCount = 0;
+    // }
+
+    console.log('THE MEALS',meals);
+    
+    console.log('AFTER',JSON.stringify(deliveries));
     return {
       cartUpdatedDate: Date.now(),
       costs: {
-        tax: 0,
-        tip: 0,
-        mealPrice,
-        total,
-        percentFee: 0,
-        flatRateFee: 0,
+        ...costs,
+        mealPrices
       },
       consumer,
       // todo simon. when copying over the deliveirs of time ICartDelivery to IOrderDelivery, we need to add a status,
