@@ -1,7 +1,7 @@
 import { MealPlan } from './../consumer/consumerModel';
 import { MIN_MEALS, PlanNames } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
-import { IDeliveryInput, DeliveryInput, DeliveryMeal } from './deliveryModel';
+import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
 import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/consumerModel';
@@ -111,16 +111,15 @@ export class Cart implements ICart {
     const newCart = new Cart({
       ...this,
       schedules,
-      deliveries: schedules.map(s => new DeliveryInput({
-        deliveryTime: s.Time,
-        deliveryDate: getNextDeliveryDate(s.Day).valueOf(),
-        discount: null,
-        meals: [],
-      }))
+      deliveries: Cart.getDeliveriesFromSchedule(schedules),
     });
-    
+    Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
+    return newCart;
+  }
+
+  public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]) {
     let scheduleIndex = 0;
-    Object.values(this.RestMeals).forEach(restMeals => {
+    Object.values(restMeals).forEach(restMeals => {
       const numMeals = Cart.getRestMealCount(restMeals.mealPlans);
       const numDeliveries = Math.floor(numMeals / MIN_MEALS);
       const numLeftOverMeals = numMeals % MIN_MEALS;
@@ -132,54 +131,62 @@ export class Cart implements ICart {
         } else {
           meals = getNextMeals(MIN_MEALS);
         }
-        scheduleIndex = scheduleIndex % schedules.length;
-        addMealsToDelivery(meals, newCart.deliveries[scheduleIndex]);
+        scheduleIndex = scheduleIndex % deliveries.length;
+        addMealsToDelivery(meals, deliveries[scheduleIndex]);
         scheduleIndex++;
       }                                                                                         
     })
-    return newCart;
+  }
+
+  public static getDeliveriesFromSchedule(schedules: ISchedule[], timezone?: string) {
+    return schedules.map(s => new DeliveryInput({
+      deliveryTime: s.time,
+      deliveryDate: getNextDeliveryDate(s.day, timezone).valueOf(),
+      discount: null,
+      meals: [],
+    }))
   }
 
   public static addMealToRestMeals(
     restMeals: RestMeals,
-    newMeal: DeliveryMeal,
+    newMeal: IDeliveryMeal,
   ) {
-    const restMeal = restMeals[newMeal.RestId];
+    const restMeal = restMeals[newMeal.restId];
     if (restMeal) {
-      const currMealPlans = restMeals[newMeal.RestId].mealPlans;
-      const currMealPlanIndex = currMealPlans.findIndex(m => m.StripePlanId === newMeal.StripePlanId);
+      const currMealPlans = restMeals[newMeal.restId].mealPlans;
+      const currMealPlanIndex = currMealPlans.findIndex(m => m.StripePlanId === newMeal.stripePlanId);
       if (currMealPlanIndex === -1) {
         currMealPlans.push(new MealPlan({
-          stripePlanId: newMeal.StripePlanId,
-          planName: newMeal.PlanName,
-          mealCount: newMeal.Quantity,
+          stripePlanId: newMeal.stripePlanId,
+          planName: newMeal.planName,
+          mealCount: newMeal.quantity,
         }))
       } else {
         currMealPlans[currMealPlanIndex] = new MealPlan({
           ...currMealPlans[currMealPlanIndex],
-          mealCount: currMealPlans[currMealPlanIndex].MealCount + newMeal.Quantity,
+          mealCount: currMealPlans[currMealPlanIndex].MealCount + newMeal.quantity,
         })
       }
-      const index = restMeal.meals.findIndex(meal => meal.MealId === newMeal.MealId);
+      const index = restMeal.meals.findIndex(meal => meal.MealId === newMeal.mealId);
       if (index === -1) {
-        restMeal.meals.push(newMeal);
+        restMeal.meals.push(new DeliveryMeal(newMeal));
       } else {
         restMeal.meals[index] = new DeliveryMeal({
           ...newMeal,
-          quantity: restMeal.meals[index].Quantity + newMeal.Quantity
+          quantity: restMeal.meals[index].Quantity + newMeal.quantity
           
         })
       }
     } else {
-      restMeals[newMeal.RestId] = {
+      restMeals[newMeal.restId] = {
         mealPlans: [
           new MealPlan({
-            stripePlanId: newMeal.StripePlanId,
-            planName: newMeal.PlanName,
-            mealCount: newMeal.Quantity,
+            stripePlanId: newMeal.stripePlanId,
+            planName: newMeal.planName,
+            mealCount: newMeal.quantity,
           })
         ],
-        meals: [newMeal]
+        meals: [new DeliveryMeal(newMeal)]
       }
     }
   }
@@ -280,7 +287,7 @@ export class Cart implements ICart {
       phone,
       consumerPlan: {
         mealPlans,
-        schedule: this.Schedules,
+        schedules: this.Schedules,
         cuisines,
       },
       destination: {

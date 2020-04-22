@@ -18,19 +18,12 @@ const CuisineTypeQL = gql`
 
 const DeliveryTimeQL = gql`
   enum DeliveryTime {
-    NineAToTenA
-    TenAToElevenA
-    ElevenAToTwelveP
-    TwelvePToOneP
-    OnePToTwoP
-    TwoPToThreeP
-    ThreePToFourP
-    FourPToFiveP
-    FivePToSixP
-    SixPToSevenP
-    SevenPToEightP
-    EightPToNineP
-    NinePToTenP
+    NineAToElevenA
+    ElevenAToOneP
+    OnePToThreeP
+    ThreePToFiveP
+    FivePToSevenP
+    SevenPToNineP
   }
 `
 
@@ -48,7 +41,7 @@ const _ConsumerPlanQL = gql`
 
   input ConsumerPlanInput {
     mealPlans: [MealPlanInput!]!
-    schedule: [ScheduleInput!]!
+    schedules: [ScheduleInput!]!
     cuisines: [CuisineType!]!
   }
 
@@ -65,7 +58,7 @@ const _ConsumerPlanQL = gql`
 
   type ConsumerPlan {
     mealPlans: [MealPlan!]!
-    schedule: [Schedule!]!
+    schedules: [Schedule!]!
     cuisines: [CuisineType!]!
   }
 `

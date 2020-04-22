@@ -17,7 +17,7 @@ export const cartQL = gql`
   type CartState {
     donationCount: Int!
     deliveries: [DeliveryInput!]!
-    schedule: Schedule
+    schedules: [Schedule!]!
     zip: String
   }
   extend type Query {

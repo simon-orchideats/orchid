@@ -11,7 +11,7 @@ export const consumerFragment = gql`
         planName
         mealCount
       }
-      schedule {
+      schedules {
         day
         time
       }

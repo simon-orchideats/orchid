@@ -193,7 +193,6 @@ export class Order implements IOrder{
     invoiceDate: number,
     subscriptionId: string,
     mealPrices: IMealPrice[],
-    total: number,
   ): EOrder {
     if (!signedInUser) {
       const err = new Error ('Signed in user null');
@@ -220,7 +219,6 @@ export class Order implements IOrder{
         tax: 0,
         tip: 0,
         mealPrices,
-        total,
         percentFee: 0,
         flatRateFee: 0,
       },

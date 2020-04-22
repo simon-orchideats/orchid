@@ -35,7 +35,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-// todo logout
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
 // todo test for consumerServiceTest
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
@@ -46,18 +45,9 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 
 
 /**
- * plan for anyMeals
  * 
- * placeOrder
- *  - ui needs to support up to placing a cart -simon
- *  - when placing an order, the following need to happen - alvin
- *    - validate cart
- *    - calculate total
- *    - create subscription based on meal count
- *    - enter data into orders
- *    - create a future order with the same meal count and auto put them into deliveries
- *    - confirm the subscription wont charge the consumer in stripe at the END of the week
  * 
+ * todo prevent cross state orders
  */
 
 init({

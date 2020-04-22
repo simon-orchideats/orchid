@@ -695,7 +695,7 @@ PUT /consumers/
               }
             }
           },
-          "schedule": {
+          "schedules": {
             "properties": {
               "day": {
                 "type": "integer"

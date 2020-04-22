@@ -35,7 +35,7 @@ const mutation = gql`
     addMarketingEmail(email: String!): BoolRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
     updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
-    updateMyPlan(plan: ConsumerPlanInput!, nextDeliveryDate: Float!): ConsumerRes!
+    updateMyPlan(plan: ConsumerPlanInput!): ConsumerRes!
     updateMyProfile(profile: ConsumerProfileInput!): ConsumerRes!
   }
 `
