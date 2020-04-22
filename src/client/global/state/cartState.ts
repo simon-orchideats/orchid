@@ -229,9 +229,6 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 });
 
 export const cartMutationResolvers: cartMutationResolvers = {
-  // left off here. test that after setting scheudle, i can go back to menu and add or remove meals
-  // when adding meals, it should just add the meals to the first delivery
-  // when removin gmeals it should remove the first meal found
   addMealToCart: (_, { meal, restId, restName }, { cache }) => {
     const res = getCart(cache);
     const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
@@ -252,20 +249,6 @@ export const cartMutationResolvers: cartMutationResolvers = {
         },
         schedules: [],
         zip: null,
-      }));
-    }
-    if (res.cart.getStandardMealCount() === 0) {
-      return updateCartCache(cache, new Cart({
-        donationCount: res.cart.DonationCount,
-        restMeals: {
-          [restId]: {
-            mealPlans: newMealPlans,
-            meals: [newDeliveryMeal]
-          }
-        },
-        deliveries: res.cart.Deliveries,
-        schedules: res.cart.Schedules,
-        zip: res.cart.Zip,
       }));
     }
     const newCart = res.cart.addMeal(meal, restId, restName);

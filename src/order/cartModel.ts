@@ -105,6 +105,9 @@ export class Cart implements ICart {
   public get Zip() { return this.zip }
 
   public setScheduleAndAutoDeliveries(schedules: Schedule[]) {
+    if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
+      return this;
+    }
     const newCart = new Cart({
       ...this,
       schedules,

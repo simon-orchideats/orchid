@@ -44,7 +44,6 @@ const useStyles = makeStyles(theme => ({
     maxHeight: 800,
     overflow: 'scroll',
     display: 'flex',
-    justifyContent: 'center',
   },
   button: {
     marginTop: theme.spacing(2),
@@ -55,22 +54,22 @@ const ScheduleDeliveries: React.FC<{
   deliveries: Array<DeliveryInput | Delivery>
   isUpdating?: boolean
   movable?: boolean
-  onMove?: (hasError: boolean) => void
   onEdit?: (deliveryIndex: number) => void,
   onSkip?: (deliveryIndex: number) => void,
   onUpdate?: (deliveryIndex: number) => void,
+  setError?: (err: boolean) => void,
 }> = ({
   deliveries,
   isUpdating = false,
   movable = false,
-  onMove,
   onSkip,
   onEdit,
   onUpdate,
+  setError,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-
+  const moveMealToNewDelivery = useMoveMealToNewDeliveryInCart();
   const restMealsPerDelivery: RestMeals[] = deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
     Cart.addMealToRestMeals(groupings, meal);
     return groupings;
@@ -81,21 +80,23 @@ const ScheduleDeliveries: React.FC<{
       fromDeliveryIndex,
       toDeliveryIndex
     );
-    if (onMove) {
-      const toDestination = restMealsPerDelivery[toDeliveryIndex][meal.RestId];
-      const fromDestination = restMealsPerDelivery[fromDeliveryIndex][meal.RestId];
-      // left off here. fix this validation. it's problematic because we previous errors
-      // are overwritten by subsequent successes
-      if (Cart.getRestMealCount(fromDestination.mealPlans) < MIN_MEALS) {
-        onMove(false);
-      } else if (toDestination && Cart.getRestMealCount(toDestination.mealPlans) < MIN_MEALS) {
-        onMove(false);
-      } else {
-        onMove(true);
-      }
-    }
   }
-  const moveMealToNewDelivery = useMoveMealToNewDeliveryInCart();
+  
+  let hasError = false;
+  if (setError) {
+    for (let i = 0; i < restMealsPerDelivery.length; i++) {
+      const restMeals = Object.values(restMealsPerDelivery[i]);
+      for (let j = 0; j < restMeals.length; j++) {
+        if (Cart.getRestMealCount(restMeals[j].mealPlans) < MIN_MEALS) {
+          hasError = true;
+          break;
+        }
+        if (hasError) break;
+      }
+      if (hasError) break;
+    }
+    setError(hasError);
+  }
   return (
     <div className={classes.scheduleDeliveries}>
       {deliveries.map((d, deliveryIndex) => (

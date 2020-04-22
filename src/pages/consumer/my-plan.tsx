@@ -1,6 +1,6 @@
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
-import { CuisineType, ConsumerPlan } from '../../consumer/consumerModel';
+import { CuisineType, ConsumerPlan, deliveryDay, deliveryTime } from '../../consumer/consumerModel';
 // import PlanCards from '../../client/plan/PlanCards';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
@@ -15,6 +15,8 @@ import { sendChooseCuisineMetrics } from "../../client/consumer/myPlanMetrics";
 import Counter from "../../client/menu/Counter";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import PreferredSchedule from "../../client/general/PreferredSchedule";
+import { MIN_MEALS } from "../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -26,6 +28,10 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     borderRadius: 10,
+  },
+  row: {
+    maxWidth: 200,
+    display: 'flex',
   },
   minusButton: {
     backgroundColor: `${theme.palette.grey[600]}`,
@@ -63,8 +69,6 @@ const myPlan = () => {
   const consumer = useRequireConsumer(myPlanRoute);
   const plan = consumer.data && consumer.data.Plan;
   const cuisines = plan ? plan.Cuisines : [];
-  // const day = plan ? plan.DeliveryDay : 0;
-  // const deliveryTime = plan ? plan.deliveryTime : ConsumerPlan.getDefaultDeliveryTime();
   const plans = useGetAvailablePlans();
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const validateCuisineRef= useRef<() => boolean>();
@@ -104,13 +108,23 @@ const myPlan = () => {
     console.error(err.stack);
     return err;
   }
-  const count = 5;
+  const count = plan ? plan.MealPlans[0].MealCount : 0;
   const onRemoveMeal = () => {
 
   }
   const onAddMeal = () => {
     
   }
+  const addSchedule = () => {
+    
+  };
+  const removeSchedule = (i: number) => {
+    console.log(i);
+  }
+  const updateSchedule = (i: number, day: deliveryDay, time: deliveryTime) => {
+    console.log(i , day, time);
+  }
+
   const updateCuisines = (cuisines: CuisineType[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
@@ -150,6 +164,8 @@ const myPlan = () => {
     return null;
   }
 
+  const allowedDeliveries = Math.floor(count / MIN_MEALS);
+
   return (
     <Container maxWidth='lg' className={classes.container}>
       <Notifier />
@@ -161,49 +177,59 @@ const myPlan = () => {
         plan ? 
           <>
             <Typography
-              variant='h6'
+              variant='h4'
               color='primary'
               className={classes.verticalPadding}
             >
               Meals enjoyed per week
             </Typography>
-            <Counter
-              subtractDisabled={!count}
-              onClickSubtract={onRemoveMeal}
-              subtractButtonProps={{
-                variant: 'contained',
-                className: `${classes.button} ${classes.minusButton}`
-              }}
-              subractIcon={<RemoveIcon />}
-              chipLabel={count}
-              chipDisabled={!count}
-              onClickAdd={onAddMeal}
-              addIcon={<AddIcon />}
-              addButtonProps={{
-                variant: 'contained',
-                color: 'primary',
-                className: classes.button
-              }}
-            />
             <Typography variant='subtitle2' className={classes.subtitle}>
               Upcoming deliveries will automatically update their meals
             </Typography>
+            <div className={classes.row}>
+              <Counter
+                subtractDisabled={!count}
+                onClickSubtract={onRemoveMeal}
+                subtractButtonProps={{
+                  variant: 'contained',
+                  className: `${classes.button} ${classes.minusButton}`
+                }}
+                subractIcon={<RemoveIcon />}
+                chipLabel={count}
+                chipDisabled={!count}
+                onClickAdd={onAddMeal}
+                addIcon={<AddIcon />}
+                addButtonProps={{
+                  variant: 'contained',
+                  color: 'primary',
+                  className: classes.button
+                }}
+              />
+            </div>
             <Typography
-              variant='h6'
+              variant='h4'
               color='primary'
               className={classes.verticalPadding}
             >
-              Preferred delivery day
+              Preferred repeat delivery days
             </Typography>
             <Typography variant='subtitle2' className={classes.subtitle}>
               Upcoming deliveries will automatically change dates
             </Typography>
-            {/* <DeliveryDateChooser
-              day={day}
-              onDayChange={day => updateDay(day)}
-              time={deliveryTime}
-              onTimeChange={time => updateDeliveryTime(time)}
-            /> */}
+            <Typography
+              variant='subtitle2'
+              color='textSecondary'
+              className={classes.subtitle}
+            >
+              * If a restaurant is closed, we'll deliver the next day
+            </Typography>
+            <PreferredSchedule
+              addSchedule={addSchedule}
+              allowedDeliveries={allowedDeliveries}
+              removeSchedule={removeSchedule}
+              schedules={plan.Schedule}
+              updateSchedule={updateSchedule}
+            />
             <RenewalChooser
               cuisines={cuisines}
               onCuisineChange={cuisines => updateCuisines(cuisines)}
@@ -222,7 +248,7 @@ const myPlan = () => {
         :
         <>
           <Typography
-            variant='h6'
+            variant='h4'
             color='primary'
             className={classes.verticalPadding}
           >

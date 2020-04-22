@@ -5,15 +5,14 @@ import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useSetScheduleAndAutoDeliveries } from "../client/global/state/cartState";
-import DeliveryDateChooser from "../client/general/DeliveryDateChooser";
 import { useState, useMemo } from "react";
-import DeleteIcon from '@material-ui/icons/Delete';
-import { Schedule } from "../consumer/consumerModel";
+import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 import { MIN_MEALS } from "../plan/planModel";
 import Link from "next/link";
 import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
+import PreferredSchedule from "../client/general/PreferredSchedule";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -26,28 +25,11 @@ const useStyles = makeStyles(theme => ({
   panel: {
     width: '100%'
   },
-  addButton: {
-    marginTop: theme.spacing(1),
-  },
   nextButton: {
     marginTop: theme.spacing(1),
   },
-  deliveryCount: {
-    paddingLeft: theme.spacing(2),
-  },
-  deliveryHeader: {
-    display: 'flex',
-    paddingBottom: theme.spacing(2),
-    alignItems: 'center',
-  },
   col: {
     flexDirection: 'column',
-  },
-  scheduleDeliveries: {
-    minHeight: 600,
-    maxHeight: 800,
-    overflow: 'scroll',
-    display: 'flex',
   },
 }));
 
@@ -60,17 +42,20 @@ const delivery = () => {
   );
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
-  const updateDeliveries = (s: Schedule, i: number) => {
+  const updateSchedules = (i: number, day: deliveryDay, time: deliveryTime) => {
     const newSchedules = schedules.map(s => new Schedule(s));
-    newSchedules[i] = s;
+    newSchedules[i] = new Schedule({
+      day,
+      time,
+    });
     setSchedules(newSchedules);
   }
-  const addDelivery = () => {
+  const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));
     newSchedules.push(Schedule.getDefaultSchedule());
     setSchedules(newSchedules);
   }
-  const removeDelivery = (i: number) => {
+  const removeSchedule = (i: number) => {
     const newSchedules = schedules.map(s => new Schedule(s));
     newSchedules.splice(i, 1);
     setSchedules(newSchedules);
@@ -79,9 +64,7 @@ const delivery = () => {
     if (isExpanded) setExpanded(panel);
   };
   const setDates = () => {
-    if (cart && !Schedule.equalsLists(schedules, cart.Schedules)) {
-      setScheduleAndAutoDeliveries(schedules);
-    }
+    setScheduleAndAutoDeliveries(schedules);
     setExpanded('assignments');
   }
   if (!cart) {
@@ -89,13 +72,21 @@ const delivery = () => {
     return null;
   }
   const allowedDeliveries = useMemo(() => 
-    Object.values(cart.RestMeals).reduce(
-      (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
-      0
+    Math.max(
+      Object.values(cart.RestMeals).reduce(
+        (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
+        0
+      ),
+      1
     ),
     []
   );
-  const remainingDeliveries = allowedDeliveries - schedules.length;
+  if (schedules.length > allowedDeliveries) {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    const removeCount = schedules.length - allowedDeliveries;
+    newSchedules.splice(newSchedules.length - removeCount);
+    setSchedules(newSchedules);
+  }
   return (
     <>
       <Container className={classes.container}>
@@ -115,59 +106,13 @@ const delivery = () => {
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
-            {schedules.map((s, i) => (
-              <div key={i}>
-                <div className={classes.deliveryHeader}>
-                  <DeleteIcon onClick={() => removeDelivery(i)} />
-                  <Typography variant='h5' className={classes.deliveryCount}>
-                    Delivery {i + 1}
-                  </Typography>
-                </div>
-                <DeliveryDateChooser
-                  day={s.Day}
-                  onDayChange={day => updateDeliveries(
-                    new Schedule({
-                      ...s,
-                      day,
-                    }),
-                    i
-                  )}
-                  time={s.Time}
-                  onTimeChange={time => updateDeliveries(
-                    new Schedule({
-                      ...s,
-                      time,
-                    }),
-                    i
-                  )}
-                />
-              </div>
-            ))}
-            {
-              remainingDeliveries === 0 ?
-                allowedDeliveries > 1 &&
-                <Typography variant='body1'>
-                  *Max deliveries reached
-                </Typography>
-              :
-              <>
-                <Typography variant='body1' color='textSecondary'>
-                  * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
-                </Typography>
-                <Typography variant='body1' color='textSecondary'>
-                  (1 delivery for every {MIN_MEALS} meals from the <i>same</i> restaurant)
-                </Typography>
-                <Button
-                  variant='outlined'
-                  color='primary'
-                  fullWidth
-                  onClick={addDelivery}
-                  className={classes.addButton}
-                >
-                  Add a delivery
-                </Button>
-              </>
-            }
+            <PreferredSchedule
+              addSchedule={addSchedule}
+              allowedDeliveries={allowedDeliveries}
+              removeSchedule={removeSchedule}
+              schedules={schedules}
+              updateSchedule={updateSchedules}
+            />
             <Button
               variant='contained'
               color='primary'
@@ -198,7 +143,7 @@ const delivery = () => {
           <ExpansionPanelDetails className={classes.col}>
             <ScheduleDeliveries
               deliveries={cart.Deliveries}
-              onMove={hasError => setHasScheduleError(hasError)}
+              setError={setHasScheduleError}
               movable
             />
             <Link href={checkoutRoute}>

@@ -1,13 +1,13 @@
 import { deliveryDay } from './../consumer/consumerModel';
 import moment from 'moment';
 
-export const getNextDeliveryDate = (day: deliveryDay | null) => {
+export const getNextDeliveryDate = (day: deliveryDay | null, timezone?: string) => {
   if (day === null) {
     const err = new Error("Cannot get delivery date for 'null' date");
     console.error(err.stack);
     throw err;
   }
-  const date = moment().day(day);
+  const date = timezone ? moment().tz(timezone).day(day).startOf('day') : moment().day(day).startOf('day');
   const twoDaysAfterToday = moment().add(2, 'd');
   if (date.isAfter(twoDaysAfterToday)) return date;
   const datePlus7 = date.add(7, 'd');
