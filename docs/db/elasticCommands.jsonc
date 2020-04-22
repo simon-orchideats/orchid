@@ -146,6 +146,64 @@ POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
 }
 
 
+
+POST rests/_update/lRACoHEB4E-MhTTB7Wtq
+{
+  "doc": {
+    "menu": [
+      {
+        "_id" : "UozYT3u0kYJplEKysteo4",
+        "img" : "/menu/gypsy-grill/shish-kabob-baklava.jpg",
+        "name" : "Shish Kabob Pita Sandwhich & Baklava",
+        "description" : "w/ salad & tahini sauce",
+        "tags": [],
+        "originalPrice" : 9.98
+      },
+      {
+        "_id" : "HMmpBH4ix9Qk7Fq8iX-lf",
+        "img" : "/menu/gypsy-grill/chicken-kabob-pita-sandwhich.jpg",
+        "description" : "w/ garlic sauce",
+        "name" : "Chicken Kabob Pita Sandwich & House Rice",
+        "tags": [],
+        "originalPrice" : 10.24
+      },
+      {
+        "_id" : "J1gVLaxJVKBsGjpowMnH5",
+        "img" : "/menu/gypsy-grill/chicken-shawarma-pita-sandwhich.jpg",
+        "name" : "Chicken Shawarma Pita Sandwich & House Rice",
+        "tags": [],
+        "originalPrice" : 10.24,
+        "description" : "w/ garlic sauce"
+      },
+      {
+        "_id" : "CRC12VTuKnRJLEP4R0riB",
+        "img" : "/menu/gypsy-grill/gypsy-falafel-salad-roll.jpg",
+        "name" : "Gypsy Falafel w/ Salad & Spinach Feta Cheese Roll",
+        "tags": [],
+        "originalPrice" : 9.98,
+        "description" : "falafel w/ pita and a small salad"
+      },
+      {
+        "_id" : "7a7jbpcXVNvcUi7YIo3h0",
+        "img" : "/menu/gypsy-grill/kofta-kababob-pita-sandwhich.jpg",
+        "name" : "Shish Kabob Pita Sandwich & 4pc Falafel",
+        "description" : "w/ salad & tahini sauce",
+        "tags": [],
+        "originalPrice" : 9.98
+      },
+      {
+        "_id" : "KjN9jtg2ubJ2-dsLuUFf7",
+        "img" : "/menu/gypsy-grill/lamb-kunafa.jpg",
+        "name" : "Lamb & Beef Shawarma Pita Sandwich w/ Kunafa",
+        "tags": [],
+        "description" : "w/ salad & tahini sauce",
+        "originalPrice" : 9.98
+      }
+    ]
+  }
+}
+
+
 ############################
 
 
