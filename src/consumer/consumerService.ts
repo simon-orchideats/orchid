@@ -27,9 +27,9 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   if (newConsumer.plan) {
     //@ts-ignore
     newConsumer.plan.__typename = 'ConsumerPlan';
-    newConsumer.plan.schedule.forEach(s => {
+    newConsumer.plan.schedules.forEach(s => {
       //@ts-ignore
-      s.__typename = 'Schedule';
+      s.__typename = 'Schedules';
     });
     newConsumer.plan.mealPlans.forEach(mp => {
       //@ts-ignore
@@ -350,8 +350,8 @@ export const useUpdateMyPlan = (): [
 ] => {
   type res = { updateMyPlan: MutationConsumerRes };
   const [mutate, mutation] = useMutation<res>(gql`
-    mutation updateMyPlan($plan: ConsumerPlanInput!, $nextDeliveryDate: Float!) {
-      updateMyPlan(plan: $plan, nextDeliveryDate: $nextDeliveryDate) {
+    mutation updateMyPlan($plan: ConsumerPlanInput!) {
+      updateMyPlan(plan: $plan) {
         res {
           ...consumerFragment
         }
@@ -361,12 +361,15 @@ export const useUpdateMyPlan = (): [
     ${consumerFragment}
   `);
   const updateMyPlan = (plan: ConsumerPlan, currConsumer: Consumer) => {
+    if (!currConsumer.Plan) {
+      const err = new Error('Missing consumer plan');
+      console.log(err.stack);
+      throw err;
+    }
+    if (ConsumerPlan.equals(plan, currConsumer.Plan)) return;
     mutate({ 
       variables: {
         plan,
-        // todo simon: update how to do this
-        // nextDeliveryDate: getNextDeliveryDate(plan.DeliveryDay).valueOf(),
-        getNextDeliveryDate: Date.now(),
       },
       optimisticResponse: {
         updateMyPlan: {

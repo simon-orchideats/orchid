@@ -25,7 +25,7 @@ export interface IConsumerService {
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes>
-  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number) => Promise<MutationConsumerRes>
+  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
 }
 
@@ -449,98 +449,53 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  //@ts-ignore
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan, nextDeliveryDate: number): Promise<MutationConsumerRes> {
-    //todo simon: redo this fn
-    //   try {
-  //     if (!signedInUser) throw getNotSignedInErr()
-  //     if (!this.orderService) throw new Error('OrderService not set');
-  //     if (!this.planService) throw new Error('PlanService not set');
-  //     if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-  //     let newConsumer: IConsumer;
-  //     try {
-  //       const res = await this.elastic.update({
-  //         index: CONSUMER_INDEX,
-  //         id: signedInUser._id,
-  //         _source: 'true',
-  //         body: {
-  //           doc: {
-  //             plan: newPlan,
-  //           }
-  //         }
-  //       });
-  //       newConsumer = {
-  //         _id: signedInUser._id,
-  //         ...res.body.get._source
-  //       };
-  //     } catch (e) {
-  //       const msg = `Failed to update elastic consumer plan for consumer '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
-  //       console.error(msg)
-  //       throw e;
-  //     }
-  //     let mealPrice;
-  //     let total;
-  //     let mealCount;
-  //     try {
-  //       const plan = await this.planService.getPlan(newPlan.stripePlanId);
-  //       if (!plan) throw new Error (`No plan found with id '${newPlan.stripePlanId}'`);
-  //       mealPrice = plan.mealPrice;
-  //       total = plan.weekPrice;
-  //       mealCount = plan.mealCount;
-  //     } catch (e) {
-  //       console.error(`Failed to getPlan with id '${newPlan.stripePlanId}': ${e.stack}`);
-  //       throw e;
-  //     }
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
+    try {
+      if (!signedInUser) throw getNotSignedInErr()
+      if (!this.orderService) throw new Error('OrderService not set');
+      if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
+      // left off here
+      // todo simon: if this succeeds but has an err response, do something about it.
+      const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
+        signedInUser,
+        newPlan,
+      ).catch(e => {
+        console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
+        throw e;
+      });
 
-  // const canceler = this.prepareOrdersForCancelation(signedInUser).catch(e => {
-  //   console.error(`Failed to prepareOrdersForCancelation '${signedInUser && signedInUser._id}': ${e.stack}`);
-  //   throw e;
-  // });
+      const updateConsumer = this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: signedInUser._id,
+        _source: 'true',
+        body: {
+          doc: {
+            plan: newPlan,
+          }
+        }
+      }).catch(e => {
+        const msg = `Failed to update elastic consumer plan for consumer '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
+        console.error(msg)
+        throw e;
+      })
 
-  // const subscription = this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId).catch(e => {
-  //   throw new Error(`Failed to retreive subscription for consumer '${signedInUser.stripeSubscriptionId}': ${e.stack}`);
-  // });
+      const res = await Promise.all([updateConsumer, updateUpcoming]);
 
-  // const res = await Promise.all([canceler, subscription])
-
-  // todo simon: if this succeeds but has an err response, do something about it.
-  // const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
-  //   signedInUser, 
-  //   mealPrice,
-  //   total,
-  //   mealCount,
-  //   newPlan,
-  //   nextDeliveryDate,
-  // ).catch(e => {
-  //   console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
-  //   throw e;
-  // });
-
-  // const newInvoiceDateSeconds = Math.round(moment(nextDeliveryDate).subtract(2, 'd').valueOf() / 1000)
-  // const updateSubscription = this.stripe.subscriptions.update(signedInUser.stripeSubscriptionId, {
-  //   trial_end: newInvoiceDateSeconds,
-  //   proration_behavior: 'none',
-  //   items: [{
-  //     id: res[1].items.data[0].id,
-  //     plan: newPlan.stripePlanId,
-  //   }]
-  // }).catch(e => {
-  //   console.error(`Failed to update subscription for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
-  //   throw e;
-  // });
-
-  //     await Promise.all([updateUpcoming, updateSubscription])
-  //     return {
-  //       res: newConsumer,
-  //       error: null,
-  //     }
-  //   } catch (e) {
-  //     console.error(`
-  //       [ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
-  //       e.stack
-  //     );
-  //     throw new Error('Internal Server Error');
-  //   }
+      const newConsumer: IConsumer = {
+        _id: signedInUser._id,
+        ...res[0].body.get._source
+      };
+      return {
+        res: newConsumer,
+        error: null,
+      }
+    } catch (e) {
+      console.error(
+        `[ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
+        e.stack
+      );
+      throw e;
+    }
   }
 }
 

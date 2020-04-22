@@ -20,7 +20,7 @@ export const OrderMutationResolvers: ServerResolovers = {
 
   updateOrder: async (
     _root,
-    { updateOptions, orderId}: { updateOptions: IUpdateOrderInput, orderId: string},
+    { updateOptions, orderId }: { updateOptions: IUpdateOrderInput, orderId: string },
     { signedInUser },
   ) => {
     return await getOrderService().updateOrder(signedInUser, orderId, updateOptions);

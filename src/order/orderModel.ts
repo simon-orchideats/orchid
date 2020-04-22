@@ -132,8 +132,6 @@ export class Order implements IOrder{
     deliveryIndex?: number, 
     cart?: Cart,
   ): IUpdateOrderInput {
-    console.log('CART',cart);
-    // meals is sent empty for some rason
     return {
       meals: cart ?
         Object.values(cart.RestMeals).reduce<IDeliveryMeal[]>((sum, restMeals) => (
@@ -146,7 +144,6 @@ export class Order implements IOrder{
     }
   }
 
-  // todo simon do this
   static getEOrderFromUpdatedOrder(
     {
       consumer,
@@ -155,24 +152,9 @@ export class Order implements IOrder{
     }: EOrder,
     mealPrices: IMealPrice[],
     {
-      meals,
       donationCount
     }: IUpdateOrderInput
   ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    console.log('BEFORE UPDATING',deliveries);
-    // if (deliveryIndex == null) {
-    // //   if (!meals) {
-    // //     deliveries[deliveryIndex] = { ...deliveries[deliveryIndex], meals:[] };
-    // //  } else {
-    // //     // deliveries[deliveryIndex] = { ...deliveries[deliveryIndex], meals };   
-    // //  }
-    // // } else {
-    //   donationCount = 0;
-    // }
-
-    console.log('THE MEALS',meals);
-    
-    console.log('AFTER',JSON.stringify(deliveries));
     return {
       cartUpdatedDate: Date.now(),
       costs: {
@@ -180,9 +162,6 @@ export class Order implements IOrder{
         mealPrices
       },
       consumer,
-      // todo simon. when copying over the deliveirs of time ICartDelivery to IOrderDelivery, we need to add a status,
-      // so how do we do that? can we just put all status as Open...? no we can only set the ones open if it has NOT
-      // been delivered.
       deliveries,
       donationCount
     }
@@ -194,7 +173,6 @@ export class Order implements IOrder{
     invoiceDate: number,
     subscriptionId: string,
     mealPrices: IMealPrice[],
-    total: number,
   ): EOrder {
     if (!signedInUser) {
       const err = new Error ('Signed in user null');
@@ -221,7 +199,6 @@ export class Order implements IOrder{
         tax: 0,
         tip: 0,
         mealPrices,
-        total,
         percentFee: 0,
         flatRateFee: 0,
       },

@@ -79,13 +79,13 @@ const CheckoutCart: React.FC<props> = ({
         />
       }
       {
-        cart.Deliveries.map(d => (
-          <>
+        cart.Deliveries.map((d, i) => (
+          <div key={i}>
             <Typography variant='h6' className={classes.paddingBottom}>
               {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
             </Typography>
             {d.Meals.map((meal, i) => (
-              <>
+              <div key={meal.RestId}>
                 {
                   (i == 0 || d.Meals[i].RestId !== meal.RestId) &&  
                   <Typography variant='subtitle1' className={classes.paddingBottom}>
@@ -98,9 +98,9 @@ const CheckoutCart: React.FC<props> = ({
                   img={meal.Img}
                   quantity={meal.Quantity}
                 />
-              </>
+              </div>
             ))}
-          </>
+          </div>
         )) 
       }
       <Divider className={classes.divider} />
