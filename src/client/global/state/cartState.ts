@@ -313,7 +313,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restMeals: {},
       deliveries: [],
       schedules: [],
-      zip: null,
+      zip: res.cart.Zip,
     }));
   },
 

@@ -48,6 +48,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * 
  * todo prevent cross state orders
+ * taxes
+ * + $2 for extra deliveries
  */
 
 init({
