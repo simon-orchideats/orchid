@@ -278,7 +278,7 @@ const DeliveryOverview: React.FC<{
               color='primary'
               onClick={onEdit}
             >
-              Edit meals
+              Edit deliveries
             </Button>
           }
         </div>
