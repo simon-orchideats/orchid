@@ -7,6 +7,7 @@ import { IDestination } from '../place/destinationModel';
 import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
+import moment from "moment";
 
 export interface ICartInput {
   readonly paymentMethodId: string
@@ -138,13 +139,23 @@ export class Cart implements ICart {
     })
   }
 
-  public static getDeliveriesFromSchedule(schedules: ISchedule[], timezone?: string) {
-    return schedules.map(s => new DeliveryInput({
-      deliveryTime: s.time,
-      deliveryDate: getNextDeliveryDate(s.day, timezone).valueOf(),
-      discount: null,
-      meals: [],
-    }))
+  public static getDeliveriesFromSchedule(
+    schedules: ISchedule[],
+    timezone?: string,
+    dateModifier?: (m: moment.Moment) =>  moment.Moment
+  ) {
+    return schedules.map(s => {
+      let deliveryDate = getNextDeliveryDate(s.day, timezone);
+      if (dateModifier) {
+        deliveryDate = dateModifier(deliveryDate);
+      }
+      return new DeliveryInput({
+        deliveryTime: s.time,
+        deliveryDate: deliveryDate.valueOf(),
+        discount: null,
+        meals: [],
+      })
+    })
   }
 
   public static addMealToRestMeals(
@@ -238,6 +249,16 @@ export class Cart implements ICart {
         sum = sum + (standardCount || 0);
         return sum;
       }, 0) + this.donationCount;
+  }
+
+  public static getAllowedDeliveries(restMeals: RestMeals) {
+    return Math.max(
+      Object.values(restMeals).reduce(
+        (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
+        0
+      ),
+      1
+    )
   }
 
   public static getRestMealCount(mealPlans: MealPlan[]) {
@@ -397,6 +418,13 @@ export class Cart implements ICart {
       } else {
         newCart.Deliveries[removedMealDeliveryIndex].Meals.splice(removedMealMealsIndex, 1);
       }
+    }
+
+    const schedules = newCart.Schedules;
+    if (schedules.length > 1) {
+      const allowedDeliveries = Cart.getAllowedDeliveries(newCart.RestMeals);
+      const removeCount = schedules.length - allowedDeliveries;
+      schedules.splice(schedules.length - removeCount);
     }
 
     return newCart;

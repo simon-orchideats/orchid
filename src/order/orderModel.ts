@@ -45,6 +45,7 @@ export class MealPrice implements IMealPrice {
 
 export interface IOrder {
   readonly _id: string
+  readonly invoiceDate: number
   readonly deliveries: IDelivery[]
   // destination will be removed when we support a desitnation per delivery
   readonly destination: IDestination
@@ -63,6 +64,7 @@ export interface IUpdateOrderInput {
 /// 
 export class Order implements IOrder{
   readonly _id: string
+  readonly invoiceDate: number
   readonly deliveries: Delivery[]
   readonly destination: Destination
   readonly mealPrices: MealPrice[]
@@ -72,6 +74,7 @@ export class Order implements IOrder{
 
   constructor(order: IOrder) {
     this._id = order._id;
+    this.invoiceDate = order.invoiceDate;
     this.deliveries = order.deliveries.map(d => new Delivery(d))
     this.destination = new Destination(order.destination);
     this.mealPrices = order.mealPrices.map(mp => new MealPrice(mp));
@@ -81,6 +84,7 @@ export class Order implements IOrder{
   }
 
   public get Id() { return this._id }
+  public get InvoiceDate() { return this.invoiceDate }
   public get Deliveries() { return this.deliveries }
   public get Destination() { return this.destination }
   public get MealPrices() { return this.mealPrices }
@@ -119,6 +123,7 @@ export class Order implements IOrder{
   static getIOrderFromEOrder(_id: string, order: EOrder): IOrder {
     return {
       _id,
+      invoiceDate: order.invoiceDate,
       deliveries: order.deliveries,
       destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
       mealPrices: order.costs.mealPrices,

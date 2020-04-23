@@ -79,6 +79,7 @@ export const _OrderQL = gql`
 
   type Order {
     _id: ID!
+    invoiceDate: Float!
     deliveries: [Delivery!]!
     mealPrices: [MealPrice!]!
     phone: String!

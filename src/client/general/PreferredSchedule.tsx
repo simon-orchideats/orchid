@@ -22,12 +22,14 @@ const useStyles = makeStyles(theme => ({
 const PreferredSchedule: React.FC<{
   addSchedule: () => void
   allowedDeliveries: number
+  limit?: number
   schedules: Schedule[]
   removeSchedule: (i: number) => void
   updateSchedule: (i: number, day: deliveryDay, time: deliveryTime,) => void
 }> = ({
   addSchedule,
   allowedDeliveries,
+  limit,
   removeSchedule,
   schedules,
   updateSchedule,
@@ -49,6 +51,7 @@ const PreferredSchedule: React.FC<{
             onDayChange={day => updateSchedule(i, day, s.Time)}
             time={s.Time}
             onTimeChange={time => updateSchedule(i, s.Day, time)}
+            limit={limit}
           />
         </div>
       ))}

@@ -1,4 +1,4 @@
-import { useGetCart, useIncrementCartDonationCount, useDecrementCartDonationCount, useClearCartMeals } from "../global/state/cartState";
+import { useGetCart, useIncrementCartDonationCount, useDecrementCartDonationCount } from "../global/state/cartState";
 import { useGetAvailablePlans } from "../../plan/planService";
 import withClientApollo from "../utils/withClientApollo";
 import { Cart } from "../../order/cartModel";
@@ -7,10 +7,6 @@ import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliverie
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
-import { Schedule } from "../../consumer/consumerModel";
-import { useUpdateOrder } from "../order/orderService";
-import { useMutationResponseHandler } from "../../utils/apolloUtils";
-import { Order } from "../../order/orderModel";
 
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
@@ -48,29 +44,14 @@ const MenuCart: React.FC<{
   const plans = useGetAvailablePlans();
   const consumer = useGetConsumer();
   const donationCount = cart ? cart.DonationCount : 0;
-  const clearCartMeals = useClearCartMeals();
-  const [updateOrder, updateOrderRes] = useUpdateOrder();
   const urlQuery = useRouter().query;
   const updatingParam = urlQuery.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
-  const deliveryIndex = parseFloat(urlQuery.deliveryIndex as string);
   const orderId = urlQuery.orderId as string
+  const limit = parseFloat(urlQuery.limit as string)
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
     query: { updating: 'true' }
-  }
-  useMutationResponseHandler(updateOrderRes, () => {
-    clearCartMeals();
-    Router.push(upcomingDeliveriesPath);
-  });
-  const onUpdateOrder = () => {
-    if (!cart) {
-      const err = new Error('Missing cart');
-      console.error(err.stack);
-      throw err;
-    }
-    // todo simon: metrics here
-    updateOrder(orderId, Order.getUpdatedOrderInput(deliveryIndex, cart));
   }
   const onNext = () => {
     if (!plans.data) {
@@ -84,7 +65,14 @@ const MenuCart: React.FC<{
       throw err;
     }
     if (isUpdating) {
-      onUpdateOrder();
+      Router.push({
+        pathname: deliveryRoute,
+        query: {
+          updating: 'true',
+          orderId,
+          limit,
+        }
+      });
     } else {
       if (consumer && consumer.data && consumer.data.StripeSubscriptionId) {
         Router.push(upcomingDeliveriesPath);
@@ -94,15 +82,7 @@ const MenuCart: React.FC<{
     }
   }
 
-  let title = 'Your week';
-  if (isUpdating && cart) {
-    const d = cart.Deliveries[deliveryIndex];
-    if (d) {
-      const str = Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)
-      title = `Update delivery for ${str}`
-    }
-  }
-
+  let title = isUpdating ? 'Update week' : 'Your week';
   const incrementDonationCount = useIncrementCartDonationCount();
   const decrementDonationCount = useDecrementCartDonationCount();
 
@@ -130,7 +110,7 @@ const MenuCart: React.FC<{
         incrementDonationCount,
         decrementDonationCount,
         title,
-        isUpdating && cart ? 'Update delivery' : 'Next', 
+        isUpdating && cart ? 'Next to delivery' : 'Next', 
       )}
     </>
   );

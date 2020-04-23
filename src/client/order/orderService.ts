@@ -13,6 +13,7 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
     myUpcomingOrders {
       _id
+      invoiceDate
       destination {
         address {
           address1
