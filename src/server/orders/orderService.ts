@@ -1,5 +1,5 @@
 import { getNextDeliveryDate } from './../../order/utils';
-import { DeliveryInput, IDelivery } from './../../order/deliveryModel';
+import { DeliveryInput } from './../../order/deliveryModel';
 import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
@@ -7,10 +7,10 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IUpdateOrderInput, IMealPrice } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
-import { ICartInput, Cart, RestMeals } from './../../order/cartModel';
+import { ICartInput, Cart } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
@@ -143,11 +143,6 @@ export interface IOrderService {
     updateOptions: IUpdateOrderInput,
     now?: number,
   ): Promise<MutationBoolRes>
-  updateUpcomingOrdersPlans(
-    signedInUser: SignedInUser,
-    plan: IConsumerPlan,
-    updatedDate?: number,
-  ): Promise<(ApiResponse<any, any>)[]>
   updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>,
 }
 
@@ -625,6 +620,7 @@ class OrderService {
           ],
         }
       });
+      // todo simon: sort the delivieries
       return res.body.hits.hits.map(({ _id, _source }) => ({
         _id,
         order: _source,
@@ -835,104 +831,6 @@ class OrderService {
   //     console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
   //     throw new Error('Internal Server Error');
   //   }
-  }
-
-  async updateUpcomingOrdersPlans(
-    signedInUser: SignedInUser,
-    plan: IConsumerPlan,
-    updatedDate: number = Date.now(),
-  ) {
-    try {
-      if (!signedInUser) throw getNotSignedInErr();
-      const upcomingOrders = await this.getMyUpcomingEOrders(signedInUser);
-      return Promise.all(upcomingOrders.map(async ({ _id, order }) => {
-        if (!this.restService) throw new Error ('RestService not set');
-        if (!this.planService) throw new Error ('PlanService not set');
-
-        let plans: IPlan[];
-        try {
-          plans = await this.planService.getAvailablePlans();
-        } catch (e) {
-          console.error(`Failed to get available plans: '${e.stack}'`);
-          throw e;
-        }
-        const mealPrices: IMealPrice[] = plan.mealPlans.map(mp => ({
-          stripePlanId: mp.stripePlanId,
-          planName: mp.planName,
-          mealPrice: Tier.getMealPrice(
-            mp.planName,
-            mp.mealCount,
-            plans
-          )
-        }));
-
-        let timezone: string | undefined = undefined;
-        let firstRestId: string | undefined = undefined;
-        for (let i = 0; i < order.deliveries.length; i++) {
-          const meals = order.deliveries[i].meals;
-          for (let j = 0; j < meals.length; j++) {
-            firstRestId = meals[j].restId;
-            break;
-          }
-          if (firstRestId) break;
-        }
-
-        if (firstRestId) {
-          try {
-            const rest = await this.restService.getRest(firstRestId, ['location']);
-            if (!rest) throw new Error(`Missing rest '${firstRestId}'`);
-            // behavior is unsupported if the customer picks restaurants from differen timezones. this is very unlikely
-            // since the website only grabs restaruants within a limited distance from a point, but it is possible
-            // if that point is close to a timezone border.
-            timezone = rest.location.timezone;
-          } catch (e) {
-            console.error('[OrderService] failed to get rest for timezone', e.stack);
-            throw e;
-          }
-        }
-
-        const confirmedDeliveries: IDelivery[] = [];
-        const allRemainingMeals = order.deliveries.reduce<RestMeals>((restMeals, d) => {
-          if (d.status === 'Confirmed') {
-            confirmedDeliveries.push(d)
-            return restMeals;
-          }
-          d.meals.forEach(m => Cart.addMealToRestMeals(restMeals, m));
-          return restMeals;
-        }, {});
-        // left off here. delivery date is wrong when we update schedule
-        const autoDeliveries = Cart.getDeliveriesFromSchedule(plan.schedules, timezone);
-        Cart.autoAddMealsToDeliveries(
-          allRemainingMeals,
-          autoDeliveries,
-        );
-        const newDeliveries: IDelivery[] = autoDeliveries.map(d => ({
-          ...d,
-          status: 'Open',
-        }));
-        const newOrder: Omit<
-          EOrder,
-          'stripeSubscriptionId' | 'createdDate' | 'consumer' | 'donationCount' | 'invoiceDate'
-        > = {
-          costs: {
-            ...order.costs,
-            mealPrices,
-          },
-          cartUpdatedDate: updatedDate,
-          deliveries: [...confirmedDeliveries, ...newDeliveries],
-        }
-        return this.elastic.update({
-          index: ORDER_INDEX,
-          id: _id,
-          body: {
-            doc: newOrder
-          }
-        })
-      }))
-    } catch (e) {
-      console.error(`[OrderService] Failed to update upcoming orders for consumer '${signedInUser && signedInUser._id}'`);
-      throw e;
-    }
   }
 
   async updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {

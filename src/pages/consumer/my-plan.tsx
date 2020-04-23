@@ -95,7 +95,7 @@ const myPlan = () => {
     } else if (!ConsumerPlan.areCuisinesEqual(oldCuisines, newCuisines)) {
       msg = `. We will pick new cuisines for you in the future.`;
     } else if (!Schedule.equalsLists(oldSchedule, newSchedule)) {
-      msg = '. We rescheduled your upcoming deliveries.'
+      msg = '. We will follow your new schedule in the future.'
     }
     notify(`Plan updated${msg}`, NotificationType.success, false);
   });
@@ -167,7 +167,7 @@ const myPlan = () => {
     const plan = consumer.data.Plan;
     setPrevPlan(plan);
     const schedules = plan.Schedules.map(s => new Schedule(s));
-    useSetScheduleAndAutoDeliveries.push(Schedule.getDefaultSchedule());
+    schedules.push(Schedule.getDefaultSchedule());
     updateMyPlan(
       new ConsumerPlan({
         ...plan,

@@ -20,6 +20,7 @@ import { isServer } from "../../client/utils/isServer";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import { Cart } from "../../order/cartModel";
+import moment from "moment";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -197,14 +198,21 @@ const DeliveryOverview: React.FC<{
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const onEdit = (deliveryIndex: number) => {
-    setCart(order, deliveryIndex);
+  let canEdit = order.DonationCount > 0;
+  for (let i = 0; i < order.Deliveries.length; i++) {
+    if (order.Deliveries[i].Status === 'Open' || 'Skipped') {
+      canEdit = true;
+      break;
+    }
+  }
+  const onEdit = () => {
+    setCart(order);
     Router.push({
       pathname: menuRoute,
       query: {
         updating: 'true',
         orderId: order.Id,
-        deliveryIndex: deliveryIndex
+        limit: moment(order.InvoiceDate).add(3, 'd').startOf('d').valueOf(),
       }
     });
   };
@@ -233,7 +241,7 @@ const DeliveryOverview: React.FC<{
       <div className={`${classes.row} ${classes.padding}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
-            Total
+            Total for {moment(order.InvoiceDate).format('M/D/YY')}
           </Typography>
           <Typography variant='body1' className={classes.hint}>
             {
@@ -262,6 +270,18 @@ const DeliveryOverview: React.FC<{
             </>
           }
         </div>
+        <div className={classes.column}>
+          {
+            canEdit &&
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={onEdit}
+            >
+              Edit meals
+            </Button>
+          }
+        </div>
       </div>
       <Divider />
       {
@@ -287,7 +307,6 @@ const DeliveryOverview: React.FC<{
         <ScheduleDeliveries
           deliveries={order.Deliveries}
           onSkip={onSkip}
-          onEdit={onEdit}
           onUpdate={onUpdate}
           isUpdating={isUpdating}
         />

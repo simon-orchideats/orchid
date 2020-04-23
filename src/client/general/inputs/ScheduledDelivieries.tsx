@@ -54,7 +54,6 @@ const ScheduleDeliveries: React.FC<{
   deliveries: Array<DeliveryInput | Delivery>
   isUpdating?: boolean
   movable?: boolean
-  onEdit?: (deliveryIndex: number) => void,
   onSkip?: (deliveryIndex: number) => void,
   onUpdate?: (deliveryIndex: number) => void,
   setError?: (err: boolean) => void,
@@ -63,7 +62,6 @@ const ScheduleDeliveries: React.FC<{
   isUpdating = false,
   movable = false,
   onSkip,
-  onEdit,
   onUpdate,
   setError,
 }) => {
@@ -113,31 +111,16 @@ const ScheduleDeliveries: React.FC<{
               {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
             </Typography>
             {
-              'Status' in d && (d.Status === 'Open' || d.Status === 'Skipped') && onEdit && onUpdate &&
-              <>
-                {
-                  isUpdating ?
-                  <Button
-                    variant='contained'
-                    color='primary'
-                    fullWidth
-                    className={classes.button}
-                    onClick={() => onUpdate(deliveryIndex)}
-                  >
-                    Update
-                  </Button>
-                  :
-                  <Button
-                    variant='contained'
-                    color='primary'
-                    fullWidth
-                    className={classes.button}
-                    onClick={() => onEdit(deliveryIndex)}
-                  >
-                    Edit
-                  </Button>
-                }
-              </>
+              'Status' in d && (d.Status === 'Open' || d.Status === 'Skipped') && onUpdate && isUpdating &&
+              <Button
+                variant='contained'
+                color='primary'
+                fullWidth
+                className={classes.button}
+                onClick={() => onUpdate(deliveryIndex)}
+              >
+                Update
+              </Button>
             }
             {
               'Status' in d && d.Status === 'Open' && onSkip && !isUpdating &&
@@ -165,8 +148,13 @@ const ScheduleDeliveries: React.FC<{
               variant='body1'
               className={classes.emptyDelivery}
             >
-              Orchid will ignore this empty delivery for this week, but we will still attempt to use this time when
-              scheduling future orders for you
+              {
+                isUpdating ?
+                  'Orchid will ignore this empty delivery'
+                :
+                  `Orchid will ignore this empty delivery for this week, but we will still attempt to use this time when
+                  scheduling future orders for you`
+              }
             </Typography>
           :
             Object.values(restMealsPerDelivery[deliveryIndex]).map((restMeal, rIndex) => (

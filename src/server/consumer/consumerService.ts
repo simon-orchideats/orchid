@@ -454,17 +454,8 @@ class ConsumerService implements IConsumerService {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-      // left off here
-      // todo simon: if this succeeds but has an err response, do something about it.
-      const updateUpcoming = this.orderService.updateUpcomingOrdersPlans(
-        signedInUser,
-        newPlan,
-      ).catch(e => {
-        console.error(`Failed to updateUpcomingOrders for consumer '${signedInUser && signedInUser._id}': ${e.stack}`);
-        throw e;
-      });
 
-      const updateConsumer = this.elastic.update({
+      const updatedConsumer = await this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         _source: 'true',
@@ -473,17 +464,11 @@ class ConsumerService implements IConsumerService {
             plan: newPlan,
           }
         }
-      }).catch(e => {
-        const msg = `Failed to update elastic consumer plan for consumer '${signedInUser._id}' to plan ${JSON.stringify(newPlan)}: ${e.stack}`;
-        console.error(msg)
-        throw e;
       })
-
-      const res = await Promise.all([updateConsumer, updateUpcoming]);
 
       const newConsumer: IConsumer = {
         _id: signedInUser._id,
-        ...res[0].body.get._source
+        ...updatedConsumer.body.get._source
       };
       return {
         res: newConsumer,

@@ -1,4 +1,4 @@
-import { DeliveryMeal } from './../../../order/deliveryModel';
+import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
 import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
@@ -31,7 +31,7 @@ export const cartQL = gql`
     incrementDonationCount: CartState!
     moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
     removeMealFromCart(restId: ID!, mealId: ID!): CartState!
-    setCart(order: Order!, deliveryIndex: number): CartState!
+    setCart(order: Order!): CartState!
     updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
     updateZip(zip: String!): CartState!
@@ -132,15 +132,15 @@ export const useRemoveMealFromCart = (): (restId: string, mealId: string) => voi
   }
 }
 
-export const useSetCart = (): (order: Order, deliveryIndex: number) => void => {
-  type vars = { order: Order, deliveryIndex: number };
+export const useSetCart = (): (order: Order) => void => {
+  type vars = { order: Order };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setCart($order: Order!, $deliveryIndex: ID!) {
-      setCart(order: $order, deliveryIndex: $deliveryIndex) @client
+    mutation setCart($order: Order!) {
+      setCart(order: $order) @client
     }
   `);
-  return (order: Order, deliveryIndex: number) => {
-    mutate({ variables: { order, deliveryIndex } })
+  return (order: Order) => {
+    mutate({ variables: { order } })
   }
 }
 
@@ -231,13 +231,13 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_, { meal, restId, restName }, { cache }) => {
     const res = getCart(cache);
-    const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
-    const newMealPlans = [new MealPlan({
-      stripePlanId: meal.StripePlanId,
-      planName: meal.PlanName,
-      mealCount: 1
-    })];
     if (!res || !res.cart) {
+      const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
+      const newMealPlans = [new MealPlan({
+        stripePlanId: meal.StripePlanId,
+        planName: meal.PlanName,
+        mealCount: 1
+      })];
       return updateCartCache(cache, new Cart({
         donationCount: 0,
         deliveries: [],
@@ -348,16 +348,18 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setCart: (_, { order, deliveryIndex }, { cache }) => {
+  setCart: (_, { order }, { cache }) => {
     const restMeals: RestMeals = {};
-    const delivery = order.Deliveries[deliveryIndex];
-    delivery.Meals.forEach(newMeal => {
-      Cart.addMealToRestMeals(restMeals, newMeal);
-    })
+    const newDeliveries: DeliveryInput[] = [];
+    order.Deliveries.forEach(d => {
+      if (d.Status === 'Confirmed') return;
+      d.Meals.forEach(m => Cart.addMealToRestMeals(restMeals, m));
+      newDeliveries.push(d);
+    });
     return updateCartCache(cache, new Cart({
       donationCount: order.DonationCount,
       restMeals,
-      deliveries: order.Deliveries,
+      deliveries: newDeliveries,
       schedules: order.Deliveries.map(d => new Schedule({
         time: d.DeliveryTime,
         day: moment(d.DeliveryDate).day() as deliveryDay,
