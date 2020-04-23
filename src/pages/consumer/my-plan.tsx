@@ -167,7 +167,7 @@ const myPlan = () => {
     const plan = consumer.data.Plan;
     setPrevPlan(plan);
     const schedules = plan.Schedules.map(s => new Schedule(s));
-    useSetScheduleAndAutoDeliveries.push(Schedule.getDefaultSchedule());
+    schedules.push(Schedule.getDefaultSchedule());
     updateMyPlan(
       new ConsumerPlan({
         ...plan,

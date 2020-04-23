@@ -652,6 +652,7 @@ class OrderService {
  
     updateOptions: IUpdateOrderInput,
   ): Promise<MutationBoolRes> {
+    console.log('UPDATEOPTIONS',updateOptions)
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.planService) throw new Error ('RestService not set');
@@ -711,110 +712,65 @@ class OrderService {
           error: msg
         }
       }
-      // const targetOrderInvoiceDate =targetOrder.deliveries[updateOptions.deliveryIndex].deliveryDate;
-      // const targetOrderInvoiceDateDisplay = moment(targetOrderInvoiceDate).format(adjustmentDateFormat);
-      // let pendingLineItems;
-      // try {
-      //   pendingLineItems = await this.stripe.invoiceItems.list({
-      //     limit: 50,
-      //     pending: true,
-      //     customer: stripeCustomerId,
-      //   });
-      // } catch (e) {
-      //   throw new Error(`Couldn't get future line items'. ${e.stack}`)
-      // }
-      // console.log(pendingLineItems);
-      // const targetAdjustment = pendingLineItems.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
-      // if (targetAdjustment) {
-      //   try {
-      //     await this.stripe.invoiceItems.del(targetAdjustment.id);
-      //   } catch (e) {
-      //     throw new Error (`Couldn't remove previous adjustment. ${e.stack}`)
-      //   }
-      // }
-
-  //     let originalPrice;
-  //     let prevInvoices;
-  //     try {
-  //       prevInvoices = await this.stripe.invoices.list({
-  //         limit: 1,
-  //         customer: stripeCustomerId
-  //       });
-  //     } catch (e) {
-  //       throw new Error (`Couldn't get previous invoices for consumer '${stripeCustomerId}'. ${e.stack}`)
-  //     }
-  //     const prevInvoice = prevInvoices.data[0];
-  //     let prevAdjustmentLine;
-  //     // no prev invoice if it's a new subscription
-  //     if (prevInvoice) {
-  //       prevAdjustmentLine = prevInvoice.lines.data.find(line => line.description && line.description.includes(targetOrderInvoiceDateDisplay))
-  //     } 
-  //     const prevAdjustment = prevAdjustmentLine ? prevAdjustmentLine.amount : 0;
-  //     // is the consumer updating an unpaid week?
-  //     if (now < targetOrderInvoiceDate) {
-  //       const upcomingLineItems = await this.stripe.invoices.listUpcomingLineItems({ subscription: subscriptionId });
-  //       const upcomingPlan = upcomingLineItems.data.find(line => !!line.plan);
-  //       if (!upcomingPlan) throw new Error (`Could not find plan in future line items for consumer '${stripeCustomerId}'`);
-  //       originalPrice = upcomingPlan.amount + prevAdjustment;
-  //     } else {
-  //       const prevPlanLine = prevInvoice.lines.data.find(line => !!line.plan)
-  //       if (!prevPlanLine) throw new Error(`Couldn't get previous plan for consumer '${stripeCustomerId}' in invoice '${prevInvoice.id}'`);
-  //       originalPrice = prevPlanLine.amount + prevAdjustment;
-  //     }
       const mealPrices: IMealPrice[] = [];
       const plans = await this.planService.getAvailablePlans();
       // update delivery
       if (updateOptions.meals && updateOptions.deliveryIndex !== null) {
-        targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals: updateOptions.meals };   
-        Object.values(PlanNames).forEach(planName => {
-          if (updateOptions.meals) {
-            const meals = updateOptions.meals.filter(meal=> meal.planName === planName);
-            if (meals.length > 0) {
+        if (updateOptions.meals) {
+          targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals: updateOptions.meals };   
+          Object.values(PlanNames).forEach(planName => {
+            if (updateOptions.meals && updateOptions.meals.length > 0 ){
+              const meals = updateOptions.meals!.filter(meal=> meal.planName === planName);
+              if (meals.length > 0) {
+                const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
+                const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,quantity) => sum + quantity)
+                const mealCount =  targetMealQuantity + updateOptions.donationCount;   
+                mealPrices.push({
+                  stripePlanId: meals[0].stripePlanId,
+                  planName: meals[0].planName,
+                  mealPrice: Tier.getMealPrice(
+                    planName,
+                    mealCount,
+                    plans
+                  ),
+                })
+              } 
+            } else {  // all donations
+              targetOrder.deliveries[updateOptions.deliveryIndex!] = { ...targetOrder.deliveries[updateOptions.deliveryIndex!], status: 'Skipped' };
               const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-              const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,quantity) => sum + quantity)
-              const mealCount =  targetMealQuantity + updateOptions.donationCount;   
+              if(targetMeals.length > 0) {
+                const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t)
+                const mealCount =  targetMealQuantity + updateOptions.donationCount;   
+                mealPrices.push({
+                  stripePlanId: targetMeals[0].stripePlanId,
+                  planName: targetMeals[0].planName,
+                  mealPrice: Tier.getMealPrice(
+                    planName,
+                    mealCount,
+                    plans
+                  ),
+                })
+              }
+            }
+          })
+        } else { // skip delivery
+          targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals:[], status:'Skipped' };
+          Object.values(PlanNames).forEach(planName => {
+            let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
+            if(targetMeals.length > 0) {
+              let targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);   
               mealPrices.push({
-                stripePlanId: meals[0].stripePlanId,
-                planName: meals[0].planName,
+                stripePlanId: targetMeals[0].stripePlanId,
+                planName: targetMeals[0].planName,
                 mealPrice: Tier.getMealPrice(
                   planName,
-                  mealCount,
+                  targetMealQuantity,
                   plans
                 ),
               })
             }
-          } else { //all donations
-            const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-            const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t)
-            const mealCount =  targetMealQuantity + updateOptions.donationCount;   
-            mealPrices.push({
-              stripePlanId: targetMeals[0].stripePlanId,
-              planName: targetMeals[0].planName,
-              mealPrice: Tier.getMealPrice(
-                planName,
-                mealCount,
-                plans
-              ),
-            })
-          }
-        })
-      } else if(updateOptions.deliveryIndex !== null) { // skip delivery
-        targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals:[], status:'Skipped' };
-        Object.values(PlanNames).forEach(planName => {
-          let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-          if(targetMeals.length > 0) {
-            let targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);   
-            mealPrices.push({
-              stripePlanId: targetMeals[0].stripePlanId,
-              planName: targetMeals[0].planName,
-              mealPrice: Tier.getMealPrice(
-                planName,
-                targetMealQuantity,
-                plans
-              ),
-            })
-          }
-        })
+          })
+        }
       } else { // cancel donations
         updateOptions = {...updateOptions, donationCount: 0};
         Object.values(PlanNames).forEach(planName => {

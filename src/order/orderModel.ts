@@ -1,5 +1,5 @@
 import { PlanName, PlanNames } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryMeal } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
@@ -58,8 +58,9 @@ export interface IUpdateOrderInput {
   readonly meals: IDeliveryMeal[] | null // null for skip
   readonly deliveryIndex: number | null
   readonly donationCount: number
+  readonly deliveries: IDeliveryInput[] | null
 }
-
+/// 
 export class Order implements IOrder{
   readonly _id: string
   readonly deliveries: Delivery[]
@@ -96,7 +97,6 @@ export class Order implements IOrder{
 
     if (planName === PlanNames.Standard) return totalMeals + order.donationCount;
   }
-
   // todo simon do this.
   // static getIOrderFromUpdatedOrderInput(
   //   _id: string,
@@ -140,7 +140,8 @@ export class Order implements IOrder{
         : 
         null,
       deliveryIndex: deliveryIndex ?? null,
-      donationCount: cart ? cart.DonationCount : 0
+      donationCount: cart ? cart.DonationCount : 0,
+      deliveries: cart ? cart.deliveries : null
     }
   }
 
