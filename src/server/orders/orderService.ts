@@ -4,7 +4,7 @@ import { Tier, IPlan, PlanNames } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, IUpdateOrderInput, IMealPrice, IUpdateDeliveryInput } from './../../order/orderModel';
+import { EOrder, IOrder, IMealPrice, IUpdateDeliveryInput } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
@@ -136,12 +136,20 @@ export interface IOrderService {
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
-  getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
-  updateOrder(
+  getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>,
+  removeDonations( 
+    signedInUser: SignedInUser,
+    orderId: string
+  ): Promise<MutationBoolRes>
+  skipDelivery(
     signedInUser: SignedInUser,
     orderId: string,
-    updateOptions: IUpdateOrderInput,
-    now?: number,
+    deliveryIndex: number,
+  ): Promise<MutationBoolRes>
+  updateDeliveries(
+    signedInUser: SignedInUser,
+    orderId: string,
+    updateOptions: IUpdateDeliveryInput,
   ): Promise<MutationBoolRes>
   updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes>,
 }
@@ -302,7 +310,7 @@ class OrderService {
 
   // todo simon: enable
   //@ts-ignore
-  private async validateUpdateOrderInput(updateOptions: IUpdateOrderInput, now: number) {
+  //private async validateUpdateOrderInput(updateOptions: IUpdateOrderInput, now: number) {
     // todo simon: revalidate again
     // if (!this.planService) return Promise.reject('PlanService not set');
     // const phoneValidation = validatePhone(updateOptions.phone);
@@ -647,7 +655,6 @@ class OrderService {
     orderId: string,
   ): Promise<MutationBoolRes> {
     try {
-      console.log('REMOVE DONATIONS',)
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.planService) throw new Error ('RestService not set');
       const stripeCustomerId = signedInUser.stripeCustomerId;
@@ -694,7 +701,7 @@ class OrderService {
       Object.values(PlanNames).forEach(planName => {
         const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
         if(targetMeals.length > 0) {
-          const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);  
+          const targetMealQuantity = targetMeals.map(meal => meal.quantity).reduce((sum,t) => sum + t);  
           mealPrices.push({
             stripePlanId: targetMeals[0].stripePlanId,
             planName: targetMeals[0].planName,
@@ -712,7 +719,8 @@ class OrderService {
           id: orderId,
           body: {
             doc: Order.getEOrderFromRemoveDonations(
-              targetOrder
+              targetOrder,
+              mealPrices
             ),
           }
         })
@@ -734,7 +742,6 @@ class OrderService {
     orderId: string,
     deliveryIndex: number,
   ): Promise<MutationBoolRes> {
-    console.log('UPDATEOPTIONS',deliveryIndex)
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.planService) throw new Error ('RestService not set');
@@ -777,6 +784,7 @@ class OrderService {
           error: msg
         }
       }
+      targetOrder.deliveries[deliveryIndex] = {...targetOrder.deliveries[deliveryIndex], status: 'Skipped'};
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
@@ -784,14 +792,12 @@ class OrderService {
           body: {
             doc: Order.getEOrderFromSkippedDelivery(
               targetOrder,
-              deliveryIndex
             ),
           }
         })
       } catch (e) {
         throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
       }
-
       return {
         res: true,
         error: null,
@@ -807,7 +813,6 @@ class OrderService {
     orderId: string,
     updateOptions: IUpdateDeliveryInput,
   ): Promise<MutationBoolRes> {
-    console.log('DELIVERIES EDITION UPDATEOPTIONS',JSON.stringify(updateOptions,null,4))
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.planService) throw new Error ('RestService not set');
@@ -836,9 +841,7 @@ class OrderService {
           res: false,
           error: msg
         }
-      }
-      
-      
+      }  
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
       if (targetOrder.consumer.userId !== signedInUser._id) {
@@ -852,10 +855,11 @@ class OrderService {
           error: msg
         }
       }
+
       let dateValidation;
       updateOptions.deliveries.forEach(delivery => {
-        if (delivery.deliveryDate >= targetOrder.invoiceDate) dateValidation = 'Delivery date greater than the invoice Date'
-        if (delivery.deliveryDate <= now()) dateValidation = 'Delivery date cannot be in the past'
+        if (delivery.deliveryDate > targetOrder.invoiceDate) dateValidation = 'Delivery date greater than the invoice Date'
+        if (delivery.deliveryDate < now()) dateValidation = 'Delivery date cannot be in the past'
       })
       if (dateValidation) {
         return {
@@ -865,23 +869,23 @@ class OrderService {
       }
 
       let mealPrices: IMealPrice[] = [];
+      let newDeliveries: IDelivery[] = [];
       const deliveryUpdateOptions = updateOptions.deliveries;
       const targetDeliveries = targetOrder.deliveries.filter(delivery => {
         if (delivery.status !== 'Open' && delivery.status !== 'Skipped') return delivery;
       });
-      let newDeliveries: IDelivery[] = [];
       const plans = await this.planService.getAvailablePlans();
       // Sent only donations
       if (deliveryUpdateOptions.length === 1 && deliveryUpdateOptions[0].meals.length === 0 && updateOptions.donationCount > 0) {
         const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => { return { ...delivery, status: 'Skipped' } });
         newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromOrder(plans, newDeliveries,updateOptions.donationCount);
+        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries,updateOptions.donationCount);
+      // sent delivery updates with donations
       } else {
         const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => { return { ...delivery, status:'Open' } });
         newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromOrder(plans, newDeliveries,updateOptions.donationCount);
+        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries,updateOptions.donationCount);
       }
-      console.log(JSON.stringify(mealPrices));
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
@@ -907,23 +911,21 @@ class OrderService {
       throw new Error('Internal Server Error');
     }
   }
-  private getMealPriceFromOrder(plans: IPlan[], newDeliveries: IDelivery[], donationCount:number): IMealPrice[] {
+  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
     const mealPrices: IMealPrice[] = [];
     Object.values(PlanNames).forEach(planName => {
-      console.log('BET',JSON.stringify(newDeliveries,null, 4));
       newDeliveries.forEach(delivery => {
         // Filter meals on current delivery based on plan
         const meals = delivery.meals.filter(meal => meal.planName === planName);
         if (meals.length > 0) {
           const newMeals = newDeliveries.map(delivery => delivery.meals).flat();
-          console.log('AYEEE',JSON.stringify(newMeals,null,4));
-          const newMealsCount = newMeals.map(meal=>meal.quantity).reduce((sum, quantity) => sum + quantity);
+          const newMealsCount = newMeals.map(meal => meal.quantity).reduce((sum, quantity) => sum + quantity);
           const mealPrice = Tier.getMealPrice(
             planName,
             newMealsCount+donationCount,
             plans
           );
-          console.log('NEW MEAL PRICE',mealPrice);
+          // if plan exists already in mealPrices then update, if not then push
           const mealPriceIndex = mealPrices.findIndex(mealPrice => mealPrice.planName === planName)
           if (mealPriceIndex === -1) {
             mealPrices.push({
@@ -932,209 +934,12 @@ class OrderService {
               mealPrice
             })
           } else {
-            mealPrices[mealPriceIndex] = {...mealPrices[mealPriceIndex], mealPrice}; 
+            mealPrices[mealPriceIndex] = { ...mealPrices[mealPriceIndex], mealPrice }; 
           }
         }
       }) 
     }); 
     return mealPrices;
-  }
-
-  async updateOrder(
-    signedInUser: SignedInUser,
-    orderId: string,
- 
-    updateOptions: IUpdateOrderInput,
-  ): Promise<MutationBoolRes> {
-    console.log('UPDATEOPTIONS',updateOptions)
-    try {
-      if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('RestService not set');
-      const stripeCustomerId = signedInUser.stripeCustomerId;
-      const subscriptionId = signedInUser.stripeSubscriptionId
-      if (!stripeCustomerId) {
-        const msg = 'Missing stripe customer id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!subscriptionId) {
-        const msg = 'Missing subscription id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!orderId) {
-        const msg = `No order id user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-  //     const validation = await this.validateUpdateOrderInput(updateOptions, now);
-  //     if (validation) {
-  //       return {
-  //         res: false,
-  //         error: validation
-  //       };
-  //     }
-
-      const targetOrder = await this.getOrder(orderId);
-      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
-      if (targetOrder.consumer.userId !== signedInUser._id) {
-        const msg = 'Can only update your own orders';
-        console.warn(
-          '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-        )
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      
-      if (updateOptions.deliveryIndex && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Open' && targetOrder.deliveries[updateOptions.deliveryIndex].status !== 'Skipped') {
-        const msg = `Trying to update order with status '${targetOrder.deliveries[updateOptions.deliveryIndex].status}'. Can only update 'Open' or 'Skipped' orders.`;
-        console.warn(`[OrderService] ${msg}`);
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      const mealPrices: IMealPrice[] = [];
-      const plans = await this.planService.getAvailablePlans();
-      // update delivery
-      if (updateOptions.meals && updateOptions.deliveryIndex !== null) {
-        if (updateOptions.meals) {
-          targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals: updateOptions.meals };   
-          Object.values(PlanNames).forEach(planName => {
-            if (updateOptions.meals && updateOptions.meals.length > 0 ){
-              const meals = updateOptions.meals!.filter(meal=> meal.planName === planName);
-              if (meals.length > 0) {
-                const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-                const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,quantity) => sum + quantity)
-                const mealCount =  targetMealQuantity + updateOptions.donationCount;   
-
-                mealPrices.push({
-                  stripePlanId: meals[0].stripePlanId,
-                  planName: meals[0].planName,
-                  mealPrice: Tier.getMealPrice(
-                    planName,
-                    mealCount,
-                    plans
-                  ),
-                })
-              } 
-            } else {  // all donations
-              targetOrder.deliveries[updateOptions.deliveryIndex!] = { ...targetOrder.deliveries[updateOptions.deliveryIndex!], status: 'Skipped' };
-              const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-              if(targetMeals.length > 0) {
-                const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t)
-                const mealCount =  targetMealQuantity + updateOptions.donationCount;   
-                mealPrices.push({
-                  stripePlanId: targetMeals[0].stripePlanId,
-                  planName: targetMeals[0].planName,
-                  mealPrice: Tier.getMealPrice(
-                    planName,
-                    mealCount,
-                    plans
-                  ),
-                })
-              }
-            }
-          })
-        } else { // skip delivery
-          targetOrder.deliveries[updateOptions.deliveryIndex] = { ...targetOrder.deliveries[updateOptions.deliveryIndex], meals:[], status:'Skipped' };
-          Object.values(PlanNames).forEach(planName => {
-            let targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-            if(targetMeals.length > 0) {
-              let targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);   
-              mealPrices.push({
-                stripePlanId: targetMeals[0].stripePlanId,
-                planName: targetMeals[0].planName,
-                mealPrice: Tier.getMealPrice(
-                  planName,
-                  targetMealQuantity,
-                  plans
-                ),
-              })
-            }
-          })
-        }
-      } else { // cancel donations
-        updateOptions = {...updateOptions, donationCount: 0};
-        Object.values(PlanNames).forEach(planName => {
-          const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-          if(targetMeals.length > 0) {
-            const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);  
-            mealPrices.push({
-              stripePlanId: targetMeals[0].stripePlanId,
-              planName: targetMeals[0].planName,
-              mealPrice: Tier.getMealPrice(
-                planName,
-                targetMealQuantity,
-                plans
-              ),
-            })
-          }
-        })
-      }
-  //     if (mealCount > 0) {
-  //       newPlan = await this.planService.getPlanByCount(mealCount);
-  //       if (!newPlan) throw new Error(`Couldn't get plan from meal count '${mealCount}'`);
-  //       amount = newPlan.weekPrice * 100 - originalPrice;
-  //     } else {
-  //       amount = 0 - originalPrice;
-  //     }
-  //     if (amount !== 0) {
-  //       try {
-  //         await this.stripe.invoiceItems.create({
-  //           amount,
-  //           currency: 'usd',
-  //           customer: stripeCustomerId,
-  //           description: getAdjustmentDesc(
-  //             Cart.getMealCount(targetOrder.rest.meals) + targetOrder.donationCount,
-  //             newPlan ? newPlan.mealCount : 0,
-  //             targetOrderInvoiceDateDisplay
-  //           ),
-  //           subscription: subscriptionId,
-  //         });
-  //       } catch (e) {
-  //         throw new Error(
-  //           `Couldn't create invoice item for amount '${amount}', and invoice date '${targetOrderInvoiceDateDisplay}'. ${e.stack}`
-  //         )
-  //       }
-  //     }
-      
-      try {
-        await this.elastic.update({
-          index: ORDER_INDEX,
-          id: orderId,
-          body: {
-            doc: Order.getEOrderFromUpdatedOrder(
-              targetOrder,
-              mealPrices,
-              updateOptions
-            ),
-          }
-        })
-      } catch (e) {
-        throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
-      }
-
-      return {
-        res: true,
-        error: null,
-      }
-    } catch (e) {
-      console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
-      throw new Error('Internal Server Error');
-    }
   }
 
   async updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {

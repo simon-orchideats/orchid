@@ -1,7 +1,7 @@
 import { ICartInput } from '../../order/cartModel';
 import { ServerResolovers } from '../../utils/apolloUtils';
 import { getOrderService } from './orderService';
-import { IUpdateOrderInput, IUpdateDeliveryInput } from '../../order/orderModel';
+import { IUpdateDeliveryInput } from '../../order/orderModel';
 
 export const OrderQueryResolvers: ServerResolovers = {
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {
@@ -16,14 +16,6 @@ export const OrderMutationResolvers: ServerResolovers = {
     { signedInUser, req, res },
   ) => {
     return await getOrderService().placeOrder(signedInUser, cart, req, res);
-  },
-
-  updateOrder: async (
-    _root,
-    { updateOptions, orderId }: { updateOptions: IUpdateOrderInput, orderId: string },
-    { signedInUser },
-  ) => {
-    return await getOrderService().updateOrder(signedInUser, orderId, updateOptions);
   },
 
   updateDeliveries: async (

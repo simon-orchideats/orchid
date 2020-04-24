@@ -46,12 +46,6 @@ export const _OrderQL = gql`
     planName: ID!
   }
 
-  input UpdateOrderInput {
-    meals: [DeliveryMealInput!]
-    deliveryIndex: Int
-    donationCount: Int!
-  }
-
   input UpdateDeliveryInput { 
     deliveries: [DeliveryInput!]
     donationCount: Int!

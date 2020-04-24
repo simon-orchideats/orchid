@@ -16,6 +16,7 @@ import { useUpdateDeliveries } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import { Order } from "../order/orderModel";
+import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -43,7 +44,6 @@ const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const clearCartMeals = useClearCartMeals();
-  // const clearCartMeals = useClearCartMeals();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
   const [schedules, setSchedules] = useState<Schedule[]>(
     cart && cart.Schedules.length > 0 ? cart.Schedules : [ Schedule.getDefaultSchedule() ]
@@ -71,9 +71,11 @@ const delivery = () => {
   });
   const onUpdateOrder = () => {
     // todo simon: metrics here
-    console.log(orderId);
-    // todo alvin enable this
-    if (cart !== null) updateDeliveries(orderId, Order.getUpdatedDeliveryInput(cart.Deliveries, cart.DonationCount))
+    if (cart !== null) {
+      updateDeliveries(orderId, Order.getUpdatedDeliveryInput(cart.Deliveries, cart.DonationCount))
+    } else {
+      throw new Error(`Cart is empty, cannot update order`);
+    }
   }
   const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));
@@ -100,6 +102,7 @@ const delivery = () => {
   return (
     <>
       <Container className={classes.container}>
+      <Notifier />
         <ExpansionPanel
           expanded={expanded === 'deliveries'}
           className={classes.panel}

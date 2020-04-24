@@ -1,6 +1,6 @@
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
-import { IOrder, Order, IUpdateOrderInput, IUpdateDeliveryInput } from './../../order/orderModel';
+import { IOrder, Order, IUpdateDeliveryInput } from './../../order/orderModel';
 import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
@@ -235,118 +235,6 @@ export const useSkipDelivery = (): [
     {
       error: mutation.error,
       data: mutation.data ? mutation.data.skipDelivery : undefined,
-    }
-  ], [mutation]);
-}
-
-export const useUpdateOrder = (): [
-  (orderId: string, updateOptions: IUpdateOrderInput) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  }
-] => {
-  type res = { updateOrder: MutationBoolRes };
-  type vars = { orderId: string, updateOptions: IUpdateOrderInput }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateOrder($orderId: ID!, $updateOptions: UpdateOrderInput!) {
-      updateOrder(orderId: $orderId, updateOptions: $updateOptions) {
-        res
-        error
-      }
-    }
-  `);
-  const updateOrder = (orderId: string, updateOptions: IUpdateOrderInput) => {
-    mutate({ 
-      variables: {
-        orderId,
-        updateOptions
-      },
-      optimisticResponse: {
-        updateOrder: {
-          res: true,
-          error: null,
-          //@ts-ignore
-          __typename: "BoolRes",
-        }
-      },
-      //@ts-ignore
-      update: (cache, { data }) => {
-        // todo simon: redo this
-        // if (data && data.updateOrder.res) {
-        //   const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-        //   if (!upcomingOrders) {
-        //     const err = new Error('Failed to get upcoming orders for cache update');
-        //     console.error(err.stack);
-        //     throw err;
-        //   }
-        //   let rest: IRest | null = null;
-        //   if (updateOptions.restId) {
-        //     const restRes = getRest(cache, updateOptions.restId)
-        //     if (!restRes) {
-        //       const err = new Error('Failed to get rest for cache update');
-        //       console.error(err.stack);
-        //       throw err;
-        //     }
-        //     rest = restRes.rest;
-        //   }
-        //   let mealPrice: number | null = null;
-        //   const donationCount = updateOptions.donationCount;
-        //   const mealCount = Cart.getMealCount(updateOptions.meals);
-        //   const totalMealCount = mealCount + donationCount;
-        //   if (totalMealCount > 0) {
-        //     const plans = getAvailablePlans(cache);
-        //     if (!plans) {
-        //       const err = new Error('Failed to get plan for cache update');
-        //       console.error(err.stack);
-        //       throw err;
-        //     }
-        //     mealPrice = Plan.getMealPriceFromCount(totalMealCount, plans.availablePlans);
-        //   }
-        //   const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
-        //     if (order._id !== orderId) return order;
-        //     const newOrder = Order.getIOrderFromUpdatedOrderInput(
-        //       orderId,
-        //       updateOptions,
-        //       mealPrice,
-        //       totalMealCount > 0 ? 'Open' : 'Skipped',
-        //       rest
-        //     );
-        //     //@ts-ignore
-        //     newOrder.destination.address.__typename = 'Address';
-        //     //@ts-ignore
-        //     newOrder.destination.__typename = 'Destination';
-        //     //@ts-ignore
-        //     newOrder.meals.forEach(meal => meal.__typename = 'DeliveryMeal');
-        //     if (rest !== null) {
-        //       //@ts-ignore
-        //       newOrder.rest.location.address.__typename = 'Address';
-        //       //@ts-ignore
-        //       newOrder.rest.location.__typename = 'Location';
-        //       //@ts-ignore
-        //       newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
-        //       //@ts-ignore
-        //       newOrder.rest.profile.__typename = 'Rest';
-        //     }
-        //     //@ts-ignore
-        //     newOrder.__typename = 'Order';
-        //     return newOrder;
-        //   });
-        //   cache.writeQuery({
-        //     query: MY_UPCOMING_ORDERS_QUERY,
-        //     data: {
-        //       myUpcomingOrders: newUpcomingOrders,
-        //     }
-        //   })
-        // }
-      }
-    })
-  }
-  return useMemo(() => [
-    updateOrder,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.updateOrder : undefined,
     }
   ], [mutation]);
 }

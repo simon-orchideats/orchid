@@ -5,7 +5,7 @@ import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IConsumerProfile } from './../consumer/consumerModel';
 import { ICost } from './costModel';
-import { ICartInput, Cart } from './cartModel';
+import { ICartInput } from './cartModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -55,16 +55,11 @@ export interface IOrder {
   readonly donationCount: number
 }
 
-export interface IUpdateOrderInput {
-  readonly meals: IDeliveryMeal[] | null // null for skip
-  readonly deliveryIndex: number | null
-  readonly donationCount: number
-  readonly deliveries: IDeliveryInput[] | null
-}
 export interface IUpdateDeliveryInput {
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[]
 }
+
 export class Order implements IOrder{
   readonly _id: string
   readonly invoiceDate: number
@@ -136,23 +131,6 @@ export class Order implements IOrder{
     }
   }
 
-  static getUpdatedOrderInput(
-    deliveryIndex?: number, 
-    cart?: Cart,
-  ): IUpdateOrderInput {
-    return {
-      meals: cart ?
-        Object.values(cart.RestMeals).reduce<IDeliveryMeal[]>((sum, restMeals) => (
-          [...sum, ...restMeals.meals]
-        ), [])
-        : 
-        null,
-      deliveryIndex: deliveryIndex ?? null,
-      donationCount: cart ? cart.DonationCount : 0,
-      deliveries: cart ? cart.deliveries : null
-    }
-  }
-
   static getUpdatedDeliveryInput(
     deliveries: DeliveryInput[],
     donationCount: number,
@@ -160,29 +138,6 @@ export class Order implements IOrder{
     return {
       donationCount: donationCount ? donationCount : 0,
       deliveries: deliveries
-    }
-  }
-
-  static getEOrderFromUpdatedOrder(
-    {
-      consumer,
-      deliveries,
-      costs,
-    }: EOrder,
-    mealPrices: IMealPrice[],
-    {
-      donationCount
-    }: IUpdateOrderInput
-  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    return {
-      cartUpdatedDate: Date.now(),
-      costs: {
-        ...costs,
-        mealPrices
-      },
-      consumer,
-      deliveries,
-      donationCount
     }
   }
 
@@ -214,9 +169,7 @@ export class Order implements IOrder{
       costs,
       donationCount
     }: EOrder,
-    deliveryIndex: number
   ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    deliveries[deliveryIndex] = {...deliveries[deliveryIndex], status: 'Skipped'};
     return {
       cartUpdatedDate: Date.now(),
       costs,
@@ -232,10 +185,14 @@ export class Order implements IOrder{
       deliveries,
       costs,
     }: EOrder,
+    mealPrices: IMealPrice[],
   ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
     return {
       cartUpdatedDate: Date.now(),
-      costs,
+      costs: {
+        ...costs,
+        mealPrices
+      },
       consumer,
       deliveries,
       donationCount: 0,
