@@ -1,5 +1,5 @@
 import { PlanName, PlanNames } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput, DeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryInput, DeliveryInput } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';

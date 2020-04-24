@@ -352,7 +352,7 @@ class OrderService {
     // if (messages[2]) {
     //   return messages[2]
     // }
-  }
+ // }
 
   //@ts-ignore todo simon: do we still need this?
   private async getOrder(orderId: string, fields?: string[]) {
