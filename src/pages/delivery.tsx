@@ -4,9 +4,7 @@ import withClientApollo from "../client/utils/withClientApollo";
 import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
-import { useGetCart, useSetScheduleAndAutoDeliveries,
-  // useClearCartMeals
-} from "../client/global/state/cartState";
+import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "../client/global/state/cartState";
 import { useState, useMemo } from "react";
 import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
@@ -14,8 +12,10 @@ import Link from "next/link";
 import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
 import PreferredSchedule from "../client/general/PreferredSchedule";
-// import { useMutationResponseHandler } from "../utils/apolloUtils";
-// import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import { useUpdateDeliveries } from "../client/order/orderService";
+import { useMutationResponseHandler } from "../utils/apolloUtils";
+import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import { Order } from "../order/orderModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -42,6 +42,7 @@ const useStyles = makeStyles(theme => ({
 const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const clearCartMeals = useClearCartMeals();
   // const clearCartMeals = useClearCartMeals();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
   const [schedules, setSchedules] = useState<Schedule[]>(
@@ -54,6 +55,7 @@ const delivery = () => {
   const orderId = urlQuery.orderId as string
   const limit = parseFloat(urlQuery.limit as string)
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
+  const [updateDeliveries, updateDeliveriesRes] = useUpdateDeliveries();
   const updateSchedules = (i: number, day: deliveryDay, time: deliveryTime) => {
     const newSchedules = schedules.map(s => new Schedule(s));
     newSchedules[i] = new Schedule({
@@ -63,16 +65,15 @@ const delivery = () => {
     setSchedules(newSchedules);
   }
   
-  // todo alvin. enable this
-  // useMutationResponseHandler(updateDeliveriesRes, () => {
-  //   clearCartMeals();
-  //   Router.push(upcomingDeliveriesRoute);
-  // });
+  useMutationResponseHandler(updateDeliveriesRes, () => {
+    clearCartMeals();
+    Router.push(upcomingDeliveriesRoute);
+  });
   const onUpdateOrder = () => {
     // todo simon: metrics here
     console.log(orderId);
     // todo alvin enable this
-    // updateDeliveries(orderId, cart.Deliveries, cart.DonationCount)
+    if (cart !== null) updateDeliveries(orderId, Order.getUpdatedDeliveryInput(cart.Deliveries, cart.DonationCount))
   }
   const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));

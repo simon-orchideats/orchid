@@ -52,6 +52,11 @@ export const _OrderQL = gql`
     donationCount: Int!
   }
 
+  input UpdateDeliveryInput { 
+    deliveries: [DeliveryInput!]
+    donationCount: Int!
+  }
+
   type DeliveryMeal {
     mealId: ID!
     img: String

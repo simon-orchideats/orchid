@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useUpdateOrder, useSkipDelivery } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
 import { Destination } from "../../place/destinationModel";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
@@ -190,11 +190,17 @@ const DeliveryOverview: React.FC<{
   const clearCartMeals = useClearCartMeals();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [updateOrder, updateOrderRes] = useUpdateOrder();
+  const [skipDelivery, skipDeliveryRes] = useSkipDelivery();
   useMutationResponseHandler(updateOrderRes, () => {
     Router.replace(upcomingDeliveriesRoute)
     notify('Order updated', NotificationType.success, true);
     clearCartMeals();
   });
+  useMutationResponseHandler(skipDeliveryRes, () => {
+    Router.replace(upcomingDeliveriesRoute)
+    notify('Delivery Skipped', NotificationType.success, true);
+    clearCartMeals();
+  })
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -218,7 +224,7 @@ const DeliveryOverview: React.FC<{
   };
   const onSkip = (deliveryIndex: number) => {
     // todo simon: metrics for this
-    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex));
+    skipDelivery(order._id, deliveryIndex);
   }
   const onUpdate = (deliveryIndex: number) => {
     // todo simon: metrics for this

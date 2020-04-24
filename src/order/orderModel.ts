@@ -1,5 +1,5 @@
 import { PlanName, PlanNames } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput, DeliveryInput } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
@@ -61,7 +61,10 @@ export interface IUpdateOrderInput {
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[] | null
 }
-/// 
+export interface IUpdateDeliveryInput {
+  readonly donationCount: number
+  readonly deliveries: IDeliveryInput[]
+}
 export class Order implements IOrder{
   readonly _id: string
   readonly invoiceDate: number
@@ -150,6 +153,16 @@ export class Order implements IOrder{
     }
   }
 
+  static getUpdatedDeliveryInput(
+    deliveries: DeliveryInput[],
+    donationCount: number,
+  ): IUpdateDeliveryInput {
+    return {
+      donationCount: donationCount ? donationCount : 0,
+      deliveries: deliveries
+    }
+  }
+
   static getEOrderFromUpdatedOrder(
     {
       consumer,
@@ -170,6 +183,46 @@ export class Order implements IOrder{
       consumer,
       deliveries,
       donationCount
+    }
+  }
+
+  static getEOrderFromUpdatedDeliveries(
+    {
+      consumer,
+      costs,
+    }: EOrder,
+    mealPrices: IMealPrice[],
+    deliveries: IDelivery[],
+    donationCount : number
+  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
+    return {
+      cartUpdatedDate: Date.now(),
+      costs: {
+        ...costs,
+        mealPrices
+      },
+      consumer,
+      deliveries,
+      donationCount
+    }
+  }
+
+  static getEOrderFromSkippedDelivery(
+    {
+      consumer,
+      deliveries,
+      costs,
+      donationCount
+    }: EOrder,
+    deliveryIndex: number
+  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
+    deliveries[deliveryIndex] = {...deliveries[deliveryIndex], status: 'Skipped'};
+    return {
+      cartUpdatedDate: Date.now(),
+      costs,
+      consumer,
+      deliveries,
+      donationCount,
     }
   }
 
