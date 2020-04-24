@@ -41,4 +41,12 @@ export const OrderMutationResolvers: ServerResolovers = {
   ) => {
     return await getOrderService().skipDelivery(signedInUser, orderId, deliveryIndex);
   },
+
+  removeDonations: async (
+    _root,
+    { orderId }: { orderId: string },
+    { signedInUser },
+  ) => {
+    return await getOrderService().removeDonations(signedInUser, orderId);
+  },
 }

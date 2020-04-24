@@ -20,7 +20,7 @@ import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer, IConsumer } from '../../consumer/consumerModel';
-import moment from 'moment-timezone';
+import moment, { now } from 'moment-timezone';
 import { isDate2DaysLater } from '../../order/utils';
 import { IDeliveryMeal, IDeliveryInput } from '../../order/deliveryModel';
 
@@ -641,6 +641,93 @@ class OrderService {
       throw new Error('Internal Server Error');
     }
   }
+  
+  async removeDonations(
+    signedInUser: SignedInUser,
+    orderId: string,
+  ): Promise<MutationBoolRes> {
+    try {
+      console.log('REMOVE DONATIONS',)
+      if (!signedInUser) throw getNotSignedInErr()
+      if (!this.planService) throw new Error ('RestService not set');
+      const stripeCustomerId = signedInUser.stripeCustomerId;
+      const subscriptionId = signedInUser.stripeSubscriptionId
+      if (!stripeCustomerId) {
+        const msg = 'Missing stripe customer id';
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      if (!subscriptionId) {
+        const msg = 'Missing subscription id';
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      if (!orderId) {
+        const msg = `No order id user`;
+        console.warn('[OrderService]', msg)
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      const targetOrder = await this.getOrder(orderId);
+      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
+      if (targetOrder.consumer.userId !== signedInUser._id) {
+        const msg = 'Can only update your own orders';
+        console.warn(
+          '[OrderService]',
+          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+        )
+        return {
+          res: false,
+          error: msg
+        }
+      }
+      const mealPrices: IMealPrice[] = [];
+      const plans = await this.planService.getAvailablePlans();
+      Object.values(PlanNames).forEach(planName => {
+        const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
+        if(targetMeals.length > 0) {
+          const targetMealQuantity = targetMeals.map(meal=>meal.quantity).reduce((sum,t) => sum + t);  
+          mealPrices.push({
+            stripePlanId: targetMeals[0].stripePlanId,
+            planName: targetMeals[0].planName,
+            mealPrice: Tier.getMealPrice(
+              planName,
+              targetMealQuantity,
+              plans
+            ),
+          })
+        }
+      })
+      try {
+        await this.elastic.update({
+          index: ORDER_INDEX,
+          id: orderId,
+          body: {
+            doc: Order.getEOrderFromRemoveDonations(
+              targetOrder
+            ),
+          }
+        })
+      } catch (e) {
+        throw new Error(`Couldn't update elastic order '${orderId}'. ${e.stack}`)
+      }
+      return {
+        res: true,
+        error: null,
+      }
+    } catch (e) {
+      console.error(`[OrderService] couldn't Remove Donations for '${orderId}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
 
   async skipDelivery(
     signedInUser: SignedInUser,
@@ -718,7 +805,6 @@ class OrderService {
   async updateDeliveries(
     signedInUser: SignedInUser,
     orderId: string,
- 
     updateOptions: IUpdateDeliveryInput,
   ): Promise<MutationBoolRes> {
     console.log('DELIVERIES EDITION UPDATEOPTIONS',JSON.stringify(updateOptions,null,4))
@@ -751,6 +837,8 @@ class OrderService {
           error: msg
         }
       }
+      
+      
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
       if (targetOrder.consumer.userId !== signedInUser._id) {
@@ -763,6 +851,17 @@ class OrderService {
           res: false,
           error: msg
         }
+      }
+      let dateValidation;
+      updateOptions.deliveries.forEach(delivery => {
+        if (delivery.deliveryDate >= targetOrder.invoiceDate) dateValidation = 'Delivery date greater than the invoice Date'
+        if (delivery.deliveryDate <= now()) dateValidation = 'Delivery date cannot be in the past'
+      })
+      if (dateValidation) {
+        return {
+          res: false,
+          error: dateValidation
+        };
       }
 
       let mealPrices: IMealPrice[] = [];
@@ -808,7 +907,6 @@ class OrderService {
       throw new Error('Internal Server Error');
     }
   }
-
   private getMealPriceFromOrder(plans: IPlan[], newDeliveries: IDelivery[], donationCount:number): IMealPrice[] {
     const mealPrices: IMealPrice[] = [];
     Object.values(PlanNames).forEach(planName => {

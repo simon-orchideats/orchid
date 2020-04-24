@@ -226,6 +226,22 @@ export class Order implements IOrder{
     }
   }
 
+  static getEOrderFromRemoveDonations(
+    {
+      consumer,
+      deliveries,
+      costs,
+    }: EOrder,
+  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
+    return {
+      cartUpdatedDate: Date.now(),
+      costs,
+      consumer,
+      deliveries,
+      donationCount: 0,
+    }
+  }
+
   static getNewOrderFromCartInput(
     signedInUser: SignedInUser,
     cart: ICartInput,
