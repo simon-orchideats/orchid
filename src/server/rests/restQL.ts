@@ -25,6 +25,7 @@ const _RestQL = gql`
     location: Location!
     menu: [Meal!]!
     profile: RestProfile!
+    taxRate: Float!
   }
 `;
 

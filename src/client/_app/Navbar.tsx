@@ -146,7 +146,11 @@ const Navbar: React.FC = () => {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
-          <Button variant='text' onClick={() => router.back()}>
+          <Button
+            variant='text'
+            color='primary'
+            onClick={() => router.back()}
+          >
             Menu
           </Button>
           <ChevronRightIcon className={classes.horzMargin} />

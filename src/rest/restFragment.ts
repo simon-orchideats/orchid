@@ -25,6 +25,7 @@ const restFragment = gql`
       name
       phone
     }
+    taxRate
   }
 `
 

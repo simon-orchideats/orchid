@@ -9,6 +9,7 @@ export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'orig
   readonly quantity: number
   readonly restId: string
   readonly restName: string
+  readonly taxRate: number
 }
 
 export class DeliveryMeal implements IDeliveryMeal {
@@ -20,6 +21,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly restName: string
   readonly stripePlanId: string;
   readonly planName: PlanName;
+  readonly taxRate: number
 
   constructor(meal: IDeliveryMeal) {
     this.mealId = meal.mealId;
@@ -30,6 +32,7 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.restName = meal.restName;
     this.stripePlanId = meal.stripePlanId;
     this.planName = meal.planName;
+    this.taxRate = meal.taxRate;
   }
 
   public get MealId() { return this.mealId }
@@ -40,8 +43,15 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get RestName() { return this.restName }
   public get StripePlanId() { return this.stripePlanId }
   public get PlanName() { return this.planName }
+  public get TaxRate() { return this.taxRate }
 
-  static getDeliveryMeal(meal: IMeal, restId: string, restName: string, quantity: number = 1) {
+  static getDeliveryMeal(
+    meal: IMeal,
+    restId: string,
+    restName: string,
+    taxRate: number,
+    quantity: number = 1
+  ) {
     return new DeliveryMeal({
       mealId: meal._id,
       img: meal.img,
@@ -51,6 +61,7 @@ export class DeliveryMeal implements IDeliveryMeal {
       restName,
       stripePlanId: meal.stripePlanId,
       planName: meal.planName,
+      taxRate,
     });
   }
 

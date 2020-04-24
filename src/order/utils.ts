@@ -21,3 +21,5 @@ export const isDate2DaysLater = (date: number, today = Date.now()) => {
   const twoDaysAfterToday = moment(today).add(2, 'd');
   return moment(date).isAfter(twoDaysAfterToday) ? true : false;
 }
+
+export const round2 = (num: number) => Math.round((num + Number.EPSILON) * 100) / 100

@@ -45,6 +45,7 @@ const RestMenu: React.FC<{
           restName={rest.Profile.Name}
           meal={meal} 
           defaultCount={defaultCount}
+          taxRate={rest.TaxRate}
         />
       </Grid>
     )

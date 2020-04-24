@@ -69,11 +69,13 @@ const MenuMeal: React.FC<{
   meal: Meal,
   restId: string,
   restName: string,
+  taxRate: number,
 }> = ({
   defaultCount,
   meal,
   restId,
-  restName
+  restName,
+  taxRate
 }) => {
   const classes = useStyles({ meal });
   const [count, updateCount] = useState(defaultCount);
@@ -81,7 +83,7 @@ const MenuMeal: React.FC<{
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
     updateCount(count + 1);
-    addMealToCart(new Meal(meal), restId, restName);
+    addMealToCart(new Meal(meal), restId, restName, taxRate);
   }
   const onRemoveMeal = () => {
     updateCount(count - 1);

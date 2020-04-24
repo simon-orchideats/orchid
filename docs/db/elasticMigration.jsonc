@@ -18,6 +18,7 @@ POST _reindex
         menu[i].stripePlanId = 'plan_H4mjyvjuE1fObC';
       }
       ctx._source.location.timezone = 'America/New_York';
+      ctx._source.taxRate = 0.0625
     """,
     "params": {
       "delivery": {}
@@ -125,6 +126,7 @@ POST _reindex
         params.delivery.meals[i].restName = "name";
         params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
         params.delivery.meals[i].planName = "Standard";
+        params.delivery.meals[i].taxRate = 0.0625;
       }
       ctx._source.deliveries.add(params.delivery);
       ctx._source.remove("status");

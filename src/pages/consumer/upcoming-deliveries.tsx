@@ -272,7 +272,7 @@ const DeliveryOverview: React.FC<{
         </div>
         <div className={classes.column}>
           {
-            canEdit &&
+            canEdit && !isUpdating &&
             <Button
               variant='contained'
               color='primary'

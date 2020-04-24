@@ -5,4 +5,7 @@ export interface ICost {
   mealPrices: IMealPrice[]
   percentFee: number
   flatRateFee: number
+  deliveryFee: number
 }
+
+export const deliveryFee = 200;

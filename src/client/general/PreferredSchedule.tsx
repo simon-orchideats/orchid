@@ -4,6 +4,7 @@ import withClientApollo from '../utils/withClientApollo';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { MIN_MEALS } from '../../plan/planModel';
 import DeliveryDateChooser from './DeliveryDateChooser';
+import { deliveryFee } from "../../order/costModel";
 
 const useStyles = makeStyles(theme => ({
   deliveryHeader: {
@@ -11,7 +12,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
     alignItems: 'center',
   },
-  deliveryCount: {
+  paddingLeft: {
     paddingLeft: theme.spacing(2),
   },
   addButton: {
@@ -42,9 +43,27 @@ const PreferredSchedule: React.FC<{
         <div key={i}>
           <div className={classes.deliveryHeader}>
             <DeleteIcon onClick={() => removeSchedule(i)} />
-            <Typography variant='h6' className={classes.deliveryCount}>
+            <Typography variant='h6' className={classes.paddingLeft}>
               Delivery {i + 1}
             </Typography>
+            {
+              i === 0 ?
+                <Typography
+                  variant='h6'
+                  color='primary'
+                  className={classes.paddingLeft}
+                >
+                  (FREE)
+                </Typography>
+              :
+                <Typography
+                  variant='h6'
+                  color='primary'
+                  className={classes.paddingLeft}
+                >
+                  (+${(deliveryFee / 100).toFixed(2)})
+                </Typography>
+            }
           </div>
           <DeliveryDateChooser
             day={s.Day}

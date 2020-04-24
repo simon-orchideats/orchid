@@ -96,15 +96,15 @@ export const useClearCartMeals = () => {
   }
 }
 
-export const useAddMealToCart = (): (meal: Meal, restId: string, restName: string) => void => {
-  type vars = { meal: Meal, restId: string, restName: string };
+export const useAddMealToCart = (): (meal: Meal, restId: string, restName: string, taxRate: number) => void => {
+  type vars = { meal: Meal, restId: string, restName: string, taxRate: number };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation addMealToCart($meal: Meal!, $restId: ID!, $restName: String!) {
-      addMealToCart(meal: $meal, restId: $restId, restName: $restName) @client
+    mutation addMealToCart($meal: Meal!, $restId: ID!, $restName: String!, $taxRate: Float!) {
+      addMealToCart(meal: $meal, restId: $restId, restName: $restName, taxRate: $taxRate) @client
     }
   `);
-  return (meal: Meal, restId: string, restName: string) => {
-    mutate({ variables: { meal, restId, restName } })
+  return (meal: Meal, restId: string, restName: string, taxRate: number) => {
+    mutate({ variables: { meal, restId, restName, taxRate } })
   }
 }
 
@@ -205,7 +205,7 @@ export const useUpdateZip = (): (zip: string) => void => {
 }
 
 type cartMutationResolvers = {
-  addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string }, Cart | null>
+  addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string, taxRate: number }, Cart | null>
   setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[] }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
@@ -229,10 +229,10 @@ const getCart = (cache: ApolloCache<any>) => cache.readQuery<cartQueryRes>({
 });
 
 export const cartMutationResolvers: cartMutationResolvers = {
-  addMealToCart: (_, { meal, restId, restName }, { cache }) => {
+  addMealToCart: (_, { meal, restId, restName, taxRate }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
-      const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName);
+      const newDeliveryMeal = DeliveryMeal.getDeliveryMeal(meal, restId, restName, taxRate);
       const newMealPlans = [new MealPlan({
         stripePlanId: meal.StripePlanId,
         planName: meal.PlanName,
@@ -244,14 +244,14 @@ export const cartMutationResolvers: cartMutationResolvers = {
         restMeals: {
           [restId]: {
             mealPlans: newMealPlans,
-            meals: [newDeliveryMeal]
+            meals: [newDeliveryMeal],
           }
         },
         schedules: [],
         zip: null,
       }));
     }
-    const newCart = res.cart.addMeal(meal, restId, restName);
+    const newCart = res.cart.addMeal(meal, restId, restName, taxRate);
     return updateCartCache(cache, newCart);
   },
 

@@ -6,6 +6,7 @@ export interface ERest {
   readonly location: ILocation;
   readonly menu: IMeal[];
   readonly profile: IRestProfile;
+  readonly taxRate: number;
 }
 
 export interface IRest extends ERest {
@@ -17,18 +18,21 @@ export class Rest implements IRest {
   readonly location: Location;
   readonly menu: Meal[];
   readonly profile: RestProfile;
+  readonly taxRate: number;
 
   constructor(rest: IRest) {
     this._id = rest._id
     this.location = new Location(rest.location);
     this.menu = rest.menu.map(meal => new Meal(meal));
     this.profile = new RestProfile(rest.profile)
+    this.taxRate = rest.taxRate;
   }
 
   public get Id() { return this._id }
   public get Location() { return this.location }
   public get Menu() { return this.menu }
   public get Profile() { return this.profile }
+  public get TaxRate() { return this.taxRate }
 
   static getICopy(rest: IRest): IRest {
     return {

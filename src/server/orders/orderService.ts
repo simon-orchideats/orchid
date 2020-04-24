@@ -33,12 +33,13 @@ const chooseRandomMeals = (
   menu: IMeal[],
   mealCount: number,
   restId: string,
-  restName: string
+  restName: string,
+  taxRate: number
 ): IDeliveryMeal[] => {
   const chooseRandomly = getItemChooser<IMeal>(menu);
   const meals: IMeal[] = [];
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
-  return Cart.getDeliveryMeals(meals, restId, restName);
+  return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
 }
 
 /**
@@ -181,12 +182,12 @@ class OrderService {
   private async chooseRandomRestAndMeals(cuisines: CuisineType[], mealCount: number) {
     try {
       if (!this.restService) throw new Error('No rest service');
-      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu'])
+      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu', 'taxRate'])
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
       const rest = rests[Math.floor(Math.random() * rests.length)];
       return {
         restId: rest._id,
-        meals: chooseRandomMeals(rest.menu, mealCount, rest._id, rest.profile.name),
+        meals: chooseRandomMeals(rest.menu, mealCount, rest._id, rest.profile.name, rest.taxRate),
       };
     } catch (e) {
       console.error(`[OrderService] could not auto pick rests and meals`, e.stack)
@@ -273,6 +274,18 @@ class OrderService {
     //   console.warn('[OrderService]', msg);
     //   return msg;
     // }
+
+    // const rests: {
+    //   [key: string]: IRest | null
+    // } = {};
+    // await Promise.all(cart.deliveries.map(d => {
+    //   d.meals.map(async m => {
+    //     if (!this.restService) throw new Error ('RestService not set');
+    //     if (!rests[m.restId]) {
+    //       rests[m.restId] = await this.restService.getRest(m.restId);
+    //     }
+    //   });
+    // }));
 
     if (cart.consumerPlan.cuisines.length === 0) {
       const msg = 'Cuisines cannot be empty';
@@ -391,6 +404,7 @@ class OrderService {
           mealPrices: [],
           percentFee: 0,
           flatRateFee: 0,
+          deliveryFee: 0,
         },
         createdDate: now,
         invoiceDate: iDate,
@@ -429,7 +443,7 @@ class OrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes> {
-    if (!signedInUser) throw getNotSignedInErr()
+    if (!signedInUser) throw getNotSignedInErr();
     try {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
       if (!this.restService) throw new Error ('RestService not set');
@@ -541,7 +555,7 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
 
-      this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location']).then(rests => {
+      this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location', 'taxRate']).then(rests => {
         if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
         const deliveries: IDeliveryInput[] = [];
         const totalMeals = DeliveryInput.getMealCount(cart.deliveries) + cart.donationCount;
@@ -556,7 +570,8 @@ class OrderService {
             rest.menu,
             mealsPerDelivery + remainingMeals,
             rest._id,
-            rest.profile.name
+            rest.profile.name,
+            rest.taxRate,
           );
           remainingMeals = 0;
           deliveries.push({

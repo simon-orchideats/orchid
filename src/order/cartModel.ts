@@ -202,9 +202,14 @@ export class Cart implements ICart {
     }
   }
 
-  public addMeal(newMeal: Meal, restId: string, restName: string) {
+  public addMeal(
+    newMeal: Meal,
+    restId: string,
+    restName: string,
+    taxRate: number,
+  ) {
     const newCart = new Cart(this);
-    const deliveryMeal = DeliveryMeal.getDeliveryMeal(newMeal, restId, restName);
+    const deliveryMeal = DeliveryMeal.getDeliveryMeal(newMeal, restId, restName, taxRate);
     Cart.addMealToRestMeals(newCart.RestMeals, deliveryMeal);
     if (newCart.Deliveries.length > 0) {
       const firstDelivery = newCart.Deliveries[0];
@@ -215,6 +220,7 @@ export class Cart implements ICart {
             newMeal,
             restId,
             restName,
+            taxRate,
         ));
       } else {
         firstDelivery.Meals[newMealIndex] = new DeliveryMeal({
@@ -227,11 +233,16 @@ export class Cart implements ICart {
     return newCart;
   }
 
-  public static getDeliveryMeals(meals: IMeal[], restId: string, restName: string) {
+  public static getDeliveryMeals(
+    meals: IMeal[],
+    restId: string,
+    restName: string,
+    taxRate: number
+  ) {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName));
+        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName, taxRate));
       } else {
         groupings[groupIndex] = new DeliveryMeal({
           ...groupings[groupIndex],
