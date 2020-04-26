@@ -1,6 +1,7 @@
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
-import { IOrder, Order, IUpdateDeliveryInput } from './../../order/orderModel';
+import { IOrder, Order } from './../../order/orderModel';
+import { IUpdateDeliveryInput } from './../../order/deliveryModel';
 import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';

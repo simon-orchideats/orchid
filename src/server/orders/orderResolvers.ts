@@ -1,7 +1,7 @@
 import { ICartInput } from '../../order/cartModel';
 import { ServerResolovers } from '../../utils/apolloUtils';
 import { getOrderService } from './orderService';
-import { IUpdateDeliveryInput } from '../../order/orderModel';
+import { IUpdateDeliveryInput } from '../../order/deliveryModel';
 
 export const OrderQueryResolvers: ServerResolovers = {
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {

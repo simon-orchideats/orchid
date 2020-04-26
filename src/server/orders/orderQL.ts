@@ -47,7 +47,7 @@ export const _OrderQL = gql`
   }
 
   input UpdateDeliveryInput { 
-    deliveries: [DeliveryInput!]
+    deliveries: [DeliveryInput!]!
     donationCount: Int!
   }
 

@@ -1,5 +1,5 @@
 import { PlanName, PlanNames } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryInput, DeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery } from './deliveryModel';
 import { SignedInUser } from './../utils/apolloUtils';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
@@ -53,11 +53,6 @@ export interface IOrder {
   readonly phone: string
   readonly name: string
   readonly donationCount: number
-}
-
-export interface IUpdateDeliveryInput {
-  readonly donationCount: number
-  readonly deliveries: IDeliveryInput[]
 }
 
 export class Order implements IOrder{
@@ -128,74 +123,6 @@ export class Order implements IOrder{
       phone: order.consumer.profile.phone!,
       name: order.consumer.profile.name,
       donationCount: order.donationCount
-    }
-  }
-
-  static getUpdatedDeliveryInput(
-    deliveries: DeliveryInput[],
-    donationCount: number,
-  ): IUpdateDeliveryInput {
-    return {
-      donationCount: donationCount ? donationCount : 0,
-      deliveries
-    }
-  }
-
-  static getEOrderFromUpdatedDeliveries(
-    {
-      consumer,
-      costs,
-    }: EOrder,
-    mealPrices: IMealPrice[],
-    deliveries: IDelivery[],
-    donationCount : number
-  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    return {
-      cartUpdatedDate: Date.now(),
-      costs: {
-        ...costs,
-        mealPrices
-      },
-      consumer,
-      deliveries,
-      donationCount
-    }
-  }
-
-  static getEOrderFromSkippedDelivery(
-    {
-      consumer,
-      deliveries,
-      costs,
-      donationCount
-    }: EOrder,
-  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    return {
-      cartUpdatedDate: Date.now(),
-      costs,
-      consumer,
-      deliveries,
-      donationCount,
-    }
-  }
-
-  static getEOrderFromRemoveDonations(
-    {
-      consumer,
-      deliveries,
-      costs,
-    }: EOrder,
-    mealPrices: IMealPrice[],
-  ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-    return {
-      cartUpdatedDate: Date.now(),
-      costs: {
-        ...costs,
-        mealPrices
-      },
-      consumer,
-      deliveries,
-      donationCount: 0,
     }
   }
 

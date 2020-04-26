@@ -1,10 +1,10 @@
 import { getNextDeliveryDate } from './../../order/utils';
-import { DeliveryInput, IDelivery } from './../../order/deliveryModel';
+import { DeliveryInput, IDelivery, IUpdateDeliveryInput } from './../../order/deliveryModel';
 import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, IMealPrice, IUpdateDeliveryInput } from './../../order/orderModel';
+import { EOrder, IOrder, IMealPrice } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
@@ -699,16 +699,25 @@ class OrderService {
       }
       let mealPrices: IMealPrice[] = [];
       const plans = await this.planService.getAvailablePlans();
-      mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0);
+      let totalCount = 0;
+      targetOrder.deliveries.forEach(delivery => {
+        delivery.meals.forEach(meal => totalCount+=meal.quantity)
+      })
+      if (totalCount !== 0) mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0);
+      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
+        ...targetOrder,
+        costs: {
+          ...targetOrder.costs,
+          mealPrices
+        },
+        cartUpdatedDate: Date.now(),  
+      }
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
           id: orderId,
           body: {
-            doc: Order.getEOrderFromRemoveDonations(
-              targetOrder,
-              mealPrices
-            ),
+            doc,
           }
         })
       } catch (e) {
@@ -746,13 +755,27 @@ class OrderService {
         }
       }
       targetOrder.deliveries[deliveryIndex] = {...targetOrder.deliveries[deliveryIndex], meals: [], status: 'Skipped'};
+      let totalCount = 0;
+      targetOrder.deliveries.forEach(delivery => {
+        delivery.meals.forEach(meal => totalCount+=meal.quantity)
+      })
       let mealPrices: IMealPrice [] = [];
+      if (totalCount === 0  && targetOrder.donationCount < 4) {
+        const msg = 'Donations must be at least 4 before skipping this delivery';
+        console.warn(
+          '[OrderService]',
+          `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+        )
+        return {
+          res: false,
+          error: msg
+        }
+      } 
       const plans = await this.planService.getAvailablePlans();
       mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
       const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
-        ...targetOrder, ...targetOrder.costs, cartUpdatedDate: Date.now(),  ...mealPrices
+        ...targetOrder, costs: {...targetOrder.costs, mealPrices}, cartUpdatedDate: Date.now(),  
       }
-
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
@@ -786,35 +809,21 @@ class OrderService {
       const subscriptionId = signedInUser.stripeSubscriptionId
       if (!stripeCustomerId) {
         const msg = 'Missing stripe customer id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
+        console.error('[OrderService]', msg)
+        throw new Error(`[OrderService]: ${msg}`)
       }
       if (!subscriptionId) {
         const msg = 'Missing subscription id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!orderId) {
-        const msg = `No order id user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }  
+        console.error('[OrderService]', msg)
+        throw new Error(`[OrderService]: ${msg}`)
+      } 
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
       if (targetOrder.consumer.userId !== signedInUser._id) {
         const msg = 'Can only update your own orders';
         console.warn(
           '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+          `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
         )
         return {
           res: false,
@@ -823,51 +832,48 @@ class OrderService {
       }
 
       let dateValidation;
+      let totalCount = 0;
       updateOptions.deliveries.forEach(delivery => {
-        if (delivery.deliveryDate > targetOrder.invoiceDate) dateValidation = 'Delivery date greater than the invoice Date'
-        if (delivery.deliveryDate < Date.now()) dateValidation = 'Delivery date cannot be in the past'
+        if (delivery.deliveryDate <= moment(targetOrder.invoiceDate).add(2,'days').get('millisecond')) dateValidation = 'Delivery date cannot be in the future';
+        if (delivery.deliveryDate <= Date.now()) dateValidation = 'Delivery date cannot be in the past'
+        delivery.meals.forEach(meal => totalCount += meal.quantity);
       })
       if (dateValidation) {
-        return {
-          res: false,
-          error: dateValidation
-        };
+        console.error(`[OrderService]: ${dateValidation}`);
+        throw new Error (`[OrderService]: ${dateValidation}`);
       }
 
       let mealPrices: IMealPrice[] = [];
       let newDeliveries: IDelivery[] = [];
-      const deliveryUpdateOptions = updateOptions.deliveries;
+      const updatedDeliveries = updateOptions.deliveries;
       const targetDeliveries = targetOrder.deliveries.filter(delivery => delivery.status === 'Confirmed' || delivery.status === 'Returned' || delivery.status === 'Complete');
       const plans = await this.planService.getAvailablePlans();
-      //make less volatile to Possible future changes, by looping through all deliveries first and grab total check between donation Count
-      // sure fire way will never fail
-
       // Sent only donations
-      if (deliveryUpdateOptions.length === 1 && deliveryUpdateOptions[0].meals.length === 0 && updateOptions.donationCount > 0) {
-        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery =>  ({ ...delivery, status: 'Skipped' }) );
+      if (totalCount === 0 && updateOptions.donationCount > 0) {
+        const currentDeliveries = updatedDeliveries.map<IDelivery>(delivery =>  ({ ...delivery, status: 'Skipped' }) );
         newDeliveries = targetDeliveries.concat(currentDeliveries);
         mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
       // sent delivery updates with donations
       } else {
-        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => ({ ...delivery, status:'Open' }) );
+        const currentDeliveries = updatedDeliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }) );
         newDeliveries = targetDeliveries.concat(currentDeliveries);
         mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
       }
       try {
-        // const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
-
-        // }
-
+        const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
+          ...targetOrder,
+          costs: {
+            ...targetOrder.costs,
+            mealPrices
+          },
+          donationCount: updateOptions.donationCount,
+          deliveries: newDeliveries,
+        }
         await this.elastic.update({
           index: ORDER_INDEX,
           id: orderId,
           body: {
-            doc: Order.getEOrderFromUpdatedDeliveries(
-              targetOrder,
-              mealPrices,
-              newDeliveries,
-              updateOptions.donationCount
-            ),
+            doc,
           }
         })
       } catch (e) {

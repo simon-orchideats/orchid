@@ -15,7 +15,6 @@ import PreferredSchedule from "../client/general/PreferredSchedule";
 import { useUpdateDeliveries } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
-import { Order } from "../order/orderModel";
 import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
@@ -71,11 +70,15 @@ const delivery = () => {
   });
   const onUpdateOrder = () => {
     // todo simon: metrics here
-    if (cart !== null) {
-      updateDeliveries(orderId, Order.getUpdatedDeliveryInput(cart.Deliveries, cart.DonationCount))
-    } else {
-      throw new Error(`Cart is empty, cannot update order`);
-    }
+    if (!cart) {
+      const err = new Error('Cart is empty for update order');
+      console.error(err.stack);
+      throw err;
+    } 
+    updateDeliveries(orderId, {
+       deliveries: cart.Deliveries,
+       donationCount: cart.DonationCount ? cart.DonationCount : 0 
+    }) 
   }
   const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));
