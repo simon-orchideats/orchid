@@ -137,7 +137,7 @@ export class Order implements IOrder{
   ): IUpdateDeliveryInput {
     return {
       donationCount: donationCount ? donationCount : 0,
-      deliveries: deliveries
+      deliveries
     }
   }
 

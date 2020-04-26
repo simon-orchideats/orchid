@@ -1,6 +1,6 @@
 import { getNextDeliveryDate } from './../../order/utils';
 import { DeliveryInput, IDelivery } from './../../order/deliveryModel';
-import { Tier, IPlan, PlanNames } from './../../plan/planModel';
+import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -20,7 +20,7 @@ import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import { Consumer, IConsumer } from '../../consumer/consumerModel';
-import moment, { now } from 'moment-timezone';
+import moment from 'moment-timezone';
 import { isDate2DaysLater } from '../../order/utils';
 import { IDeliveryMeal, IDeliveryInput } from '../../order/deliveryModel';
 
@@ -656,9 +656,10 @@ class OrderService {
   ): Promise<MutationBoolRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('RestService not set');
+      if (!this.planService) throw new Error ('PlanService not set');
       const stripeCustomerId = signedInUser.stripeCustomerId;
       const subscriptionId = signedInUser.stripeSubscriptionId
+      // when to do this, vs when to throw
       if (!stripeCustomerId) {
         const msg = 'Missing stripe customer id';
         console.warn('[OrderService]', msg)
@@ -696,23 +697,9 @@ class OrderService {
           error: msg
         }
       }
-      const mealPrices: IMealPrice[] = [];
+      let mealPrices: IMealPrice[] = [];
       const plans = await this.planService.getAvailablePlans();
-      Object.values(PlanNames).forEach(planName => {
-        const targetMeals = targetOrder.deliveries.map(delivery => delivery.meals).flat().filter(meal => meal.planName === planName);
-        if(targetMeals.length > 0) {
-          const targetMealQuantity = targetMeals.map(meal => meal.quantity).reduce((sum,t) => sum + t);  
-          mealPrices.push({
-            stripePlanId: targetMeals[0].stripePlanId,
-            planName: targetMeals[0].planName,
-            mealPrice: Tier.getMealPrice(
-              planName,
-              targetMealQuantity,
-              plans
-            ),
-          })
-        }
-      })
+      mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0);
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
@@ -744,33 +731,7 @@ class OrderService {
   ): Promise<MutationBoolRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('RestService not set');
-      const stripeCustomerId = signedInUser.stripeCustomerId;
-      const subscriptionId = signedInUser.stripeSubscriptionId
-      if (!stripeCustomerId) {
-        const msg = 'Missing stripe customer id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!subscriptionId) {
-        const msg = 'Missing subscription id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!orderId) {
-        const msg = `No order id user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
+      if (!this.planService) throw new Error ('PlanService not set');
       const targetOrder = await this.getOrder(orderId);
       if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
       if (targetOrder.consumer.userId !== signedInUser._id) {
@@ -784,15 +745,20 @@ class OrderService {
           error: msg
         }
       }
-      targetOrder.deliveries[deliveryIndex] = {...targetOrder.deliveries[deliveryIndex], status: 'Skipped'};
+      targetOrder.deliveries[deliveryIndex] = {...targetOrder.deliveries[deliveryIndex], meals: [], status: 'Skipped'};
+      let mealPrices: IMealPrice [] = [];
+      const plans = await this.planService.getAvailablePlans();
+      mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
+      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
+        ...targetOrder, ...targetOrder.costs, cartUpdatedDate: Date.now(),  ...mealPrices
+      }
+
       try {
         await this.elastic.update({
           index: ORDER_INDEX,
           id: orderId,
           body: {
-            doc: Order.getEOrderFromSkippedDelivery(
-              targetOrder,
-            ),
+            doc,
           }
         })
       } catch (e) {
@@ -815,7 +781,7 @@ class OrderService {
   ): Promise<MutationBoolRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('RestService not set');
+      if (!this.planService) throw new Error ('PlanService not set');
       const stripeCustomerId = signedInUser.stripeCustomerId;
       const subscriptionId = signedInUser.stripeSubscriptionId
       if (!stripeCustomerId) {
@@ -859,7 +825,7 @@ class OrderService {
       let dateValidation;
       updateOptions.deliveries.forEach(delivery => {
         if (delivery.deliveryDate > targetOrder.invoiceDate) dateValidation = 'Delivery date greater than the invoice Date'
-        if (delivery.deliveryDate < now()) dateValidation = 'Delivery date cannot be in the past'
+        if (delivery.deliveryDate < Date.now()) dateValidation = 'Delivery date cannot be in the past'
       })
       if (dateValidation) {
         return {
@@ -871,22 +837,27 @@ class OrderService {
       let mealPrices: IMealPrice[] = [];
       let newDeliveries: IDelivery[] = [];
       const deliveryUpdateOptions = updateOptions.deliveries;
-      const targetDeliveries = targetOrder.deliveries.filter(delivery => {
-        if (delivery.status !== 'Open' && delivery.status !== 'Skipped') return delivery;
-      });
+      const targetDeliveries = targetOrder.deliveries.filter(delivery => delivery.status === 'Confirmed' || delivery.status === 'Returned' || delivery.status === 'Complete');
       const plans = await this.planService.getAvailablePlans();
+      //make less volatile to Possible future changes, by looping through all deliveries first and grab total check between donation Count
+      // sure fire way will never fail
+
       // Sent only donations
       if (deliveryUpdateOptions.length === 1 && deliveryUpdateOptions[0].meals.length === 0 && updateOptions.donationCount > 0) {
-        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => { return { ...delivery, status: 'Skipped' } });
+        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery =>  ({ ...delivery, status: 'Skipped' }) );
         newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries,updateOptions.donationCount);
+        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
       // sent delivery updates with donations
       } else {
-        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => { return { ...delivery, status:'Open' } });
+        const currentDeliveries = updateOptions.deliveries.map<IDelivery>(delivery => ({ ...delivery, status:'Open' }) );
         newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries,updateOptions.donationCount);
+        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
       }
       try {
+        // const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
+
+        // }
+
         await this.elastic.update({
           index: ORDER_INDEX,
           id: orderId,
@@ -907,38 +878,46 @@ class OrderService {
         error: null,
       }
     } catch (e) {
-      console.error(`[OrderService] couldn't updateOrder for '${orderId}' with updateOptions '${JSON.stringify(updateOptions)}'`, e.stack);
+      console.error(`[OrderService] couldn't update deliveries for '${orderId}' with updateOptions: '${JSON.stringify(updateOptions)}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }
   private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
+    let planNames = plans.map(plan => ({ name: plan.name, stripePlanId: plan.stripePlanId, quantity: 0 })); 
     const mealPrices: IMealPrice[] = [];
-    Object.values(PlanNames).forEach(planName => {
-      newDeliveries.forEach(delivery => {
-        // Filter meals on current delivery based on plan
-        const meals = delivery.meals.filter(meal => meal.planName === planName);
-        if (meals.length > 0) {
-          const newMeals = newDeliveries.map(delivery => delivery.meals).flat();
-          const newMealsCount = newMeals.map(meal => meal.quantity).reduce((sum, quantity) => sum + quantity);
-          const mealPrice = Tier.getMealPrice(
-            planName,
-            newMealsCount+donationCount,
-            plans
-          );
-          // if plan exists already in mealPrices then update, if not then push
-          const mealPriceIndex = mealPrices.findIndex(mealPrice => mealPrice.planName === planName)
-          if (mealPriceIndex === -1) {
-            mealPrices.push({
-              stripePlanId: meals[0].stripePlanId,
-              planName: meals[0].planName,
-              mealPrice
-            })
-          } else {
-            mealPrices[mealPriceIndex] = { ...mealPrices[mealPriceIndex], mealPrice }; 
-          }
+    newDeliveries.forEach(delivery => {
+      delivery.meals.forEach(meal => {
+        const currentPlan = planNames.find(planName => planName.name === meal.planName)
+        if (currentPlan) {
+          currentPlan.quantity+=meal.quantity;
         }
-      }) 
-    }); 
+      });
+    });
+    planNames.forEach(plan => {
+      if (plan.name === 'Standard') {
+        const mealPrice = Tier.getMealPrice(
+          plan.name,
+          plan.quantity+donationCount,
+          plans
+        );
+        mealPrices.push({
+          stripePlanId: plan.stripePlanId,
+          planName: plan.name,
+          mealPrice
+        })
+      } else {
+        const mealPrice = Tier.getMealPrice(
+          plan.name,
+          plan.quantity,
+          plans
+        );
+        mealPrices.push({
+          stripePlanId: plan.stripePlanId,
+          planName: plan.name,
+          mealPrice
+        })
+      }
+    })
     return mealPrices;
   }
 

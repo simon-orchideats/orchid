@@ -272,14 +272,15 @@ export const useUpdateDeliveries = (): [
       },
       //@ts-ignore
       update: (cache, { data }) => {
+
         // todo simon: redo this
-        // if (data && data.updateOrder.res) {
-        //   const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-        //   if (!upcomingOrders) {
-        //     const err = new Error('Failed to get upcoming orders for cache update');
-        //     console.error(err.stack);
-        //     throw err;
-        //   }
+        if (data && data.updateDeliveries.res) {
+          const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+          if (!upcomingOrders) {
+            const err = new Error('Failed to get upcoming orders for cache update');
+            console.error(err.stack);
+            throw err;
+          }
         //   let rest: IRest | null = null;
         //   if (updateOptions.restId) {
         //     const restRes = getRest(cache, updateOptions.restId)
@@ -338,7 +339,7 @@ export const useUpdateDeliveries = (): [
         //       myUpcomingOrders: newUpcomingOrders,
         //     }
         //   })
-        // }
+        }
       }
     })
   }
