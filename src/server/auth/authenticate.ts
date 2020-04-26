@@ -44,7 +44,7 @@ const redirectedSignIn = async (
     const code = req.query.code;
     const state = req.query.state;
     // there's no state if auth0 auto logs you in based on their own session management
-    if (state && state !== stateRedirectCookie) {
+    if (stateRedirectCookie && state !== stateRedirectCookie) {
       throw new Error(`Bad nonce. url has '${state}' but cookie has '${stateRedirectCookie}'`);
     }
     const authRes = await fetch(`https://${activeConfig.server.auth.domain}/oauth/token`, {
