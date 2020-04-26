@@ -15,7 +15,6 @@ import PreferredSchedule from "../client/general/PreferredSchedule";
 import { useUpdateDeliveries } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
-import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -75,10 +74,12 @@ const delivery = () => {
       console.error(err.stack);
       throw err;
     } 
-    updateDeliveries(orderId, {
-       deliveries: cart.Deliveries,
-       donationCount: cart.DonationCount ? cart.DonationCount : 0 
-    }) 
+    updateDeliveries(
+      orderId, 
+      {
+        deliveries: cart.Deliveries,
+        donationCount: cart.DonationCount ? cart.DonationCount : 0 
+      }) 
   }
   const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));
@@ -105,7 +106,6 @@ const delivery = () => {
   return (
     <>
       <Container className={classes.container}>
-      <Notifier />
         <ExpansionPanel
           expanded={expanded === 'deliveries'}
           className={classes.panel}

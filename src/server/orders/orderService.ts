@@ -1,13 +1,12 @@
-import { getNextDeliveryDate } from './../../order/utils';
-import { DeliveryInput, IDelivery, IUpdateDeliveryInput } from './../../order/deliveryModel';
+import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
 import { Tier, IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, IMealPrice } from './../../order/orderModel';
+import { Order, EOrder, IOrder, IMealPrice } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
+import { Consumer, IConsumer, EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -16,13 +15,10 @@ import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { Order } from '../../order/orderModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
-import { Consumer, IConsumer } from '../../consumer/consumerModel';
 import moment from 'moment-timezone';
-import { isDate2DaysLater } from '../../order/utils';
-import { IDeliveryMeal, IDeliveryInput } from '../../order/deliveryModel';
+import { IDeliveryMeal, IDeliveryInput, DeliveryInput, IDelivery, IUpdateDeliveryInput  } from '../../order/deliveryModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
@@ -835,7 +831,7 @@ class OrderService {
       let totalCount = 0;
       updateOptions.deliveries.forEach(delivery => {
         if (delivery.deliveryDate <= moment(targetOrder.invoiceDate).add(2,'days').get('millisecond')) dateValidation = 'Delivery date cannot be in the future';
-        if (delivery.deliveryDate <= Date.now()) dateValidation = 'Delivery date cannot be in the past'
+        if (delivery.deliveryDate < Date.now()) dateValidation = 'Delivery date cannot be in the past'
         delivery.meals.forEach(meal => totalCount += meal.quantity);
       })
       if (dateValidation) {
@@ -895,7 +891,7 @@ class OrderService {
       delivery.meals.forEach(meal => {
         const currentPlan = planNames.find(planName => planName.name === meal.planName)
         if (currentPlan) {
-          currentPlan.quantity+=meal.quantity;
+          currentPlan.quantity += meal.quantity;
         }
       });
     });
