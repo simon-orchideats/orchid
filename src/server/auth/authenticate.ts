@@ -44,7 +44,9 @@ const redirectedSignIn = async (
     const code = req.query.code;
     const state = req.query.state;
     // there's no state if auth0 auto logs you in based on their own session management
-    if (state && state !== stateRedirectCookie) throw new Error(`Bad nonce '${state}'`);
+    if (state && state !== stateRedirectCookie) {
+      throw new Error(`Bad nonce. url has '${state}' but cookie has '${stateRedirectCookie}'`);
+    }
     const authRes = await fetch(`https://${activeConfig.server.auth.domain}/oauth/token`, {
       method: 'POST',
       headers: {
@@ -120,7 +122,7 @@ export const handleAuthCallback = async (req: express.Request, res: express.Resp
     res.redirect(`${activeConfig.server.app.url}${state.split('_')[1]}`);
   } catch (e) {
     console.error(`[Authenticate] Couldn't handle auth callback`, e.stack);
-    res.status(500).send('Could not log you in');
+    res.status(500).send("Sorry we couldn't log you in. Please try clearing your browsing history or contact emily@orchideats.com");
   }
 }
 
