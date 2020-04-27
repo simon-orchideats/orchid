@@ -170,6 +170,7 @@ export interface IOrderService {
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   setOrderUsage(subscriptionItemId: string, numMeals: number, timestamp: number): Promise<void>
+  setOrderStripeInvoiceId(orderId: string, invoiceId: string): Promise<void>
   updateOrder(
     signedInUser: SignedInUser,
     orderId: string,
@@ -669,7 +670,7 @@ class OrderService {
     }
   }
 
-  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<EOrder, 'deliveries'>> {
+  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries'>> {
     try {
       const order = await this.getCurrentOrder(userId);
       const newOrder: Pick<EOrder, 'deliveries'> = {
@@ -685,7 +686,10 @@ class OrderService {
           doc: newOrder,
         }
       });
-      return newOrder;
+      return {
+        _id: order._id,
+        deliveries: newOrder.deliveries,
+      };
     } catch (e) {
       console.error(`[OrderService] failed to confirmCurrentOrderDeliveries for userId '${userId}'`, e.stack);
       throw e;
@@ -780,6 +784,24 @@ class OrderService {
       );
     } catch (e) {
       console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}'`);
+      throw e;
+    }
+  }
+
+  async setOrderStripeInvoiceId(orderId: string, invoiceId: string): Promise<void> {
+    try {
+      const newOrder: Pick<EOrder, 'stripeInvoiceId'> = {
+        stripeInvoiceId: invoiceId,
+      }
+      await this.elastic.update({
+        index: ORDER_INDEX,
+        id: orderId,
+        body: {
+          doc: newOrder,
+        }
+      });
+    } catch (e) {
+      console.error(`[OrderService] failed to setOrderStripeInvoiceId for orderId '${orderId}' and invoiceId '${invoiceId}'`, e.stack);
       throw e;
     }
   }

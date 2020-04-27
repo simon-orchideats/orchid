@@ -53,13 +53,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
   if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
   
-  // happens when subscription is canceled
-  if (!consumer.plan) return;
   if (consumer.plan && consumer.plan.mealPlans.length === 0) {
     throw new Error(`Received invoice creation for consumer ${stripeCustomerId} with no meal plans`)
   };
 
-  const mealPlans = consumer.plan.mealPlans;
+  const mealPlans = consumer.plan ? consumer.plan.mealPlans : [];
 
   if (event.type === 'invoice.upcoming') {
     try {
@@ -80,20 +78,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   } else {
     try {
       if (invoice.billing_reason === 'subscription_create') return;
-      const planInvoiceLineItems: Stripe.InvoiceLineItem[] = [];
-      for (let i = 0; i < mealPlans.length; i++) {
-        const planInvoiceLineItem = invoice.lines.data.find(li => {
-          if (!li.plan || !consumer || !consumer.plan) return false;
-          return li.plan.id === mealPlans[i].stripePlanId
-        });
-        if (!planInvoiceLineItem) {
-          throw new Error(`Plan ${mealPlans[i].stripePlanId} not found for stripe customerId '${stripeCustomerId}'`);
-        }
-        planInvoiceLineItems.push(planInvoiceLineItem);
-      }
       const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
+      await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
+      // happens when subscription is canceled
+      if (!consumer.plan) return;
       const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
-      planInvoiceLineItems.forEach(li => {
+      invoice.lines.data.forEach(li => {
         // if it's not a subscription line item, do nothing
         if (!li.subscription_item || !li.plan) return
         const timestamp = li.period.end - 60;
@@ -102,7 +92,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           numConfirmedMeals[li.plan.id],
           timestamp
         );
-      })
+      });
     } catch (e) {
       console.error('[SubscriptionHook] failed to confirm deliveries for order', e.stack);
       throw e;
