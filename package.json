@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "next build && tsc --project tsconfig.server.json",
+    "host": "ngrok http 8443",
     "prod": "cross-env NODE_ENV=production node build/server.js",
     "test": "jest --watch",
     "heroku-logs": "heroku logs --tail -a saute"

@@ -39,17 +39,31 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo test for consumerServiceTest
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
+// todo listen for paid event and mark orders with their stripeInvoiceId
+// handle upcoming deliveries for canceled subscriptions. it should still show the confirmed stuff
+// but the nextnexgt week shoudl be gone
+
+// we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
+// to add a 1 time charge to the subscription. 
+
+// todo we need to make sure we account for the whole thing about if the 
+// last delivery confirmation day is the same as the payment day. we can do this by making the batch ONLY confirm
+// deliveries. but when we get hte stripe event, we confirm any delivieres that need to be confirmed today (in case
+// the payment happens before hte batch or simultaniously wiht the batch). this gives us a doc of all confirmed deliveries
+// we loop through and count all the meals and then set usage
+// todo if no subscriptionId, no editing meals
+// todo if date is end of subscription, no editing meals.
+// also if it's past a delivery date, and skipped, no editing meals
+
+
+//
 // to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
 // payment day if the consumer updated the delivery date. for now we'll just do it each day at 12am.
 // have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
 
 
 /**
- * 
- * 
  * todo prevent cross state orders
- * taxes
- * + $2 for extra deliveries
  */
 
 init({

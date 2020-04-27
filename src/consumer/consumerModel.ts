@@ -216,8 +216,8 @@ export class MealPlan implements IMealPlan {
     return true;
   }
 
-  static getTotalCount(ps: MealPlan[]) {
-    return ps.reduce<number>((sum, p) => sum + p.MealCount, 0);
+  static getTotalCount(ps: IMealPlan[]) {
+    return ps.reduce<number>((sum, p) => sum + p.mealCount, 0);
   }
 }
 

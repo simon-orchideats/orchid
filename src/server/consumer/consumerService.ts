@@ -16,6 +16,8 @@ import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
 import crypto  from 'crypto';
+import { refetchAccessToken } from '../../utils/auth';
+import { Delivery } from '../../order/deliveryModel';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
@@ -31,7 +33,6 @@ export interface IConsumerService {
 
 class ConsumerService implements IConsumerService {
   private readonly elastic: Client
-  //@ts-ignore todo simon
   private readonly stripe: Stripe
   private planService?: IPlanService
   private orderService?: IOrderService
@@ -52,65 +53,6 @@ class ConsumerService implements IConsumerService {
 
   public setGeoService(geoService: IGeoService) {
     this.geoService = geoService;
-  }
-
-  //@ts-ignore // todo simon: redo this entire fn
-  private async prepareOrdersForCancelation(signedInUser: SignedInUser) {
-    // try {
-    //   if (!this.orderService) throw new Error('No order service');
-    //   if (!signedInUser) throw getNotSignedInErr();
-    //   const stripeCustomerId = signedInUser.stripeCustomerId;
-    //   if (!stripeCustomerId) throw new Error('Missing stripe customer id');
-
-    // let pendingLineItems: Stripe.ApiList<Stripe.InvoiceItem>;
-    // try {
-    //   pendingLineItems = await this.stripe.invoiceItems.list({
-    //     limit: 50,
-    //     pending: true,
-    //     customer: stripeCustomerId,
-    //   });
-    // } catch (e) {
-    //   throw new Error(`Couldn't get future line items: ${e.stack}`)
-    // }
-    // const today = moment().valueOf();
-    // return this.orderService.getMyUpcomingEOrders(signedInUser)
-    //   .then(orders => Promise.all(orders.map(async ({ _id, order }) => {
-    //     if (!this.orderService) throw new Error('OrderService not set');
-    //     if (order.invoiceDate > today) {
-    //       await Promise.all(pendingLineItems.data.map(line => {
-    //         if (line.description && line.description.includes(moment(order.invoiceDate).format(adjustmentDateFormat))) {
-    //           return this.stripe.invoiceItems.del(line.id).catch(e => {
-    //             const msg = `Couldn't remove future adjustment id '${line.id}': ${e.stack}`
-    //             console.error(msg);
-    //             throw e;
-    //           });
-    //         }
-    //       }));
-    //       return _id;
-    //     } else {
-    //       return this.orderService.updateOrder(signedInUser, _id, {
-    //         restId: null,
-    //         meals: [],
-    //         // todo 0: remove these !
-    //         phone: order.consumer.profile.phone!,
-    //         destination: order.consumer.profile.destination!,
-    //         deliveryDate: order.deliveryDate,
-    //         deliveryTime: order.deliveryTime,
-    //         donationCount: order.donationCount,
-    //         name: order.consumer.profile.name
-    //       }).then(() => {
-    //         return _id;
-    //       }).catch(e => {
-    //         const msg = `Failed to skip order '${_id}' for user '${signedInUser._id}': ${e.stack}`;
-    //         console.error(msg)
-    //         throw e;
-    //       })
-    //     }
-    //   })))
-    // } catch (e) {
-    //   console.error(`[ConsumerService] failed to prepare cancelation for user '${signedInUser && signedInUser._id}'`, e.stack);
-    //   throw e;
-    // }
   }
 
   public async upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes> {
@@ -161,79 +103,74 @@ class ConsumerService implements IConsumerService {
 
   public async cancelSubscription(
     signedInUser: SignedInUser,
-    //@ts-ignore todo simon
     req?: IncomingMessage,
-    //@ts-ignore todo simon
     res?: OutgoingMessage
   ) {
     try {
+      if (!this.orderService) throw 'Missing order service';
       if (!signedInUser) throw getNotSignedInErr()
-      // const subscriptionId = signedInUser.stripeSubscriptionId;
-      // if (!subscriptionId) {
-      //   const msg = 'Missing stripe subscription id';
-      //   console.warn('[ConsumerService]', msg)
-      //   return {
-      //     res: false,
-      //     error: msg
-      //   }
-      // }
-      // const p1 = this.prepareOrdersForCancelation(signedInUser)
-      //   .then(orderIds => {
-      //     return Promise.all(orderIds.map(id => {
-      //       if (!this.orderService) throw new Error('Missing order service');
-      //       return this.orderService.deleteOrder(id).catch(e => {
-      //         const msg = `Failed to delete order '${id}' from for user '${signedInUser._id}'. ${e.stack}`;
-      //         console.error(msg)
-      //         throw e;
-      //       })
-      //     }))
-      //   })
-      //   .then(() => {
-      //     return this.stripe.subscriptions.del(subscriptionId, { invoice_now: true })
-      //       .catch(e => {
-      //         const msg = `Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
-      //         console.error(msg)
-      //         throw e;
-      //       });
-      //   })
-      //   .catch(e => {
-      //     const msg = `Failed to get prepareOrders for cancelation for user '${signedInUser._id}'`;
-      //     console.error(msg)
-      //     throw e;
-      //   });
+      const subscriptionId = signedInUser.stripeSubscriptionId;
+      const orderService = this.orderService;
+      if (!subscriptionId) throw new Error('Missing stripe subscription id');
 
-      // const p2 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
-      //   headers: await getAuth0Header(),
-      //   method: 'PATCH',
-      //   body: JSON.stringify({
-      //     app_metadata: {
-      //       stripeSubscriptionId: null,
-      //     },
-      //   })
-      // }).then(async () => {
-      //   if (req && res) await refetchAccessToken(req, res);
-      // }).catch(e => {
-      //   const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
-      //   console.error(msg)
-      //   throw e;
-      // });
-      // const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
-      //   stripeSubscriptionId: null,
-      //   plan: null,
-      // }
-      // const p3 = this.elastic.update({
-      //   index: CONSUMER_INDEX,
-      //   id: signedInUser._id,
-      //   body: {
-      //     doc: updatedConsumer
-      //   }
-      // }).catch(e => {
-      //   const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
-      //   console.error(msg)
-      //   throw e;
-      // });
+      const todaysOrder = await this.orderService.deleteCurrentOrderUnconfirmedDeliveries(signedInUser._id);
+      const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
+      const stripeSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
 
-      // await Promise.all([p1, p2, p3]);
+      await Promise.all(stripeSubscription.items.data.map(si => {
+        const count = numConfirmedMeals[si.plan.id] || 0;
+        return orderService.setOrderUsage(si.id, count, Math.round(Date.now() / 1000)).catch(e => {
+          console.error(`Could not set order usage count of '${count}' with sub item '${si.id}' for sub plan
+          '${si.plan.id}'`, e.stack);
+          throw e;
+        });
+      }));
+
+      const p1 = this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
+        const msg = `Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+
+      const p2 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
+        headers: await getAuth0Header(),
+        method: 'PATCH',
+        body: JSON.stringify({
+          app_metadata: {
+            stripeSubscriptionId: null,
+          },
+        })
+      }).then(async () => {
+        if (req && res) await refetchAccessToken(req, res);
+      }).catch(e => {
+        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+
+      const p3 = this.orderService.deleteUnpaidOrdersWithUnconfirmedDeliveries(signedInUser._id).catch(e => {
+        console.error(`Failed to delete upcoming orders with unconfirmed deliveries for ${signedInUser._id}`, e.stack);
+        throw e;
+      });
+      
+      const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
+        stripeSubscriptionId: null,
+        plan: null,
+      }
+
+      const p4 = this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: signedInUser._id,
+        body: {
+          doc: updatedConsumer
+        }
+      }).catch(e => {
+        const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+
+      await Promise.all([p1, p2, p3, p4]);
       return {
         res: true,
         error: null,

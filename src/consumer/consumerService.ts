@@ -363,7 +363,7 @@ export const useUpdateMyPlan = (): [
   const updateMyPlan = (plan: ConsumerPlan, currConsumer: Consumer) => {
     if (!currConsumer.Plan) {
       const err = new Error('Missing consumer plan');
-      console.log(err.stack);
+      console.error(err.stack);
       throw err;
     }
     if (ConsumerPlan.equals(plan, currConsumer.Plan)) return;

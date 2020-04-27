@@ -1,13 +1,12 @@
 import { getNextDeliveryDate } from './../../order/utils';
-import { DeliveryInput } from './../../order/deliveryModel';
-import { Tier, IPlan } from './../../plan/planModel';
+import { IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, IUpdateOrderInput, IMealPrice } from './../../order/orderModel';
+import { EOrder, IOrder, IUpdateOrderInput, IMealPrice, MealPrice } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, CuisineType, IConsumerProfile, MealPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -98,6 +97,36 @@ const getUpcomingOrdersQuery = (signedInUserId: string) => ({
   }
 })
 
+const myUnpaidOrdersQuery = (signedInUserId: string) => ({
+  query: {
+    bool: {
+      filter: {
+        bool: {
+          must: [
+            {
+              term: {
+                'consumer.userId': signedInUserId
+              }
+            }
+          ],
+          must_not: {
+            exists: {
+              field: 'stripeInvoiceDate'
+            }
+          }
+        }
+      }
+    }
+  },
+  sort: [
+    {
+      invoiceDate: {
+        order: 'asc',
+      }
+    }
+  ],
+})
+
 //@ts-ignore todo simon: do we still need this?
 const removeMealsRandomly = (meals: IDeliveryMeal[], numMealsToRemove: number) => {
   const chooseRandomly = getItemChooser<IDeliveryMeal>(meals);
@@ -129,7 +158,9 @@ export interface IOrderService {
     weekPrice: number,
     mealPrice: number
   ): Promise<void>
-  deleteOrder: (orderId: string) => Promise<void>
+  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries'>>
+  deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'>>
+  deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
     signedInUser: SignedInUser,
     cart: ICartInput,
@@ -138,6 +169,7 @@ export interface IOrderService {
   ): Promise<MutationConsumerRes>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  setOrderUsage(subscriptionItemId: string, numMeals: number, timestamp: number): Promise<void>
   updateOrder(
     signedInUser: SignedInUser,
     orderId: string,
@@ -191,6 +223,32 @@ class OrderService {
       };
     } catch (e) {
       console.error(`[OrderService] could not auto pick rests and meals`, e.stack)
+      throw e;
+    }
+  }
+
+  private async getCurrentOrder(userId: string): Promise<{
+    _id: string,
+    order: EOrder,
+  }> {
+    try {
+      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: myUnpaidOrdersQuery(userId)
+      });
+      if (res.body.hits.total.value === 0) {
+        const err = new Error('No unpaid orders');
+        console.error(err.stack);
+        throw err;
+      };
+      const order = res.body.hits.hits[0];
+      return {
+        _id: order._id,
+        order: order._source
+      }
+    } catch (e) {
+      console.error(`[OrderService] Failed to get current order for '${userId}'`, e.stack);
       throw e;
     }
   }
@@ -376,63 +434,57 @@ class OrderService {
   }
 
   public async addAutomaticOrder(
+    addedWeeks: number,
     consumer: IConsumer,
-    iDate: number,
-    //@ts-ignore todo simon: do this
-    mealCount: number,
-    //@ts-ignore todo simon: do this
-    weekPrice: number,
-    //@ts-ignore todo simon: do this
-    _mealPrice: number
+    invoiceDate: number,
+    mealPrices: IMealPrice[]
   ) {
     try {
       if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
       if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumer._id}'`);
-      // const rest = await this.chooseRandomRestAndMeals(consumer.plan.cuisines, mealCount);
-      const now = Date.now();
-      //@ts-ignore todo simon: make a real eorder
-      const eOrder: EOrder = {
-        cartUpdatedDate: now,
-        consumer: {
-          userId: consumer._id,
-          profile: consumer.profile,
-        },
-        costs: {
-          tax: 0,
-          tip: 0,
-          // todo simon: sshould not be mealPrices: []
-          mealPrices: [],
-          percentFee: 0,
-          flatRateFee: 0,
-          deliveryFee: 0,
-        },
-        createdDate: now,
-        invoiceDate: iDate,
-        // deliveryDate: moment(iDate).add(2, 'd').valueOf(),
-        // rest,
-        // status: 'Open',
-        stripeSubscriptionId: consumer.stripeSubscriptionId,
-        // deliveryTime: consumer.plan.deliveryTime,
-        donationCount: 0
+      if (!this.restService) throw new Error('Missing RestService');
+      const cuisines = consumer.plan.cuisines;
+      const plan = consumer.plan;
+      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location', 'taxRate']);
+      if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
+      const deliveries: IDeliveryInput[] = [];
+      const totalMeals = MealPlan.getTotalCount(plan.mealPlans);
+      const schedule = plan.schedules;
+      const numDeliveries = schedule.length;
+      const mealsPerDelivery = Math.floor(totalMeals / numDeliveries);
+      let remainingMeals = totalMeals % numDeliveries;
+      const chooseRandomRest = getItemChooser(rests);
+      for (let i = 0; i < numDeliveries; i++) {
+        const rest = chooseRandomRest();
+        const meals = chooseRandomMeals(
+          rest.menu,
+          mealsPerDelivery + remainingMeals,
+          rest._id,
+          rest.profile.name,
+          rest.taxRate,
+        );
+        remainingMeals = 0;
+        deliveries.push({
+          deliveryDate: getNextDeliveryDate(schedule[i].day, rest.location.timezone).add(addedWeeks, 'w').valueOf(),
+          deliveryTime: schedule[i].time,
+          discount: null,
+          meals,
+        })
       }
+
+      const automatedOrder = Order.getNewOrder(
+        consumer,
+        deliveries,
+        0,
+        invoiceDate,
+        mealPrices,
+      );
       await this.elastic.index({
         index: ORDER_INDEX,
-        body: eOrder
-      });
-    } catch (e) {
-      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${iDate}`, e.stack);
-      throw new Error('Internal Server Error');
-    }
-  }
-
-  public async deleteOrder(orderId: string) {
-    try {
-      await this.elastic.delete({
-        index: ORDER_INDEX,
-        id: orderId,
+        body: automatedOrder
       })
     } catch (e) {
-      console.error(`Failed to delete orderId '${orderId}'`, e.stack);
+      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${invoiceDate}`, e.stack);
       throw e;
     }
   }
@@ -510,31 +562,8 @@ class OrderService {
         throw e;
       }
 
-      const mealPrices: IMealPrice[] = [];
-      mealPlans.forEach(mp => {
-        const mealPrice = Tier.getMealPrice(
-          mp.planName,
-          mp.mealCount,
-          plans
-        );
-        mealPrices.push({
-          stripePlanId: mp.stripePlanId,
-          planName: mp.planName,
-          mealPrice,
-        })
-      });
+      const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
 
-      const order = Order.getNewOrderFromCartInput(
-        signedInUser,
-        cart,
-        subscription.current_period_end * 1000,
-        subscription.id,
-        mealPrices,
-      );
-      const indexer = this.elastic.index({
-        index: ORDER_INDEX,
-        body: order
-      })
       const consumer: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId,
@@ -552,49 +581,26 @@ class OrderService {
           destination: cart.destination,
         }
       };
+
+      const order = Order.getNewOrder(
+        { _id: signedInUser._id, ...consumer },
+        cart.deliveries,
+        cart.donationCount,
+        subscription.current_period_end * 1000,
+        mealPrices,
+      );
+      const indexer = this.elastic.index({
+        index: ORDER_INDEX,
+        body: order
+      })
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
-
-      this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location', 'taxRate']).then(rests => {
-        if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
-        const deliveries: IDeliveryInput[] = [];
-        const totalMeals = DeliveryInput.getMealCount(cart.deliveries) + cart.donationCount;
-        const schedule = cart.consumerPlan.schedules;
-        const numDeliveries = schedule.length;
-        const mealsPerDelivery = Math.floor(totalMeals / numDeliveries);
-        let remainingMeals = totalMeals % numDeliveries;
-        const chooseRandomRest = getItemChooser(rests);
-        for (let i = 0; i < numDeliveries; i++) {
-          const rest = chooseRandomRest();
-          const meals = chooseRandomMeals(
-            rest.menu,
-            mealsPerDelivery + remainingMeals,
-            rest._id,
-            rest.profile.name,
-            rest.taxRate,
-          );
-          remainingMeals = 0;
-          deliveries.push({
-            deliveryDate: getNextDeliveryDate(schedule[i].day, rest.location.timezone).add(1, 'w').valueOf(),
-            deliveryTime: schedule[i].time,
-            discount: null,
-            meals,
-          })
-        }
-
-        const automatedOrder = Order.getNewOrderFromCartInput(
-          signedInUser,
-          { ...cart, deliveries, donationCount: 0 },
-          moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
-          subscription.id,
-          mealPrices,
-        );
-      
-        return this.elastic.index({
-          index: ORDER_INDEX,
-          body: automatedOrder
-        })
-      }).catch(e => {
+      this.addAutomaticOrder(
+        1,
+        { _id: signedInUser._id, ...consumer },
+        moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
+        mealPrices,
+      ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
       });
       
@@ -635,11 +641,17 @@ class OrderService {
           ],
         }
       });
-      // todo simon: sort the delivieries
-      return res.body.hits.hits.map(({ _id, _source }) => ({
-        _id,
-        order: _source,
-      }));
+      return res.body.hits.hits.map(({ _id, _source }) => {
+        _source.deliveries.sort((d1, d2) => {
+          if (d1.deliveryDate > d2.deliveryDate) return 1;
+          if (d1.deliveryDate < d2.deliveryDate) return -1;
+          return 0;
+        })
+        return {
+          _id,
+          order: _source,
+        }
+      });
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
@@ -654,6 +666,121 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
+    }
+  }
+
+  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<EOrder, 'deliveries'>> {
+    try {
+      const order = await this.getCurrentOrder(userId);
+      const newOrder: Pick<EOrder, 'deliveries'> = {
+        deliveries: order.order.deliveries.map(d => ({
+          ...d,
+          status: 'Confirmed',
+        }))
+      }
+      await this.elastic.update({
+        index: ORDER_INDEX,
+        id: order._id,
+        body: {
+          doc: newOrder,
+        }
+      });
+      return newOrder;
+    } catch (e) {
+      console.error(`[OrderService] failed to confirmCurrentOrderDeliveries for userId '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async deleteCurrentOrderUnconfirmedDeliveries(userId: string): Promise<Pick<IOrder, 'deliveries' | '_id'>>  {
+    try {
+      const order = await this.getCurrentOrder(userId);
+      const newOrder: Pick<EOrder, 'deliveries'> = {
+        deliveries: order.order.deliveries.filter(d => d.status === 'Confirmed')
+      }
+      try {
+        await this.elastic.update({
+          index: ORDER_INDEX,
+          id: order._id,
+          // wait_for because this is deleteByQuery is called immediately after and we need to wait for
+          // this update to refresh otherwise, we get conflicts in the deleteByQuery
+          refresh: 'wait_for',
+          body: {
+            doc: newOrder,
+          }
+        });
+      } catch (e) {
+        console.error(`Failed to update '${order._id}' with new order '${JSON.stringify(newOrder)}'`)
+      }
+
+      return {
+        _id: order._id,
+        deliveries: newOrder.deliveries,
+      }
+    } catch (e) {
+      console.error(`[OrderService] failed to deleteCurrentOrderUnconfirmedDeliveries for userId '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>  {
+    try {
+      await this.elastic.deleteByQuery({
+        index: ORDER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      term: {
+                        'consumer.userId': userId
+                      }
+                    },
+                    {
+                      bool: {
+                        should: [
+                          {
+                            term: { 'deliveries.status': 'Open' }
+                          },
+                          {
+                            term: { 'deliveries.status': 'Skipped' }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  must_not: {
+                    exists: {
+                      field: 'stripeInvoiceDate'
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      })
+    } catch (e) {
+      console.error(`[OrderService] Failed to delete orders with unconfirmed deliveries for '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async setOrderUsage(subscriptionItemId: string, numMeals: number, timestamp: number) {
+    try {
+      await this.stripe.subscriptionItems.createUsageRecord(
+        subscriptionItemId,
+        {
+          quantity: numMeals,
+          timestamp,
+          action: 'set',
+        }
+      );
+    } catch (e) {
+      console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}'`);
+      throw e;
     }
   }
 
@@ -853,7 +980,6 @@ class OrderService {
     try {
       await this.elastic.updateByQuery({
         index: ORDER_INDEX,
-        size: 1000,
         body: {
           query: getUpcomingOrdersQuery(signedInUser._id),
           script: {

@@ -2,7 +2,7 @@ import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
 import { deliveryTime } from './../consumer/consumerModel';
 
-type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped';
+type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';
  
 export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'originalPrice'>{
   readonly mealId: string
@@ -145,5 +145,22 @@ export class Delivery extends DeliveryInput implements IDelivery {
       status: d.status,
     }
   }
-} 
+
+  static getConfirmedMealCount(deliveries: IDelivery[]): confirmedMealCounts {
+    return deliveries.reduce<confirmedMealCounts>((sum, d) => {
+      d.meals.forEach(m => {
+        if (sum[m.stripePlanId]) {
+          sum[m.stripePlanId] += m.quantity;
+        } else {
+          sum[m.stripePlanId] = m.quantity
+        }
+      });
+      return sum;
+    }, {});
+  }
+}
+
+type confirmedMealCounts = {
+  [key: string]: number
+}
 

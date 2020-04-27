@@ -1,11 +1,10 @@
-import { PlanName, PlanNames } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryMeal } from './deliveryModel';
-import { SignedInUser } from './../utils/apolloUtils';
+import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
+import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
-import { IConsumerProfile } from './../consumer/consumerModel';
+import { IConsumerProfile, IConsumer, IMealPlan } from './../consumer/consumerModel';
 import { ICost, deliveryFee } from './costModel';
-import { ICartInput, Cart } from './cartModel';
+import { Cart } from './cartModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -16,6 +15,7 @@ export interface EOrder {
   readonly costs: ICost
   readonly createdDate: number
   readonly invoiceDate: number
+  readonly stripeInvoiceId?: string,
   readonly deliveries: IDelivery[]
   readonly stripeSubscriptionId: string
   readonly donationCount: number
@@ -41,6 +41,21 @@ export class MealPrice implements IMealPrice {
   public get StripePlanId() { return this.stripePlanId }
   public get PlanName() { return this.planName }
   public get MealPrice() { return this.mealPrice }
+
+  public static getMealPrices(mealPlans: IMealPlan[], plans: IPlan[]) {
+    return mealPlans.reduce<IMealPrice[]>((mealPrices, mp) => [
+      ...mealPrices,
+      {
+        stripePlanId: mp.stripePlanId,
+        planName: mp.planName,
+        mealPrice: Tier.getMealPrice(
+          mp.planName,
+          mp.mealCount,
+          plans
+        )
+      }
+    ], []);
+  }
 }
 
 export interface IOrder {
@@ -192,19 +207,19 @@ export class Order implements IOrder{
   //   }
   // }
 
-  static getNewOrderFromCartInput(
-    signedInUser: SignedInUser,
-    cart: ICartInput,
+  static getNewOrder(
+    consumer: IConsumer,
+    deliveries: IDeliveryInput[],
+    donationCount: number,
     invoiceDate: number,
-    subscriptionId: string,
     mealPrices: IMealPrice[],
   ): EOrder {
-    if (!signedInUser) {
-      const err = new Error ('Signed in user null');
-      console.error(err.stack)
+    if (!consumer.stripeSubscriptionId) {
+      const err = new Error('Missing subscription id');
+      console.error(err.stack);
       throw err;
     }
-    const tax = cart.deliveries.reduce<number>((taxes, d) => 
+    const tax = deliveries.reduce<number>((taxes, d) => 
       taxes + d.meals.reduce<number>((sum, m) => {
         const mealPrice = mealPrices.find(mp => mp.stripePlanId === m.stripePlanId);
         if (!mealPrice) {
@@ -219,16 +234,10 @@ export class Order implements IOrder{
     const now = moment();
     return {
       consumer: {
-        userId: signedInUser._id,
-        profile: {
-          name: signedInUser.profile.name,
-          email: signedInUser.profile.email,
-          phone: cart.phone,
-          card: cart.card,
-          destination: cart.destination,
-        }
+        userId: consumer._id,
+        profile: consumer.profile
       },
-      stripeSubscriptionId: subscriptionId,
+      stripeSubscriptionId: consumer.stripeSubscriptionId,
       cartUpdatedDate: now.valueOf(),
       createdDate: now.valueOf(),
       invoiceDate,
@@ -238,10 +247,10 @@ export class Order implements IOrder{
         mealPrices,
         percentFee: 0,
         flatRateFee: 0,
-        deliveryFee: (cart.deliveries.length - 1) * deliveryFee
+        deliveryFee: (deliveries.length - 1) * deliveryFee
       },
-      deliveries: cart.deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' })),
-      donationCount: cart.donationCount
+      deliveries: deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' })),
+      donationCount,
     }
   }
 }

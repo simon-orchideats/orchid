@@ -1,3 +1,4 @@
+import { getPlanService } from './../../server/plans/planService';
 import moment from 'moment';
 import { getOrderService } from './../../server/orders/orderService';
 import { getConsumerService } from './../../server/consumer/consumerService';
@@ -6,6 +7,8 @@ import { buffer } from 'micro'
 import Cors from 'micro-cors'
 import { activeConfig } from '../../config';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { MealPrice } from '../../order/orderModel';
+import { Delivery } from '../../order/deliveryModel';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
   apiVersion: '2020-03-02',
@@ -21,71 +24,89 @@ const cors = Cors({
   allowMethods: ['POST', 'HEAD'],
 })
 
-/**
- * test this via creating a subscription with a now trial period
- curl https://api.stripe.com/v1/subscriptions -u sk_test_EtoOx29Q3dzaLnbQSg3ByORG00k8y4TX9j   -d customer=cus_GxVSVDNqZWXoxY -d "items[0][plan]"=plan_GiaBhGMrdjKDFU -d "trial_end"=now
- */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === 'POST') {
-    const buff = await buffer(req);
-    const sig = req.headers['stripe-signature']!
-    let event: Stripe.Event
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
+    res.status(405).end('Method Not Allowed');
+    return;
+  }
+  const buff = await buffer(req);
+  const sig = req.headers['stripe-signature']!
+  let event: Stripe.Event
+  try {
+    event = stripe.webhooks.constructEvent(buff.toString(), sig, 'whsec_biiH85jKtOenz8t5CsMsUBUD9NJXItCM')
+  } catch (err) {
+    console.error(`[SubscriptionHook] ${err.stack}`)
+    res.status(400).send(`Webhook Error: ${err.message}`)
+    return
+  }
+
+  if (event.type !== 'invoice.upcoming' && event.type !== 'invoice.created') {
+    console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
+    res.json({ received: true });
+    return;
+  }
+
+  res.json({ received: true });
+  const invoice = event.data.object as Stripe.Invoice
+  const stripeCustomerId = invoice.customer as string;
+  const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+  if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
+  
+  // happens when subscription is canceled
+  if (!consumer.plan) return;
+  if (consumer.plan && consumer.plan.mealPlans.length === 0) {
+    throw new Error(`Received invoice creation for consumer ${stripeCustomerId} with no meal plans`)
+  };
+
+  const mealPlans = consumer.plan.mealPlans;
+
+  if (event.type === 'invoice.upcoming') {
     try {
-      event = stripe.webhooks.constructEvent(buff.toString(), sig, activeConfig.server.stripe.hookSecret)
-    } catch (err) {
-      console.error(`[SubscriptionHook] ${err.stack}`)
-      res.status(400).send(`Webhook Error: ${err.message}`)
-      return
-    }
-
-    // todo simon: logic here needs to be updated to listen for invoice.created. whenever this happens, check
-    // to see if there is a final delivery to be confirmed and if so, confirm it and add # of meals to usage.
-    // for example if today is 4/11 and consumer signs up with monday delivery, then teh first deliveyr is 4/20.
-    // on 4/18 we get an invoice.created and we also need to confirm the delivery if it's not already confirmed.
-
-    // Use invoice upcoming instead of invoice created because when a consumer cancels that creates an invoice
-    // and we dont wanna create an automatically generated order for someone who is cancelling
-    if (event.type !== 'invoice.upcoming') {
-      console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
-      res.json({ received: true });
-      return;
-    }
-
-    const invoice = event.data.object as Stripe.Invoice
-    try {
-      const stripeCustomerId = invoice.customer as string;
-      const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
-      if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
-      if (!consumer.plan) throw new Error(`Received invoice creation for consumer ${stripeCustomerId} without a plan`);
-
-      const planInvoiceLineItem = invoice.lines.data.find(p => !!p.plan);
-      if (!planInvoiceLineItem || !planInvoiceLineItem.plan) {
-        throw new Error(`Plan not found in subscription for stripe customerId '${stripeCustomerId}'`);
-      }
-      if (!planInvoiceLineItem.plan.amount) {
-        throw new Error(`Plan invoice line item has no amount for stirpeCustomerId '${stripeCustomerId}' and line ${planInvoiceLineItem.id}`);
-      }
-      const {
-        mealCount,
-        mealPrice,
-      } = planInvoiceLineItem.plan.metadata;
+      const plans = await getPlanService().getAvailablePlans();
+      const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
       await getOrderService().addAutomaticOrder(
-        consumer,
         // 2 weeks because 1 week would be nextnext order
-        moment().add(2, 'w').valueOf(),
-        parseFloat(mealCount),
-        planInvoiceLineItem.plan.amount / 100,
-        parseFloat(mealPrice)
+        2,
+        consumer,
+        // 3 weeks because 2 week would be nextnext order
+        moment().add(3, 'w').valueOf(),
+        mealPrices,
       );
     } catch (e) {
       console.error('[SubscriptionHook] failed to generate automatic order', e.stack);
       throw e;
-    } finally {
-      res.json({ received: true })
     }
   } else {
-    res.setHeader('Allow', 'POST')
-    res.status(405).end('Method Not Allowed')
+    try {
+      if (invoice.billing_reason === 'subscription_create') return;
+      const planInvoiceLineItems: Stripe.InvoiceLineItem[] = [];
+      for (let i = 0; i < mealPlans.length; i++) {
+        const planInvoiceLineItem = invoice.lines.data.find(li => {
+          if (!li.plan || !consumer || !consumer.plan) return false;
+          return li.plan.id === mealPlans[i].stripePlanId
+        });
+        if (!planInvoiceLineItem) {
+          throw new Error(`Plan ${mealPlans[i].stripePlanId} not found for stripe customerId '${stripeCustomerId}'`);
+        }
+        planInvoiceLineItems.push(planInvoiceLineItem);
+      }
+      const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
+      const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
+      planInvoiceLineItems.forEach(li => {
+        // if it's not a subscription line item, do nothing
+        if (!li.subscription_item || !li.plan) return
+        const timestamp = li.period.end - 60;
+        getOrderService().setOrderUsage(
+          li.subscription_item,
+          numConfirmedMeals[li.plan.id],
+          timestamp
+        );
+      })
+    } catch (e) {
+      console.error('[SubscriptionHook] failed to confirm deliveries for order', e.stack);
+      throw e;
+    }
   }
 }
 
