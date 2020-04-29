@@ -16,6 +16,7 @@ import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import { sendUpdateAddressMetrics, sendUpdatePhoneMetrics, sendUpdateCardMetrics } from "../../client/consumer/profileMetrics";
+import BaseInput from "../../client/general/inputs/BaseInput";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -76,9 +77,11 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const addr2InputRef = createRef<HTMLInputElement>();
   const cityInputRef = createRef<HTMLInputElement>();
   const zipInputRef = createRef<HTMLInputElement>();
+  const instructionsInputRef = createRef<HTMLInputElement>();
   const [state, setState] = useState<state | ''>('NJ');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
+  const [isUpdatingInstructions, setIsUpdatingInstructions] = useState(false);
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
   const [updateMyProfile, updateProfileRes] = useUpdateMyProfile();
   const notify = useNotify();
@@ -91,15 +94,18 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   let consumerPhoneLabel = '';
   let consumerNameLabel = '';
   let consumerEmailLabel = '';
-  if (!consumer.data && !consumer.loading && !consumer.error) {
+  let instructionsLabel: string | null = '';
+  const consumerData = consumer.data;
+  if (!consumerData && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
-  if (consumer.data) {
-    if (consumer.data.Profile.Destination) consumerAddressLabel = consumer.data.Profile.Destination.Address.getAddrStr();
-    if (consumer.data.Profile.Card) consumerCardLabel = consumer.data.Profile.Card.getHiddenCardStr();
-    if (consumer.data.Profile.Phone) consumerPhoneLabel = consumer.data.Profile.Phone;
-    if (consumer.data.Profile.Name) consumerNameLabel = consumer.data.Profile.Name;
-    if (consumer.data.Profile.Email) consumerEmailLabel = consumer.data.Profile.Email;
+  if (consumerData) {
+    if (consumerData.Profile.Destination) consumerAddressLabel = consumerData.Profile.Destination.Address.getAddrStr();
+    if (consumerData.Profile.Card) consumerCardLabel = consumerData.Profile.Card.getHiddenCardStr();
+    if (consumerData.Profile.Phone) consumerPhoneLabel = consumerData.Profile.Phone;
+    if (consumerData.Profile.Name) consumerNameLabel = consumerData.Profile.Name;
+    if (consumerData.Profile.Email) consumerEmailLabel = consumerData.Profile.Email;
+    if (consumerData.Profile.Destination) instructionsLabel = consumerData.Profile.Destination.Instructions;
   }
 
   const noConsumerErr = () => {
@@ -108,26 +114,26 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return err;
   }
   const onSavePhone = () => {
-    if (!consumer.data) throw noConsumerErr() 
+    if (!consumerData) throw noConsumerErr() 
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
     const updatedProfile: IConsumerProfile = {
-      ...consumer.data.profile,
+      ...consumerData.profile,
       phone: phoneInputRef.current!.value
     }
     sendUpdatePhoneMetrics();
-    updateMyProfile(consumer.data, updatedProfile);
+    updateMyProfile(consumerData, updatedProfile);
   }
   const onCancelPhone = () => {
     setIsUpdatingPhone(false);
   }
   const onSaveAddr = () => {
-    if (!consumer.data) throw noConsumerErr() 
+    if (!consumerData) throw noConsumerErr() 
     if (!validateAddressRef.current!()) return;
     setIsUpdatingAddr(false);
     if (state) {
       const updatedProfile: IConsumerProfile = {
-        ...consumer.data.profile,
+        ...consumerData.profile,
         destination: {
           address: {
             address1: addr1InputRef.current!.value,
@@ -136,11 +142,11 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             state,
             zip: zipInputRef.current!.value,
           },
-          instructions: consumer.data.Profile.Destination && consumer.data.Profile.Destination.Instructions,
+          instructions: consumerData.Profile.Destination && consumerData.Profile.Destination.Instructions,
         },
       }
       sendUpdateAddressMetrics();
-      updateMyProfile(consumer.data, updatedProfile);
+      updateMyProfile(consumerData, updatedProfile);
     } else {
       console.error('State is empty')
       throw new Error ('State is empty')
@@ -150,7 +156,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     setIsUpdatingAddr(false);
   }
   const onSaveCard = async () => {
-    if (!consumer.data) throw noConsumerErr() 
+    if (!consumerData) throw noConsumerErr() 
     if (!stripe) {
       const err = new Error('Stripe not initialized');
       console.error(err.stack);
@@ -172,10 +178,10 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       pm = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        billing_details: { name: consumer.data.Profile.Name },
+        billing_details: { name: consumerData.Profile.Name },
       });
     } catch (e) {
-      const err =  new Error(`Failed to createPaymentMethod for accountName '${consumer.data.Profile.Name}'`);
+      const err =  new Error(`Failed to createPaymentMethod for accountName '${consumerData.Profile.Name}'`);
       console.error(e.stack);
       throw err;
     }
@@ -185,16 +191,39 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     };
     const updatedProfile: IConsumerProfile = {
-      ...consumer.data.profile,
+      ...consumerData.profile,
       card: Card.getCardFromStripe(pm.paymentMethod!.card),
     }
 
     sendUpdateCardMetrics();
-    updateMyProfile(consumer.data, updatedProfile);
+    updateMyProfile(consumerData, updatedProfile);
     setIsUpdatingCard(false);
   };
   const onCancelCard = () => {
     setIsUpdatingCard(false);
+  }
+
+  
+  const onSaveInstructions = () => {
+    if (!consumerData) throw noConsumerErr();
+    if (!consumerData.Profile.Destination) {
+      const err = new Error('Missing consumer destination');
+      console.error(err.stack);
+      throw err;
+    }
+    setIsUpdatingInstructions(false);
+    const updatedProfile: IConsumerProfile = {
+      ...consumerData.profile,
+      destination: {
+        address: consumerData.Profile.Destination.Address,
+        instructions: instructionsInputRef.current!.value,
+      },
+    }
+    // todo simon send metrics for updating instructions
+    updateMyProfile(consumerData, updatedProfile);
+  }
+  const onCancelInstructions = () => {
+    setIsUpdatingInstructions(false);
   }
 
   return (
@@ -298,7 +327,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </>
           }
         </ListItem>
-        <ListItem disableGutters>
+        <ListItem divider disableGutters>
         {
           isUpdatingAddr ?
           <div className={classes.stretch}>
@@ -346,6 +375,46 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </ListItemSecondaryAction>
           </>
         }
+        </ListItem>
+        <ListItem disableGutters>
+          {
+            isUpdatingInstructions ?
+            <div className={classes.stretch}>
+              <BaseInput
+                className={classes.input}
+                inputRef={instructionsInputRef}
+              />
+              <div className={classes.buttons}>
+                <Button
+                  className={classes.save}
+                  onClick={onSaveInstructions}
+                  variant='contained'
+                  color='primary'
+                >
+                  Save
+                </Button>
+                <Button
+                  onClick={onCancelInstructions}
+                  variant='outlined'
+                  color='primary'
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+            :
+            <>
+              <Labels
+                primary='Delivery instructions'
+                secondary={instructionsLabel ? instructionsLabel : ''}
+              />
+              <ListItemSecondaryAction>
+                <Button className={classes.link} onClick={() => setIsUpdatingInstructions(true)}>
+                  Edit
+                </Button>
+              </ListItemSecondaryAction>
+            </>
+          }
         </ListItem>
       </List>
     </Container>
