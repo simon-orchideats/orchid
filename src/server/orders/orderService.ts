@@ -1,5 +1,5 @@
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
-import { Tier, IPlan, PlanName, PlanNames } from './../../plan/planModel';
+import { Tier, IPlan, PlanName, PlanNames, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -366,6 +366,93 @@ class OrderService {
     }
   }
 
+  private async validateOrderUpdate (orderId: string, signedInUser: SignedInUser) {
+    if (!signedInUser) throw getNotSignedInErr()
+    const stripeCustomerId = signedInUser.stripeCustomerId;
+    const subscriptionId = signedInUser.stripeSubscriptionId
+    if (!stripeCustomerId) {
+      const msg = 'Missing stripe customer id';
+      console.error('[OrderService]', msg)
+      throw new Error(`[OrderService]: ${msg}`)
+    }
+    if (!subscriptionId) {
+      const msg = 'Missing subscription id';
+      console.error('[OrderService]', msg)
+      throw new Error(`[OrderService]: ${msg}`)
+    } 
+    const targetOrder = await this.getOrder(orderId);
+    if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
+    if (targetOrder.consumer.userId !== signedInUser._id) {
+      const msg = 'Can only update your own orders';
+      console.warn(
+        '[OrderService]',
+        `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+      )
+      return {
+        order: null,
+        signedInUser: null,
+        error: msg
+      }
+    }
+    return {
+      order: targetOrder,
+      signedInUser,
+      error: null,
+    }
+  }
+  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
+    type mealCounts = {
+      [key: string]: {
+        stripePlanId: string
+        planName: PlanName
+        quantity: number
+      }
+    }
+    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
+    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
+    const intialMealCounts: mealCounts = donationCount > 0 ?
+      {
+        [standardPlan.stripePlanId]: {
+          stripePlanId: standardPlan.stripePlanId,
+          planName: PlanNames.Standard,
+          quantity: donationCount
+        }
+      }
+    :
+      {}
+ 
+    const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
+      return d.meals.reduce((counts, m) => {
+        if (counts[m.stripePlanId]) {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: counts[m.stripePlanId].quantity + m.quantity,
+          }
+        } else {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: m.quantity,
+          }
+        }
+        return counts;
+      }, counts)
+    }, intialMealCounts);
+    return Object.values(mealCounts).reduce<IMealPrice[]>((sum, c) => [
+      ...sum,
+      {
+        stripePlanId: c.stripePlanId,
+        planName: c.planName,
+        mealPrice: Tier.getMealPrice(
+          c.planName,
+          c.quantity,
+          plans
+        )
+      }
+    ], []);
+  }
+
   public async addAutomaticOrder(
     consumer: IConsumer,
     iDate: number,
@@ -651,6 +738,7 @@ class OrderService {
     orderId: string,
   ): Promise<MutationBoolRes> {
     try {
+      if (!this.planService) throw new Error ('PlanService not set');
       const res = await this.validateOrderUpdate(orderId, signedInUser);
       if (res.error) {
         return {
@@ -660,14 +748,14 @@ class OrderService {
       }
       if (!res.order) throw new Error('Missing order'); 
       const targetOrder = res.order;
-      const mealPrices = this.getMealPriceFromDeliveries(res.plans, targetOrder.deliveries, 0)
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
+      const plans = await this.planService.getAvailablePlans()
+      const mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0)
+      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'deliveries'> = {
         costs: {
           ...targetOrder.costs,
           mealPrices
         },
         cartUpdatedDate: Date.now(),
-        deliveries: targetOrder.deliveries,
         donationCount: 0
       }
       try {
@@ -697,6 +785,7 @@ class OrderService {
     deliveryIndex: number,
   ): Promise<MutationBoolRes> {
     try {
+      if (!this.planService) throw new Error ('PlanService not set');
       const res = await this.validateOrderUpdate(orderId, signedInUser);
       if (res.error) {
         return {
@@ -707,9 +796,9 @@ class OrderService {
       if (!res.order) throw new Error('Missing order'); 
       const targetOrder = res.order;
       targetOrder.deliveries[deliveryIndex] = { ...targetOrder.deliveries[deliveryIndex], meals: [], status: 'Skipped' };
-      const totalCount = targetOrder.deliveries.reduce((counts, d) => {
-        return d.meals.reduce((counts, m) => counts += m.quantity, counts)
-      }, 0);
+      const totalCount = targetOrder.deliveries.reduce((counts, d) =>
+        d.meals.reduce((counts, m) => counts += m.quantity, counts)
+      , 0);
       if (totalCount === 0  && (targetOrder.donationCount >= 1 && targetOrder.donationCount < 4)) {
         const msg = 'Donations must be at least 4 before skipping this delivery';
         console.warn(
@@ -720,8 +809,9 @@ class OrderService {
           res: false,
           error: msg
         }
-      } 
-      const mealPrices = this.getMealPriceFromDeliveries(res.plans, targetOrder.deliveries, targetOrder.donationCount);
+      }
+      const plans = await this.planService.getAvailablePlans()
+      const mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
       const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
         costs: {
           ...targetOrder.costs,
@@ -757,6 +847,7 @@ class OrderService {
     updateOptions: IUpdateDeliveryInput,
   ): Promise<MutationBoolRes> {
     try {
+      if (!this.planService) throw new Error ('PlanService not set');
       const res = await this.validateOrderUpdate(orderId, signedInUser);
       if (res.error) {
         return {
@@ -793,7 +884,8 @@ class OrderService {
         || delivery.status === 'Complete'
      );
       currentDeliveries = targetDeliveries.concat(currentDeliveries);
-      const mealPrices = this.getMealPriceFromDeliveries(res.plans, currentDeliveries, updateOptions.donationCount);
+      const plans = await this.planService.getAvailablePlans()
+      const mealPrices = this.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);
       try {
         const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
           costs: {
@@ -823,96 +915,7 @@ class OrderService {
       throw new Error('Internal Server Error');
     }
   }
-  private async validateOrderUpdate (orderId: string, signedInUser: SignedInUser) {
-    if (!signedInUser) throw getNotSignedInErr()
-    if (!this.planService) throw new Error ('PlanService not set');
-    const stripeCustomerId = signedInUser.stripeCustomerId;
-    const subscriptionId = signedInUser.stripeSubscriptionId
-    if (!stripeCustomerId) {
-      const msg = 'Missing stripe customer id';
-      console.error('[OrderService]', msg)
-      throw new Error(`[OrderService]: ${msg}`)
-    }
-    if (!subscriptionId) {
-      const msg = 'Missing subscription id';
-      console.error('[OrderService]', msg)
-      throw new Error(`[OrderService]: ${msg}`)
-    } 
-    const targetOrder = await this.getOrder(orderId);
-    if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
-    if (targetOrder.consumer.userId !== signedInUser._id) {
-      const msg = 'Can only update your own orders';
-      console.warn(
-        '[OrderService]',
-        `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-      )
-      return {
-        order: null,
-        plans: null,
-        signedInUser: null,
-        error: msg
-      }
-    }
-    const plans = await this.planService.getAvailablePlans()
-    return {
-      order: targetOrder,
-      plans,
-      signedInUser,
-      error: null,
-    }
-  }
-  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
-    type mealCounts = {
-      [key: string]: {
-        stripePlanId: string
-        planName: PlanName
-        quantity: number
-      }
-    }
-    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
-    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
-    const intialMealCounts: mealCounts = donationCount > 0 ?
-      {
-        [standardPlan.stripePlanId]: {
-          stripePlanId: standardPlan.stripePlanId,
-          planName: PlanNames.Standard,
-          quantity: donationCount
-        }
-      }
-    :
-      {}
- 
-    const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
-      return d.meals.reduce((counts, m) => {
-        if (counts[m.stripePlanId]) {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
-            planName: m.planName,
-            quantity: counts[m.stripePlanId].quantity + m.quantity,
-          }
-        } else {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
-            planName: m.planName,
-            quantity: m.quantity,
-          }
-        }
-        return counts;
-      }, counts)
-    }, intialMealCounts);
-    return Object.values(mealCounts).reduce<IMealPrice[]>((sum, c) => [
-      ...sum,
-      {
-        stripePlanId: c.stripePlanId,
-        planName: c.planName,
-        mealPrice: Tier.getMealPrice(
-          c.planName,
-          c.quantity,
-          plans
-        )
-      }
-    ], []);
-  }
+
   async updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
