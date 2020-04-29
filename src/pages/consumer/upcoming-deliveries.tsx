@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useSkipDelivery, useRemoveDonations } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
 import { Destination } from "../../place/destinationModel";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
@@ -179,7 +179,6 @@ const DeliveryOverview: React.FC<{
   order: Order,
   isUpdating: boolean,
 }> = ({
-  cart,
   name,
   order,
   isUpdating,
@@ -189,12 +188,18 @@ const DeliveryOverview: React.FC<{
   const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const [updateOrder, updateOrderRes] = useUpdateOrder();
-  useMutationResponseHandler(updateOrderRes, () => {
+  const [skipDelivery, skipDeliveryRes] = useSkipDelivery();
+  const [removeDonations, removeDonationsRes] = useRemoveDonations();
+  useMutationResponseHandler(removeDonationsRes, () => {
     Router.replace(upcomingDeliveriesRoute)
-    notify('Order updated', NotificationType.success, true);
+    notify('Donations Removed', NotificationType.success, true);
     clearCartMeals();
   });
+  useMutationResponseHandler(skipDeliveryRes, () => {
+    Router.replace(upcomingDeliveriesRoute)
+    notify('Delivery Skipped', NotificationType.success, true);
+    clearCartMeals();
+  })
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -218,14 +223,10 @@ const DeliveryOverview: React.FC<{
   };
   const onSkip = (deliveryIndex: number) => {
     // todo simon: metrics for this
-    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex));
-  }
-  const onUpdate = (deliveryIndex: number) => {
-    // todo simon: metrics for this
-    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex, cart));
+    skipDelivery(order._id, deliveryIndex);
   }
   const onRemoveDonations = () => {
-    updateOrder(order._id, Order.getUpdatedOrderInput());
+    removeDonations(order._id);
   }
   const open = !!anchorEl;
   return (
@@ -307,7 +308,6 @@ const DeliveryOverview: React.FC<{
         <ScheduleDeliveries
           deliveries={order.Deliveries}
           onSkip={onSkip}
-          onUpdate={onUpdate}
           isUpdating={isUpdating}
         />
       </div>

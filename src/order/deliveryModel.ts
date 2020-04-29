@@ -11,6 +11,11 @@ export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'orig
   readonly restName: string
 }
 
+export interface IUpdateDeliveryInput {
+  readonly donationCount: number
+  readonly deliveries: IDeliveryInput[]
+}
+
 export class DeliveryMeal implements IDeliveryMeal {
   readonly mealId: string;
   readonly img?: string;
