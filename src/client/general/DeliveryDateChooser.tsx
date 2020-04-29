@@ -69,7 +69,7 @@ const DeliveryDateChooser: React.FC<{
         </ToggleButton>
       </ToggleButtonGroup>
       {
-        !consumer.data &&
+        (!consumer.data || !consumer.data.Plan) &&
         <Typography variant='body1'>
           First delivery day: <b>{getNextDeliveryDate(day).format('M/D/YY')}</b>
         </Typography>

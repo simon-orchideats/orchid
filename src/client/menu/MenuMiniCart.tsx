@@ -13,10 +13,15 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-  container: {
+  bar: {
     display: 'flex',
     alignItems: 'center',
     width: '100%'
+  },
+  col: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
   },
   heart: {
     height: 24,
@@ -52,49 +57,60 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       _title,
       confirmText,
     ) => (
-      <div className={classes.container}>
-        <Popover
-          open={isHelperOpen}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)} 
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-          transformOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-        >
-          <Paper className={classes.popper}>
-            <Typography variant='body1'>
-              Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
-              donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
-              3 meals on us so we can all help our heros on the frontline.
-            </Typography>
-          </Paper>
-        </Popover>
-        <IconButton
-          color='primary'
-          onClick={handleHelp}
-          className={classes.icon}
-        >
-          <HelpOutlineIcon />
-        </IconButton>
-        <Counter
-          subtractDisabled={!donationCount}
-          onClickSubtract={decrementDonationCount}
-          subractIcon={
-            donationCount ?
-            <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
-            :
-            <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
-          }
-          chipLabel={donationCount}
-          chipDisabled={!donationCount}
-          onClickAdd={incrementDonationCount}
-          addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
-        />
+      <div className={classes.col}>
+        <div className={classes.bar}>
+          <Popover
+            open={isHelperOpen}
+            anchorEl={anchorEl}
+            onClose={() => setAnchorEl(null)} 
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+          >
+            <Paper className={classes.popper}>
+              <Typography variant='body1'>
+                Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
+                donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
+                3 meals on us so we can all help our heros on the frontline.
+              </Typography>
+            </Paper>
+          </Popover>
+          <Counter
+            subtractDisabled={!donationCount}
+            onClickSubtract={decrementDonationCount}
+            subractIcon={
+              donationCount ?
+              <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
+              :
+              <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
+            }
+            chipLabel={donationCount}
+            chipDisabled={!donationCount}
+            onClickAdd={incrementDonationCount}
+            addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
+          />
+          <IconButton
+            color='primary'
+            onClick={handleHelp}
+            className={classes.icon}
+          >
+            <HelpOutlineIcon />
+          </IconButton>
+          <Button
+            disabled={disabled}
+            variant='contained'
+            color='primary'
+            className={classes.button}
+            onClick={onNext}
+          >
+            {confirmText}
+          </Button>
+        </div>
         {(!cart || !cart.Zip) && (
           <Typography variant='body1' className={classes.suggestion}>
             Enter zip to continue
@@ -109,15 +125,7 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             {suggestion}
           </Typography>
         )}
-        <Button
-          disabled={disabled}
-          variant='contained'
-          color='primary'
-          className={classes.button}
-          onClick={onNext}
-        >
-          {confirmText}
-        </Button>
+        {/* </div> */}
       </div>
     )} />
   )

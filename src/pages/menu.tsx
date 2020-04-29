@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
@@ -103,7 +103,7 @@ const menu = () => {
           lg={8}
           className={classes.menu}
         >
-          <div className={classes.filters}>
+          <Paper className={classes.filters}>
             {
               isMdAndUp ?
               <Link className={classes.link} color='inherit' onClick={onClickZip}>
@@ -123,7 +123,7 @@ const menu = () => {
                 {rests.data && <MenuMiniCart />}
               </div>
             }
-          </div>
+          </Paper>
           {rests.loading && <Typography>Loading...</Typography>}
           {
             hasNoRests ?

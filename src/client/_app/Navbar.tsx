@@ -29,6 +29,8 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     height: '100%',
     cursor: 'pointer',
+    flex: 1,
+    justifyContent: 'flex-end',
     display: 'flex',
     alignItems: 'center',
   },
