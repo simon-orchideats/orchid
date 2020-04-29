@@ -1,5 +1,5 @@
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
-import { Tier, IPlan } from './../../plan/planModel';
+import { Tier, IPlan, PlanName, PlanNames } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -651,62 +651,24 @@ class OrderService {
     orderId: string,
   ): Promise<MutationBoolRes> {
     try {
-      if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('PlanService not set');
-      const stripeCustomerId = signedInUser.stripeCustomerId;
-      const subscriptionId = signedInUser.stripeSubscriptionId
-      // when to do this, vs when to throw
-      if (!stripeCustomerId) {
-        const msg = 'Missing stripe customer id';
-        console.warn('[OrderService]', msg)
+      const res = await this.validateOrderUpdate(orderId, signedInUser);
+      if (res.error) {
         return {
           res: false,
-          error: msg
+          error: res.error
         }
       }
-      if (!subscriptionId) {
-        const msg = 'Missing subscription id';
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      if (!orderId) {
-        const msg = `No order id user`;
-        console.warn('[OrderService]', msg)
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      const targetOrder = await this.getOrder(orderId);
-      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
-      if (targetOrder.consumer.userId !== signedInUser._id) {
-        const msg = 'Can only update your own orders';
-        console.warn(
-          '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-        )
-        return {
-          res: false,
-          error: msg
-        }
-      }
-      let mealPrices: IMealPrice[] = [];
-      const plans = await this.planService.getAvailablePlans();
-      let totalCount = 0;
-      targetOrder.deliveries.forEach(delivery => {
-        delivery.meals.forEach(meal => totalCount+=meal.quantity)
-      })
-      if (totalCount !== 0) mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0);
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
-        ...targetOrder,
+      if (!res.order) throw new Error('Missing order'); 
+      const targetOrder = res.order;
+      const mealPrices = this.getMealPriceFromDeliveries(res.plans, targetOrder.deliveries, 0)
+      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
         costs: {
           ...targetOrder.costs,
           mealPrices
         },
-        cartUpdatedDate: Date.now(),  
+        cartUpdatedDate: Date.now(),
+        deliveries: targetOrder.deliveries,
+        donationCount: 0
       }
       try {
         await this.elastic.update({
@@ -735,42 +697,38 @@ class OrderService {
     deliveryIndex: number,
   ): Promise<MutationBoolRes> {
     try {
-      if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('PlanService not set');
-      const targetOrder = await this.getOrder(orderId);
-      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
-      if (targetOrder.consumer.userId !== signedInUser._id) {
-        const msg = 'Can only update your own orders';
-        console.warn(
-          '[OrderService]',
-          `${msg}. targerOrder consonsumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-        )
+      const res = await this.validateOrderUpdate(orderId, signedInUser);
+      if (res.error) {
         return {
           res: false,
-          error: msg
+          error: res.error
         }
       }
-      targetOrder.deliveries[deliveryIndex] = {...targetOrder.deliveries[deliveryIndex], meals: [], status: 'Skipped'};
-      let totalCount = 0;
-      targetOrder.deliveries.forEach(delivery => {
-        delivery.meals.forEach(meal => totalCount+=meal.quantity)
-      })
-      let mealPrices: IMealPrice [] = [];
-      if (totalCount === 0  && targetOrder.donationCount < 4) {
+      if (!res.order) throw new Error('Missing order'); 
+      const targetOrder = res.order;
+      targetOrder.deliveries[deliveryIndex] = { ...targetOrder.deliveries[deliveryIndex], meals: [], status: 'Skipped' };
+      const totalCount = targetOrder.deliveries.reduce((counts, d) => {
+        return d.meals.reduce((counts, m) => counts += m.quantity, counts)
+      }, 0);
+      if (totalCount === 0  && (targetOrder.donationCount >= 1 && targetOrder.donationCount < 4)) {
         const msg = 'Donations must be at least 4 before skipping this delivery';
         console.warn(
           '[OrderService]',
-          `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+          `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${res.signedInUser._id}'`
         )
         return {
           res: false,
           error: msg
         }
       } 
-      const plans = await this.planService.getAvailablePlans();
-      mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
-        ...targetOrder, costs: {...targetOrder.costs, mealPrices}, cartUpdatedDate: Date.now(),  
+      const mealPrices = this.getMealPriceFromDeliveries(res.plans, targetOrder.deliveries, targetOrder.donationCount);
+      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
+        costs: {
+          ...targetOrder.costs,
+          mealPrices
+          },
+        cartUpdatedDate: Date.now(),
+        deliveries: targetOrder.deliveries
       }
       try {
         await this.elastic.update({
@@ -799,71 +757,52 @@ class OrderService {
     updateOptions: IUpdateDeliveryInput,
   ): Promise<MutationBoolRes> {
     try {
-      if (!signedInUser) throw getNotSignedInErr()
-      if (!this.planService) throw new Error ('PlanService not set');
-      const stripeCustomerId = signedInUser.stripeCustomerId;
-      const subscriptionId = signedInUser.stripeSubscriptionId
-      if (!stripeCustomerId) {
-        const msg = 'Missing stripe customer id';
-        console.error('[OrderService]', msg)
-        throw new Error(`[OrderService]: ${msg}`)
-      }
-      if (!subscriptionId) {
-        const msg = 'Missing subscription id';
-        console.error('[OrderService]', msg)
-        throw new Error(`[OrderService]: ${msg}`)
-      } 
-      const targetOrder = await this.getOrder(orderId);
-      if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
-      if (targetOrder.consumer.userId !== signedInUser._id) {
-        const msg = 'Can only update your own orders';
-        console.warn(
-          '[OrderService]',
-          `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
-        )
+      const res = await this.validateOrderUpdate(orderId, signedInUser);
+      if (res.error) {
         return {
           res: false,
-          error: msg
+          error: res.error
         }
       }
-
-      let dateValidation;
+      if (!res.order) throw new Error('Missing order'); 
+      const targetOrder = res.order;
+      const updatedDeliveries: IDeliveryInput[] = [];
+      let limit: number | undefined;
       let totalCount = 0;
-      updateOptions.deliveries.forEach(delivery => {
-        if (delivery.deliveryDate <= moment(targetOrder.invoiceDate).add(2,'days').get('millisecond')) dateValidation = 'Delivery date cannot be in the future';
-        if (delivery.deliveryDate < Date.now()) dateValidation = 'Delivery date cannot be in the past'
+      for (let i = 0; i < updateOptions.deliveries.length; i++) {
+        const delivery = updateOptions.deliveries[i];
+        if (delivery.meals.length === 0) continue;
+        if (!limit) {
+          const rest = await this.restService?.getRest(delivery.meals[0].restId);
+          if (!rest) throw new Error(`Failed to find rest ${updatedDeliveries[0].meals[0].restId}`)
+          limit = moment(targetOrder.invoiceDate).tz(rest.location.timezone).add(3,'d').startOf('d').valueOf()
+        }
+        if (delivery.deliveryDate >= limit) {
+          throw new Error (`Delivery date ${delivery.deliveryDate} cannot be equal or past ${limit}`);
+        }
+        if (delivery.deliveryDate < Date.now()) {
+          throw new Error (`Delivery date ${delivery.deliveryDate} cannot be in the past`);
+        }
+        updatedDeliveries.push(delivery);
         delivery.meals.forEach(meal => totalCount += meal.quantity);
-      })
-      if (dateValidation) {
-        console.error(`[OrderService]: ${dateValidation}`);
-        throw new Error (`[OrderService]: ${dateValidation}`);
       }
-
-      let mealPrices: IMealPrice[] = [];
-      let newDeliveries: IDelivery[] = [];
-      const updatedDeliveries = updateOptions.deliveries;
-      const targetDeliveries = targetOrder.deliveries.filter(delivery => delivery.status === 'Confirmed' || delivery.status === 'Returned' || delivery.status === 'Complete');
-      const plans = await this.planService.getAvailablePlans();
-      // Sent only donations
-      if (totalCount === 0 && updateOptions.donationCount > 0) {
-        const currentDeliveries = updatedDeliveries.map<IDelivery>(delivery =>  ({ ...delivery, status: 'Skipped' }) );
-        newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
-      // sent delivery updates with donations
-      } else {
-        const currentDeliveries = updatedDeliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }) );
-        newDeliveries = targetDeliveries.concat(currentDeliveries);
-        mealPrices = this.getMealPriceFromDeliveries(plans, newDeliveries, updateOptions.donationCount);
-      }
+      let currentDeliveries = updatedDeliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }));
+      const targetDeliveries = targetOrder.deliveries.filter(delivery =>
+        delivery.status === 'Confirmed'
+        || delivery.status === 'Returned'
+        || delivery.status === 'Complete'
+     );
+      currentDeliveries = targetDeliveries.concat(currentDeliveries);
+      const mealPrices = this.getMealPriceFromDeliveries(res.plans, currentDeliveries, updateOptions.donationCount);
       try {
-        const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> = {
-          ...targetOrder,
+        const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
           costs: {
             ...targetOrder.costs,
             mealPrices
           },
-          donationCount: updateOptions.donationCount,
-          deliveries: newDeliveries,
+          donationCount: updateOptions.donationCount ? updateOptions.donationCount : targetOrder.donationCount,
+          deliveries: currentDeliveries,
+          cartUpdatedDate: Date.now(),
         }
         await this.elastic.update({
           index: ORDER_INDEX,
@@ -884,45 +823,96 @@ class OrderService {
       throw new Error('Internal Server Error');
     }
   }
-  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
-    let planNames = plans.map(plan => ({ name: plan.name, stripePlanId: plan.stripePlanId, quantity: 0 })); 
-    const mealPrices: IMealPrice[] = [];
-    newDeliveries.forEach(delivery => {
-      delivery.meals.forEach(meal => {
-        const currentPlan = planNames.find(planName => planName.name === meal.planName)
-        if (currentPlan) {
-          currentPlan.quantity += meal.quantity;
-        }
-      });
-    });
-    planNames.forEach(plan => {
-      if (plan.name === 'Standard') {
-        const mealPrice = Tier.getMealPrice(
-          plan.name,
-          plan.quantity+donationCount,
-          plans
-        );
-        mealPrices.push({
-          stripePlanId: plan.stripePlanId,
-          planName: plan.name,
-          mealPrice
-        })
-      } else {
-        const mealPrice = Tier.getMealPrice(
-          plan.name,
-          plan.quantity,
-          plans
-        );
-        mealPrices.push({
-          stripePlanId: plan.stripePlanId,
-          planName: plan.name,
-          mealPrice
-        })
+  private async validateOrderUpdate (orderId: string, signedInUser: SignedInUser) {
+    if (!signedInUser) throw getNotSignedInErr()
+    if (!this.planService) throw new Error ('PlanService not set');
+    const stripeCustomerId = signedInUser.stripeCustomerId;
+    const subscriptionId = signedInUser.stripeSubscriptionId
+    if (!stripeCustomerId) {
+      const msg = 'Missing stripe customer id';
+      console.error('[OrderService]', msg)
+      throw new Error(`[OrderService]: ${msg}`)
+    }
+    if (!subscriptionId) {
+      const msg = 'Missing subscription id';
+      console.error('[OrderService]', msg)
+      throw new Error(`[OrderService]: ${msg}`)
+    } 
+    const targetOrder = await this.getOrder(orderId);
+    if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
+    if (targetOrder.consumer.userId !== signedInUser._id) {
+      const msg = 'Can only update your own orders';
+      console.warn(
+        '[OrderService]',
+        `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${signedInUser._id}'`
+      )
+      return {
+        order: null,
+        plans: null,
+        signedInUser: null,
+        error: msg
       }
-    })
-    return mealPrices;
+    }
+    const plans = await this.planService.getAvailablePlans()
+    return {
+      order: targetOrder,
+      plans,
+      signedInUser,
+      error: null,
+    }
   }
-
+  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
+    type mealCounts = {
+      [key: string]: {
+        stripePlanId: string
+        planName: PlanName
+        quantity: number
+      }
+    }
+    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
+    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
+    const intialMealCounts: mealCounts = donationCount > 0 ?
+      {
+        [standardPlan.stripePlanId]: {
+          stripePlanId: standardPlan.stripePlanId,
+          planName: PlanNames.Standard,
+          quantity: donationCount
+        }
+      }
+    :
+      {}
+ 
+    const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
+      return d.meals.reduce((counts, m) => {
+        if (counts[m.stripePlanId]) {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: counts[m.stripePlanId].quantity + m.quantity,
+          }
+        } else {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: m.quantity,
+          }
+        }
+        return counts;
+      }, counts)
+    }, intialMealCounts);
+    return Object.values(mealCounts).reduce<IMealPrice[]>((sum, c) => [
+      ...sum,
+      {
+        stripePlanId: c.stripePlanId,
+        planName: c.planName,
+        mealPrice: Tier.getMealPrice(
+          c.planName,
+          c.quantity,
+          plans
+        )
+      }
+    ], []);
+  }
   async updateUpcomingOrdersProfile(signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationBoolRes> {
     if (!signedInUser) throw getNotSignedInErr()
     try {

@@ -79,7 +79,8 @@ const delivery = () => {
       {
         deliveries: cart.Deliveries,
         donationCount: cart.DonationCount ? cart.DonationCount : 0 
-      }) 
+      }
+    ) 
   }
   const addSchedule = () => {
     const newSchedules = schedules.map(s => new Schedule(s));
