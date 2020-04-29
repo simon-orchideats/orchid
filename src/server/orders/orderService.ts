@@ -558,7 +558,7 @@ class OrderService {
         );
         remainingMeals = 0;
         deliveries.push({
-          deliveryDate: getNextDeliveryDate(schedule[i].day, rest.location.timezone).add(addedWeeks, 'w').valueOf(),
+          deliveryDate: getNextDeliveryDate(schedule[i].day, undefined, rest.location.timezone).add(addedWeeks, 'w').valueOf(),
           deliveryTime: schedule[i].time,
           discount: null,
           meals,

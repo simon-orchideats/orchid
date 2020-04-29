@@ -49,6 +49,7 @@ const MenuCart: React.FC<{
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const orderId = urlQuery.orderId as string
   const limit = parseFloat(urlQuery.limit as string)
+  const start = parseFloat(urlQuery.start as string)
   const upcomingDeliveriesPath = {
     pathname: upcomingDeliveriesRoute,
     query: { updating: 'true' }
@@ -71,6 +72,7 @@ const MenuCart: React.FC<{
           updating: 'true',
           orderId,
           limit,
+          start,
         }
       });
     } else {

@@ -21,6 +21,7 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
+import { deliveryRoute } from "../delivery";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -198,7 +199,7 @@ const DeliveryOverview: React.FC<{
     Router.replace(upcomingDeliveriesRoute)
     notify('Delivery Skipped', NotificationType.success, true);
     clearCartMeals();
-  })
+  });
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -212,15 +213,24 @@ const DeliveryOverview: React.FC<{
       break;
     }
   }
+  const start = moment(order.InvoiceDate).subtract(1, 'w');
+  const query = {
+    updating: 'true',
+    orderId: order.Id,
+    limit: moment(order.InvoiceDate).add(3, 'd').startOf('d').valueOf(),
+    start: start.startOf('d').valueOf(),
+  };
   const onEdit = () => {
     setCart(order);
     Router.push({
       pathname: menuRoute,
-      query: {
-        updating: 'true',
-        orderId: order.Id,
-        limit: moment(order.InvoiceDate).add(3, 'd').startOf('d').valueOf(),
-      }
+      query,
+    });
+  };
+  const onSchedule = () => {
+    Router.push({
+      pathname: deliveryRoute,
+      query,
     });
   };
   const onSkip = (deliveryIndex: number) => {
@@ -248,7 +258,7 @@ const DeliveryOverview: React.FC<{
             order.StripeInvoiceId ?
               'Paid'
             :
-              `Total for ${moment(order.InvoiceDate).format('M/D/YY')}`
+              `Total for ${start.format('M/D/YY')} - ${moment(order.InvoiceDate).format('M/D/YY')}`
             }
           </Typography>
           <Typography variant='body1' className={classes.hint}>
@@ -287,6 +297,16 @@ const DeliveryOverview: React.FC<{
               onClick={onEdit}
             >
               Edit deliveries
+            </Button>
+          }
+          {
+            canEdit && isUpdating &&
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={onSchedule}
+            >
+              Schedule deliveries
             </Button>
           }
         </div>

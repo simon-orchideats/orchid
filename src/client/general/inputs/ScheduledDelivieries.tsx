@@ -32,6 +32,7 @@ const useStyles = makeStyles(theme => ({
   emptyDelivery: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
+    maxWidth: 300,
   },
   paddingBottom: {
     paddingBottom: theme.spacing(1),

@@ -26,7 +26,7 @@ export const cartQL = gql`
   extend type Mutation {
     clearCartMeals: CartState
     addMealToCart(meal: DeliveryMeal!, restId: ID!): CartState!
-    setScheduleAndAutoDeliveries(schedules: [Schedule!]!): CartState!
+    setScheduleAndAutoDeliveries(schedules: [Schedule!]!, start: Float): CartState!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
     moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
@@ -46,15 +46,15 @@ const CART_QUERY = gql`
   }
 `
 
-export const useSetScheduleAndAutoDeliveries = (): (schedules: Schedule[]) => void => {
-  type vars = { schedules: Schedule[] };
+export const useSetScheduleAndAutoDeliveries = (): (schedules: Schedule[], start?: number) => void => {
+  type vars = { schedules: Schedule[], start?: number };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setScheduleAndAutoDeliveries($schedules: [Schedule!]!) {
-      setScheduleAndAutoDeliveries(schedules: $schedules) @client
+    mutation setScheduleAndAutoDeliveries($schedules: [Schedule!]!, $start: Float) {
+      setScheduleAndAutoDeliveries(schedules: $schedules, start: $start) @client
     }
   `);
-  return (schedules: Schedule[]) => {
-    mutate({ variables: { schedules } })
+  return (schedules: Schedule[], start?: number) => {
+    mutate({ variables: { schedules, start } })
   }
 }
 
@@ -206,7 +206,7 @@ export const useUpdateZip = (): (zip: string) => void => {
 
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{ meal: Meal, restId: string, restName: string, taxRate: number }, Cart | null>
-  setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[] }, Cart | null>
+  setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[], start?: number }, Cart | null>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
@@ -255,14 +255,14 @@ export const cartMutationResolvers: cartMutationResolvers = {
     return updateCartCache(cache, newCart);
   },
 
-  setScheduleAndAutoDeliveries: (_, { schedules }, { cache }) => {
+  setScheduleAndAutoDeliveries: (_, { schedules, start }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       const err = new Error(`Cannot auto set meals in deliveries from null cart`);
       console.error(err.stack);
       throw err;
     }
-    const newCart = res.cart.setScheduleAndAutoDeliveries(schedules);;
+    const newCart = res.cart.setScheduleAndAutoDeliveries(schedules, start);
     return updateCartCache(cache, newCart);
   },
 
@@ -360,7 +360,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       donationCount: order.DonationCount,
       restMeals,
       deliveries: newDeliveries,
-      schedules: order.Deliveries.map(d => new Schedule({
+      schedules: order.Deliveries.filter(d => d.Status === 'Open').map(d => new Schedule({
         time: d.DeliveryTime,
         day: moment(d.DeliveryDate).day() as deliveryDay,
       })),

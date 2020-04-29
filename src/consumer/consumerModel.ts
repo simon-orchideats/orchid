@@ -107,7 +107,7 @@ const deliveryTimes: {
   SevenPToNineP: '7pm - 9pm',
 }
 
-export const defaultDeliveryDay: deliveryDay = 3;
+export const defaultDeliveryDay: deliveryDay = 2;
 export const defaultDeliveryTime: deliveryTime = 'ThreePToFiveP';
 
 export interface ISchedule {

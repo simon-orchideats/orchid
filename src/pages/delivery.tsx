@@ -15,6 +15,7 @@ import PreferredSchedule from "../client/general/PreferredSchedule";
 import { useUpdateDeliveries } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import moment from "moment";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -52,6 +53,9 @@ const delivery = () => {
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const orderId = urlQuery.orderId as string
   const limit = parseFloat(urlQuery.limit as string)
+  const start = parseFloat(urlQuery.start as string);
+  const startDate = moment(start).format('M/D/YY');
+  const endDate = moment(start).add(1, 'w').format('M/D/YY');
   const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
   const [updateDeliveries, updateDeliveriesRes] = useUpdateDeliveries();
   const updateSchedules = (i: number, day: deliveryDay, time: deliveryTime) => {
@@ -96,7 +100,7 @@ const delivery = () => {
     if (isExpanded) setExpanded(panel);
   };
   const setDates = () => {
-    setScheduleAndAutoDeliveries(schedules);
+    setScheduleAndAutoDeliveries(schedules, start);
     setExpanded('assignments');
   }
   if (!cart) {
@@ -117,7 +121,7 @@ const delivery = () => {
               isUpdating ?
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Choose dates for this order
+                  1. Choose days for week {startDate} - {endDate}
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   These days are only for this order. We disabled days too far past your billing day.
@@ -163,7 +167,7 @@ const delivery = () => {
             <div>
               <Typography variant='h4' color='primary'>
                 {
-                  isUpdating ? '2. Update the week' : '2. Schedule meals for the first week'
+                  isUpdating ? `2. Schedule meals for ${startDate} - ${endDate}` : '2. Schedule meals for the first week'
                 }
               </Typography>
               {

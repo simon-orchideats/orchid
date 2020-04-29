@@ -25,6 +25,7 @@ const PreferredSchedule: React.FC<{
   allowedDeliveries: number
   limit?: number
   schedules: Schedule[]
+  start?: number
   removeSchedule: (i: number) => void
   updateSchedule: (i: number, day: deliveryDay, time: deliveryTime,) => void
 }> = ({

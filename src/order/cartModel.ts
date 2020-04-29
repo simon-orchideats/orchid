@@ -105,14 +105,14 @@ export class Cart implements ICart {
   public get Schedules() { return this.schedules }
   public get Zip() { return this.zip }
 
-  public setScheduleAndAutoDeliveries(schedules: Schedule[]) {
+  public setScheduleAndAutoDeliveries(schedules: Schedule[], start?: number) {
     if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
       return this;
     }
     const newCart = new Cart({
       ...this,
       schedules,
-      deliveries: Cart.getDeliveriesFromSchedule(schedules),
+      deliveries: Cart.getDeliveriesFromSchedule(schedules, start),
     });
     Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
     return newCart;
@@ -141,11 +141,12 @@ export class Cart implements ICart {
 
   public static getDeliveriesFromSchedule(
     schedules: ISchedule[],
+    start?: number,
     timezone?: string,
     dateModifier?: (m: moment.Moment) =>  moment.Moment
   ) {
     return schedules.map(s => {
-      let deliveryDate = getNextDeliveryDate(s.day, timezone);
+      let deliveryDate = getNextDeliveryDate(s.day, start, timezone);
       if (dateModifier) {
         deliveryDate = dateModifier(deliveryDate);
       }

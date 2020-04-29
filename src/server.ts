@@ -42,18 +42,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
 // to add a 1 time charge to the subscription. 
 
-
-// when logged in with plan then going to menu then clicking next, we go to upcoming-deliveries with cart but we show nothing
-// so what we should do instead is go to delivery let the user scheudle stuff, then on next
-// go to the upcoming deliveires and update an order
-
 // do the optimistic updates
-
-// -1 max deliveries when i edit an order and then immeidatey add donations
-// then immediately click next
-
-// when logged and updating deliveries for a future order, we need to make sure pass the correct offset, currently we dont
-
 
 /**
  * todo prevent cross state orders
