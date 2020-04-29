@@ -53,7 +53,7 @@ const PreferredSchedule: React.FC<{
                   color='primary'
                   className={classes.paddingLeft}
                 >
-                  (FREE)
+                  (One Free Delivery Included)
                 </Typography>
               :
                 <Typography

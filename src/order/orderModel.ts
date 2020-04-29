@@ -68,6 +68,7 @@ export interface IOrder {
   readonly phone: string
   readonly name: string
   readonly donationCount: number
+  readonly stripeInvoiceId: string | null
 }
 
 export interface IUpdateOrderInput {
@@ -85,6 +86,7 @@ export class Order implements IOrder{
   readonly phone: string
   readonly name: string
   readonly donationCount: number
+  readonly stripeInvoiceId: string | null
 
   constructor(order: IOrder) {
     this._id = order._id;
@@ -95,6 +97,7 @@ export class Order implements IOrder{
     this.phone = order.phone;
     this.name = order.name;
     this.donationCount = order.donationCount;
+    this.stripeInvoiceId = order.stripeInvoiceId;
   }
 
   public get Id() { return this._id }
@@ -103,8 +106,9 @@ export class Order implements IOrder{
   public get Destination() { return this.destination }
   public get MealPrices() { return this.mealPrices }
   public get Phone() { return this.phone }
-  public get DonationCount() { return this.donationCount}
-  public get Name() { return this.name}
+  public get DonationCount() { return this.donationCount }
+  public get Name() { return this.name }
+  public get StripeInvoiceId() { return this.stripeInvoiceId }
 
   static getMealCount(order: IOrder, planName: PlanName,) {
     const totalMeals = order.deliveries.reduce((sum, delivery) => {
@@ -144,7 +148,8 @@ export class Order implements IOrder{
       mealPrices: order.costs.mealPrices,
       phone: order.consumer.profile.phone!,
       name: order.consumer.profile.name,
-      donationCount: order.donationCount
+      donationCount: order.donationCount,
+      stripeInvoiceId: order.stripeInvoiceId || null,
     }
   }
 

@@ -109,7 +109,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               {meals}
               <div className={classes.donation}>
                 <Typography className={classes.donationText} variant='body1'>
-                  Donate meals from your plan
+                  Share your meal with the community
                   <IconButton color='primary' onClick={handleHelp}>
                     <HelpOutlineIcon />
                   </IconButton>

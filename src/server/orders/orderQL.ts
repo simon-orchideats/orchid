@@ -88,6 +88,7 @@ export const _OrderQL = gql`
     name: String!
     donationCount:Int!
     destination: Destination
+    stripeInvoiceId: String
   }
 `;
 

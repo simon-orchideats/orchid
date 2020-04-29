@@ -21,6 +21,7 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import { Cart } from "../../order/cartModel";
 import moment from "moment";
+import { Consumer } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -175,12 +176,12 @@ const DestinationPopper: React.FC<{
 
 const DeliveryOverview: React.FC<{
   cart?: Cart,
-  name: string,
+  consumer: Consumer,
   order: Order,
   isUpdating: boolean,
 }> = ({
   cart,
-  name,
+  consumer,
   order,
   isUpdating,
 }) => {
@@ -198,9 +199,12 @@ const DeliveryOverview: React.FC<{
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  let canEdit = order.DonationCount > 0;
+  let canEdit = order.StripeInvoiceId
+    && Date.now() <= moment(order.InvoiceDate).startOf('d').valueOf()
+    && consumer.Plan
+    && order.DonationCount > 0;
   for (let i = 0; i < order.Deliveries.length; i++) {
-    if (order.Deliveries[i].Status === 'Open' || 'Skipped') {
+    if (order.Deliveries[i].Status === 'Open' || order.Deliveries[i].Status === 'Skipped') {
       canEdit = true;
       break;
     }
@@ -236,12 +240,17 @@ const DeliveryOverview: React.FC<{
         open={open}
         onClose={() => setAnchorEl(null)}
         anchorEl={anchorEl}
-        name={name}
+        name={consumer.Profile.Name}
       />
       <div className={`${classes.row} ${classes.padding}`}>
         <div className={classes.column}>
           <Typography variant='subtitle1'>
-            Total for {moment(order.InvoiceDate).format('M/D/YY')}
+            {
+            order.StripeInvoiceId ?
+              'Paid'
+            :
+              `Total for ${moment(order.InvoiceDate).format('M/D/YY')}`
+            }
           </Typography>
           <Typography variant='body1' className={classes.hint}>
             {
@@ -263,7 +272,7 @@ const DeliveryOverview: React.FC<{
               </Typography>
               <div className={`${classes.row} ${classes.link}`} onClick={onClickDestination}>
                 <Typography variant='body1'>
-                  {name}
+                  {consumer.Profile.Name}
                 </Typography>
                 <ExpandMoreIcon />
               </div>
@@ -326,6 +335,7 @@ const UpcomingDeliveries = () => {
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const consumer = useRequireConsumer(upcomingDeliveriesRoute);
+  const consumerData = consumer.data;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
   const OrderOverviews = useMemo(() => {
@@ -335,16 +345,16 @@ const UpcomingDeliveries = () => {
     if (orders.data && orders.data.length === 0) {
       return <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
     }
-    return consumer.data && orders.data && orders.data.map(order => 
+    return consumerData && orders.data && orders.data.map(order => 
       <DeliveryOverview
         key={order.Id}
         order={order}
         isUpdating={isUpdating}
-        name={consumer.data!.Profile.Name}
+        consumer={consumerData}
         cart={cart ? cart : undefined}
       />
     )
-  }, [orders.data, orders.loading, consumer.data, isUpdating, cart]);
+  }, [orders.data, orders.loading, consumerData, isUpdating, cart]);
 
   if (needsCart && !cart) {
     const err = new Error('Needs cart, but no cart');
@@ -352,10 +362,10 @@ const UpcomingDeliveries = () => {
     if (!isServer()) Router.replace(upcomingDeliveriesRoute);
     return null;
   }
-  if (!consumer.data && !consumer.loading && !consumer.error) {
+  if (!consumerData && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
   }
-  if (!consumer.data) {
+  if (!consumerData) {
     if (consumer.loading) return <Typography>Loading...</Typography>
     console.error('No consumer data', consumer.error);
     return <Typography>Error</Typography>

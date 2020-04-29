@@ -266,8 +266,8 @@ const myPlan = () => {
             </div>
             {
               count === MIN_MEALS &&
-              <Typography variant='body1' color='error'>
-                Must have at least 4 meals
+              <Typography variant='body1'>
+               * Must have at least 4 meals
               </Typography>
             }
             <Typography

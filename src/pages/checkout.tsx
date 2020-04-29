@@ -293,7 +293,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant='subtitle2' className={classes.subtitle}>
-                Delivery is only available in NJ. NY is coming soon.
+                Orchid Eats only delivers to NJ at this time. 
               </Typography>
             </Grid>
             <Grid item xs={12}>

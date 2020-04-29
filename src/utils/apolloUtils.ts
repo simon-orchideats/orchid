@@ -67,11 +67,18 @@ const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Pr
   const access = cookie.parse(req.headers.cookie ?? '')[accessTokenCookie];
   if (!access) return null;
   try {
-    return decodeToSignedInUser(access);
+    const user = decodeToSignedInUser(access);
+    if (user) return user;
   } catch (e) {
-    let newAccessToken = await refetchAccessToken(req, res);
-    return decodeToSignedInUser(newAccessToken);
+    console.error(`Failed to get signed in user with ${access}`, e.stack);
   }
+  try {
+    const newAccessToken = await refetchAccessToken(req, res);
+    return decodeToSignedInUser(newAccessToken);
+  } catch (e) {
+    console.error(`Failed refetch access token`, e.stack);
+  }
+  return null;
 }
 
 type handlerRes = {
