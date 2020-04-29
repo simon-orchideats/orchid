@@ -1,10 +1,9 @@
 import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryMeal, IDeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IConsumerProfile, IConsumer, IMealPlan } from './../consumer/consumerModel';
 import { ICost, deliveryFee } from './costModel';
-import { Cart } from './cartModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -71,12 +70,6 @@ export interface IOrder {
   readonly stripeInvoiceId: string | null
 }
 
-export interface IUpdateOrderInput {
-  readonly meals: IDeliveryMeal[] | null // null for skip
-  readonly deliveryIndex: number | null
-  readonly donationCount: number
-}
-
 export class Order implements IOrder{
   readonly _id: string
   readonly invoiceDate: number
@@ -119,7 +112,6 @@ export class Order implements IOrder{
 
     if (planName === PlanNames.Standard) return totalMeals + order.donationCount;
   }
-
   // todo simon do this.
   // static getIOrderFromUpdatedOrderInput(
   //   _id: string,
@@ -152,65 +144,6 @@ export class Order implements IOrder{
       stripeInvoiceId: order.stripeInvoiceId || null,
     }
   }
-
-  static getUpdatedOrderInput(
-    deliveryIndex?: number, 
-    cart?: Cart,
-  ): IUpdateOrderInput {
-    return {
-      meals: cart ?
-        Object.values(cart.RestMeals).reduce<IDeliveryMeal[]>((sum, restMeals) => (
-          [...sum, ...restMeals.meals]
-        ), [])
-        : 
-        null,
-      deliveryIndex: deliveryIndex ?? null,
-      donationCount: cart ? cart.DonationCount : 0
-    }
-  }
-
-  // todo simon do this
-  // static getEOrderFromUpdatedOrder(
-  //   {
-  //     consumer,
-  //   }: EOrder,
-  //   mealPrice: number,
-  //   total: number,
-  //   {
-  //     // todo simon: do this
-  //     // deliveries,
-  //     phone,
-  //     destination,
-  //     donationCount
-  //   }: IUpdateOrderInput
-  // ): Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate'> {
-  //   return {
-  //     cartUpdatedDate: Date.now(),
-  //     costs: {
-  //       tax: 0,
-  //       tip: 0,
-  //       mealPrice,
-  //       total,
-  //       percentFee: 0,
-  //       flatRateFee: 0,
-  //     },
-  //     consumer: {
-  //       userId: consumer.userId,
-  //       profile: {
-  //         name: consumer.profile.name,
-  //         email: consumer.profile.email,
-  //         phone,
-  //         card: consumer.profile.card,
-  //         destination,
-  //       }
-  //     },
-  //     // todo simon. when copying over the deliveirs of time ICartDelivery to IOrderDelivery, we need to add a status,
-  //     // so how do we do that? can we just put all status as Open...? no we can only set the ones open if it has NOT
-  //     // been delivered.
-  //     deliveries: [],
-  //     donationCount
-  //   }
-  // }
 
   static getNewOrder(
     consumer: IConsumer,

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useMemo, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders, useUpdateOrder } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useSkipDelivery, useRemoveDonations } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
 import { Destination } from "../../place/destinationModel";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
@@ -19,7 +19,6 @@ import { NotificationType } from "../../client/notification/notificationModel";
 import { isServer } from "../../client/utils/isServer";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
-import { Cart } from "../../order/cartModel";
 import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
 
@@ -175,12 +174,10 @@ const DestinationPopper: React.FC<{
 }
 
 const DeliveryOverview: React.FC<{
-  cart?: Cart,
   consumer: Consumer,
   order: Order,
   isUpdating: boolean,
 }> = ({
-  cart,
   consumer,
   order,
   isUpdating,
@@ -190,12 +187,18 @@ const DeliveryOverview: React.FC<{
   const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const [updateOrder, updateOrderRes] = useUpdateOrder();
-  useMutationResponseHandler(updateOrderRes, () => {
+  const [skipDelivery, skipDeliveryRes] = useSkipDelivery();
+  const [removeDonations, removeDonationsRes] = useRemoveDonations();
+  useMutationResponseHandler(removeDonationsRes, () => {
     Router.replace(upcomingDeliveriesRoute)
-    notify('Order updated', NotificationType.success, true);
+    notify('Donations Removed', NotificationType.success, true);
     clearCartMeals();
   });
+  useMutationResponseHandler(skipDeliveryRes, () => {
+    Router.replace(upcomingDeliveriesRoute)
+    notify('Delivery Skipped', NotificationType.success, true);
+    clearCartMeals();
+  })
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -222,14 +225,10 @@ const DeliveryOverview: React.FC<{
   };
   const onSkip = (deliveryIndex: number) => {
     // todo simon: metrics for this
-    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex));
-  }
-  const onUpdate = (deliveryIndex: number) => {
-    // todo simon: metrics for this
-    updateOrder(order._id, Order.getUpdatedOrderInput(deliveryIndex, cart));
+    skipDelivery(order._id, deliveryIndex);
   }
   const onRemoveDonations = () => {
-    updateOrder(order._id, Order.getUpdatedOrderInput());
+    removeDonations(order._id);
   }
   const open = !!anchorEl;
   return (
@@ -316,7 +315,6 @@ const DeliveryOverview: React.FC<{
         <ScheduleDeliveries
           deliveries={order.Deliveries}
           onSkip={onSkip}
-          onUpdate={onUpdate}
           isUpdating={isUpdating}
         />
       </div>
@@ -351,7 +349,6 @@ const UpcomingDeliveries = () => {
         order={order}
         isUpdating={isUpdating}
         consumer={consumerData}
-        cart={cart ? cart : undefined}
       />
     )
   }, [orders.data, orders.loading, consumerData, isUpdating, cart]);

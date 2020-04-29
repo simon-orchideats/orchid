@@ -47,9 +47,8 @@ export const _OrderQL = gql`
     taxRate: Float!
   }
 
-  input UpdateOrderInput {
-    meals: [DeliveryMealInput!]
-    deliveryIndex: Int
+  input UpdateDeliveryInput { 
+    deliveries: [DeliveryInput!]!
     donationCount: Int!
   }
 
