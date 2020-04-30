@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "next build && tsc --project tsconfig.server.json",
+    "host": "ngrok http 8443",
     "prod": "cross-env NODE_ENV=production node build/server.js",
     "test": "jest --watch",
     "heroku-logs": "heroku logs --tail -a saute"
@@ -22,7 +23,6 @@
     "@material-ui/core": "^4.9.0",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "^4.0.0-alpha.40",
-    "@types/jsonwebtoken": "^8.3.8",
     "@sentry/integrations": "^5.14.2",
     "@sentry/node": "^5.14.2",
     "amplitude-js": "^5.9.0",
@@ -47,6 +47,7 @@
     "micro": "^9.3.4",
     "micro-cors": "^0.1.1",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.28",
     "next": "latest",
     "node-fetch": "^2.6.0",
     "react": "^16.12.0",
@@ -64,6 +65,7 @@
     "@types/lodash": "^4.14.149",
     "@types/micro": "^7.3.3",
     "@types/micro-cors": "^0.1.0",
+    "@types/moment-timezone": "^0.5.13",
     "@types/node": "^13.1.6",
     "@types/react": "^16.9.17",
     "@types/react-stripe-elements": "^6.0.3",

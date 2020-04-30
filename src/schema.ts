@@ -34,8 +34,10 @@ const mutation = gql`
     placeOrder(cart: CartInput!): ConsumerRes!
     addMarketingEmail(email: String!): BoolRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
-    updateOrder(orderId: ID!, updateOptions: UpdateOrderInput!): BoolRes!
-    updateMyPlan(plan: ConsumerPlanInput!, nextDeliveryDate: Float!): ConsumerRes!
+    skipDelivery(orderId: ID!, deliveryIndex: Int!): BoolRes!
+    updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!
+    removeDonations(orderId: ID!): BoolRes!
+    updateMyPlan(plan: ConsumerPlanInput!): ConsumerRes!
     updateMyProfile(profile: ConsumerProfileInput!): ConsumerRes!
   }
 `

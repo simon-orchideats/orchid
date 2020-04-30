@@ -26,8 +26,7 @@ import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
 import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
 import { useGetAvailablePlans } from "../plan/planService";
-import { Plan } from "../plan/planModel";
-import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
+// import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -214,11 +213,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-    if (!cart.StripePlanId) {
-      const err = new Error(`No cart stripePlanId`);
-      console.error(err.stack);
-      throw err;
-    }
     const cardElement = elements.getElement('cardNumber');
     if (!cardElement) {
       const err =  new Error('No card element');
@@ -243,13 +237,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
 
-    sendCheckoutMetrics(
-      cart,
-      Plan.getMealPrice(cart.StripePlanId, plans.data),
-      Plan.getPlanCount(cart.StripePlanId, plans.data),
-      cuisines,
-      cart.RestName ? cart.RestName : undefined,
-    )
+    // todo simon: enable metrics
+    // sendCheckoutMetrics(
+    //   cart,
+    //   Plan.getMealPrice(cart.StripePlanId, plans.data),
+    //   Plan.getPlanCount(cart.StripePlanId, plans.data),
+    //   cuisines,
+    //   cart.RestName ? cart.RestName : undefined,
+    // )
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {
@@ -298,7 +293,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant='subtitle2' className={classes.subtitle}>
-                Delivery is only available in NJ. NY is coming soon.
+                Orchid Eats only delivers to NJ at this time. 
               </Typography>
             </Grid>
             <Grid item xs={12}>

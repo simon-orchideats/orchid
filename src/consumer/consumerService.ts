@@ -1,4 +1,3 @@
-import { getNextDeliveryDate } from './../order/utils';
 import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
@@ -25,7 +24,18 @@ type myConsumerRes = { myConsumer: IConsumer | null }
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
   //@ts-ignore
-  if (newConsumer.plan) newConsumer.plan.__typename = 'ConsumerPlan';
+  if (newConsumer.plan) {
+    //@ts-ignore
+    newConsumer.plan.__typename = 'ConsumerPlan';
+    newConsumer.plan.schedules.forEach(s => {
+      //@ts-ignore
+      s.__typename = 'Schedules';
+    });
+    newConsumer.plan.mealPlans.forEach(mp => {
+      //@ts-ignore
+      mp.__typename = 'MealPlan';
+    });
+  }
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';
   //@ts-ignore
@@ -340,8 +350,8 @@ export const useUpdateMyPlan = (): [
 ] => {
   type res = { updateMyPlan: MutationConsumerRes };
   const [mutate, mutation] = useMutation<res>(gql`
-    mutation updateMyPlan($plan: ConsumerPlanInput!, $nextDeliveryDate: Float!) {
-      updateMyPlan(plan: $plan, nextDeliveryDate: $nextDeliveryDate) {
+    mutation updateMyPlan($plan: ConsumerPlanInput!) {
+      updateMyPlan(plan: $plan) {
         res {
           ...consumerFragment
         }
@@ -351,10 +361,15 @@ export const useUpdateMyPlan = (): [
     ${consumerFragment}
   `);
   const updateMyPlan = (plan: ConsumerPlan, currConsumer: Consumer) => {
+    if (!currConsumer.Plan) {
+      const err = new Error('Missing consumer plan');
+      console.error(err.stack);
+      throw err;
+    }
+    if (ConsumerPlan.equals(plan, currConsumer.Plan)) return;
     mutate({ 
       variables: {
         plan,
-        nextDeliveryDate: getNextDeliveryDate(plan.DeliveryDay).valueOf(),
       },
       optimisticResponse: {
         updateMyPlan: {

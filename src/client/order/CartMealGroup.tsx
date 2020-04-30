@@ -1,5 +1,4 @@
 import { makeStyles, Typography, Grid } from "@material-ui/core";
-import { CartMeal } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -15,26 +14,34 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const CartMealGroup: React.FC<{
-  mealGroup: CartMeal
-}> = ({ mealGroup }) => {
+  mealId: string,
+  name: string,
+  img?: string,
+  quantity: number,
+}> = ({
+  mealId,
+  name,
+  img,
+  quantity,
+ }) => {
   const classes = useStyles();
   return (
-    <Grid container key={mealGroup.MealId} className={classes.group}>
+    <Grid container key={mealId} className={classes.group}>
       <Grid item sm={1}>
         <Typography variant='body1'>
-          {mealGroup.Quantity}
+          {quantity}
         </Typography>
       </Grid>
       <Grid item sm={4}>
         <img
-          src={mealGroup.Img}
-          alt={mealGroup.Img}
+          src={img}
+          alt={img}
           className={classes.img}
         />
       </Grid>
       <Grid item sm={7}>
         <Typography variant='subtitle1'>
-          {mealGroup.Name.toUpperCase()}
+          {name.toUpperCase()}
         </Typography>
       </Grid>
     </Grid>

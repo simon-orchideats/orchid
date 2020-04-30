@@ -1,8 +1,8 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
@@ -11,7 +11,6 @@ import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-import PlanFilter from "../client/menu/PlanFilter";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -32,7 +31,6 @@ const useStyles = makeStyles(theme => ({
   zipPlan: {
     alignSelf: 'stretch',
     flexBasis: '100%',
-    paddingBottom: theme.spacing(2),
     display: 'flex',
     alignItems: 'center',
   },
@@ -68,21 +66,16 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const cartRestId = cart ? cart.RestId : null;
-  const cartMeals = cart ? cart.Meals : [];
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
   const rests = useGetNearbyRests(zip);
-  const RestMenus = useMemo(() => ( 
-    rests.data && rests.data.map(rest => 
-      <RestMenu
-        key={rest.Id}
-        rest={rest}
-        cartMeals={cartMeals}
-        cartRestId={cartRestId}
-      />
-    )
-  ), [rests.data, cartRestId]);
+  const RestMenus = rests.data && rests.data.map(rest => 
+    <RestMenu
+      key={rest.Id}
+      rest={rest}
+      cartMeals={cart?.RestMeals[rest.Id]?.meals}
+    />
+  )
   const hasNoRests = !rests.loading && !rests.error && rests.data && rests.data.length === 0;
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -110,7 +103,7 @@ const menu = () => {
           lg={8}
           className={classes.menu}
         >
-          <div className={classes.filters}>
+          <Paper className={classes.filters}>
             {
               isMdAndUp ?
               <Link className={classes.link} color='inherit' onClick={onClickZip}>
@@ -119,17 +112,18 @@ const menu = () => {
                 <ArrowDropDownIcon />
               </Link>
             :
-              <>
-                <div className={classes.zipPlan}>
-                  <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                    <LocationOnIcon />
-                  </Link>
-                  <PlanFilter />
-                </div>
+              <div className={classes.zipPlan}>
+                <Link
+                  className={classes.link}
+                  color='inherit'
+                  onClick={onClickZip}
+                >
+                  <LocationOnIcon />
+                </Link>
                 {rests.data && <MenuMiniCart />}
-              </>
+              </div>
             }
-          </div>
+          </Paper>
           {rests.loading && <Typography>Loading...</Typography>}
           {
             hasNoRests ?

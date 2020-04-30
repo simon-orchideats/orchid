@@ -1,86 +1,111 @@
-import { useMemo } from "react";
+export const MIN_MEALS = 4;
+
+export type PlanName = 'Standard' | 'Gourmet';
+
+export const PlanNames: {
+  Standard: 'Standard',
+  Gourmet: 'Gourmet',
+} = {
+  Standard: 'Standard',
+  Gourmet: 'Gourmet',
+}
 
 export interface IPlan {
-  readonly stripeId: string;
-  readonly mealCount: number;
-  readonly mealPrice: number;
-  readonly weekPrice: number;
+  readonly stripePlanId: string;
+  readonly name: PlanName;
+  readonly tiers: ITier[]
 }
 
 export class Plan implements IPlan {
-  readonly stripeId: string;
-  readonly mealCount: number;
-  readonly mealPrice: number;
-  readonly weekPrice: number;
+  readonly stripePlanId: string;
+  readonly name: PlanName;
+  readonly tiers: Tier[]
 
   constructor(plan: IPlan) {
-    this.stripeId = plan.stripeId;
-    this.mealCount = plan.mealCount;
-    this.mealPrice = plan.mealPrice;
-    this.weekPrice = plan.weekPrice;
+    this.stripePlanId = plan.stripePlanId;
+    this.name = plan.name;
+    this.tiers = plan.tiers.map(t => new Tier(t));
   }
 
-  public get StripeId() { return this.stripeId }
-  public get MealCount() { return this.mealCount }
+  public get StripePlanId() { return this.stripePlanId }
+  public get Name() { return this.name }
+  public get Tiers() { return this.tiers }
+
+  public static getPlan(type: PlanName, plans: IPlan[]) {
+    return getPlanByType(type, plans);
+  }
+}
+
+
+export interface ITier {
+  readonly maxMeals: number | null;
+  readonly minMeals: number;
+  readonly mealPrice: number;
+}
+
+const getPlanByType = (type: PlanName, plans: IPlan[]) => {
+  const plan = plans.find(p => p.name === type);
+  if (!plan) {
+    const err = new Error(`Failed to find plan type '${type}'`);
+    console.error(err.stack);
+    throw err;
+  };
+  return plan;
+}
+
+export class Tier implements ITier {
+  readonly mealPrice: number;
+  readonly minMeals: number;
+  readonly maxMeals: number | null;
+
+  constructor(tier: ITier) {
+    this.mealPrice = tier.mealPrice;
+    this.minMeals = tier.minMeals;
+    this.maxMeals = tier.maxMeals;
+  }
+
+  public get MaxMeals() { return this.maxMeals }
+  public get MinMeals() { return this.minMeals }
   public get MealPrice() { return this.mealPrice }
-  public get WeekPrice() { return this.weekPrice }
 
-  public static getPlanId(mealCount: number, plans?: IPlan[]) {
-    if (!plans) return undefined;
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].mealCount === mealCount) return plans[i].stripeId;
+  public static getMealPrice(type: PlanName, count: number, plans: IPlan[]) {
+    const plan = getPlanByType(type, plans);
+    const tiers = plan.tiers;
+    for (let i = 0; i < tiers.length; i++) {
+      if (count >= tiers[i].minMeals && (tiers[i].maxMeals === null || count <= tiers[i].maxMeals!)) {
+        return tiers[i].mealPrice;
+      }
     }
-    return undefined;
-  }
-
-  public static getPlanCounts(plans?: Plan[]) {
-    return useMemo(() => {
-      return plans && plans.reduce<number[]>(((acc, plan) => [...acc, plan.mealCount]), [])
-    }, [plans])
-  }
-
-  public static getPlanCount(stripePlanId: string, plans: Plan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].StripeId === stripePlanId) return plans[i].MealCount;
-    }
-    const err = new Error(`No count found for stripePlanId '${stripePlanId}'`);
+    const err = new Error(`Failed to get meal price from count '${count}'`);
     console.error(err.stack);
     throw err;
   }
 
-  public static getPlanPrice(stripePlanId: string | null, plans: Plan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].StripeId === stripePlanId) return plans[i].WeekPrice;
+  public static getNextMealPrice(type: PlanName, count: number, plans: IPlan[]) {
+    const plan = getPlanByType(type, plans);
+    const tiers = plan.tiers;
+    for (let i = 0; i < tiers.length; i++) {
+      if (count < tiers[i].minMeals) {
+        return tiers[i].mealPrice;
+      }
     }
-    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
-    console.error(err.stack);
-    throw err;
+    return null
   }
 
-  public static getMealPrice(stripePlanId: string | null, plans: Plan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].StripeId === stripePlanId) return plans[i].MealPrice;
+  public static getCountTillNextPlan(type: PlanName, count: number, plans: IPlan[]) {
+    const plan = getPlanByType(type, plans);
+    const tiers = plan.tiers;
+    for (let i = 0; i < tiers.length; i++) {
+      if (count < tiers[i].minMeals) {
+        return tiers[i].minMeals - count;
+      }
     }
-    const err = new Error(`No plan found for stripePlanId '${stripePlanId}'`);
-    console.error(err.stack);
-    throw err;
+    return null
   }
 
-  public static getMealPriceFromCount(count: number, plans: IPlan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].mealCount === count) return plans[i].mealPrice;
-    }
-    const err = new Error(`No plan found for count '${count}'`);
-    console.error(err.stack);
-    throw err;
+  public static getPlanPrice(type: PlanName, count: number, plans: IPlan[]) {
+    const price = Tier.getMealPrice(type, count, plans);
+    return price * count;
   }
 
-  public static getMealCountFromMealPrice(price: number, plans: IPlan[]) {
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].mealPrice === price) return plans[i].mealCount;
-    }
-    const err = new Error(`No plan found for price '${price}'`);
-    console.error(err.stack);
-    throw err;
-  }
 }

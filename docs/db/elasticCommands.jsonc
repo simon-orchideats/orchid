@@ -65,6 +65,27 @@ GET /orders/_search?
 
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": "now",
+                }
+              },
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 ############################
 
 ######### UPDATE ###########
@@ -285,6 +306,9 @@ PUT /rests/
               }
             }
           },
+          "timezone": {
+            "type": "keyword"
+          },
           "geo": {
             "type": "geo_point"
           }
@@ -364,6 +388,12 @@ PUT /rests/
           },
           "originalPrice": {
             "type": "float"
+          },
+          "stripePlanId": {
+            "type": "keyword"
+          },
+          "planName": {
+            "type": "keyword"
           }
         }
       },
@@ -480,9 +510,19 @@ PUT /orders/
   "mappings": {
     "dynamic": false,
     "properties": {
-      "rest": {
+      "deliveries": {
         "properties": {
-          "restId": {
+          "deliveryTime": {
+            "type": "keyword"
+          },
+          "deliveryDate": {
+            "type": "date",
+            "format": "epoch_millis"
+          },
+          "discount": {
+            "type": "float"
+          },
+          "status": {
             "type": "keyword"
           },
           "meals": {
@@ -505,18 +545,18 @@ PUT /orders/
               "restId": {
                 "type": "keyword"
               },
-              "deliveryDate": {
-                "type": "float"
+              "restName": {
+                "type": "keyword"
               },
-              "deliveryTime": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
                 "type": "keyword"
               }
             }
           }
         }
-      },
-      "status": {
-        "type": "keyword"
       },
       "consumer": {
         "properties": {
@@ -596,8 +636,18 @@ PUT /orders/
           "tip": {
             "type": "float"
           },
-          "mealPrice": {
-            "type": "float"
+          "mealPrices": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealPrice": {
+                "type": "float"
+              }
+            }
           },
           "total": {
             "type": "float"
@@ -610,11 +660,9 @@ PUT /orders/
           }
         }
       },
-      "deliveryDate": {
-        "type": "float"
-      },
-      "deliveryTime": {
-        "type": "keyword"
+      "invoiceDate": {
+        "type": "date",
+        "format": "epoch_millis"
       },
       "donationCount": {
         "type": "float"
@@ -692,14 +740,28 @@ PUT /consumers/
       },
       "plan": {
         "properties": {
-          "stripePlanId": {
-            "type": "keyword"
+          "mealPlans": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealCount": {
+                "type": "keyword"
+              }
+            }
           },
-          "deliveryDay": {
-            "type": "integer"
-          },
-          "deliveryTime": {
-            "type": "keyword"
+          "schedules": {
+            "properties": {
+              "day": {
+                "type": "integer"
+              },
+              "time": {
+                "type": "keyword"
+              }
+            }
           },
           "cuisines": {
             "type": "keyword"

@@ -1,9 +1,11 @@
+import { IMealPrice } from './orderModel';
 export interface ICost {
   tax: number
   tip: number
-  // null mealPrice when an order has no meals
-  mealPrice: number | null
-  total: number
+  mealPrices: IMealPrice[]
   percentFee: number
   flatRateFee: number
+  deliveryFee: number
 }
+
+export const deliveryFee = 200;

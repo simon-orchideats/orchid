@@ -1,11 +1,22 @@
 import { gql } from 'apollo-server';
 
-export const CartMealQL = gql`
-  type CartMeal {
-    mealId: ID!
-    img: String
-    name: String!
-    quantity: Int!
+export const _OrderQL = gql`
+  enum DeliveryStatus {
+    Complete
+    Confirmed
+    Open
+    Returned
+    Skipped
+  }
+
+  input CartInput {
+    card: CardInput!
+    consumerPlan: ConsumerPlanInput!
+    donationCount: Int!
+    deliveries: [DeliveryInput!]!
+    destination: DestinationInput!
+    paymentMethodId: String!
+    phone: String!
   }
 
   input CartMealInput {
@@ -13,60 +24,75 @@ export const CartMealQL = gql`
     img: String
     name: String!
     quantity: Int!
+    stripePlanId: ID!
+    planName: ID!
   }
-`
 
-export const OrderStatus = gql`
-  enum OrderStatus {
-    Complete
-    Confirmed
-    Open
-    Returned
-    Skipped
-  }
-`
-
-export const _OrderQL = gql`
-  input CartInput {
-    restId: ID # null for if cart is all donated
-    consumerPlan: ConsumerPlanInput!
-    paymentMethodId: String!
-    card: CardInput!
-    meals: [CartMealInput!]!
-    phone: String!
-    destination: DestinationInput!
-    deliveryDate: Float!
-    donationCount: Int!
-  }
-  input UpdateOrderInput {
-    restId: ID # null for skip order
-    meals: [CartMealInput!]!
-    phone: String!
-    destination: DestinationInput!
-    deliveryDate: Float!
+  input DeliveryInput {
     deliveryTime: DeliveryTime!
-    donationCount: Int!
-    name: String!
+    deliveryDate: Float!
+    discount: Int
+    meals: [DeliveryMealInput!]!
   }
+
+  input DeliveryMealInput {
+    mealId: ID!
+    img: String
+    name: String!
+    quantity: Int!
+    restId: ID!
+    restName: String!
+    stripePlanId: ID!
+    planName: ID!
+    taxRate: Float!
+  }
+
+  input UpdateDeliveryInput { 
+    deliveries: [DeliveryInput!]!
+    donationCount: Int!
+  }
+
+  type DeliveryMeal {
+    mealId: ID!
+    img: String
+    name: String!
+    quantity: Int!
+    restId: ID!
+    restName: String!
+    stripePlanId: ID!
+    planName: ID!
+    taxRate: Float!
+  }
+
+  type Delivery {
+    deliveryTime: DeliveryTime!
+    deliveryDate: Float!
+    discount: Int
+    meals: [DeliveryMeal!]!
+    status: DeliveryStatus!
+  }
+
+  type MealPrice {
+    stripePlanId: ID!
+    planName: ID!
+    mealPrice: Float!
+  }
+
   type Order {
     _id: ID!
-    deliveryDate: Float!
-    deliveryTime: DeliveryTime!
-    destination: Destination!
-    mealPrice: Float
-    meals: [CartMeal!]!
+    invoiceDate: Float!
+    deliveries: [Delivery!]!
+    mealPrices: [MealPrice!]!
     phone: String!
-    rest: Rest
-    status: OrderStatus!
     name: String!
     donationCount:Int!
+    destination: Destination
+    stripeInvoiceId: String
   }
 `;
 
 
 export const OrderQL = () => [
-  CartMealQL,
-  OrderStatus,
   _OrderQL,
 ]
 

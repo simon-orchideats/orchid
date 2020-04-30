@@ -9,6 +9,7 @@ import { isServer } from '../client/utils/isServer';
 import LogRocket from 'logrocket';
 import { activeConfig } from '../config';
 import { analyticsService } from '../client/utils/analyticsService';
+import { Router } from 'next/router';
 
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 
@@ -24,6 +25,13 @@ export default class MyApp extends App {
         console: {
           shouldAggregateConsoleErrors: true,
         }
+      });
+      Router.events.on('routeChangeComplete', () => {
+        window.scroll({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
       });
     }
   }

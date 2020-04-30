@@ -25,8 +25,12 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().signUp(email, name, pass, res);
   },
 
-  updateMyPlan: async(_root, { plan, nextDeliveryDate }: { plan: IConsumerPlan, nextDeliveryDate: number }, { signedInUser }) => {
-    return await getConsumerService().updateMyPlan(signedInUser, plan, nextDeliveryDate);
+  updateMyPlan: async(_root, { plan }: { plan: IConsumerPlan }, { signedInUser }) => {
+    try {
+      return await getConsumerService().updateMyPlan(signedInUser, plan);
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
   },
 
   updateMyProfile: async(_root, { profile }: { profile: IConsumerProfile }, { signedInUser }) => {

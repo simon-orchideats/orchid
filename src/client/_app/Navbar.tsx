@@ -29,6 +29,7 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     height: '100%',
     cursor: 'pointer',
+    justifyContent: 'flex-end',
     display: 'flex',
     alignItems: 'center',
   },
@@ -111,7 +112,11 @@ const Navbar: React.FC = () => {
   }, [consumer.data && consumer.data.Id]);
   const accountOpen = !!accountAnchor;
   const aboutOpen = !!aboutAnchor;
-  const currRoute = useRouter().pathname;
+  const router = useRouter();
+  const urlQuery = router.query;
+  const updatingParam = urlQuery.updating;
+  const isUpdating = !!updatingParam && updatingParam === 'true'
+  const currRoute = router.pathname;
   const menuStep = (
     <Link href={menuRoute}>
       <Typography
@@ -124,7 +129,39 @@ const Navbar: React.FC = () => {
     </Link>
   );
   let bar;
-  if (currRoute === `${deliveryRoute}`) {
+  if (currRoute === `${menuRoute}` && isUpdating) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          <Typography variant='button'>
+            Menu
+          </Typography>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' className={classes.disabled}>
+            Delivery
+          </Typography>
+        </div>
+      </div>
+    )
+  } else if (currRoute === `${deliveryRoute}` && isUpdating) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          <Button
+            variant='text'
+            color='primary'
+            onClick={() => router.back()}
+          >
+            Menu
+          </Button>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button'>
+            Delivery
+          </Typography>
+        </div>
+      </div>
+    )
+  } else if (currRoute === `${deliveryRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>

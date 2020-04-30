@@ -1,55 +1,38 @@
-import React, { useMemo } from 'react';
-import { makeStyles, ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, Grid } from "@material-ui/core";
+import React from 'react';
+import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
-import { useRef, useState, ChangeEvent } from "react";
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MenuMeal from "./MenuMeal";
-import { CartMeal } from '../../order/cartModel';
+import { DeliveryMeal } from '../../order/deliveryModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
-    paddingLeft: theme.spacing(1),
+    paddingLeft: theme.spacing(4),
+    paddingTop: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+  },
+  paper: {
+    marginTop: theme.spacing(2),
+  },
+  meals: {
+    padding: theme.spacing(1, 3, 3),
   },
 }))
 
 const RestMenu: React.FC<{
-  cartRestId: string | null
-  cartMeals: CartMeal[]
+  cartMeals?: DeliveryMeal[]
   rest: Rest
 }> = ({
   cartMeals,
-  cartRestId,
   rest
 }) => {
   const classes = useStyles();
-  const expansionBeforeOutsideClosed = useRef(true);
-  const lastChangeWasManual = useRef(false);
-  const wasOutsideClosed = useRef(false); 
-  const wasOutsideOpened = useRef(false); 
-  const [expanded, setExpanded] = useState(true);
-  const [isForcedOpen, setForcedOpen] = useState(false);
-
-  if (cartRestId && cartRestId !== rest.Id && !wasOutsideClosed.current && !isForcedOpen) {
-    expansionBeforeOutsideClosed.current = expanded;
-    lastChangeWasManual.current = false;
-    wasOutsideClosed.current = true;
-    wasOutsideOpened.current = false;
-    setExpanded(false);
-  }
-
-  if (!cartRestId) {
-    wasOutsideClosed.current = false;
-    if (!wasOutsideOpened.current && !lastChangeWasManual.current) {
-      setExpanded(expansionBeforeOutsideClosed.current);
-      wasOutsideOpened.current = true;
+  const meals = rest.Menu.map(meal => {
+    let defaultCount = 0;
+    if (cartMeals) {
+      const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
+      if (index >= 0) defaultCount = cartMeals[index].Quantity;
     }
-    if (isForcedOpen) setForcedOpen(false);
-  }
-
-  const disabled = cartRestId ? cartRestId !== rest.Id : false;
-
-  const meals = useMemo(() => rest.Menu.map(meal => {
-    const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
     return (
       <Grid
         item
@@ -58,42 +41,50 @@ const RestMenu: React.FC<{
         sm={4}
       >
         <MenuMeal
-          disabled={cartRestId ? cartRestId !== rest.Id : false}
           restId={rest.Id}
           restName={rest.Profile.Name}
           meal={meal} 
-          defaultCount={index === -1 ? 0 : cartMeals[index].Quantity}
+          defaultCount={defaultCount}
+          taxRate={rest.TaxRate}
         />
       </Grid>
     )
-  }), [rest.Menu, disabled])
-
-  const forceToggle = (_e: ChangeEvent<{}>, newExpansion: boolean) => {
-    lastChangeWasManual.current = true;
-    setExpanded(newExpansion);
-  }
+  })
   return (
-    <ExpansionPanel expanded={expanded} onChange={forceToggle} TransitionProps={{ unmountOnExit: true }}>
-      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-        <div className={classes.summary}>
-          <Typography variant='h4'>
-            {rest.Profile.Name}
-          </Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
-            {rest.Location.Address.getAddrStr()}
-          </Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
-            {rest.Profile.Phone}
-          </Typography>
-        </div>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
-        <Grid container>
-          {meals}
-        </Grid>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+    <Paper className={classes.paper}>
+      <div className={classes.summary}>
+        <Typography variant='h4'>
+          {rest.Profile.Name}
+        </Typography>
+        <Typography variant='subtitle1' color='textSecondary'>
+          {rest.Location.Address.getAddrStr()}
+        </Typography>
+        <Typography variant='subtitle1' color='textSecondary'>
+          {rest.Profile.Phone}
+        </Typography>
+      </div>
+      <Grid container className={classes.meals}>
+        {meals}
+      </Grid>
+    </Paper>
   )
 }
 
-export default React.memo(RestMenu);
+export default React.memo(RestMenu, (prevProps, nextProps) => {
+  if (prevProps.rest === nextProps.rest) {
+    const prevCartMeals = prevProps.cartMeals;
+    const nextCartMeals = nextProps.cartMeals;
+    if (!prevCartMeals && !nextCartMeals) return true;
+    if (!prevCartMeals && nextCartMeals) return false;
+    if (prevCartMeals && !nextCartMeals) return false;
+    // should not happen, but added to make typescript happy
+    if (!prevCartMeals || !nextCartMeals) return false;
+
+    if (prevCartMeals.length === 0 && nextCartMeals.length === 0) return true;
+    if (prevCartMeals.length !== nextCartMeals.length) return false;
+    for (let i = 0; i < prevCartMeals.length; i++) {
+      if (!nextCartMeals.find(m => m.equals(prevCartMeals[i]))) return false;
+    }
+  }
+  return false;
+});

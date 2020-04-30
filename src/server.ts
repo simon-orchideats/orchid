@@ -35,15 +35,18 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-// todo logout
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
-// todo test for consumerServiceTest
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
-// to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
-// payment day if the consumer updated the delivery date. for now we'll just do it each day
-// at 12am.
-// have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
+
+// we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
+// to add a 1 time charge to the subscription. 
+
+// do the optimistic updates
+
+/**
+ * todo prevent cross state orders
+ */
 
 init({
   dsn: activeConfig.server.sentry.dsn,
@@ -88,6 +91,7 @@ const start = async () => {
   const orderService = initOrderService(elastic, stripe);
 
   restService.setGeoService(geoService);
+  //@ts-ignore //todo simon remove this ignore
   consumerService.setOrderService(orderService);
   consumerService.setPlanService(planService);
   consumerService.setGeoService(geoService);
