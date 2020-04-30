@@ -11,7 +11,7 @@
     "build": "next build && tsc --project tsconfig.server.json",
     "host": "ngrok http 8443",
     "host-elastic": "ngrok http 9200",
-    "prod": "node build/server.js",
+    "prod": "cross-env NODE_ENV=production node build/server.js",
     "test": "jest --watch",
     "heroku-logs": "heroku logs --tail -a saute"
   },

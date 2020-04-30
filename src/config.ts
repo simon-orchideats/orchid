@@ -1,4 +1,4 @@
-const env = process.env.NODE_ENV;
+const env = process.env.ORCHID_ENV;
 
 type config = {
   client: {
