@@ -1,4 +1,4 @@
-const env = process.env.ORCHID_ENV;
+const env = process.env.NODE_ENV;
 
 type config = {
   client: {
@@ -335,8 +335,8 @@ const getConfig = (env?: string) => {
     console.log('running stage');
     return stage;
   } else if (env === 'production') {
-    console.log('running production');
-    return production;
+    console.log('running stage');
+    return stage;
   }
   console.log('running default');
   return development;
