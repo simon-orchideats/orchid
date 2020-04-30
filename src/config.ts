@@ -218,7 +218,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 `,
     },
     elastic: {
-      node: 'http://d976abab.ngrok.io',
+      node: 'http://5d83698d.ngrok.io',
       auth: {
         username: undefined,
         password: undefined,
