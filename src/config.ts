@@ -186,7 +186,7 @@ const stage: config = {
   },
   server: {
     app: {
-      port: 8443,
+      port: parseInt(process.env.PORT || '8443', 10),
       url: stageUrl,
     },
     auth: {
@@ -329,10 +329,13 @@ D8hc31R0UA==
 
 const getConfig = (env?: string) => {
   if (env === 'development') {
+    console.log('running development');
     return development;
   } else if (env === 'stage') {
+    console.log('running stage');
     return stage;
   } else if (env === 'production') {
+    console.log('running production');
     return production;
   }
   return development;
