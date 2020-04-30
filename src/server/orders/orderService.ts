@@ -1,5 +1,5 @@
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
-import { IPlan, PlanName, PlanNames, Tier } from './../../plan/planModel';
+import { IPlan } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -473,58 +473,6 @@ class OrderService {
       error: null,
     }
   }
-  private getMealPriceFromDeliveries(plans: IPlan[], newDeliveries: IDelivery[], donationCount: number): IMealPrice[] {
-    type mealCounts = {
-      [key: string]: {
-        stripePlanId: string
-        planName: PlanName
-        quantity: number
-      }
-    }
-    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
-    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
-    const intialMealCounts: mealCounts = donationCount > 0 ?
-      {
-        [standardPlan.stripePlanId]: {
-          stripePlanId: standardPlan.stripePlanId,
-          planName: PlanNames.Standard,
-          quantity: donationCount
-        }
-      }
-    :
-      {}
- 
-    const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
-      return d.meals.reduce((counts, m) => {
-        if (counts[m.stripePlanId]) {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
-            planName: m.planName,
-            quantity: counts[m.stripePlanId].quantity + m.quantity,
-          }
-        } else {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
-            planName: m.planName,
-            quantity: m.quantity,
-          }
-        }
-        return counts;
-      }, counts)
-    }, intialMealCounts);
-    return Object.values(mealCounts).reduce<IMealPrice[]>((sum, c) => [
-      ...sum,
-      {
-        stripePlanId: c.stripePlanId,
-        planName: c.planName,
-        mealPrice: Tier.getMealPrice(
-          c.planName,
-          c.quantity,
-          plans
-        )
-      }
-    ], []);
-  }
 
   public async addAutomaticOrder(
     addedWeeks: number,
@@ -778,7 +726,7 @@ class OrderService {
       if (!res.order) throw new Error('Missing order'); 
       const targetOrder = res.order;
       const plans = await this.planService.getAvailablePlans()
-      const mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0)
+      const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0)
       const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'deliveries'> = {
         costs: {
           ...targetOrder.costs,
@@ -976,7 +924,7 @@ class OrderService {
         }
       }
       const plans = await this.planService.getAvailablePlans()
-      const mealPrices = this.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
+      const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
       const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
         costs: {
           ...targetOrder.costs,
@@ -1050,7 +998,7 @@ class OrderService {
      );
       currentDeliveries = targetDeliveries.concat(currentDeliveries);
       const plans = await this.planService.getAvailablePlans()
-      const mealPrices = this.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);
+      const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);
       try {
         const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
           costs: {

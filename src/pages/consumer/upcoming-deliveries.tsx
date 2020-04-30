@@ -22,6 +22,7 @@ import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries
 import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
+import { useGetAvailablePlans } from "../../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -190,6 +191,8 @@ const DeliveryOverview: React.FC<{
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [skipDelivery, skipDeliveryRes] = useSkipDelivery();
   const [removeDonations, removeDonationsRes] = useRemoveDonations();
+  const plansRes = useGetAvailablePlans();
+  const plans = plansRes.data;
   useMutationResponseHandler(removeDonationsRes, () => {
     Router.replace(upcomingDeliveriesRoute)
     notify('Donations Removed', NotificationType.success, true);
@@ -235,10 +238,21 @@ const DeliveryOverview: React.FC<{
   };
   const onSkip = (deliveryIndex: number) => {
     // todo simon: metrics for this
-    skipDelivery(order._id, deliveryIndex);
+    if (!plans) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
+    skipDelivery(order, deliveryIndex, plans);
   }
   const onRemoveDonations = () => {
-    removeDonations(order._id);
+    // todo simon metrics for this
+    if (!plans) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
+    removeDonations(order, plans);
   }
   const open = !!anchorEl;
   return (

@@ -55,6 +55,71 @@ export class MealPrice implements IMealPrice {
       }
     ], []);
   }
+
+  public static getICopy(mp: IMealPrice) {
+    return {
+      stripePlanId: mp.stripePlanId,
+      planName: mp.planName,
+      mealPrice: mp.mealPrice
+    }
+  }
+
+  public static getMealPriceFromDeliveries(
+    plans: IPlan[],
+    newDeliveries: IDelivery[],
+    donationCount: number
+  ): IMealPrice[] {
+    type mealCounts = {
+      [key: string]: {
+        stripePlanId: string
+        planName: PlanName
+        quantity: number
+      }
+    }
+    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
+    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
+    const intialMealCounts: mealCounts = donationCount > 0 ?
+      {
+        [standardPlan.stripePlanId]: {
+          stripePlanId: standardPlan.stripePlanId,
+          planName: PlanNames.Standard,
+          quantity: donationCount
+        }
+      }
+    :
+      {}
+ 
+    const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
+      return d.meals.reduce((counts, m) => {
+        if (counts[m.stripePlanId]) {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: counts[m.stripePlanId].quantity + m.quantity,
+          }
+        } else {
+          counts[m.stripePlanId] = {
+            stripePlanId: m.stripePlanId,
+            planName: m.planName,
+            quantity: m.quantity,
+          }
+        }
+        return counts;
+      }, counts)
+    }, intialMealCounts);
+    return Object.values(mealCounts).reduce<IMealPrice[]>((sum, c) => [
+      ...sum,
+      {
+        stripePlanId: c.stripePlanId,
+        planName: c.planName,
+        mealPrice: Tier.getMealPrice(
+          c.planName,
+          c.quantity,
+          plans
+        )
+      }
+    ], []);
+  }
 }
 
 export interface IOrder {
@@ -112,24 +177,41 @@ export class Order implements IOrder{
 
     if (planName === PlanNames.Standard) return totalMeals + order.donationCount;
   }
-  // todo simon do this.
-  // static getIOrderFromUpdatedOrderInput(
-  //   _id: string,
-  //   order: IUpdateOrderInput,
-  //   mealPrice: number,
-  //   // status: OrderStatus,
-  //   // rest: IRest | null
-  // ): IOrder {
-  //   return {
-  //     _id,
-  //     deliveries: [],
-  //     destination: Destination.getICopy(order.destination),
-  //     mealPrice,
-  //     phone: order.phone,
-  //     name: order.name,
-  //     donationCount: order.donationCount
-  //   }
-  // }
+
+  static addTypenames(order: IOrder) {
+    //@ts-ignore
+    order.destination.address.__typename = 'Address';
+    //@ts-ignore
+    order.destination.__typename = 'Destination';
+    order.deliveries.forEach(d => {
+      //@ts-ignore
+      d.__typename = 'Delivery';
+      //@ts-ignore
+      d.meals.forEach(m => m.__typename = 'DeliveryMeal');
+    });
+    order.mealPrices.forEach(mp => {
+      //@ts-ignore
+      mp.__typename = 'MealPrice';
+    });
+    //@ts-ignore
+    order.__typename = 'Order';
+    return order;
+  }
+
+
+  static getICopy(order: IOrder) {
+    return {
+      _id: order._id,
+      invoiceDate: order.invoiceDate,
+      deliveries: order.deliveries.map(d => Delivery.getICopy(d)),
+      destination: Destination.getICopy(order.destination),
+      mealPrices: order.mealPrices.map(mp => MealPrice.getICopy(mp)),
+      phone: order.phone,
+      name: order.name,
+      donationCount: order.donationCount,
+      stripeInvoiceId: order.stripeInvoiceId,
+    }
+  }
 
   static getIOrderFromEOrder(_id: string, order: EOrder): IOrder {
     return {

@@ -7,7 +7,20 @@ export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, tim
     console.error(err.stack);
     throw err;
   }
-  const startDate =  timezone ? moment(start).tz(timezone) : moment(start);
+  let startDate;
+  if (timezone) {
+    if (start) {
+      startDate = moment(start).tz(timezone);
+    } else {
+      startDate = moment().tz(timezone);
+    }
+  } else {
+    if (start) {
+      startDate = moment(start);
+    } else {
+      startDate = moment();
+    }
+  }
   const deliveryDate = moment(startDate).day(day).startOf('day');
   const twoDaysAfterStartDate = moment(startDate).add(2, 'd');
   if (deliveryDate.isAfter(twoDaysAfterStartDate)) return deliveryDate;
