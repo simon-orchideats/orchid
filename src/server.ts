@@ -11,7 +11,7 @@ import { initElastic } from './server/elasticConnector';
 import { initPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
-import { activeConfig, isProd } from './config';
+import { activeConfig, isDev } from './config';
 import { schema } from './schema';
 import { initRestService } from './server/rests/restService';
 import Stripe from 'stripe';
@@ -59,7 +59,7 @@ init({
 
 const start = async () => {
   const ssr = next({
-    dev: !isProd
+    dev: isDev
   });
 
   const ssrHandler = ssr.getRequestHandler()

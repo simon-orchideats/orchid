@@ -187,7 +187,7 @@ const stage: config = {
   server: {
     app: {
       port: 8443,
-      url: devUrl,
+      url: stageUrl,
     },
     auth: {
       domain: 'orchideats-dev.auth0.com',
@@ -340,10 +340,12 @@ const getConfig = (env?: string) => {
 
 const activeConfig = getConfig(env);
 const isProd = activeConfig === production;
+const isStage = activeConfig === stage;
 const isDev = activeConfig === development;
 
 export {
   isProd,
+  isStage,
   isDev,
   activeConfig,
 }
