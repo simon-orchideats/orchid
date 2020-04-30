@@ -154,7 +154,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 };
 
 
-const stageUrl = 'https://orchid-dev.herokuapp.com/';
+const stageUrl = 'https://orchid-dev.herokuapp.com';
 
 const stage: config = {
   client: {
@@ -330,7 +330,7 @@ D8hc31R0UA==
 const getConfig = (env?: string) => {
   if (env === 'development') {
     return development;
-  } else if (env === 'test') {
+  } else if (env === 'stage') {
     return stage;
   } else if (env === 'production') {
     return production;
