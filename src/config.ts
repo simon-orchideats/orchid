@@ -153,6 +153,96 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
   }
 };
 
+
+const stageUrl = 'https://orchid-dev.herokuapp.com/';
+
+const stage: config = {
+  client: {
+    app: {
+      url: stageUrl,
+    },
+    auth: {
+      domain: 'orchideats-dev.auth0.com',
+      clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
+      audience: 'https://orchideats.com',
+    },
+    stripe: {
+      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+    },
+    logRocket: {
+      // key: 'ugxrrj/orchid-dev',
+      key: '',
+    },
+    analytics: {
+      amplitude: {
+        //key: 'd9a3d86674a064af5f76e222fba9bad6',
+         key: '',
+      },
+      ga: {
+        // trackingId: 'UA-158803692-1',
+        trackingId: '',
+      }
+    },
+  },
+  server: {
+    app: {
+      port: 8443,
+      url: devUrl,
+    },
+    auth: {
+      domain: 'orchideats-dev.auth0.com',
+      clientId: 'el63cM5rBcTbDSHRubPkc02pxYUsNiLU',
+      audience: 'https://orchideats.com',
+      secret: process.env.AUTH_SECRET!,
+      managementClientId: 'xofNOKgLq75hICbjLJHOhFJhP0E33tS5',
+      managementSecret: process.env.AUTH_MANAGEMENT_SECRET!,
+      publicKey: `-----BEGIN CERTIFICATE-----
+MIIDCzCCAfOgAwIBAgIJIvWpk3ZK/P/hMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNV
+BAMTGG9yY2hpZGVhdHMtZGV2LmF1dGgwLmNvbTAeFw0yMDAzMTUxNjUzNTBaFw0z
+MzExMjIxNjUzNTBaMCMxITAfBgNVBAMTGG9yY2hpZGVhdHMtZGV2LmF1dGgwLmNv
+bTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOSP7zSMYDef23npvbse
+bQtoLgkX1y8R0XMtP7LLCJAZRAlAYlzim13RB02C9ynTfn6pAswWImnQl5+6q0Id
+G0rFJGel53ypeCRnycFwlmdL4OGzgBrSGtfMxuS1nFhdWa6d64Ww0I9TnlMhS1mX
+7z+BzmE8JgLNW5mMq8OICNOcnhVogVyqs0oZfElHS7kQjwFndV2XcIXJsutmFr73
+lues01BPb/T+9rzN2duCc9l5kTMxQplXCbox8nOxFxPgfUFlGc1TcaI0McSgYsff
+qVdtQ69ysJFTazId3wX/HjQPviCsygCmaYfCZeL0vswfwGlwsEPL8WgS6mzaexD9
+R20CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUWeAPEdzjixHZ
+8t201fah4XC9lKcwDgYDVR0PAQH/BAQDAgKEMA0GCSqGSIb3DQEBCwUAA4IBAQC5
+AbPxNir33wEwIh35UNAnPlBDgHSZac6hp4XCMk5yi4BtLcFl9rM2Ql5skMwsTit5
+ZXU6qqxyur6coBc5JqHHf8dyxrLiV7fWVCcrlh8BFKynCHHEdbG4etJuiJ5MxUs0
+Tb5pr9qgoHZ68UZecfkNE/7GTeD6oYOEK97ngfHhm30YcKO4Bry2fgid9kVTqe1B
+XT1mRLTu7eDPKJ7x5feNGoW/8O//fmBYhyCXnkh330F6EZOpbLqf41YhozSEOFcT
+W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
+2/WSrrgWXTxymZWXqJ/h
+-----END CERTIFICATE-----      
+`,
+    },
+    elastic: {
+      node: 'http://0371316b.ngrok.io',
+      auth: {
+        username: undefined,
+        password: undefined,
+      }
+    },
+    mailChimp: {
+      key: process.env.MAIL_CHIMP_KEY!,
+      audienceId: 'a58d64a3e9',
+      dataCenter: 'us19'
+    },
+    stripe: {
+      key: process.env.STRIPE_KEY!,
+      hookSecret: process.env.STRIPE_HOOK_SECRET!
+    },
+    sentry: {
+      // dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
+      dsn: '',
+    },
+    geo: {
+      key: process.env.GEO_KEY!
+    }
+  }
+};
+
 const prodUrl = 'https://orchideats.com';
 
 const production: config = {
@@ -241,7 +331,7 @@ const getConfig = (env?: string) => {
   if (env === 'development') {
     return development;
   } else if (env === 'test') {
-    return development;
+    return stage;
   } else if (env === 'production') {
     return production;
   }
