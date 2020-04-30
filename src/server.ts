@@ -42,7 +42,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
 // to add a 1 time charge to the subscription. 
 
-// do the optimistic updates
+// place order without logging int doenst say anything
+
 
 /**
  * todo prevent cross state orders
@@ -119,7 +120,7 @@ const start = async () => {
 
   const port = activeConfig.server.app.port;
   webServer.listen(port, () => {
-    console.log(`API Server is now running at https://localhost:${port}${apolloServer.graphqlPath}`);
+    console.log(`API Server is now running at ${activeConfig.server.app.url}:${port}${apolloServer.graphqlPath}`);
   });
 };
 

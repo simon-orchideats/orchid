@@ -338,6 +338,7 @@ const getConfig = (env?: string) => {
     console.log('running production');
     return production;
   }
+  console.log('running default');
   return development;
 }
 
