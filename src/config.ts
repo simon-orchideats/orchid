@@ -218,7 +218,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 `,
     },
     elastic: {
-      node: 'http://6cafda29.ngrok.io',
+      node: 'http://e2df72e5.ngrok.io',
       auth: {
         username: undefined,
         password: undefined,
