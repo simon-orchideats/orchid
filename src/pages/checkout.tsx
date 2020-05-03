@@ -163,14 +163,15 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validateAddressRef.current!()) {
       isValid = false;
     }
-    if (!consumer && !accountName) {
+    console.log('consumer', consumer);
+    if (!consumer.data && !accountName) {
       setAccountNameError('Your name is incomplete');
       isValid = false;
     }
-    if (!consumer && !validateEmailRef.current!()) {
+    if (!consumer.data && !validateEmailRef.current!()) {
       isValid = false;
     }
-    if (!consumer && !password) {
+    if (!consumer.data && !password) {
       setPasswordError('Your password is incomplete');
       isValid = false;
     }

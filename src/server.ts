@@ -42,9 +42,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
 // to add a 1 time charge to the subscription. 
 
-// place order without logging int doenst say anything
-
-
 /**
  * todo prevent cross state orders
  */
