@@ -904,7 +904,7 @@ PUT /orders/
           "tip": {
             "type": "integer"
           },
-          "mealPlans": {
+          "mealPrices": {
             "properties": {
               "stripePlanId": {
                 "type": "keyword"
@@ -920,9 +920,6 @@ PUT /orders/
           "deliveryFee": {
             "type": "integer"
           },
-          "total": {
-            "type": "integer"
-          },
           "percentFee": {
             "type": "float"
           },
@@ -936,7 +933,7 @@ PUT /orders/
         "format": "epoch_millis"
       },
       "donationCount": {
-        "type": "float"
+        "type": "integer"
       }
     }
   }
@@ -1024,7 +1021,7 @@ PUT /consumers/
               }
             }
           },
-          "schedule": {
+          "schedules": {
             "properties": {
               "day": {
                 "type": "integer"
