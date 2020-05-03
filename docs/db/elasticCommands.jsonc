@@ -34,7 +34,31 @@ GET /rests/_search?
     "bool": {
       "filter": {
         "term": {
-          "profile.name": "Malibu Diner"
+          "profile.name.keyword": "Gypsy Grill"
+        }
+      }
+    }
+  }
+}
+
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|101158809309420984617"
+              }
+            }
+          ],
+          "must_not": {
+            "exists": {
+              "field": "stripeInvoiceId"
+            }
+          }
         }
       }
     }
@@ -63,6 +87,55 @@ GET /orders/_search?
   }
 }
 
+GET /orders/_search?
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveries.deliveryDate": {
+                  "gte": 1587790071465
+                }
+              }
+            },
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|100290693486600806765"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+GET /orders/_search?
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|103422073464046300964"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+GET /consumers/_doc/auth0|5e9f4b636afacb0cbb116bf9
+
+
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
 
 GET /orders/_search?
@@ -89,10 +162,90 @@ GET /orders/_search?
 ############################
 
 ######### UPDATE ###########
+
+
+
+POST orders/_update/7U-sqnEB6wdrMHzP4nIs
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        ctx._source.deliveries[i].status = 'Open';
+      }    
+    """,
+    "lang": "painless"
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        if (ctx._source.deliveries[i].deliveryDate > params.limit) {
+          ctx._soure.deliveries[i].status = 'Confirmed';
+        }
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+                "range": {
+                  "deliveries.deliveryDate": {
+                    "gte": 1587715138726
+                  }
+                }
+            },
+            {
+              "terms": {
+                "deliveries.status": ["Open", "Skipped"]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        ctx._source.deliveries[i].status = 'Confirmed';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+
 POST orders/_update_by_query
 {
   "doc": {
-    "status": "Skipped"
+    "status": "Confirmed"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      ctx._source.taxRate = 0.06625;
+    """,
+    "lang": "painless"
   },
   "query": { 
     "match_all": {}
@@ -154,6 +307,27 @@ POST orders/_update_by_query
     }
   }
 }
+
+
+POST /orders/_update/VhIc3HEB_wcVsCnhQqvF 
+{
+  "script" : {
+    "source": """
+      //ctx._source.stripeInvoiceId = null;
+      //ctx._source.invoiceDate = 1588125716000L;
+      //ctx._source.deliveries[1].deliveryDate = 1588708794000L;
+      //ctx._source.deliveries[2].deliveryDate = 1588697994000L;
+      ctx._source.deliveries[1].status = "Open";
+      ctx._source.deliveries[2].status = "Open";
+
+      for(int i = 0; i < ctx._source.deliveries.length - 1; i++) {
+      }
+    """,
+    "lang": "painless"
+  }
+}
+
+
 POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
 {
   "script" : {
@@ -165,6 +339,30 @@ POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
     "lang": "painless"
   }
 }
+
+
+
+
+
+
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      def menu = ctx._source.menu;
+      for (int i = 0; i < menu.length; i++) {
+        menu[i].planName = 'Standard';
+        menu[i].stripePlanId = 'plan_HAP4XaO5a1ewwt';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
 
 
 
@@ -234,6 +432,18 @@ DELETE rests
 DELETE orders
 DELETE consumers
 
+POST orders/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
+
+
+
+DELETE orders/_doc/SomqunEB3mzlaF51TZZT
+
+
 POST consumers/_delete_by_query
 {
   "query": { 
@@ -259,7 +469,44 @@ POST rests/_delete_by_query
 {
   "query": {
     "term": {
-      "profile.name.keyword": "Shadman"
+      "profile.name.keyword": "Gypsy Grill"
+    }
+  }
+}
+
+
+POST orders/_delete_by_query
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|101158809309420984617"
+              }
+            },
+            {
+              "bool": {
+                "should": [
+                  {
+                    "term": { "deliveries.status": "Open" }
+                  },
+                  {
+                    "term": { "deliveries.status": "Skipped" }
+                  }
+                ]
+              }
+            }
+          ],
+          "must_not": {
+            "exists": {
+              "field": "stripeInvoiceDate"
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -269,7 +516,25 @@ POST rests/_delete_by_query
 
 ######### MAPPING ##########
 
-PUT /rests/
+GET /rests/_mapping
+GET /orders/_mapping
+GET /consumers/_mapping
+
+
+PUT rests/_mapping
+{
+  "properties": {
+    "location": {
+      "properties": {
+        "timezone": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+PUT /rests2/
 {
   "mappings": {
     "dynamic": false,
@@ -305,9 +570,6 @@ PUT /rests/
                 "type": "keyword"
               }
             }
-          },
-          "timezone": {
-            "type": "keyword"
           },
           "geo": {
             "type": "geo_point"
@@ -553,6 +815,9 @@ PUT /orders/
               },
               "planName": {
                 "type": "keyword"
+              },
+              "taxRate": {
+                "type": "float"
               }
             }
           }
@@ -617,6 +882,9 @@ PUT /orders/
           }
         }
       },
+      "stripeInvoiceId": {
+        "type": "keyword"
+      },
       "stripeSubscriptionId": {
         "type": "keyword"
       },
@@ -631,12 +899,12 @@ PUT /orders/
       "costs": {
         "properties": {
           "tax": {
-            "type": "float"
+            "type": "integer"
           },
           "tip": {
-            "type": "float"
+            "type": "integer"
           },
-          "mealPrices": {
+          "mealPlans": {
             "properties": {
               "stripePlanId": {
                 "type": "keyword"
@@ -645,18 +913,21 @@ PUT /orders/
                 "type": "keyword"
               },
               "mealPrice": {
-                "type": "float"
+                "type": "integer"
               }
             }
           },
+          "deliveryFee": {
+            "type": "integer"
+          },
           "total": {
-            "type": "float"
+            "type": "integer"
           },
           "percentFee": {
             "type": "float"
           },
           "flatRateFee": {
-            "type": "float"
+            "type": "integer"
           }
         }
       },
@@ -753,7 +1024,7 @@ PUT /consumers/
               }
             }
           },
-          "schedules": {
+          "schedule": {
             "properties": {
               "day": {
                 "type": "integer"
@@ -1506,8 +1777,6 @@ POST rests/_doc/
   }
 }
 
-
-
 POST rests/_doc/
 {
   "createdDate" : 1585714539021,
@@ -1758,3 +2027,179 @@ POST rest/_doc/
     ]
   }
 }
+
+###############################
+
+
+POST _reindex
+{
+  "source": {
+    "index": "orders"
+  },
+  "dest": {
+    "index": "orders2"
+  },
+  "script": {
+    "source": """
+      ctx._source.deliveries = [];
+      params.delivery.deliveryTime = ctx._source.deliveryTime;
+      params.delivery.deliveryDate = ctx._source.deliveryDate;
+      params.delivery.meals = ctx._source.rest.meals;
+      params.delivery.status = ctx._source.status;
+      for (int i = 0; i < params.delivery.meals.length; i++) {
+        params.delivery.meals[i].tags = [];
+        params.delivery.meals[i].restId = ctx._source.rest.restId;
+        params.delivery.meals[i].restName = "name";
+        params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
+        params.delivery.meals[i].planName = "Standard";
+      }
+      ctx._source.deliveries.add(params.delivery);
+      ctx._source.remove("status");
+      ctx._source.remove("rest");
+      ctx._source.remove("deliveryTime");
+      ctx._source.remove("deliveryDate");
+      ctx._source.costs.mealPlans = [];
+      params.mealPlan.mealPrice = ctx._source.costs.mealPrice;
+      ctx._source.costs.mealPlans.add(params.mealPlan);
+      ctx._source.remove("costs.mealPrice");
+    """,
+    "params": {
+      "delivery": {},
+      "mealPlan": {
+        "stripePlanId": "plan_H4mjyvjuE1fObC",
+        "planName": "Standard"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+POST /orders/_doc
+{
+  "consumer" : {
+    "userId" : "google-oauth2|115801346721485756808",
+    "profile" : {
+      "name" : "simon vuong",
+      "email" : "simon.orchideats@gmail.com",
+      "phone" : "6095138166",
+      "card" : {
+        "last4" : "4242",
+        "expMonth" : 4,
+        "expYear" : 2024
+      },
+      "destination" : {
+        "address" : {
+          "address1" : "16 rainbow dr",
+          "city" : "mays landing",
+          "state" : "NJ",
+          "zip" : "08330"
+        },
+        "instructions" : ""
+      }
+    }
+  },
+  "stripeSubscriptionId" : "sub_HAnXi6Th5ibEs5",
+  "cartUpdatedDate" : 1587974655544,
+  "createdDate" : 1587974655544,
+  "invoiceDate" : 1589184255000,
+  "costs" : {
+    "tax" : 794,
+    "tip" : 0,
+    "mealPrices" : [
+      {
+        "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+        "planName" : "Standard",
+        "mealPrice" : 999
+      }
+    ],
+    "percentFee" : 0,
+    "flatRateFee" : 0,
+    "deliveryFee" : 400
+  },
+  "deliveries" : [
+    {
+      "deliveryDate" : 1588230708308,
+      "deliveryTime" : "ThreePToFiveP",
+      "discount" : null,
+      "meals" : [
+        {
+          "mealId" : "Cl0wYEgZ3fg1kk7qzRQ45",
+          "img" : "/menu/precious-chinese/pepper-steak-w-onions.png",
+          "name" : "Pepper Steak w/ Onions",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "EYfOpNG2KTRNhHVZSGHmm",
+          "img" : "/menu/precious-chinese/beef-over-broccoli.jpg",
+          "name" : "Beef w/ Broccoli",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "4T5aQ9FLI8lyoA3zoToKt",
+          "img" : "/menu/precious-chinese/tangerine-chicken.png",
+          "name" : "Tangerine Chicken",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "XQNJ7ElD4zFmjmvdOiTdc",
+          "img" : "/menu/precious-chinese/general-tsos-chicken.png",
+          "name" : "General Tsos Chicken",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        }
+      ],
+      "status" : "Open"
+    }
+  ],
+  "donationCount" : 0
+}
+
+
+
+
+
+
+GET /orders/_doc/YIntyXEB3mzlaF51oZa3
+
+
+
+
+
+
+
+
+
+
+
