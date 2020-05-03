@@ -52,9 +52,6 @@ const RenewalChooser: React.FC<{
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant='subtitle2' className={classes.subtitle}>
-            We only pick 1 restaurant per week
-          </Typography>
           <Typography
             component='p'
             variant='caption'
