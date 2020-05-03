@@ -19,7 +19,7 @@ import { Client, ApiResponse } from '@elastic/elasticsearch';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import moment from 'moment-timezone';
-import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput  } from '../../order/deliveryModel';
+import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput } from '../../order/deliveryModel';
 
 const ORDER_INDEX = 'orders';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
@@ -494,25 +494,54 @@ class OrderService {
       const schedule = plan.schedules;
       const numDeliveries = schedule.length;
       const mealsPerDelivery = Math.floor(totalMeals / numDeliveries);
-      let remainingMeals = totalMeals % numDeliveries;
       const chooseRandomRest = getItemChooser(rests);
       for (let i = 0; i < numDeliveries; i++) {
-        const rest = chooseRandomRest();
-        const meals = chooseRandomMeals(
-          rest.menu,
-          mealsPerDelivery + remainingMeals,
-          rest._id,
-          rest.profile.name,
-          rest.taxRate,
-        );
-        remainingMeals = 0;
+        let firstRest;
+        const meals: IDeliveryMeal[] = []
+        for (let j = 0; j < mealsPerDelivery; j++) {
+          const rest = chooseRandomRest();
+          if (!firstRest) firstRest = rest;
+          Cart.addMealsToExistingDeliveryMeals(
+            chooseRandomMeals(
+              rest.menu,
+              1,
+              rest._id,
+              rest.profile.name,
+              rest.taxRate,
+            ),
+            meals,
+          )
+        }
+        if (!firstRest) throw new Error('Missing first rest');
+        console.log('pushing', meals.length);
         deliveries.push({
-          deliveryDate: getNextDeliveryDate(schedule[i].day, undefined, rest.location.timezone).add(addedWeeks, 'w').valueOf(),
+          deliveryDate: getNextDeliveryDate(schedule[i].day, undefined, firstRest.location.timezone).add(addedWeeks, 'w').valueOf(),
           deliveryTime: schedule[i].time,
           discount: null,
           meals,
-        })
+        });
       }
+
+      const numRemainingMeals= totalMeals % numDeliveries;
+      const remainingMeals: IDeliveryMeal[] = [];
+      for (let i = 0; i < numRemainingMeals; i++) {
+        const rest = chooseRandomRest();
+        Cart.addMealsToExistingDeliveryMeals(
+          chooseRandomMeals(
+            rest.menu,
+            1,
+            rest._id,
+            rest.profile.name,
+            rest.taxRate,
+          ),
+          remainingMeals,
+        )
+      }
+      
+      Cart.addMealsToExistingDeliveryMeals(
+        remainingMeals,
+        deliveries[0].meals,
+      );
 
       const automatedOrder = Order.getNewOrder(
         consumer,

@@ -218,10 +218,10 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 `,
     },
     elastic: {
-      node: 'http://5d83698d.ngrok.io',
+      node: 'https://dcc89395653441afa3d95a22100c9146.us-east-1.aws.found.io:9243',
       auth: {
-        username: undefined,
-        password: undefined,
+        username: 'elastic',
+        password: process.env.ELASTIC_PASS,
       }
     },
     mailChimp: {

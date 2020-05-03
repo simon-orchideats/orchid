@@ -62,22 +62,6 @@ const getNextMealsIterator = (meals: DeliveryMeal[]) => {
   };
 }
 
-const addMealsToDelivery = (newMeals: DeliveryMeal[], deliveryInput: DeliveryInput) => {
-  const deliveryMeals = deliveryInput.Meals;
-  newMeals.forEach(newMeal => {
-    for (let i = 0; i < deliveryMeals.length; i++) {
-      if (deliveryMeals[i].MealId === newMeal.MealId) {
-        deliveryMeals[i] = new DeliveryMeal({
-          ...newMeal,
-          quantity: deliveryMeals[i].quantity + 1,
-        });
-        return;
-      }
-    }
-    deliveryMeals.push(newMeal);
-  })
-}
-
 export class Cart implements ICart {
   readonly donationCount: number
   readonly deliveries: DeliveryInput[];
@@ -120,6 +104,21 @@ export class Cart implements ICart {
     return newCart;
   }
 
+  public static addMealsToExistingDeliveryMeals = (newMeals: IDeliveryMeal[], existingMeals: IDeliveryMeal[]) => {
+    newMeals.forEach(newMeal => {
+      for (let i = 0; i < existingMeals.length; i++) {
+        if (existingMeals[i].mealId === newMeal.mealId) {
+          existingMeals[i] = new DeliveryMeal({
+            ...newMeal,
+            quantity: existingMeals[i].quantity + 1,
+          });
+          return;
+        }
+      }
+      existingMeals.push(newMeal);
+    })
+  }
+
   public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]) {
     Object.values(restMeals).forEach(restMeals => {
       const numMealsInRest = Cart.getRestMealCount(restMeals.mealPlans); // 9
@@ -138,8 +137,7 @@ export class Cart implements ICart {
         } else {
           meals = getNextMeals(numRemainingMealsInRest);
         }
-        meals = getNextMeals(numMealsNeededInDelivery);
-        addMealsToDelivery(meals, deliveries[i]);
+        Cart.addMealsToExistingDeliveryMeals(meals, deliveries[i].Meals);
       }
       const remainingMeals = numMealsInRest - numAddedMeals;
       if (remainingMeals > 0) {
@@ -157,11 +155,11 @@ export class Cart implements ICart {
         }
         const meals = getNextMeals(remainingMeals);
         if (deliveryWithSameRest > -1) {
-          addMealsToDelivery(meals, deliveries[deliveryWithSameRest]);          
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[deliveryWithSameRest].Meals);          
         } else if (deliveryWithDefaultDay > -1) {
-          addMealsToDelivery(meals, deliveries[deliveryWithDefaultDay]);          
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[deliveryWithDefaultDay].Meals);          
         } else {
-          addMealsToDelivery(meals, deliveries[0]);          
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[0].Meals);          
         }
       }
     })
