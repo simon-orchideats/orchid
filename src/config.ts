@@ -154,7 +154,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
 };
 
 
-const stageUrl = 'https://orchid-dev.herokuapp.com';
+const stageUrl = 'https://orchid-stage.herokuapp.com';
 
 const stage: config = {
   client: {
