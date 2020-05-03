@@ -1,6 +1,5 @@
-import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Link } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { MIN_MEALS } from '../../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -17,9 +16,6 @@ const useStyles = makeStyles(theme => ({
   verticalPadding: {
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
-  },
-  link: {
-    color: theme.palette.common.link
   },
 }))
 
@@ -72,31 +68,7 @@ const Faq = () => {
         />
         <Expander
           q='How many restaurants can I pick?'
-          n={
-            <>
-              <Typography variant='body1'>
-                Currently we only offer 1 restaurant per week, but we understand that variety is important! We're
-                quickly adding the option to pick additional restaurants for every {MIN_MEALS} meals in your plan. Stay subscribed
-                to our emails or follow us on&nbsp;
-                <Link
-                  component='button'
-                  variant='body1'
-                  className={classes.link}
-                >
-                  <a href='https://www.facebook.com/orchidFB'>Facebook</a>
-                </Link>
-                &nbsp;or&nbsp;
-                <Link
-                  component='button'
-                  variant='body1'
-                  className={classes.link}
-                >
-                  <a href='https://www.instagram.com/orchidIG'>Instagram</a>
-                </Link>
-                &nbsp;to be the first to hear about updates and new features.
-              </Typography>
-            </>
-          }
+          a="As many as you want!"
         />
         <Expander
           q="Do I need to pick meals every week?"
@@ -105,10 +77,10 @@ const Faq = () => {
         />
         <Expander
           q='How do I update my subscription or delivery?'
-          a="You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
-          automatically update your upcoming deliveries to reflect your newest preferences. You can also perform a 1-time
-          update on a specific delivery from the Upcoming Deliveries page as long as it's 2 days before your delivery.
-          If you upgrade or downgrade your plan for a single delivery, we'll charge or refund you the difference."
+          a={`You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
+          affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can make
+          1-time manual updates on a specific order from the Upcoming Deliveries if the upcoming deliveries require
+          any adjustments`}
         />
         <Expander
           q='Can I skip a week of delivery?'
@@ -116,8 +88,8 @@ const Faq = () => {
         />
         <Expander
           q='How often am I charged?'
-          a="Orchid will automatically process your credit card on file 2 days prior to your next delivery.
-          However if you change your preferred delivery day we automatically update your billing due date on your account."
+          a="Orchid will automatically process your credit card on file at the end of each weekly cycle based
+          on the number of meals confirmed for that week. A weekly cycle begins the day you subscribe."
         />
         <Expander
           q='Will I be locked into a contract?'

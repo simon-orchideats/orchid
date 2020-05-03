@@ -218,7 +218,7 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title='Pick the meal plan'
-            description='Subscribe and save! Choose 4, 8, or 12 meals per week to fit your lifestyle. Need to cancel, 
+            description='Subscribe and save! Choose any number of meals per week to fit your lifestyle. Need to cancel, 
             change menus, or skip a week? Not a problem.'
             dividerTitle='Step'
             dividerSubtitle='1'

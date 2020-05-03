@@ -156,10 +156,10 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Chef-cooked meals delivered weekly from local restaurants
+          Your week, catered
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Eat from your favorite restaurants and save.
+          Redefine the way you eat.
           <br />
           Weekly meals starting at $9.99
         </Typography>
