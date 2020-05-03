@@ -18,6 +18,9 @@ const useStyles = makeStyles(theme => ({
   addButton: {
     marginTop: theme.spacing(1),
   },
+  orange: {
+    color: theme.palette.warning.main,
+  },
 }));
 
 const PreferredSchedule: React.FC<{
@@ -38,6 +41,43 @@ const PreferredSchedule: React.FC<{
 }) => {
   const classes = useStyles();
   const remainingDeliveries = allowedDeliveries - schedules.length;
+  let extraDeliveries;
+  if (remainingDeliveries === 0) {
+    if (allowedDeliveries > 1) {
+      extraDeliveries = (
+        <Typography variant='body1'>
+          *Max deliveries reached
+        </Typography>
+      );
+    }
+  } else if (remainingDeliveries < 0) {
+    extraDeliveries = (
+      <Typography variant='body1' className={classes.orange}>
+        *Too many deliveries. Please remove {Math.abs(remainingDeliveries)}
+      </Typography>
+    );
+  } else {
+    extraDeliveries = (
+      <>
+        <Typography variant='body1' color='textSecondary'>
+          * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
+        </Typography>
+        <Typography variant='body1' color='textSecondary'>
+          (1 delivery for every {MIN_MEALS} meals)
+        </Typography>
+        <Button
+          variant='outlined'
+          color='primary'
+          fullWidth
+          onClick={addSchedule}
+          className={classes.addButton}
+        >
+          Add a delivery
+        </Button>
+      </>
+    )
+  }
+  
   return (
     <>
       {schedules.map((s, i) => (
@@ -75,31 +115,7 @@ const PreferredSchedule: React.FC<{
           />
         </div>
       ))}
-      {
-        remainingDeliveries === 0 ?
-          allowedDeliveries > 1 &&
-          <Typography variant='body1'>
-            *Max deliveries reached
-          </Typography>
-        :
-        <>
-          <Typography variant='body1' color='textSecondary'>
-            * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
-          </Typography>
-          <Typography variant='body1' color='textSecondary'>
-            (1 delivery for every {MIN_MEALS} meals from the <i>same</i> restaurant)
-          </Typography>
-          <Button
-            variant='outlined'
-            color='primary'
-            fullWidth
-            onClick={addSchedule}
-            className={classes.addButton}
-          >
-            Add a delivery
-          </Button>
-        </>
-      }
+      {extraDeliveries}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { MealPlan } from './../consumer/consumerModel';
+import { MealPlan, defaultDeliveryDay } from './../consumer/consumerModel';
 import { MIN_MEALS, PlanNames } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
@@ -106,6 +106,8 @@ export class Cart implements ICart {
   public get Zip() { return this.zip }
 
   public setScheduleAndAutoDeliveries(schedules: Schedule[], start?: number) {
+    // we do this so that if a customer decides to add/remove meals AFTER setting deliveries, that
+    // we don't 'reset' their preferred deliveries
     if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
       return this;
     }
@@ -119,23 +121,49 @@ export class Cart implements ICart {
   }
 
   public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]) {
-    let scheduleIndex = 0;
     Object.values(restMeals).forEach(restMeals => {
-      const numMeals = Cart.getRestMealCount(restMeals.mealPlans);
-      const numDeliveries = Math.floor(numMeals / MIN_MEALS);
-      const numLeftOverMeals = numMeals % MIN_MEALS;
+      const numMealsInRest = Cart.getRestMealCount(restMeals.mealPlans); // 9
       const getNextMeals = getNextMealsIterator(restMeals.meals);
-      for (let i = 0; i < numDeliveries; i++) {
-        let meals;
-        if (i === numDeliveries - 1) {
-          meals = getNextMeals(MIN_MEALS + numLeftOverMeals);
+      let numAddedMeals = 0;
+      let meals;
+      for (let i = 0; i < deliveries.length; i++) {
+        const numMealsInDelivery = Cart.getNumMeals(deliveries[i].Meals);
+        const numMealsNeededInDelivery = MIN_MEALS - numMealsInDelivery;
+        let numRemainingMealsInRest = numMealsInRest - numAddedMeals;
+        if (numMealsNeededInDelivery <= 0) continue;
+        if (numRemainingMealsInRest > numMealsNeededInDelivery) {
+          numRemainingMealsInRest -= numMealsNeededInDelivery;
+          numAddedMeals += numMealsNeededInDelivery;
+          meals = getNextMeals(numMealsNeededInDelivery);
         } else {
-          meals = getNextMeals(MIN_MEALS);
+          meals = getNextMeals(numRemainingMealsInRest);
         }
-        scheduleIndex = scheduleIndex % deliveries.length;
-        addMealsToDelivery(meals, deliveries[scheduleIndex]);
-        scheduleIndex++;
-      }                                                                                         
+        meals = getNextMeals(numMealsNeededInDelivery);
+        addMealsToDelivery(meals, deliveries[i]);
+      }
+      const remainingMeals = numMealsInRest - numAddedMeals;
+      if (remainingMeals > 0) {
+        let deliveryWithSameRest = -1;
+        let deliveryWithDefaultDay = -1;
+        for (let i = 0; i < deliveries.length; i++) {
+          if (deliveryWithSameRest === -1) {
+            if (deliveries[i].Meals.find(m => m.RestId === restMeals.meals[0].RestId)) {
+              deliveryWithSameRest = i;
+            }
+          }
+          if (moment(deliveries[i].DeliveryDate).day() === defaultDeliveryDay) {
+            deliveryWithDefaultDay = i;
+          }
+        }
+        const meals = getNextMeals(remainingMeals);
+        if (deliveryWithSameRest > -1) {
+          addMealsToDelivery(meals, deliveries[deliveryWithSameRest]);          
+        } else if (deliveryWithDefaultDay > -1) {
+          addMealsToDelivery(meals, deliveries[deliveryWithDefaultDay]);          
+        } else {
+          addMealsToDelivery(meals, deliveries[0]);          
+        }
+      }
     })
   }
 
@@ -254,27 +282,28 @@ export class Cart implements ICart {
     }, [])
   }
 
-  public getStandardMealCount() {
-    return Object.values(this.restMeals)
+  public static getStandardMealCount(cart: Cart) {
+    return Object.values(cart.RestMeals)
       .reduce<number>((sum, data) => {
         const standardCount = data.mealPlans.find(p => p.PlanName === PlanNames.Standard)?.MealCount;
         sum = sum + (standardCount || 0);
         return sum;
-      }, 0) + this.donationCount;
+      }, 0) + cart.DonationCount;
   }
 
-  public static getAllowedDeliveries(restMeals: RestMeals) {
+  public static getAllowedDeliveries(cart: Cart) {
     return Math.max(
-      Object.values(restMeals).reduce(
-        (sum, restMeal) => sum + Math.floor(Cart.getRestMealCount(restMeal.mealPlans) / MIN_MEALS),
-        0
-      ),
+      Math.floor(Cart.getStandardMealCount(cart) / 4),
       1
     )
   }
 
   public static getRestMealCount(mealPlans: MealPlan[]) {
     return mealPlans.reduce((sum, p) => sum + p.MealCount, 0);
+  }
+
+  public static getNumMeals(meals: IDeliveryMeal[]) {
+    return meals.reduce((sum, m) => sum + m.quantity, 0);
   }
 
   public getCartInput(
@@ -387,14 +416,6 @@ export class Cart implements ICart {
         mealCount: currMealPlans[currMealPlanIndex].MealCount - 1,
       })
     }
-    
-    if (currMealPlans[currMealPlanIndex].MealCount === 0) {
-      currMealPlans.splice(currMealPlanIndex, 1);
-      if (currMealPlans.length === 0) {
-        delete newCart.RestMeals[restId];
-      }
-      return newCart;
-    }
 
     if (targetMeal.Quantity === 1) {
       restMeals.meals.splice(index, 1);
@@ -403,6 +424,13 @@ export class Cart implements ICart {
         ...targetMeal,
         quantity: targetMeal.Quantity - 1,
       })
+    }
+    
+    if (currMealPlans[currMealPlanIndex].MealCount === 0) {
+      currMealPlans.splice(currMealPlanIndex, 1);
+      if (currMealPlans.length === 0) {
+        delete newCart.RestMeals[restId];
+      }
     }
 
     let removedMealDeliveryIndex = -1;
@@ -430,13 +458,6 @@ export class Cart implements ICart {
       } else {
         newCart.Deliveries[removedMealDeliveryIndex].Meals.splice(removedMealMealsIndex, 1);
       }
-    }
-
-    const schedules = newCart.Schedules;
-    if (schedules.length > 1) {
-      const allowedDeliveries = Cart.getAllowedDeliveries(newCart.RestMeals);
-      const removeCount = schedules.length - allowedDeliveries;
-      schedules.splice(schedules.length - removeCount);
     }
 
     return newCart;

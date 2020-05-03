@@ -1,5 +1,5 @@
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
-import { IPlan } from './../../plan/planModel';
+import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
@@ -912,8 +912,8 @@ class OrderService {
       const totalCount = targetOrder.deliveries.reduce((counts, d) =>
         d.meals.reduce((counts, m) => counts += m.quantity, counts)
       , 0);
-      if (totalCount === 0  && (targetOrder.donationCount >= 1 && targetOrder.donationCount < 4)) {
-        const msg = 'Donations must be at least 4 before skipping this delivery';
+      if (totalCount === 0  && (targetOrder.donationCount >= 1 && targetOrder.donationCount < MIN_MEALS)) {
+        const msg = `Donations must be at least ${MIN_MEALS} before skipping this delivery`;
         console.warn(
           '[OrderService]',
           `${msg}. targerOrder consumer '${targetOrder.consumer.userId}', signedInUser '${res.signedInUser._id}'`
@@ -1002,6 +1002,7 @@ class OrderService {
       try {
         const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
           costs: {
+            //todo simon: update this to include taxes... and flat rate per delivery
             ...targetOrder.costs,
             mealPrices
           },

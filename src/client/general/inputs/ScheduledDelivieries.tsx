@@ -83,14 +83,10 @@ const ScheduleDeliveries: React.FC<{
   
   let hasError = false;
   if (setError) {
-    for (let i = 0; i < restMealsPerDelivery.length; i++) {
-      const restMeals = Object.values(restMealsPerDelivery[i]);
-      for (let j = 0; j < restMeals.length; j++) {
-        if (Cart.getRestMealCount(restMeals[j].mealPlans) < MIN_MEALS) {
-          hasError = true;
-          break;
-        }
-        if (hasError) break;
+    for (let i = 0; i < deliveries.length; i++) {
+      if (Cart.getNumMeals(deliveries[i].Meals) < MIN_MEALS) {
+        hasError = true;
+        break;
       }
       if (hasError) break;
     }
@@ -141,6 +137,16 @@ const ScheduleDeliveries: React.FC<{
                 (Delivery {d.Status.toLowerCase()})
               </Typography>
             }
+            {
+              Cart.getNumMeals(d.Meals) < MIN_MEALS &&
+              <Typography
+                variant='body1'
+                className={`${classes.orange} ${classes.paddingBottom}`}
+                align='center'
+              >
+                Minimum {MIN_MEALS} meals per delivery
+              </Typography>
+            }
           </div>
           {
             d.Meals.length === 0 ?
@@ -169,16 +175,6 @@ const ScheduleDeliveries: React.FC<{
                 <Typography variant='subtitle1' className={`${classes.row} ${classes.paddingBottom}`}>
                   {restMeal.meals[0].RestName}
                 </Typography>
-                {
-                  Cart.getRestMealCount(restMeal.mealPlans) < MIN_MEALS &&
-                  <Typography
-                    variant='body1'
-                    className={`${classes.orange} ${classes.paddingBottom}`}
-                    align='center'
-                  >
-                    Minimum {MIN_MEALS} meals per restaurant
-                  </Typography>
-                }
                 {restMeal.meals.map(m => (
                   <div key={m.MealId} className={classes.row}>
                     {

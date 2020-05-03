@@ -7,6 +7,7 @@ import { Tier, PlanNames } from "../../plan/planModel";
 import moment from "moment";
 import { Schedule } from "../../consumer/consumerModel";
 import { deliveryFee } from "../../order/costModel";
+import { Cart } from "../../order/cartModel";
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -47,7 +48,7 @@ const CheckoutCart: React.FC<props> = ({
   const cart = useGetCart();
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
-  const mealCount = cart.getStandardMealCount();
+  const mealCount = Cart.getStandardMealCount(cart);
   const mealPrice = Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data);
   const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
   const button = (

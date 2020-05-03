@@ -11,15 +11,9 @@ import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
   let suggestion: string[] = [];
-  Object.values(cart.RestMeals).forEach(restMeals => {
-    const numMealsFromRest = Cart.getRestMealCount(restMeals.mealPlans);
-    if (numMealsFromRest < minMeals) {
-      suggestion.push(`${numMealsFromRest}/${minMeals} meals for ${restMeals.meals[0].RestName}`);
-    }
-  });
-  const mealCount = cart.getStandardMealCount()
-  if (cart.DonationCount < minMeals && cart.DonationCount > 0 && mealCount === cart.DonationCount) {
-    suggestion.push(`Min ${minMeals} donations when missing other meals`)
+  const mealCount = Cart.getStandardMealCount(cart)
+  if (mealCount < minMeals) {
+    suggestion.push(`Need ${minMeals - mealCount} more meals`);
   }
   return suggestion;
 }
@@ -88,7 +82,7 @@ const MenuCart: React.FC<{
   const incrementDonationCount = useIncrementCartDonationCount();
   const decrementDonationCount = useDecrementCartDonationCount();
 
-  const mealCount = cart ? cart.getStandardMealCount() : 0;
+  const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
   let summary = '';
   let suggestions: string[] = [];
   if (plans.data) {

@@ -8,4 +8,4 @@ export interface ICost {
   deliveryFee: number
 }
 
-export const deliveryFee = 200;
+export const deliveryFee = 350;

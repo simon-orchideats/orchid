@@ -107,7 +107,8 @@ const delivery = () => {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
   }
-  const allowedDeliveries = useMemo(() => Cart.getAllowedDeliveries(cart.RestMeals), []);
+  const allowedDeliveries = useMemo(() => Cart.getAllowedDeliveries(cart), []);
+  const isPreferredScheduleNextDisabled = allowedDeliveries < schedules.length;
   return (
     <>
       <Container className={classes.container}>
@@ -151,6 +152,7 @@ const delivery = () => {
               variant='contained'
               color='primary'
               fullWidth
+              disabled={isPreferredScheduleNextDisabled}
               onClick={setDates}
               className={classes.nextButton}
             >

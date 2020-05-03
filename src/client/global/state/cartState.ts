@@ -336,7 +336,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     let newCart = res.cart.removeMeal(restId, mealId);
-    if (newCart.getStandardMealCount() === 0) {
+    if (Cart.getStandardMealCount(newCart) === 0) {
       newCart = new Cart({
         donationCount: newCart.DonationCount,
         restMeals: {},
