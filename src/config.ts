@@ -170,8 +170,8 @@ const stage: config = {
       key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
     },
     logRocket: {
-      // key: 'ugxrrj/orchid-dev',
-      key: '',
+      key: 'ugxrrj/orchid-dev',
+      // key: '',
     },
     analytics: {
       amplitude: {
@@ -234,8 +234,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
       hookSecret: process.env.STRIPE_HOOK_SECRET!
     },
     sentry: {
-      // dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
-      dsn: '',
+      dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
+      // dsn: '',
     },
     geo: {
       key: process.env.GEO_KEY!
