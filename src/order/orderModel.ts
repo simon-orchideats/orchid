@@ -3,7 +3,7 @@ import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { IConsumerProfile, IConsumer, IMealPlan } from './../consumer/consumerModel';
-import { ICost, deliveryFee } from './costModel';
+import { ICost, Cost } from './costModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -239,18 +239,7 @@ export class Order implements IOrder{
       console.error(err.stack);
       throw err;
     }
-    const tax = deliveries.reduce<number>((taxes, d) => 
-      taxes + d.meals.reduce<number>((sum, m) => {
-        const mealPrice = mealPrices.find(mp => mp.stripePlanId === m.stripePlanId);
-        if (!mealPrice) {
-          const err = new Error(`Could not find meal price for stipePlanId '${m.stripePlanId}'`);
-          console.error(err.stack);
-          throw err;
-        }
-        return sum + (m.taxRate * mealPrice.mealPrice * m.quantity)
-      }, 0)
-    , 0);
-  
+
     const now = moment();
     return {
       consumer: {
@@ -262,12 +251,12 @@ export class Order implements IOrder{
       createdDate: now.valueOf(),
       invoiceDate,
       costs: {
-        tax: Math.round(tax),
+        tax: Cost.getTaxes(deliveries, mealPrices),
         tip: 0,
         mealPrices,
         percentFee: 0,
         flatRateFee: 0,
-        deliveryFee: (deliveries.length - 1) * deliveryFee
+        deliveryFee: Cost.getDeliveryFee(deliveries),
       },
       deliveries: deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' })),
       donationCount,

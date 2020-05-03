@@ -1,3 +1,4 @@
+import { Cost } from './../../order/costModel';
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
@@ -928,8 +929,10 @@ class OrderService {
       const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
         costs: {
           ...targetOrder.costs,
+          tax: Cost.getTaxes(targetOrder.deliveries, mealPrices),
+          deliveryFee: Cost.getDeliveryFee(targetOrder.deliveries),
           mealPrices
-          },
+        },
         cartUpdatedDate: Date.now(),
         deliveries: targetOrder.deliveries
       }
@@ -1002,8 +1005,9 @@ class OrderService {
       try {
         const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
           costs: {
-            //todo simon: update this to include taxes... and flat rate per delivery
             ...targetOrder.costs,
+            tax: Cost.getTaxes(currentDeliveries, mealPrices),
+            deliveryFee: Cost.getDeliveryFee(currentDeliveries),
             mealPrices
           },
           donationCount: updateOptions.donationCount ? updateOptions.donationCount : targetOrder.donationCount,
