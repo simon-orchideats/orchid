@@ -1,4 +1,4 @@
-import { Cost } from './../../order/costModel';
+import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
@@ -156,7 +156,7 @@ export interface IOrderService {
     weekPrice: number,
     mealPrice: number
   ): Promise<void>
-  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries'>>
+  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'>>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'>>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
@@ -167,6 +167,12 @@ export interface IOrderService {
   ): Promise<MutationConsumerRes>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  processTaxesAndFees(
+    stripeCustomerId: string,
+    invoiceId: string,
+    costs: ICost,
+    numExtraDeliveries: number,
+  ): Promise<void>
   setOrderUsage(subscriptionItemId: string, numMeals: number, timestamp: number): Promise<void>
   setOrderStripeInvoiceId(orderId: string, invoiceId: string): Promise<void>
   removeDonations( 
@@ -513,7 +519,6 @@ class OrderService {
           )
         }
         if (!firstRest) throw new Error('Missing first rest');
-        console.log('pushing', meals.length);
         deliveries.push({
           deliveryDate: getNextDeliveryDate(schedule[i].day, undefined, firstRest.location.timezone).add(addedWeeks, 'w').valueOf(),
           deliveryTime: schedule[i].time,
@@ -556,6 +561,41 @@ class OrderService {
       })
     } catch (e) {
       console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${invoiceDate}`, e.stack);
+      throw e;
+    }
+  }
+
+  public async processTaxesAndFees(
+    stripeCustomerId: string,
+    invoiceId: string,
+    costs: ICost,
+    numExtraDeliveries: number,
+  ) {
+    try {
+      const p1 = this.stripe.invoiceItems.create({
+        amount: costs.tax,
+        invoice: invoiceId,
+        currency: 'usd',
+        customer: stripeCustomerId,
+        description: 'Taxes',
+      }).catch(e => {
+        console.error(`Failed to create taxes invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`);
+        throw e;
+      });
+      const p2 = this.stripe.invoiceItems.create({
+        amount: costs.deliveryFee,
+        invoice: invoiceId,
+        currency: 'usd',
+        customer: stripeCustomerId,
+        description: `${numExtraDeliveries} extra deliveries`,
+      }).catch(e => {
+        console.error(`Failed to create delivery fee invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`);
+        throw e;
+      });
+      await Promise.all([p1, p2]);
+      return;
+    } catch (e) {
+      console.error(`[OrderService] failed to process taxes and fees for order with invoiceId'${invoiceId}'`, e.stack);
       throw e;
     }
   }
@@ -786,7 +826,7 @@ class OrderService {
     }
   }
 
-  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries'>> {
+  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'>> {
     try {
       const order = await this.getCurrentOrder(userId);
       const newOrder: Pick<EOrder, 'deliveries'> = {
@@ -805,6 +845,7 @@ class OrderService {
       return {
         _id: order._id,
         deliveries: newOrder.deliveries,
+        costs: order.order.costs,
       };
     } catch (e) {
       console.error(`[OrderService] failed to confirmCurrentOrderDeliveries for userId '${userId}'`, e.stack);
@@ -814,9 +855,21 @@ class OrderService {
 
   async deleteCurrentOrderUnconfirmedDeliveries(userId: string): Promise<Pick<IOrder, 'deliveries' | '_id'>>  {
     try {
+      if (!this.planService) throw new Error ('PlanService not set');
+
       const order = await this.getCurrentOrder(userId);
-      const newOrder: Pick<EOrder, 'deliveries'> = {
-        deliveries: order.order.deliveries.filter(d => d.status === 'Confirmed')
+      const plans = await this.planService.getAvailablePlans();
+      const newDeliveries = order.order.deliveries.filter(d => d.status === 'Confirmed');
+      const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, newDeliveries, order.order.donationCount);
+      const costs: ICost = {
+        ...order.order.costs,
+        mealPrices,
+        tax: Cost.getTaxes(newDeliveries, mealPrices),
+        deliveryFee: Cost.getDeliveryFee(newDeliveries),
+      }
+      const newOrder: Pick<EOrder, 'deliveries' | 'costs'> = {
+        deliveries: newDeliveries,
+        costs,
       }
       try {
         await this.elastic.update({

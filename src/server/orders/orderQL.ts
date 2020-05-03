@@ -78,11 +78,20 @@ export const _OrderQL = gql`
     mealPrice: Float!
   }
 
+  type Costs {
+    tax: Float!
+    tip: Float!
+    mealPrices: [MealPrice!]!
+    percentFee: Float
+    flatRateFee: Float
+    deliveryFee: Float!
+  }
+
   type Order {
     _id: ID!
     invoiceDate: Float!
     deliveries: [Delivery!]!
-    mealPrices: [MealPrice!]!
+    costs: Costs!
     phone: String!
     name: String!
     donationCount:Int!

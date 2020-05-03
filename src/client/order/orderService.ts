@@ -26,10 +26,12 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         }
         instructions
       }
-      mealPrices {
-        stripePlanId
-        planName
-        mealPrice
+      costs {
+        mealPrices {
+          stripePlanId
+          planName
+          mealPrice
+        }
       }
       deliveries {
         deliveryTime
@@ -187,9 +189,13 @@ export const useSkipDelivery = (): [
         )
         const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
           if (order._id !== upcomingOrder._id) return upcomingOrder;
+          const copy = Order.getICopy(upcomingOrder);
           const newOrder: IOrder = {
-            ...Order.getICopy(upcomingOrder),
-            mealPrices,
+            ...copy,
+            costs: {
+              ...copy.costs,
+              mealPrices,
+            },
             deliveries: newDeliveries,
           }
           return Order.addTypenames(newOrder);
@@ -299,9 +305,14 @@ export const useRemoveDonations = (): [
         )
         const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
           if (order._id !== upcomingOrder._id) return upcomingOrder;
+          
+          const copy = Order.getICopy(upcomingOrder);
           const newOrder: IOrder = {
-            ...Order.getICopy(upcomingOrder),
-            mealPrices,
+            ...copy,
+            costs: {
+              ...copy.costs,
+              mealPrices,
+            },
             donationCount: 0,
           }
           return Order.addTypenames(newOrder);

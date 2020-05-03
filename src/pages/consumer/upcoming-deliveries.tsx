@@ -277,8 +277,8 @@ const DeliveryOverview: React.FC<{
           </Typography>
           <Typography variant='body1' className={classes.hint}>
             {
-              order.MealPrices.length > 0 ?
-              order.MealPrices.map(mp => (
+              order.Costs.MealPrices.length > 0 ?
+              order.Costs.MealPrices.map(mp => (
                 `${Order.getMealCount(order, mp.PlanName)} meals (${(mp.MealPrice / 100).toFixed(2)} ea)`
               ))
               :

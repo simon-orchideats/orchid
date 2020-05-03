@@ -1,15 +1,44 @@
-import { IMealPrice } from './orderModel';
+import { IMealPrice, MealPrice } from './orderModel';
 import { IDeliveryInput } from './deliveryModel';
 export interface ICost {
-  tax: number
-  tip: number
-  mealPrices: IMealPrice[]
-  percentFee: number
-  flatRateFee: number
-  deliveryFee: number
+  readonly tax: number
+  readonly tip: number
+  readonly mealPrices: IMealPrice[]
+  readonly percentFee: number
+  readonly flatRateFee: number
+  readonly deliveryFee: number
 }
 
-export class Cost {
+export class Cost implements ICost {
+  readonly tax: number
+  readonly tip: number
+  readonly mealPrices: MealPrice[]
+  readonly percentFee: number
+  readonly flatRateFee: number
+  readonly deliveryFee: number
+
+  constructor(cost: ICost) {
+    this.tax = cost.tax;
+    this.tip = cost.tip;
+    this.mealPrices = cost.mealPrices.map(mp => new MealPrice(mp));
+    this.percentFee = cost.percentFee;
+    this.flatRateFee = cost.flatRateFee;
+    this.deliveryFee = cost.deliveryFee;
+  }
+
+  public get Tax() { return this.tax }
+  public get Tip() { return this.tip }
+  public get MealPrices() { return this.mealPrices }
+  public get PercentFee() { return this.percentFee }
+  public get FlatRateFee() { return this.flatRateFee }
+  public get DeliveryFee() { return this.deliveryFee }
+
+  public static getICopy(c: ICost) {
+    return {
+      ...c,
+      mealPrices: c.mealPrices.map(mp => MealPrice.getICopy(mp)),
+    }
+  }
 
   public static getDeliveryFee(deliveries: IDeliveryInput[]) {
     return (deliveries.length - 1) * deliveryFee

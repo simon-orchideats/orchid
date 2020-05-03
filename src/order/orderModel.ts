@@ -128,7 +128,7 @@ export interface IOrder {
   readonly deliveries: IDelivery[]
   // destination will be removed when we support a desitnation per delivery
   readonly destination: IDestination
-  readonly mealPrices: IMealPrice[]
+  readonly costs: ICost
   readonly phone: string
   readonly name: string
   readonly donationCount: number
@@ -140,7 +140,7 @@ export class Order implements IOrder{
   readonly invoiceDate: number
   readonly deliveries: Delivery[]
   readonly destination: Destination
-  readonly mealPrices: MealPrice[]
+  readonly costs: Cost
   readonly phone: string
   readonly name: string
   readonly donationCount: number
@@ -151,7 +151,7 @@ export class Order implements IOrder{
     this.invoiceDate = order.invoiceDate;
     this.deliveries = order.deliveries.map(d => new Delivery(d))
     this.destination = new Destination(order.destination);
-    this.mealPrices = order.mealPrices.map(mp => new MealPrice(mp));
+    this.costs = new Cost(order.costs);
     this.phone = order.phone;
     this.name = order.name;
     this.donationCount = order.donationCount;
@@ -162,7 +162,7 @@ export class Order implements IOrder{
   public get InvoiceDate() { return this.invoiceDate }
   public get Deliveries() { return this.deliveries }
   public get Destination() { return this.destination }
-  public get MealPrices() { return this.mealPrices }
+  public get Costs() { return this.costs }
   public get Phone() { return this.phone }
   public get DonationCount() { return this.donationCount }
   public get Name() { return this.name }
@@ -189,7 +189,9 @@ export class Order implements IOrder{
       //@ts-ignore
       d.meals.forEach(m => m.__typename = 'DeliveryMeal');
     });
-    order.mealPrices.forEach(mp => {
+    // @ts-ignore
+    order.costs.__typename = 'Costs';
+    order.costs.mealPrices.forEach(mp => {
       //@ts-ignore
       mp.__typename = 'MealPrice';
     });
@@ -199,13 +201,13 @@ export class Order implements IOrder{
   }
 
 
-  static getICopy(order: IOrder) {
+  static getICopy(order: IOrder): IOrder {
     return {
       _id: order._id,
       invoiceDate: order.invoiceDate,
       deliveries: order.deliveries.map(d => Delivery.getICopy(d)),
       destination: Destination.getICopy(order.destination),
-      mealPrices: order.mealPrices.map(mp => MealPrice.getICopy(mp)),
+      costs: Cost.getICopy(order.costs),
       phone: order.phone,
       name: order.name,
       donationCount: order.donationCount,
@@ -219,7 +221,7 @@ export class Order implements IOrder{
       invoiceDate: order.invoiceDate,
       deliveries: order.deliveries,
       destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
-      mealPrices: order.costs.mealPrices,
+      costs: order.costs,
       phone: order.consumer.profile.phone!,
       name: order.consumer.profile.name,
       donationCount: order.donationCount,

@@ -80,7 +80,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       if (invoice.billing_reason === 'subscription_create') return;
       const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
-      // happens when subscription is canceled
+      await getOrderService().processTaxesAndFees(
+        stripeCustomerId,
+        invoice.id,
+        todaysOrder.costs,
+        todaysOrder.deliveries.length - 1,
+      )
+      // happens when subscription is canceled and we return since you can't set usage for a
+      // canceled subscription
       if (!consumer.plan) return;
       const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
       invoice.lines.data.forEach(li => {
@@ -91,7 +98,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           li.subscription_item,
           numConfirmedMeals[li.plan.id],
           timestamp
-        );
+        ).catch(e => {
+          console.error(`Failed to set order usage for order '${todaysOrder._id}'`, e.stack);
+        });
       });
     } catch (e) {
       console.error('[SubscriptionHook] failed to confirm deliveries for order', e.stack);

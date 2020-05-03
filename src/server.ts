@@ -39,9 +39,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
 
-// we also now need to listen to invoice.created and when we get that, grab the deliveryFee adn the tax and use them
-// to add a 1 time charge to the subscription. 
-
 /**
  * todo prevent cross state orders
  */
