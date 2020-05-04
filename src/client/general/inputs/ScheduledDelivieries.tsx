@@ -6,7 +6,7 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import React from "react";
 import { Schedule } from "../../../consumer/consumerModel";
 import { useMoveMealToNewDeliveryInCart } from "../../global/state/cartState";
-import { RestMeals, Cart } from "../../../order/cartModel";
+import { Cart } from "../../../order/cartModel";
 import { MIN_MEALS } from "../../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
@@ -69,10 +69,7 @@ const ScheduleDeliveries: React.FC<{
   const classes = useStyles();
   const theme = useTheme();
   const moveMealToNewDelivery = useMoveMealToNewDeliveryInCart();
-  const restMealsPerDelivery: RestMeals[] = deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
-    Cart.addMealToRestMeals(groupings, meal);
-    return groupings;
-  }, {}));
+  const restMealsPerDelivery = Cart.getRestMealsPerDelivery(deliveries);
   const moveMeal = (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
     moveMealToNewDelivery(
       meal,

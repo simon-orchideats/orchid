@@ -185,6 +185,13 @@ export class Cart implements ICart {
     })
   }
 
+  public static getRestMealsPerDelivery(deliveries: DeliveryInput[]) {
+    return deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
+      Cart.addMealToRestMeals(groupings, meal);
+      return groupings;
+    }, {}))
+  }
+
   public static addMealToRestMeals(
     restMeals: RestMeals,
     newMeal: IDeliveryMeal,

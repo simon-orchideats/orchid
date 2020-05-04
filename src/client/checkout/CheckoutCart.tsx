@@ -67,7 +67,7 @@ const CheckoutCart: React.FC<props> = ({
   , 0);
 
   const total = ((taxes + planPrice + (deliveryFee * (cart.Schedules.length - 1))) / 100).toFixed(2);
-
+  const restMealsPerDelivery = Cart.getRestMealsPerDelivery(cart.deliveries);
   return (
     <>
       {!buttonBottom && button}
@@ -93,20 +93,22 @@ const CheckoutCart: React.FC<props> = ({
             <Typography variant='h6' className={classes.paddingBottom}>
               {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
             </Typography>
-            {d.Meals.map((meal, j) => (
-              <div key={i + ',' + j + '-' + meal.RestId}>
+            {Object.values(restMealsPerDelivery[i]).map((restMeal, j) => (
+              <div key={i + ',' + j + '-' + restMeal.meals[0].RestId}>
+                <Typography variant='subtitle1' className={classes.paddingBottom}>
+                  {restMeal.meals[0].RestName}
+                </Typography>
                 {
-                  (j == 0 || d.Meals[j].RestId !== meal.RestId) &&  
-                  <Typography variant='subtitle1' className={classes.paddingBottom}>
-                    {meal.RestName}
-                  </Typography>
+                  restMeal.meals.map(m => 
+                    <CartMealGroup
+                      key={m.MealId}
+                      mealId={m.MealId}
+                      name={m.Name}
+                      img={m.Img}
+                      quantity={m.Quantity}
+                    />
+                  )
                 }
-                <CartMealGroup
-                  mealId={meal.MealId}
-                  name={meal.Name}
-                  img={meal.Img}
-                  quantity={meal.Quantity}
-                />
               </div>
             ))}
           </div>
