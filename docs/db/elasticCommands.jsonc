@@ -353,7 +353,7 @@ POST rests/_update_by_query
       def menu = ctx._source.menu;
       for (int i = 0; i < menu.length; i++) {
         menu[i].planName = 'Standard';
-        menu[i].stripePlanId = 'plan_HAP4XaO5a1ewwt';
+        menu[i].stripePlanId = 'plan_HDGgkmXFCPQTlq';
       }
     """,
     "lang": "painless"
