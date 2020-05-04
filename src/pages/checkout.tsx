@@ -163,7 +163,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validateAddressRef.current!()) {
       isValid = false;
     }
-    console.log('consumer', consumer);
     if (!consumer.data && !accountName) {
       setAccountNameError('Your name is incomplete');
       isValid = false;

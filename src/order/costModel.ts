@@ -45,8 +45,10 @@ export class Cost implements ICost {
   }
 
   public static getTaxes(deliveries: IDeliveryInput[], mealPrices: IMealPrice[]) {
-    return Math.round(deliveries.reduce<number>((taxes, d) => 
+    let maxTaxRate = 0
+    const foodTax = deliveries.reduce<number>((taxes, d) => 
       taxes + d.meals.reduce<number>((sum, m) => {
+        maxTaxRate = Math.max(m.taxRate, maxTaxRate);
         const mealPrice = mealPrices.find(mp => mp.stripePlanId === m.stripePlanId);
         if (!mealPrice) {
           const err = new Error(`Could not find meal price for stripePlanId '${m.stripePlanId}'`);
@@ -55,9 +57,10 @@ export class Cost implements ICost {
         }
         return sum + (m.taxRate * mealPrice.mealPrice * m.quantity)
       }, 0)
-    , 0));
+    , 0);
+    const deliveryTax = Cost.getDeliveryFee(deliveries) * maxTaxRate;
+    return Math.round(deliveryTax + foodTax);
   }
-  
 }
 
 export const deliveryFee = 350;

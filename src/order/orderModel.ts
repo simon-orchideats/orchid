@@ -66,7 +66,7 @@ export class MealPrice implements IMealPrice {
 
   public static getMealPriceFromDeliveries(
     plans: IPlan[],
-    newDeliveries: IDelivery[],
+    newDeliveries: IDeliveryInput[],
     donationCount: number
   ): IMealPrice[] {
     type mealCounts = {

@@ -131,7 +131,7 @@ const delivery = () => {
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Choose preferred repeat delivery dates
+                  1. Choose subscription delivery dates
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   Orchid will deliver meals at these times each week

@@ -6,8 +6,9 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import { Tier, PlanNames } from "../../plan/planModel";
 import moment from "moment";
 import { Schedule } from "../../consumer/consumerModel";
-import { deliveryFee } from "../../order/costModel";
+import { Cost } from "../../order/costModel";
 import { Cart } from "../../order/cartModel";
+import { MealPrice } from "../../order/orderModel";
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -49,7 +50,7 @@ const CheckoutCart: React.FC<props> = ({
   const plans = useGetAvailablePlans();
   if (!cart || !plans.data) return null;
   const mealCount = Cart.getStandardMealCount(cart);
-  const mealPrice = Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data);
+  const mealPrices = MealPrice.getMealPriceFromDeliveries(plans.data, cart.Deliveries, cart.DonationCount);
   const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
   const button = (
     <Button
@@ -61,11 +62,8 @@ const CheckoutCart: React.FC<props> = ({
       Place order
     </Button>
   );
-
-  const taxes = cart.Deliveries.reduce<number>((taxes, d) => 
-    taxes + d.Meals.reduce<number>((sum, m) => sum + (m.TaxRate * mealPrice * m.Quantity), 0)
-  , 0);
-
+  const taxes = Cost.getTaxes(cart.Deliveries, mealPrices);
+  const deliveryFee = Cost.getDeliveryFee(cart.Deliveries);
   const total = ((taxes + planPrice + (deliveryFee * (cart.Schedules.length - 1))) / 100).toFixed(2);
   const restMealsPerDelivery = Cart.getRestMealsPerDelivery(cart.deliveries);
   return (
@@ -120,9 +118,13 @@ const CheckoutCart: React.FC<props> = ({
           <Typography variant='body1'>
             {mealCount} meal plan
           </Typography>
-          <Typography variant='body1'>
-            ${(mealPrice / 100).toFixed(2)} ea
-          </Typography>
+          {
+            mealPrices.map(mp => (
+              <Typography variant='body1'>
+                ${(mp.mealPrice / 100).toFixed(2)} ea
+              </Typography>
+            ))
+          }
         </div>
         <div className={classes.row}>
           <Typography variant='body1'>
