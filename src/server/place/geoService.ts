@@ -12,6 +12,7 @@ export interface IGeoService {
   getGeocodeByZip: (zip: string) => Promise<{
     lat: string,
     lon: string,
+    state: state,
   } | null>
 }
 
@@ -61,7 +62,8 @@ class GeoService implements IGeoService{
 
   async getGeocodeByZip(zip: string): Promise<{
     lat: string
-    lon: state
+    lon: string,
+    state: state,
   } | null> {
     try {
       const query = `postal_code=${querystring.escape(zip)}&api_key=${activeConfig.server.geo.key}`;
@@ -75,6 +77,7 @@ class GeoService implements IGeoService{
       }
       if (jsonData.results && jsonData.results.length > 0) {
         const {
+          address_components,
           accuracy,
           accuracy_type,
           location,
@@ -83,6 +86,7 @@ class GeoService implements IGeoService{
           return {
             lat: location.lat,
             lon: location.lng,
+            state: address_components.state,
           }
         }
       }

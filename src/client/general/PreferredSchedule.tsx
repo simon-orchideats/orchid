@@ -83,7 +83,7 @@ const PreferredSchedule: React.FC<{
       {schedules.map((s, i) => (
         <div key={i}>
           <div className={classes.deliveryHeader}>
-            <DeleteIcon onClick={() => removeSchedule(i)} />
+            {i > 0 && <DeleteIcon onClick={() => removeSchedule(i)} />}
             <Typography variant='h6' className={classes.paddingLeft}>
               Delivery {i + 1}
             </Typography>
@@ -94,7 +94,7 @@ const PreferredSchedule: React.FC<{
                   color='primary'
                   className={classes.paddingLeft}
                 >
-                  (One Free Delivery Included)
+                  (Free first delivery)
                 </Typography>
               :
                 <Typography

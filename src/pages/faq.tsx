@@ -116,7 +116,7 @@ const faqs = () => {
                     variant='body1'
                     className={classes.link}
                   > 
-                    <a href='https://www.facebook.com/orchidFB'>Facebook</a>
+                    <div onClick={() => window.open('https://www.facebook.com/orchidFB')}>Facebook</div>
                   </Link>
                   &nbsp;or&nbsp;
                   <Link
@@ -124,7 +124,7 @@ const faqs = () => {
                     variant='body1'
                     className={classes.link}
                   >
-                    <a href='https://www.instagram.com/orchidIG'>Instagram</a>
+                    <div onClick={() => window.open('https://www.instagram.com/orchidIG')}>Instagram</div>
                   </Link>
                   &nbsp;to be the first to hear about updates and new features.
                 </Typography>
@@ -218,12 +218,12 @@ const faqs = () => {
           />
           <Qa
             q='Where do you deliver?'
-            a="At the time we currently deliver in Jersey City and Hoboken. We are constnatly updating our locations and
+            a="At the time we currently deliver in Jersey City and Hoboken. We are constantly updating our locations and
             will announce when we offer additional delivery locations to you."
           />
           <Qa
-            q='How much is shipping?'
-            a={`First delivery is free each week! Additional deliveries are ${(deliveryFee / 100).toFixed(2)}`}
+            q='How much is delivery?'
+            a={`First delivery is free each week! Additional deliveries are $${(deliveryFee / 100).toFixed(2)}`}
           />
           <Qa
             q='Can I skip a week of delivery?'
@@ -234,7 +234,7 @@ const faqs = () => {
           </Typography>
           <Qa
             q='How do I reset my password?'
-            a="You can logout via by clicking the top right corner of the website. Once logged out, you can click
+            a="You can logout by clicking the top right corner of the website. Once logged out, you can click
             login to go to login page. At the bottom of the login page, below entering your password, you can click
             Don't remember your password?"
           />
@@ -246,7 +246,7 @@ const faqs = () => {
           <Qa
             q='Is there an app available for download?'
             a="Unfortunately at this time no app is readily available. We are consistently making updates to our platform
-            and will norify customers via email and our social channels of any future updates."
+            and will notify customers via email and our social channels of any future updates."
           />
           <Qa
             q='How do I unsubscribe from your emails?'

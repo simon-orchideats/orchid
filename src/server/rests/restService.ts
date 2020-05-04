@@ -29,7 +29,7 @@ class RestService implements IRestService {
       if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getGeocodeByZip(zip);
       if (!geo) return [];
-      const { lat, lon } = geo;
+      const { lat, lon, state } = geo;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
@@ -40,12 +40,23 @@ class RestService implements IRestService {
               //   match_all: {}
               // },
               filter: {
-                geo_distance : {
-                  distance: '5km',
-                  'location.geo' : {
-                    lat,
-                    lon
-                  }
+                bool: {
+                  must: [
+                    {
+                      geo_distance : {
+                        distance: '2mi',
+                        'location.geo' : {
+                          lat,
+                          lon
+                        }
+                      }
+                    },
+                    {
+                      term: {
+                        'location.address.state': state
+                      }
+                    }
+                  ]
                 }
               }
             }
