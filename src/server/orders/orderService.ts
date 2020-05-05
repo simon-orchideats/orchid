@@ -150,11 +150,10 @@ const removeMealsRandomly = (meals: IDeliveryMeal[], numMealsToRemove: number) =
 
 export interface IOrderService {
   addAutomaticOrder(
+    addedWeeks: number,
     consumer: IConsumer,
-    iDate: number,
-    mealCount: number,
-    weekPrice: number,
-    mealPrice: number
+    invoiceDate: number,
+    mealPrices: IMealPrice[]
   ): Promise<void>
   confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'>>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'>>
