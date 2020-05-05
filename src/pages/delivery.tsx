@@ -188,7 +188,7 @@ const delivery = () => {
           <ExpansionPanelDetails className={classes.col}>
             <ScheduleDeliveries
               deliveries={cart.Deliveries}
-              setError={setHasScheduleError}
+              setError={cart.DonationCount === 0 ? setHasScheduleError : undefined}
               movable
             />
             {

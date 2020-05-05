@@ -135,7 +135,7 @@ const ScheduleDeliveries: React.FC<{
               </Typography>
             }
             {
-              !('Status' in d) && Cart.getNumMeals(d.Meals) < MIN_MEALS &&
+              !('Status' in d) && setError && Cart.getNumMeals(d.Meals) < MIN_MEALS &&
               <Typography
                 variant='body1'
                 className={`${classes.orange} ${classes.paddingBottom}`}

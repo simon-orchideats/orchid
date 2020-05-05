@@ -192,7 +192,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
 
   const onClickPlaceOrder = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      notify('Please fix errors', NotificationType.error, true);
+      return
+    };
     if (!stripe) {
       const err = new Error('Stripe not initialized');
       console.error(err.stack);

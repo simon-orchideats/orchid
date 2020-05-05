@@ -12,11 +12,11 @@ export const handleLoginRoute = (req: express.Request, res: express.Response) =>
   try {
     const re = req.query.redirect;
     const state = randomString(32) + '_' + re
-    const oneMinMilis = 60000;
+    const fiveMinMilis = 300000;
     res.cookie(stateRedirectCookie, state, {
       httpOnly: true,
       // secure: true, // turned off because we use ssl in prod and don't use in local
-      maxAge: oneMinMilis,
+      maxAge: fiveMinMilis,
     });
     const authorizationEndpointUrl = new URL(`https://${activeConfig.server.auth.domain}/authorize`);
     authorizationEndpointUrl.search = new URLSearchParams({

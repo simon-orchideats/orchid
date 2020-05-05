@@ -281,9 +281,12 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 secondary={consumerPhoneLabel}
               />
               <ListItemSecondaryAction>
-                <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>
-                  Edit
-                </Button>
+                {
+                  consumerPhoneLabel && 
+                  <Button className={classes.link} onClick={() => setIsUpdatingPhone(true)}>
+                    Edit
+                  </Button>
+                }
               </ListItemSecondaryAction>
             </>
           }
@@ -320,9 +323,12 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 secondary={consumerCardLabel}
               />
               <ListItemSecondaryAction>
-                <Button className={classes.link} onClick={() => setIsUpdatingCard(true)}>
-                  Edit
-                </Button>
+                {
+                  consumerCardLabel && 
+                  <Button className={classes.link} onClick={() => setIsUpdatingCard(true)}>
+                    Edit
+                  </Button>
+                }
               </ListItemSecondaryAction>
             </>
           }
@@ -369,9 +375,12 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               secondary={consumerAddressLabel}
             />
             <ListItemSecondaryAction>
-              <Button className={classes.link} onClick={() => setIsUpdatingAddr(true)}>
-                Edit
-              </Button>
+              {
+                consumerAddressLabel &&
+                <Button className={classes.link} onClick={() => setIsUpdatingAddr(true)}>
+                  Edit
+                </Button>
+              }
             </ListItemSecondaryAction>
           </>
         }
@@ -409,9 +418,12 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 secondary={instructionsLabel ? instructionsLabel : ''}
               />
               <ListItemSecondaryAction>
-                <Button className={classes.link} onClick={() => setIsUpdatingInstructions(true)}>
-                  Edit
-                </Button>
+                {
+                  consumerAddressLabel &&
+                  <Button className={classes.link} onClick={() => setIsUpdatingInstructions(true)}>
+                    Edit
+                  </Button>
+                }
               </ListItemSecondaryAction>
             </>
           }
