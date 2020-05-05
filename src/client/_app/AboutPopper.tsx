@@ -68,7 +68,7 @@ const AboutPopper: React.FC<{
           onClose();
         }}>
           <Typography variant='button'>
-            FAQs
+            FAQ
           </Typography>
         </div>
       </Paper>

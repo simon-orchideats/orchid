@@ -88,7 +88,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'flex-start',
     textAlign: 'left',
-    maxWidth: 500,
+    maxWidth: 350,
   },
   paper: {
     opacity: 0.9,
@@ -158,10 +158,11 @@ const Welcome = withClientApollo(() => {
         <Typography variant='h3' className={classes.welcomeTitle}>
           Your week, catered
         </Typography>
+        <Typography variant='h4' className={classes.mediumVerticalMargin}>
+          Redefine the way you eat
+        </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Redefine the way you eat.
-          <br />
-          Weekly meals starting at $9.99
+          Weekly meal plan subscriptions starting at $9.99. Your favorite restaurants. Delivered same-day fresh. 
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
