@@ -335,11 +335,11 @@ const getConfig = (env?: string) => {
     console.log('running stage');
     return stage;
   } else if (env === 'production') {
-    console.log('running production');
-    return production;
+    console.log('running stage');
+    return stage;
   }
-  console.log('running default');
-  return development;
+  console.log('running stage');
+  return stage;
 }
 
 const activeConfig = getConfig(env);
