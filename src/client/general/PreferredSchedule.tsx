@@ -60,10 +60,10 @@ const PreferredSchedule: React.FC<{
     extraDeliveries = (
       <>
         <Typography variant='body1' color='textSecondary'>
-          * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining
+          * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining (+ ${(deliveryFee / 100).toFixed(2)} ea)
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          (1 delivery for every {MIN_MEALS} meals)
+          (1 extra delivery allowed for every {MIN_MEALS} meals)
         </Typography>
         <Button
           variant='outlined'
