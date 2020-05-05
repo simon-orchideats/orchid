@@ -1,5 +1,7 @@
 import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { faqsRoute } from '../../pages/faq';
+import Link from 'next/link';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -9,6 +11,11 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(4),
+  },
+  link: {
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    color: theme.palette.common.link,
   },
   mediumTopMargin: {
     marginTop: theme.spacing(2),
@@ -96,7 +103,16 @@ const Faq = () => {
           a="Orchid is a subscription, not a contract and you can cancel your service at any time."
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
-          *The cutoff for any changes is 12:00 am EST, 2 days before your next delivery
+          See more answers on our&nbsp;
+          <Link href={faqsRoute}>
+            <Typography
+              variant='body2'
+              className={classes.link}
+              component='span'
+            >
+              FAQ
+            </Typography>
+          </Link>
         </Typography>
       </Container>
     </Paper>
