@@ -1,16 +1,21 @@
-import { Container, makeStyles, Typography, Button } from "@material-ui/core";
+import { Container, makeStyles, Typography, Button, ExpansionPanelSummary, ExpansionPanel, ExpansionPanelDetails } from "@material-ui/core";
 import Faq from "../client/general/CommonQuestions";
-import { useGetCart, useUpdateDeliveryDay, useUpdateDeliveryTime } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
-import Link from "next/link";
-import Router from 'next/router'
+import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
-import DeliveryDateChooser from '../client/general/DeliveryDateChooser'
-import { getNextDeliveryDate } from '../order/utils';
+import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "../client/global/state/cartState";
+import { useState, useMemo } from "react";
+import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerModel";
+import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
+import Link from "next/link";
 import { checkoutRoute } from "./checkout";
-import { useState } from "react";
-import { deliveryDay, deliveryTime, ConsumerPlan } from "../consumer/consumerModel";
+import { Cart } from "../order/cartModel";
+import PreferredSchedule from "../client/general/PreferredSchedule";
+import { useUpdateDeliveries } from "../client/order/orderService";
+import { useMutationResponseHandler } from "../utils/apolloUtils";
+import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
+import moment from "moment";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -20,76 +25,199 @@ const useStyles = makeStyles(theme => ({
     background: 'none',
     paddingBottom: theme.spacing(4),
   },
-  header: {
-    paddingBottom: theme.spacing(4),
+  panel: {
+    width: '100%'
   },
-  smallPaddingBottom: {
-    paddingBottom: theme.spacing(2),
+  addButton: {
+    marginTop: theme.spacing(1),
   },
-  toggleButtonGroup: {
-    width: '100%',
-    marginBottom: theme.spacing(2),
+  nextButton: {
+    marginTop: theme.spacing(1),
   },
-  input: {
-    alignSelf: 'stretch',
+  col: {
+    flexDirection: 'column',
   },
-  row: {
-    display: 'flex',
-  },
-
 }));
 
 const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const [day, setDay] = useState<deliveryDay>(0);
-  const [time, setTime] = useState<deliveryTime>(ConsumerPlan.getDefaultDeliveryTime());
-  const updateDeliveryDay = useUpdateDeliveryDay();
-  const updateDeliveryTime = useUpdateDeliveryTime();
-  if (!cart && !isServer()) Router.replace(`${menuRoute}`);
+  const clearCartMeals = useClearCartMeals();
+  const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
+  const [schedules, setSchedules] = useState<Schedule[]>(
+    cart && cart.Schedules.length > 0 ? cart.Schedules : [ Schedule.getDefaultSchedule() ]
+  );
+  const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
+  const urlQuery = useRouter().query;
+  const updatingParam = urlQuery.updating;
+  const isUpdating = !!updatingParam && updatingParam === 'true'
+  const orderId = urlQuery.orderId as string
+  const limit = parseFloat(urlQuery.limit as string)
+  const start = parseFloat(urlQuery.start as string);
+  const startDate = moment(start).format('M/D/YY');
+  const endDate = moment(start).add(1, 'w').format('M/D/YY');
+  const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
+  const [updateDeliveries, updateDeliveriesRes] = useUpdateDeliveries();
+  const updateSchedules = (i: number, day: deliveryDay, time: deliveryTime) => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules[i] = new Schedule({
+      day,
+      time,
+    });
+    setSchedules(newSchedules);
+  }
+  
+  useMutationResponseHandler(updateDeliveriesRes, () => {
+    clearCartMeals();
+    Router.push(upcomingDeliveriesRoute);
+  });
+  const onUpdateOrder = () => {
+    // todo simon: metrics here
+    if (!cart) {
+      const err = new Error('Cart is empty for update order');
+      console.error(err.stack);
+      throw err;
+    } 
+    updateDeliveries(
+      orderId, 
+      {
+        deliveries: cart.Deliveries,
+        donationCount: cart.DonationCount ? cart.DonationCount : 0 
+      }
+    ) 
+  }
+  const addSchedule = () => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules.push(Schedule.getDefaultSchedule());
+    setSchedules(newSchedules);
+  }
+  const removeSchedule = (i: number) => {
+    const newSchedules = schedules.map(s => new Schedule(s));
+    newSchedules.splice(i, 1);
+    setSchedules(newSchedules);
+  }
+  const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    if (isExpanded) setExpanded(panel);
+  };
+  const setDates = () => {
+    setScheduleAndAutoDeliveries(schedules, start);
+    setExpanded('assignments');
+  }
+  if (!cart) {
+    if (!isServer()) Router.replace(`${menuRoute}`);
+    return null;
+  }
+  const allowedDeliveries = useMemo(() => Cart.getAllowedDeliveries(cart), []);
+  const isPreferredScheduleNextDisabled = allowedDeliveries < schedules.length;
   return (
     <>
       <Container className={classes.container}>
-        <Typography
-          variant='h3'
-          color='primary'
-          className={classes.header}
+        <ExpansionPanel
+          expanded={expanded === 'deliveries'}
+          className={classes.panel}
+          onChange={handleExpander('deliveries')}
         >
-          Choose a repeat delivery day
-        </Typography>
-        <DeliveryDateChooser
-          day={day}
-          onDayChange={day => setDay(day)}
-          time={time}
-          onTimeChange={time => setTime(time)}
-        />
-        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-          <Typography variant='subtitle1'>
-            First delivery:&nbsp;
-          </Typography>
-          <Typography variant='subtitle1'>
-            {getNextDeliveryDate(day).format('M/D/YY')}, {ConsumerPlan.getDeliveryTimeStr(time)}
-          </Typography>
-          <br/>
-        </div>
-        <div className={`${classes.row} ${classes.smallPaddingBottom}`}>
-          <Typography variant='body1' align='center'>
-            We'll do our best to meet your delivery schedule and email you if we need to reschedule your order to the next best time.
-          </Typography>
-        </div>
-        <Link href={checkoutRoute}>
-          <Button
-            variant='contained'
-            color='primary'
-            fullWidth
-            onClick={() => {
-              updateDeliveryDay(day);
-              updateDeliveryTime(time);
-            }}
-          >
-            Next
-          </Button>
-        </Link>
+          <ExpansionPanelSummary>
+            {
+              isUpdating ?
+              <div>
+                <Typography variant='h4' color='primary'>
+                  1. Choose days for week {startDate} - {endDate}
+                </Typography>
+                <Typography variant='body1' color='textSecondary'>
+                  These days are only for this order. We disabled days too far past your billing day.
+                </Typography>
+              </div>
+              :
+              <div>
+                <Typography variant='h4' color='primary'>
+                  1. Choose subscription delivery dates
+                </Typography>
+                <Typography variant='body1' color='textSecondary'>
+                  Orchid will deliver meals at these times each week
+                </Typography>
+              </div>
+            }
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.col}>
+            <PreferredSchedule
+              addSchedule={addSchedule}
+              allowedDeliveries={allowedDeliveries}
+              limit={limit}
+              removeSchedule={removeSchedule}
+              schedules={schedules}
+              updateSchedule={updateSchedules}
+            />
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              disabled={isPreferredScheduleNextDisabled}
+              onClick={setDates}
+              className={classes.nextButton}
+            >
+              Next
+            </Button>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel
+          expanded={expanded === 'assignments'} 
+          className={classes.panel}
+          onChange={handleExpander('assignments')}
+        >
+          <ExpansionPanelSummary>
+            <div>
+              <Typography variant='h4' color='primary'>
+                {
+                  isUpdating ? `2. Schedule meals for ${startDate} - ${endDate}` : '2. Schedule meals for the first week'
+                }
+              </Typography>
+              {
+                isUpdating ?
+                <Typography variant='body1' color='textSecondary'>
+                  These updates will only affect this order
+                </Typography>
+                :
+                <Typography variant='body1' color='textSecondary'>
+                  Orchid will automatically pick <i>next week's</i> meals based on your schedule. You can
+                  always edit 2 days prior to your delivery.
+                </Typography>
+              }
+            </div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.col}>
+            <ScheduleDeliveries
+              deliveries={cart.Deliveries}
+              setError={cart.DonationCount === 0 ? setHasScheduleError : undefined}
+              movable
+            />
+            {
+              isUpdating ?
+              <Button
+                variant='contained'
+                color='primary'
+                fullWidth
+                className={classes.nextButton}
+                disabled={hasScheduleError}
+                onClick={onUpdateOrder}
+              >
+                Update order
+              </Button>
+              :
+              <Link href={checkoutRoute}>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  fullWidth
+                  className={classes.nextButton}
+                  disabled={hasScheduleError}
+                >
+                  Next
+                </Button>
+              </Link>
+            }
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       </Container>
       <Faq />
     </>

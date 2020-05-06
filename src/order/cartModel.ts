@@ -1,158 +1,314 @@
+import { MealPlan, defaultDeliveryDay } from './../consumer/consumerModel';
+import { MIN_MEALS, PlanNames } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
+import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { deliveryDay, IConsumerPlan, CuisineType, deliveryTime } from '../consumer/consumerModel';
+import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/consumerModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
-
-export type ICartMeal = {
-  readonly mealId: string
-  readonly name: string
-  readonly img?: string
-  readonly quantity: number
-  // todo: enable these
-  // readonly isVegan: boolean
-  // readonly isVegetarian: boolean
-  // readonly restId: string
-  // readonly deliveryDate: number
-  // readonly deliveryTime: deliveryTime
-}
-
-export class CartMeal implements ICartMeal {
-  readonly mealId: string;
-  readonly img?: string;
-  readonly name: string;
-  readonly quantity: number
-
-  constructor(meal: ICartMeal) {
-    this.mealId = meal.mealId;
-    this.img = meal.img;
-    this.name = meal.name;
-    this.quantity = meal.quantity
-  }
-
-  public get MealId() { return this.mealId }
-  public get Img() { return this.img }
-  public get Name() { return this.name }
-  public get Quantity() { return this.quantity }
-
-  static getCartMeal(meal: IMeal, quantity: number = 1) {
-    return new CartMeal({
-      mealId: meal._id,
-      img: meal.img,
-      name: meal.name,
-      quantity,
-    });
-  }
-
-  static getICopy(meal: ICartMeal): ICartMeal {
-    return {
-      ...meal
-    }
-  }
-}
+import moment from "moment";
 
 export interface ICartInput {
-  readonly restId: string | null // null for all donations as cart
   readonly paymentMethodId: string
   readonly card: ICard
   readonly consumerPlan: IConsumerPlan
-  readonly meals: ICartMeal[]
   readonly donationCount: number
   readonly phone: string
   readonly destination: IDestination
-  readonly deliveryDate: number
+  readonly deliveries: IDeliveryInput[]
+};
+
+export type RestMeals = {
+  [key: string]: {
+    mealPlans: MealPlan[],
+    meals: DeliveryMeal[]
+  }
 };
 
 export interface ICart {
   readonly donationCount: number
-  readonly meals: ICartMeal[];
-  readonly restId: string | null;
-  readonly restName: string | null;
-  readonly stripePlanId: string | null;
-  readonly deliveryDay: deliveryDay | null;
+  readonly deliveries: IDeliveryInput[];
+  readonly restMeals: RestMeals
+  readonly schedules: ISchedule[];
   readonly zip: string | null;
-  readonly deliveryTime: deliveryTime | null;
+}
+
+const getNextMealsIterator = (meals: DeliveryMeal[]) => {
+  const copy = meals.map(m => new DeliveryMeal(m));
+  let uniqueMealIndex = 0;
+  return (numDesiredMeals: number) => {
+    const res = [];
+    while (uniqueMealIndex < copy.length) {
+      const uniqueMeal = copy[uniqueMealIndex];
+      res.push(new DeliveryMeal({
+        ...uniqueMeal,
+        quantity: 1,
+      }));
+      if (uniqueMeal.Quantity === 1) {
+        copy.splice(uniqueMealIndex, 1);
+        uniqueMealIndex--;
+      } else {
+        copy[uniqueMealIndex] = new DeliveryMeal({
+          ...uniqueMeal,
+          quantity: uniqueMeal.Quantity - 1,
+        })
+      }
+      uniqueMealIndex++;
+      if (uniqueMealIndex === copy.length) uniqueMealIndex = 0;
+      if (res.length === numDesiredMeals) return res;
+    }
+    return res;
+  };
 }
 
 export class Cart implements ICart {
   readonly donationCount: number
-  readonly meals: CartMeal[]
-  readonly restId: string | null
-  readonly restName: string | null
-  readonly stripePlanId: string | null
-  readonly deliveryDay: deliveryDay | null
+  readonly deliveries: DeliveryInput[];
+  readonly restMeals: RestMeals;
+  readonly schedules: Schedule[];
   readonly zip: string | null;
-  readonly deliveryTime: deliveryTime | null;
 
   constructor(cart: ICart) {
     this.donationCount = cart.donationCount;
-    this.meals = cart.meals.map(meal => new CartMeal(meal));
-    this.restId = cart.restId;
-    this.restName = cart.restName;
-    this.stripePlanId = cart.stripePlanId;
-    this.deliveryDay = cart.deliveryDay;
+    this.deliveries = cart.deliveries.map(d => new DeliveryInput(d));
+    this.restMeals = Object.entries(cart.restMeals).reduce<RestMeals>((map, [restId, data]) => {
+      map[restId] = {
+        mealPlans: data.mealPlans,
+        meals: data.meals.map(m => new DeliveryMeal(m))
+      }
+      return map;
+    }, {});
+    this.schedules = cart.schedules.map(s => new Schedule(s));
     this.zip = cart.zip;
-    this.deliveryTime = cart.deliveryTime;
   }
 
-  public get DeliveryDay() { return this.deliveryDay }
-  public get DeliveryTime() { return this.deliveryTime }
   public get DonationCount() { return this.donationCount }
-  public get Meals() { return this.meals }
-  public get StripePlanId() { return this.stripePlanId }
-  public get RestId() { return this.restId }
-  public get RestName() { return this.restName }
+  public get Deliveries() { return this.deliveries }
+  public get RestMeals() { return this.restMeals }
+  public get Schedules() { return this.schedules }
   public get Zip() { return this.zip }
 
-  public static getCartMeals(meals: IMeal[]) {
-    return meals.reduce<CartMeal[]>((groupings, meal) => {
+  public setScheduleAndAutoDeliveries(schedules: Schedule[], start?: number) {
+    // we do this so that if a customer decides to add/remove meals AFTER setting deliveries, that
+    // we don't 'reset' their preferred deliveries
+    if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
+      return this;
+    }
+    const newCart = new Cart({
+      ...this,
+      schedules,
+      deliveries: Cart.getDeliveriesFromSchedule(schedules, start),
+    });
+    Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
+    return newCart;
+  }
+
+  public static addMealsToExistingDeliveryMeals = (newMeals: IDeliveryMeal[], existingMeals: IDeliveryMeal[]) => {
+    newMeals.forEach(newMeal => {
+      for (let i = 0; i < existingMeals.length; i++) {
+        if (existingMeals[i].mealId === newMeal.mealId) {
+          existingMeals[i] = new DeliveryMeal({
+            ...newMeal,
+            quantity: existingMeals[i].quantity + 1,
+          });
+          return;
+        }
+      }
+      existingMeals.push(newMeal);
+    })
+  }
+
+  public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]) {
+    Object.values(restMeals).forEach(restMeals => {
+      const numMealsInRest = Cart.getRestMealCount(restMeals.mealPlans); // 9
+      const getNextMeals = getNextMealsIterator(restMeals.meals);
+      let numAddedMeals = 0;
+      let meals;
+      for (let i = 0; i < deliveries.length; i++) {
+        const numMealsInDelivery = Cart.getNumMeals(deliveries[i].Meals);
+        const numMealsNeededInDelivery = MIN_MEALS - numMealsInDelivery;
+        let numRemainingMealsInRest = numMealsInRest - numAddedMeals;
+        if (numMealsNeededInDelivery <= 0) continue;
+        if (numRemainingMealsInRest > numMealsNeededInDelivery) {
+          numRemainingMealsInRest -= numMealsNeededInDelivery;
+          numAddedMeals += numMealsNeededInDelivery;
+          meals = getNextMeals(numMealsNeededInDelivery);
+        } else {
+          meals = getNextMeals(numRemainingMealsInRest);
+        }
+        Cart.addMealsToExistingDeliveryMeals(meals, deliveries[i].Meals);
+      }
+      const remainingMeals = numMealsInRest - numAddedMeals;
+      if (remainingMeals > 0) {
+        let deliveryWithSameRest = -1;
+        let deliveryWithDefaultDay = -1;
+        for (let i = 0; i < deliveries.length; i++) {
+          if (deliveryWithSameRest === -1) {
+            if (deliveries[i].Meals.find(m => m.RestId === restMeals.meals[0].RestId)) {
+              deliveryWithSameRest = i;
+            }
+          }
+          if (moment(deliveries[i].DeliveryDate).day() === defaultDeliveryDay) {
+            deliveryWithDefaultDay = i;
+          }
+        }
+        const meals = getNextMeals(remainingMeals);
+        if (deliveryWithSameRest > -1) {
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[deliveryWithSameRest].Meals);          
+        } else if (deliveryWithDefaultDay > -1) {
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[deliveryWithDefaultDay].Meals);          
+        } else {
+          Cart.addMealsToExistingDeliveryMeals(meals, deliveries[0].Meals);          
+        }
+      }
+    })
+  }
+
+  public static getDeliveriesFromSchedule(
+    schedules: ISchedule[],
+    start?: number,
+    timezone?: string,
+    dateModifier?: (m: moment.Moment) =>  moment.Moment
+  ) {
+    return schedules.map(s => {
+      let deliveryDate = getNextDeliveryDate(s.day, start, timezone);
+      if (dateModifier) {
+        deliveryDate = dateModifier(deliveryDate);
+      }
+      return new DeliveryInput({
+        deliveryTime: s.time,
+        deliveryDate: deliveryDate.valueOf(),
+        discount: null,
+        meals: [],
+      })
+    })
+  }
+
+  public static getRestMealsPerDelivery(deliveries: DeliveryInput[]) {
+    return deliveries.map(deliveryInput => deliveryInput.meals.reduce<RestMeals>((groupings, meal) => {
+      Cart.addMealToRestMeals(groupings, meal);
+      return groupings;
+    }, {}))
+  }
+
+  public static addMealToRestMeals(
+    restMeals: RestMeals,
+    newMeal: IDeliveryMeal,
+  ) {
+    const restMeal = restMeals[newMeal.restId];
+    if (restMeal) {
+      const currMealPlans = restMeals[newMeal.restId].mealPlans;
+      const currMealPlanIndex = currMealPlans.findIndex(m => m.StripePlanId === newMeal.stripePlanId);
+      if (currMealPlanIndex === -1) {
+        currMealPlans.push(new MealPlan({
+          stripePlanId: newMeal.stripePlanId,
+          planName: newMeal.planName,
+          mealCount: newMeal.quantity,
+        }))
+      } else {
+        currMealPlans[currMealPlanIndex] = new MealPlan({
+          ...currMealPlans[currMealPlanIndex],
+          mealCount: currMealPlans[currMealPlanIndex].MealCount + newMeal.quantity,
+        })
+      }
+      const index = restMeal.meals.findIndex(meal => meal.MealId === newMeal.mealId);
+      if (index === -1) {
+        restMeal.meals.push(new DeliveryMeal(newMeal));
+      } else {
+        restMeal.meals[index] = new DeliveryMeal({
+          ...newMeal,
+          quantity: restMeal.meals[index].Quantity + newMeal.quantity
+          
+        })
+      }
+    } else {
+      restMeals[newMeal.restId] = {
+        mealPlans: [
+          new MealPlan({
+            stripePlanId: newMeal.stripePlanId,
+            planName: newMeal.planName,
+            mealCount: newMeal.quantity,
+          })
+        ],
+        meals: [new DeliveryMeal(newMeal)]
+      }
+    }
+  }
+
+  public addMeal(
+    newMeal: Meal,
+    restId: string,
+    restName: string,
+    taxRate: number,
+  ) {
+    const newCart = new Cart(this);
+    const deliveryMeal = DeliveryMeal.getDeliveryMeal(newMeal, restId, restName, taxRate);
+    Cart.addMealToRestMeals(newCart.RestMeals, deliveryMeal);
+    if (newCart.Deliveries.length > 0) {
+      const firstDelivery = newCart.Deliveries[0];
+      const newMealIndex = firstDelivery.meals.findIndex(m => m.MealId === newMeal.Id);
+      if (newMealIndex === -1) {
+        firstDelivery.Meals.push(
+          DeliveryMeal.getDeliveryMeal(
+            newMeal,
+            restId,
+            restName,
+            taxRate,
+        ));
+      } else {
+        firstDelivery.Meals[newMealIndex] = new DeliveryMeal({
+          ...firstDelivery.Meals[newMealIndex],
+          quantity: firstDelivery.Meals[newMealIndex].quantity + 1,
+        })
+      }
+    }
+
+    return newCart;
+  }
+
+  public static getDeliveryMeals(
+    meals: IMeal[],
+    restId: string,
+    restName: string,
+    taxRate: number
+  ) {
+    return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push(CartMeal.getCartMeal(meal));
+        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName, taxRate));
       } else {
-        groupings[groupIndex] = new CartMeal({
+        groupings[groupIndex] = new DeliveryMeal({
           ...groupings[groupIndex],
-          quantity: groupings[groupIndex].quantity + 1
+          quantity: groupings[groupIndex].quantity + 1,
         })
       }
       return groupings;
     }, [])
   }
 
-  public static getMealCount(meals: ICartMeal[]) {
-    return meals.reduce<number>((sum, meal) => sum + meal.quantity, 0);
+  public static getStandardMealCount(cart: Cart) {
+    return Object.values(cart.RestMeals)
+      .reduce<number>((sum, data) => {
+        const standardCount = data.mealPlans.find(p => p.PlanName === PlanNames.Standard)?.MealCount;
+        sum = sum + (standardCount || 0);
+        return sum;
+      }, 0) + cart.DonationCount;
   }
 
-  public addMeal(newMeal: Meal) {
-    const newCart = new Cart(this);
-    const index = newCart.Meals.findIndex(meal => meal.MealId === newMeal.Id);
-    if (index === -1) {
-      newCart.meals.push(CartMeal.getCartMeal(newMeal));
-    } else {
-      newCart.meals[index] = CartMeal.getCartMeal(newMeal, newCart.Meals[index].Quantity + 1);
-    }
-    return newCart;
+  public static getAllowedDeliveries(cart: Cart) {
+    return Math.max(
+      Math.floor(Cart.getStandardMealCount(cart) / 4),
+      1
+    )
   }
 
-  public removeMeal(mealId: string) {
-    const newCart = new Cart(this);
-    const index = newCart.Meals.findIndex(meal => meal.MealId === mealId);
-    if (index === -1) {
-      const err = new Error(`MealId '${mealId}' not found in cart`);
-      console.error(err.stack);
-      throw err;
-    }
-    const targetMeal = newCart.Meals[index];
-    if (targetMeal.Quantity === 1) {
-      newCart.Meals.splice(index, 1);
-    } else {
-      newCart.Meals[index] = new CartMeal({
-        ...targetMeal,
-        quantity: targetMeal.Quantity - 1,
-      })
-    }
-    return newCart;
+  public static getRestMealCount(mealPlans: MealPlan[]) {
+    return mealPlans.reduce((sum, p) => sum + p.MealCount, 0);
+  }
+
+  public static getNumMeals(meals: IDeliveryMeal[]) {
+    return meals.reduce((sum, m) => sum + m.quantity, 0);
   }
 
   public getCartInput(
@@ -167,24 +323,40 @@ export class Cart implements ICart {
     instructions: string,
     cuisines: CuisineType[],
   ): ICartInput {
-    if (!this.StripePlanId || this.DeliveryDay === null || this.DeliveryTime === null) {
-      const err = new Error(`Cart is missing property '${JSON.stringify(this)}'`);
-      console.error(err.stack);
-      throw err;
+    const mealPlans = Object.values(this.restMeals).reduce<MealPlan[]>((plans, restMeal) => {
+      restMeal.mealPlans.forEach(mp => {
+        const planIndex = plans.findIndex(p => mp.StripePlanId === p.StripePlanId);
+        if (planIndex === -1) {
+          plans.push(mp)
+        } else {
+          plans[planIndex] = new MealPlan({
+            ...mp,
+            mealCount: plans[planIndex].MealCount + mp.MealCount
+          });
+        }
+      });
+      return plans;
+    }, []);
+
+    if (this.DonationCount > 0) {
+      const standardPlanIndex = mealPlans.findIndex(p => p.PlanName === PlanNames.Standard);
+      if (standardPlanIndex > -1) {
+        mealPlans[standardPlanIndex] = new MealPlan({
+          ...mealPlans[standardPlanIndex],
+          mealCount: mealPlans[standardPlanIndex].MealCount + this.DonationCount,
+        });
+      }
     }
     return {
-      donationCount: this.donationCount,
-      restId: this.RestId,
+      donationCount: this.DonationCount,
       paymentMethodId,
       card,
       phone,
       consumerPlan: {
-        stripePlanId: this.StripePlanId,
-        deliveryDay: this.DeliveryDay,
-        deliveryTime: this.DeliveryTime,
+        mealPlans,
+        schedules: this.Schedules,
         cuisines,
       },
-      deliveryDate: getNextDeliveryDate(this.DeliveryDay).valueOf(),
       destination: {
         address: {
           address1,
@@ -195,8 +367,104 @@ export class Cart implements ICart {
         },
         instructions,
       },
-      meals: this.Meals,
+      deliveries: this.Deliveries,
     }
   }
 
+  public moveMealToNewDelivery(meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) {
+    const newCart = new Cart(this);
+    const fromDeliveryMeals = newCart.Deliveries[fromDeliveryIndex].Meals
+    const fromMealIndex = fromDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    if (meal.Quantity > 1) {
+      fromDeliveryMeals[fromMealIndex] = new DeliveryMeal({
+        ...meal,
+        quantity: meal.Quantity - 1,
+      });
+    } else {
+      fromDeliveryMeals.splice(fromMealIndex, 1);
+    }
+    const newDeliveryMeals = newCart.Deliveries[toDeliveryIndex].Meals;
+    const toMealIndex = newDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    if (toMealIndex === -1) {
+      newDeliveryMeals.push(new DeliveryMeal({
+        ...meal,
+        quantity: 1,
+      }))
+    } else {
+      newDeliveryMeals[toMealIndex] = new DeliveryMeal({
+        ...meal,
+        quantity: newDeliveryMeals[toMealIndex].Quantity + 1,
+      })
+    }
+    return newCart;
+  }
+
+  public removeMeal(restId: string, mealId: string) {
+    const newCart = new Cart(this);
+    const restMeals = newCart.RestMeals[restId];
+    const index = restMeals.meals.findIndex(meal => meal.MealId === mealId);
+    if (index === -1) {
+      const err = new Error(`MealId '${mealId}' not found in cart`);
+      console.error(err.stack);
+      throw err;
+    }
+    const targetMeal = restMeals.meals[index];
+    const currMealPlans = newCart.RestMeals[restId].mealPlans;
+    const currMealPlanIndex = currMealPlans.findIndex(m => m.StripePlanId === targetMeal.StripePlanId);
+    if (currMealPlanIndex === -1) {
+      const err = new Error(`Mealplan '${targetMeal.StripePlanId}' not found in cart`);
+      console.error(err.stack);
+      throw err;
+    } else {
+      currMealPlans[currMealPlanIndex] = new MealPlan({
+        ...currMealPlans[currMealPlanIndex],
+        mealCount: currMealPlans[currMealPlanIndex].MealCount - 1,
+      })
+    }
+
+    if (targetMeal.Quantity === 1) {
+      restMeals.meals.splice(index, 1);
+    } else {
+      restMeals.meals[index] = new DeliveryMeal({
+        ...targetMeal,
+        quantity: targetMeal.Quantity - 1,
+      })
+    }
+    
+    if (currMealPlans[currMealPlanIndex].MealCount === 0) {
+      currMealPlans.splice(currMealPlanIndex, 1);
+      if (currMealPlans.length === 0) {
+        delete newCart.RestMeals[restId];
+      }
+    }
+
+    let removedMealDeliveryIndex = -1;
+    let removedMealMealsIndex = -1;
+
+    for (let i = 0; i < newCart.Deliveries.length; i++) {
+      const meals = newCart.Deliveries[i].Meals;
+      for (let j = 0; j < meals.length; j++) {
+        if (meals[j].MealId === mealId) {
+          removedMealDeliveryIndex = i;
+          removedMealMealsIndex = j;
+          break;
+        }
+      }
+      if (removedMealDeliveryIndex > -1) break;
+    }
+
+    if (removedMealDeliveryIndex > -1) {
+      const targetMeal = newCart.Deliveries[removedMealDeliveryIndex].Meals[removedMealMealsIndex];
+      if (targetMeal.Quantity > 1) {
+        newCart.Deliveries[removedMealDeliveryIndex].Meals[removedMealMealsIndex] = new DeliveryMeal({
+          ...targetMeal,
+          quantity: targetMeal.Quantity - 1,
+        });
+      } else {
+        newCart.Deliveries[removedMealDeliveryIndex].Meals.splice(removedMealMealsIndex, 1);
+      }
+    }
+
+    return newCart;
+  }
 }

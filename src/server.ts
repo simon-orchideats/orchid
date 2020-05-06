@@ -11,7 +11,7 @@ import { initElastic } from './server/elasticConnector';
 import { initPlanService } from './server/plans/planService';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
-import { activeConfig, isProd } from './config';
+import { activeConfig, isDev } from './config';
 import { schema } from './schema';
 import { initRestService } from './server/rests/restService';
 import Stripe from 'stripe';
@@ -35,15 +35,13 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * we decided to use our own custom server. This has the added benefit of reducing the server's dependency on Nextjs.
  */
 
-// todo logout
 // todo Warning: Cannot update a component from inside the function body of a different component. in menu after seting zip
-// todo test for consumerServiceTest
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
-// to mark corresponding orders as confirmed, but can't do that since we delivery date might be more than 2 days past 
-// payment day if the consumer updated the delivery date. for now we'll just do it each day
-// at 12am.
-// have counter in banner. have btton that takes you to dontaors with count. do dave's screenshot thing. Healthcare
+
+/**
+ * todo prevent cross state orders
+ */
 
 init({
   dsn: activeConfig.server.sentry.dsn,
@@ -56,7 +54,7 @@ init({
 
 const start = async () => {
   const ssr = next({
-    dev: !isProd
+    dev: isDev
   });
 
   const ssrHandler = ssr.getRequestHandler()
@@ -115,7 +113,7 @@ const start = async () => {
 
   const port = activeConfig.server.app.port;
   webServer.listen(port, () => {
-    console.log(`API Server is now running at https://localhost:${port}${apolloServer.graphqlPath}`);
+    console.log(`API Server is now running at ${activeConfig.server.app.url}:${port}${apolloServer.graphqlPath}`);
   });
 };
 

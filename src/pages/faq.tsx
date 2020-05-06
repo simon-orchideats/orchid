@@ -1,6 +1,7 @@
 import { makeStyles, Container, Typography, Paper, Link } from '@material-ui/core';
 import Footer from '../client/general/Footer';
 import { plansRoute } from './plans';
+import { deliveryFee } from '../order/costModel';
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -88,31 +89,7 @@ const faqs = () => {
           />
           <Qa
             q='How many restaurants can I pick?'
-            n={
-              <>
-                <Typography variant='body1'>
-                  Currently we only offer 1 restaurant per week, but we understand that variety is important! We're
-                  quickly adding the option to pick additional restaurants for every 4 meals in your plan. Stay subscribed
-                  to our emails or follow us on&nbsp;
-                  <Link
-                    component='button'
-                    variant='body1'
-                    className={classes.link}
-                  > 
-                    <a href='https://www.facebook.com/orchidFB'>Facebook</a>
-                  </Link>
-                  &nbsp;or&nbsp;
-                  <Link
-                    component='button'
-                    variant='body1'
-                    className={classes.link}
-                  >
-                    <a href='https://www.instagram.com/orchidIG'>Instagram</a>
-                  </Link>
-                  &nbsp;to be the first to hear about updates and new features.
-                </Typography>
-              </>
-            }
+            a="As many as you want!"
           />
           <Qa
             q="Do I need to pick meals every week?"
@@ -121,16 +98,38 @@ const faqs = () => {
           />
           <Qa
             q='How do I update my subscription or delivery?'
-            a="You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
-            automatically update your upcoming deliveries to reflect your newest preferences. You can also perform a 1-time
-            update on a specific delivery from the Upcoming Deliveries page as long as it's 2 days before your delivery.
-            If you upgrade or downgrade your plan for a single delivery, we'll charge or refund you the difference."
+            a={`You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
+            affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can make
+            1-time manual updates on a specific order from the Upcoming Deliveries if the upcoming deliveries require
+            any adjustments`}
           />
           <Qa
             q="Do you offer any discounts?"
-            a="We work closely with our restaurants to offer our customers the best deal and pricing as possible.
-            Unfortunately at this time we do not offer any additional discounts. We are constantly working to provide the
-            best deals."
+            n={
+              <>
+                <Typography variant='body1'>
+                  We work closely with our restaurants to offer our customers the best deal and pricing as possible.
+                  Unfortunately at this time we do not offer any additional discounts. We are constantly working to provide the
+                  best deals. Stay subscribed to our emails or follow us on&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  > 
+                    <div onClick={() => window.open('https://www.facebook.com/orchidFB')}>Facebook</div>
+                  </Link>
+                  &nbsp;or&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  >
+                    <div onClick={() => window.open('https://www.instagram.com/orchidIG')}>Instagram</div>
+                  </Link>
+                  &nbsp;to be the first to hear about updates and new features.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q='Will I be locked into a contract?'
@@ -161,12 +160,12 @@ const faqs = () => {
           <Qa
             q='Do I need to have a card on file?'
             a="Yes. Your card will be automatically processed through our payment system each week unless you cancel
-            the subscription or skip the delievery within 2 days in advance."
+            the subscription or skip all deliveries for the week."
           />
           <Qa
             q='How often am I charged?'
-            a="Orchid will automatically process your credit card on file 2 days prior to your next delivery.
-            However if you change your preferred delivery day we automatically update your billing due date on your account."
+            a="Orchid will automatically process your credit card on file at the end of each weekly cycle based
+            on the number of meals confirmed for that week. A weekly cycle begins the day you subscribe."
           />
           <Qa
             q='What forms of payment do you accept?'
@@ -207,7 +206,7 @@ const faqs = () => {
           />
           <Qa
             q='What time of day will meals be delivered?'
-            a="You can choose from many of our delivery windows, ranging from 3 - 4pm up to 6 - 7pm."
+            a="You can choose from our 2 delivery windows, 3pm - 5pm and 5pm - 7pm."
           />
           <Qa
             q='How can I add delivery instructions?'
@@ -219,27 +218,23 @@ const faqs = () => {
           />
           <Qa
             q='Where do you deliver?'
-            a="At the time we currently deliver in Jersey City and Hoboken. We are constnatly updating our locations and
+            a="At the time we currently deliver in Jersey City and Hoboken. We are constantly updating our locations and
             will announce when we offer additional delivery locations to you."
           />
           <Qa
-            q='How much is shipping?'
-            a="Free!"
+            q='How much is delivery?'
+            a={`First delivery is free each week! Additional deliveries are $${(deliveryFee / 100).toFixed(2)}`}
           />
           <Qa
             q='Can I skip a week of delivery?'
             a="Sure! Just make sure you do it 2 days before your delivery."
-          />
-          <Qa
-            q='What type of packaging will my meals be delivered?'
-            a="Our packaging is designed to be leak proof while also being 100% compostable"
           />
           <Typography variant='h6' className={classes.title}>
             WEBSITE
           </Typography>
           <Qa
             q='How do I reset my password?'
-            a="You can logout via by clicking the top right corner of the website. Once logged out, you can click
+            a="You can logout by clicking the top right corner of the website. Once logged out, you can click
             login to go to login page. At the bottom of the login page, below entering your password, you can click
             Don't remember your password?"
           />
@@ -251,7 +246,7 @@ const faqs = () => {
           <Qa
             q='Is there an app available for download?'
             a="Unfortunately at this time no app is readily available. We are consistently making updates to our platform
-            and will norify customers via email and our social channels of any future updates."
+            and will notify customers via email and our social channels of any future updates."
           />
           <Qa
             q='How do I unsubscribe from your emails?'

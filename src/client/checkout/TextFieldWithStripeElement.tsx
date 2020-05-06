@@ -1,5 +1,5 @@
 // stolen from https://codesandbox.io/s/reactstripeelements-textfield-integration-ejo6s?from-embed
-
+// @ts-nocheck
 import React from 'react';
 import TextField from '@material-ui/core/TextField'
 

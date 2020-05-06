@@ -18,34 +18,47 @@ const CuisineTypeQL = gql`
 
 const DeliveryTimeQL = gql`
   enum DeliveryTime {
-    NineAToTenA
-    TenAToElevenA
-    ElevenAToTwelveP
-    TwelvePToOneP
-    OnePToTwoP
-    TwoPToThreeP
-    ThreePToFourP
-    FourPToFiveP
-    FivePToSixP
-    SixPToSevenP
-    SevenPToEightP
-    EightPToNineP
-    NinePToTenP
+    NineAToElevenA
+    ElevenAToOneP
+    OnePToThreeP
+    ThreePToFiveP
+    FivePToSevenP
+    SevenPToNineP
   }
 `
 
 const _ConsumerPlanQL = gql`
-  type ConsumerPlan {
+  input ScheduleInput {
+    day: Int!
+    time: DeliveryTime!
+  }
+
+  input MealPlanInput {
     stripePlanId: ID!
-    deliveryDay: Int!
-    deliveryTime: DeliveryTime!
-    cuisines: [CuisineType!]!
+    planName: ID!
+    mealCount: Int!
   }
 
   input ConsumerPlanInput {
+    mealPlans: [MealPlanInput!]!
+    schedules: [ScheduleInput!]!
+    cuisines: [CuisineType!]!
+  }
+
+  type Schedule {
+    day: Int!
+    time: DeliveryTime!
+  }
+
+  type MealPlan {
     stripePlanId: ID!
-    deliveryDay: Int!
-    deliveryTime: DeliveryTime!
+    planName: ID!
+    mealCount: Int!
+  }
+
+  type ConsumerPlan {
+    mealPlans: [MealPlan!]!
+    schedules: [Schedule!]!
     cuisines: [CuisineType!]!
   }
 `

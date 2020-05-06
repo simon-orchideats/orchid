@@ -2,18 +2,11 @@ import { makeStyles, Typography, Button, Popover, IconButton, Paper } from "@mat
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
-import PlanFilter from "./PlanFilter";
 import { useState } from "react";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { CartMeal } from "../../order/cartModel";
 import Counter from "./Counter";
 
 const useStyles = makeStyles(theme => ({
-  group: {
-    display: 'flex',
-    alignItems: 'center',
-    paddingBottom: theme.spacing(2),
-  },
   title: {
     paddingBottom: theme.spacing(1)
   },
@@ -63,30 +56,43 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       cart,
       disabled,
       onNext,
-      suggestion,
+      suggestions,
+      summary,
       donationCount,
       incrementDonationCount,
       decrementDonationCount,
-      addDonationDisabled,
+      title,
+      confirmText,
     ) => {
       const meals = (
         <>
-          {cart && cart.Meals && cart.Meals.map(mealGroup => (
-            <CartMealGroup key={mealGroup.MealId} mealGroup={mealGroup} />
+          {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
+            <div key={restId}>
+              <Typography variant='h6'>
+                {restMeals.meals[0].restName}
+              </Typography>
+              {restMeals.meals.map(mealGroup => (
+                <CartMealGroup
+                  key={mealGroup.MealId}
+                  mealId={mealGroup.MealId}
+                  name={mealGroup.Name}
+                  img={mealGroup.Img}
+                  quantity={mealGroup.Quantity}
+                />
+              ))}
+            </div>
           ))}
           {
             donationCount > 0 &&
             <CartMealGroup
-              mealGroup={new CartMeal({
-                mealId: 'donations',
-                img: '/heartHand.png',
-                name: 'Donation',
-                quantity: donationCount
-              })}
+              mealId='donations'
+              name='Donation'
+              img='/heartHand.png'
+              quantity={donationCount}
             />
           }
         </>
-      )
+      );
       return (
         <>
           <Typography
@@ -94,83 +100,85 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             color='primary'
             className={classes.title}
           >
-            {cart && cart.RestName ? `Meals from ${cart.RestName}` : 'Your meals'}
+            {title}
           </Typography>
-            {hideNext && meals}
-            {
-              !hideNext &&
-              <div className={classes.bottom}>
-                {meals}
-                <div className={classes.donation}>
-                  <Typography className={classes.donationText} variant='body1'>
-                    Donate meals from your plan
-                    <IconButton color='primary' onClick={handleHelp}>
-                      <HelpOutlineIcon />
-                    </IconButton>
-                  </Typography>
-                  <Popover
-                    open={isHelperOpen}
-                    anchorEl={anchorEl}
-                    onClose={() => setAnchorEl(null)} 
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                  >
-                    <Paper className={classes.popper}>
-                      <Typography variant='body1'>
-                        Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
-                        donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
-                        3 meals on us so we can all help our heros on the frontline.
-                      </Typography>
-                    </Paper>
-                  </Popover>
-                  <div className={classes.donationCount}>
-                    <Counter
-                      subtractDisabled={!donationCount}
-                      onClickSubtract={decrementDonationCount}
-                      subractIcon={
-                        donationCount ?
-                        <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
-                        :
-                        <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
-                      }
-                      chipLabel={donationCount}
-                      chipDisabled={!donationCount}
-                      addDisabled={addDonationDisabled}
-                      onClickAdd={incrementDonationCount}
-                      addIcon={
-                        addDonationDisabled ?
-                        <img src='menu/heartPlusDisabled.png' className={classes.heart} alt='heart' />
-                        :
-                        <img src='menu/heartPlus.png' className={classes.heart} alt='heart' />
-                      }
-                    />
-                  </div>
-                </div>
-                <PlanFilter />
-                <Button
-                  disabled={disabled}
-                  variant='contained'
-                  color='primary'
-                  className={classes.button}
-                  fullWidth
-                  onClick={onNext}
-                >
-                  Next
-                </Button>
-                <Typography variant='body1' className={classes.suggestion}>
-                  {cart && cart.Zip ? null : 'Enter zip to continue'}
+          {hideNext && meals}
+          {
+            !hideNext &&
+            <div className={classes.bottom}>
+              {meals}
+              <div className={classes.donation}>
+                <Typography className={classes.donationText} variant='body1'>
+                  Share your meal with the community
+                  <IconButton color='primary' onClick={handleHelp}>
+                    <HelpOutlineIcon />
+                  </IconButton>
                 </Typography>
-                <Typography variant='body1' className={classes.suggestion}>
+                <Popover
+                  open={isHelperOpen}
+                  anchorEl={anchorEl}
+                  onClose={() => setAnchorEl(null)} 
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }}
+                  transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                >
+                  <Paper className={classes.popper}>
+                    <Typography variant='body1'>
+                      Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
+                      donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
+                      3 meals on us so we can all help our heros on the frontline.
+                    </Typography>
+                  </Paper>
+                </Popover>
+                <div className={classes.donationCount}>
+                  <Counter
+                    subtractDisabled={!donationCount}
+                    onClickSubtract={decrementDonationCount}
+                    subractIcon={
+                      donationCount ?
+                      <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
+                      :
+                      <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
+                    }
+                    chipLabel={donationCount}
+                    chipDisabled={!donationCount}
+                    onClickAdd={incrementDonationCount}
+                    addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
+                  />
+                </div>
+              </div>
+              <Typography variant='body1' color='primary'>
+                {summary}
+              </Typography>
+              <Button
+                disabled={disabled}
+                variant='contained'
+                color='primary'
+                className={classes.button}
+                fullWidth
+                onClick={onNext}
+              >
+                {confirmText}
+              </Button>
+              <Typography variant='body1' className={classes.suggestion}>
+                {cart && cart.Zip ? null : 'Enter zip to continue'}
+              </Typography>
+              {suggestions.map((suggestion, i) => (
+                <Typography
+                  key={i}
+                  variant='body1'
+                  className={classes.suggestion}
+                >
                   {suggestion}
                 </Typography>
-              </div>
-            }
+              ))}
+            </div>
+          }
         </>
       )
     }} />

@@ -8,8 +8,6 @@ import TodayIcon from '@material-ui/icons/Today';
 import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
-import { Plan } from "../plan/planModel";
-import { useUpdateCartPlanId } from '../client/global/state/cartState';
 import Footer from '../client/general/Footer';
 import { useRef, createRef, useState } from 'react';
 import EmailInput from '../client/general/inputs/EmailInput';
@@ -90,7 +88,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'flex-start',
     textAlign: 'left',
-    maxWidth: 500,
+    maxWidth: 350,
   },
   paper: {
     opacity: 0.9,
@@ -158,12 +156,13 @@ const Welcome = withClientApollo(() => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Chef-cooked meals delivered weekly from local restaurants
+          Your week, catered
+        </Typography>
+        <Typography variant='h4' className={classes.mediumVerticalMargin}>
+          Redefine the way you eat
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Eat from your favorite restaurants and save.
-          <br />
-          Weekly meals starting at $9.99
+          Weekly meal plan subscriptions starting at $9.99. Your favorite restaurants. Delivered same-day fresh. 
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
@@ -239,13 +238,8 @@ const Donate = () => {
 };
 
 const Plans = withClientApollo(() => {
-  const setCartStripePlanId = useUpdateCartPlanId();
   const [addMarketingEmail] = useAddMarketingEmail();
   const [isSubbed, setIsSubbed] = useState(false);
-  const onClick = (plan: Plan) => {
-    Router.push(menuRoute);
-    setCartStripePlanId(plan.stripeId);
-  };
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
   const onSubscribe = () => {
@@ -261,10 +255,7 @@ const Plans = withClientApollo(() => {
         <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
           Choose a Plan that Works for You
         </Typography>
-        <Typography variant='subtitle1' className={`${classes.verticalMargin} ${classes.plansDescription}`}>
-          Choose from 4, 8 or 12 meals per week
-        </Typography>
-        <PlanCards onClickCard={onClick}/>
+        <PlanCards />
         <Link href={menuRoute}>
           <Button
             variant='contained'

@@ -34,7 +34,31 @@ GET /rests/_search?
     "bool": {
       "filter": {
         "term": {
-          "profile.name": "Malibu Diner"
+          "profile.name.keyword": "Gypsy Grill"
+        }
+      }
+    }
+  }
+}
+
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|101158809309420984617"
+              }
+            }
+          ],
+          "must_not": {
+            "exists": {
+              "field": "stripeInvoiceId"
+            }
+          }
         }
       }
     }
@@ -63,15 +87,165 @@ GET /orders/_search?
   }
 }
 
+GET /orders/_search?
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveries.deliveryDate": {
+                  "gte": 1587790071465
+                }
+              }
+            },
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|100290693486600806765"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+GET /orders/_search?
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|103422073464046300964"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+GET /consumers/_doc/auth0|5e9f4b636afacb0cbb116bf9
+
+
 GET /rests/_doc/-SFhNnEBBGf1BFEfbEWg
+
+GET /orders/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "deliveryDate": {
+                  "gte": "now",
+                }
+              },
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 
 ############################
 
 ######### UPDATE ###########
+
+
+
+POST orders/_update/7U-sqnEB6wdrMHzP4nIs
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        ctx._source.deliveries[i].status = 'Open';
+      }    
+    """,
+    "lang": "painless"
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        if (ctx._source.deliveries[i].deliveryDate > params.limit) {
+          ctx._soure.deliveries[i].status = 'Confirmed';
+        }
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+                "range": {
+                  "deliveries.deliveryDate": {
+                    "gte": 1587715138726
+                  }
+                }
+            },
+            {
+              "terms": {
+                "deliveries.status": ["Open", "Skipped"]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        ctx._source.deliveries[i].status = 'Confirmed';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+
 POST orders/_update_by_query
 {
   "doc": {
-    "status": "Skipped"
+    "status": "Confirmed"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      ctx._source.taxRate = 0.06625;
+    """,
+    "lang": "painless"
   },
   "query": { 
     "match_all": {}
@@ -133,6 +307,27 @@ POST orders/_update_by_query
     }
   }
 }
+
+
+POST /orders/_update/VhIc3HEB_wcVsCnhQqvF 
+{
+  "script" : {
+    "source": """
+      //ctx._source.stripeInvoiceId = null;
+      //ctx._source.invoiceDate = 1588125716000L;
+      //ctx._source.deliveries[1].deliveryDate = 1588708794000L;
+      //ctx._source.deliveries[2].deliveryDate = 1588697994000L;
+      ctx._source.deliveries[1].status = "Open";
+      ctx._source.deliveries[2].status = "Open";
+
+      for(int i = 0; i < ctx._source.deliveries.length - 1; i++) {
+      }
+    """,
+    "lang": "painless"
+  }
+}
+
+
 POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
 {
   "script" : {
@@ -144,6 +339,30 @@ POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
     "lang": "painless"
   }
 }
+
+
+
+
+
+
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      def menu = ctx._source.menu;
+      for (int i = 0; i < menu.length; i++) {
+        menu[i].planName = 'Standard';
+        menu[i].stripePlanId = 'plan_HDGgkmXFCPQTlq';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
 
 
 
@@ -213,6 +432,18 @@ DELETE rests
 DELETE orders
 DELETE consumers
 
+POST orders/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
+
+
+
+DELETE orders/_doc/SomqunEB3mzlaF51TZZT
+
+
 POST consumers/_delete_by_query
 {
   "query": { 
@@ -238,7 +469,44 @@ POST rests/_delete_by_query
 {
   "query": {
     "term": {
-      "profile.name.keyword": "Shadman"
+      "profile.name.keyword": "Gypsy Grill"
+    }
+  }
+}
+
+
+POST orders/_delete_by_query
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "consumer.userId": "google-oauth2|101158809309420984617"
+              }
+            },
+            {
+              "bool": {
+                "should": [
+                  {
+                    "term": { "deliveries.status": "Open" }
+                  },
+                  {
+                    "term": { "deliveries.status": "Skipped" }
+                  }
+                ]
+              }
+            }
+          ],
+          "must_not": {
+            "exists": {
+              "field": "stripeInvoiceDate"
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -248,7 +516,25 @@ POST rests/_delete_by_query
 
 ######### MAPPING ##########
 
-PUT /rests/
+GET /rests/_mapping
+GET /orders/_mapping
+GET /consumers/_mapping
+
+
+PUT rests/_mapping
+{
+  "properties": {
+    "location": {
+      "properties": {
+        "timezone": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+PUT /rests2/
 {
   "mappings": {
     "dynamic": false,
@@ -287,6 +573,9 @@ PUT /rests/
           },
           "geo": {
             "type": "geo_point"
+          },
+          "timezone": {
+            "type": "keyword"
           }
         }
       },
@@ -363,7 +652,13 @@ PUT /rests/
             "type": "keyword"
           },
           "originalPrice": {
-            "type": "float"
+            "type": "integer"
+          },
+          "stripePlanId": {
+            "type": "keyword"
+          },
+          "planName": {
+            "type": "keyword"
           }
         }
       },
@@ -480,9 +775,19 @@ PUT /orders/
   "mappings": {
     "dynamic": false,
     "properties": {
-      "rest": {
+      "deliveries": {
         "properties": {
-          "restId": {
+          "deliveryTime": {
+            "type": "keyword"
+          },
+          "deliveryDate": {
+            "type": "date",
+            "format": "epoch_millis"
+          },
+          "discount": {
+            "type": "float"
+          },
+          "status": {
             "type": "keyword"
           },
           "meals": {
@@ -505,18 +810,21 @@ PUT /orders/
               "restId": {
                 "type": "keyword"
               },
-              "deliveryDate": {
-                "type": "float"
-              },
-              "deliveryTime": {
+              "restName": {
                 "type": "keyword"
+              },
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "taxRate": {
+                "type": "float"
               }
             }
           }
         }
-      },
-      "status": {
-        "type": "keyword"
       },
       "consumer": {
         "properties": {
@@ -577,6 +885,9 @@ PUT /orders/
           }
         }
       },
+      "stripeInvoiceId": {
+        "type": "keyword"
+      },
       "stripeSubscriptionId": {
         "type": "keyword"
       },
@@ -591,33 +902,41 @@ PUT /orders/
       "costs": {
         "properties": {
           "tax": {
-            "type": "float"
+            "type": "integer"
           },
           "tip": {
-            "type": "float"
+            "type": "integer"
           },
-          "mealPrice": {
-            "type": "float"
+          "mealPrices": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealPrice": {
+                "type": "integer"
+              }
+            }
           },
-          "total": {
-            "type": "float"
+          "deliveryFee": {
+            "type": "integer"
           },
           "percentFee": {
             "type": "float"
           },
           "flatRateFee": {
-            "type": "float"
+            "type": "integer"
           }
         }
       },
-      "deliveryDate": {
-        "type": "float"
-      },
-      "deliveryTime": {
-        "type": "keyword"
+      "invoiceDate": {
+        "type": "date",
+        "format": "epoch_millis"
       },
       "donationCount": {
-        "type": "float"
+        "type": "integer"
       }
     }
   }
@@ -692,14 +1011,28 @@ PUT /consumers/
       },
       "plan": {
         "properties": {
-          "stripePlanId": {
-            "type": "keyword"
+          "mealPlans": {
+            "properties": {
+              "stripePlanId": {
+                "type": "keyword"
+              },
+              "planName": {
+                "type": "keyword"
+              },
+              "mealCount": {
+                "type": "keyword"
+              }
+            }
           },
-          "deliveryDay": {
-            "type": "integer"
-          },
-          "deliveryTime": {
-            "type": "keyword"
+          "schedules": {
+            "properties": {
+              "day": {
+                "type": "integer"
+              },
+              "time": {
+                "type": "keyword"
+              }
+            }
           },
           "cuisines": {
             "type": "keyword"
@@ -729,8 +1062,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.735060,
       "lon" : -74.067220
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -738,13 +1073,13 @@ POST rests/_doc/
       "img" : "/menu/canteen-dhaba/butter-chicken.jpg",
       "name" : "Butter Chicken w/ Keema Naan",
       "description" : "classic boneless chicken in makhani gravy",
-      "originalPrice" : 11.9
+      "originalPrice" : 119
     },
     {
       "_id" : "3wxzopyL5fnFS-HHUxb6f",
       "img" : "/menu/canteen-dhaba/lamb-rogan-josh.jpg",
       "name" : "Lamb Rogan Josh w/ Jalapeno Naan",
-      "originalPrice" : 11.9,
+      "originalPrice" : 119,
       "tags": [],
       "description" : "classic North Indian dish in cardamom sauce"
     },
@@ -752,7 +1087,7 @@ POST rests/_doc/
       "_id" : "8HWCCbo0MdLRggszhJEbF",
       "img" : "/menu/canteen-dhaba/paneer-tikka-masala.jpg",
       "name" : "Paneer Tikka Masala w/ Dahi Bhalla",
-      "originalPrice" : 11.9,
+      "originalPrice" : 119,
       "tags": ["Vegetarian"],
       "description" : "homemade cubed cottage cheese in herbed creamy tomato sauce & lentil dumplings filled w/ cumin seeds and nuts in yogurt sauce w/ chutneys and chat masala"
     },
@@ -760,7 +1095,7 @@ POST rests/_doc/
       "_id" : "OrY0ZaR-y4NcER8pZIByG",
       "img" : "/menu/canteen-dhaba/shrimp-tandoori.jpg",
       "name" : "Tandoori Shrimp",
-      "originalPrice" : 11.95,
+      "originalPrice" : 1195,
       "tags": [],
       "description" : "shrimp marinated in authentic spiced yogurt & herbs in a charcoal oven"
     },
@@ -768,7 +1103,7 @@ POST rests/_doc/
       "_id" : "R3R2E_khpEN57nXxvXCqn",
       "img" : "/menu/canteen-dhaba/chicken-biryani.jpg",
       "name" : "Chicken Biryani w/ Keema Naan",
-      "originalPrice" : 11.9,
+      "originalPrice" : 119,
       "tags": [],
       "description" : "basmati rice cooked with marinated chicken with Indian herbs spices & dry fruits"
     },
@@ -778,7 +1113,7 @@ POST rests/_doc/
       "name" : "Baigan Bartha w/ Samosa Chat",
       "tags": ["Vegan", "Vegetarian"],
       "description" : "fresh roasted eggplant with sauteed ginger, garlic and red onions in vegetable oil & crispy turnovers with seasoned potatoes served with yogurt, chickpeas, & chutney",
-      "originalPrice" : 11.90
+      "originalPrice" : 1190
     }
   ],
   "profile" : {
@@ -803,8 +1138,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.735060,
       "lon" : -74.067220
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -812,14 +1149,14 @@ POST rests/_doc/
       "img" : "/menu/china-spice/ginger-basil-chicken.jpg",
       "name" : "Basil Ginger Chicken",
       "description" : "boneless pieces of chicken breast stir-fried in ginger and basil sauce.",
-      "originalPrice" : 12.00,
+      "originalPrice" : 1200,
       "tags": []
     },
     {
       "_id" : "zZ0HgS5QqD4qwedw40nEV",
       "img" : "/menu/china-spice/thai-chicken.jpg",
       "name" : "Thai Chicken Curry",
-      "originalPrice" : 12.00,
+      "originalPrice" : 1200,
       "tags": [],
       "description" : "a traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce"
     },
@@ -827,7 +1164,7 @@ POST rests/_doc/
       "_id" : "77CogU3SlD_xG5y9aSAJW",
       "img" : "/menu/china-spice/coriander-chicken.jpg",
       "name" : "Coriander Garlic Chicken",
-      "originalPrice" : 12.00,
+      "originalPrice" : 1200,
       "tags": [],
       "description" : "wok-fried chicken with onions and green peppers in garlic coriander sauce"
     },
@@ -843,7 +1180,7 @@ POST rests/_doc/
       "_id" : "EDjLDJejCNf75rYJj5NyW",
       "img" : "/menu/china-spice/okra.jpg",
       "name" : "Okra Pepper Salt Dry",
-      "originalPrice" : 11.00,
+      "originalPrice" : 1100,
       "tags": ["Vegetarian", "Vegan"],
       "description" : "lady fingers sauteed w/ chilli, garlic, scallions, ginger, celery, & black pepper in soy"
     },
@@ -853,7 +1190,7 @@ POST rests/_doc/
       "name" : "Cauliflower Manchurian & Chili Paneer",
       "tags": ["Vegetarian", "Vegan"],
       "description" : "flower buds roasted to perfection in our famous manchurian sauce & cubes of cottage cheese sauteed with fresh chili, onions, in light soy sauce",
-      "originalPrice" : 11.00
+      "originalPrice" : 1100
     }
   ],
   "profile" : {
@@ -879,8 +1216,10 @@ POST rests/_doc/
     "geo": {
       "lat": 40.716210,
       "lon": -74.044560
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
@@ -888,35 +1227,35 @@ POST rests/_doc/
       "_id": "eM4SzUFNlICy_v5yEb9Wq",
       "img": "/menu/taqueria/carnitas-taco.png",
       "name": "3x Carnitas (Pork) Tacos",
-      "originalPrice": 11.25
+      "originalPrice": 1125
     },
     {
       "tags": [],
       "_id": "O6_4TKaCEMVBFpB3-XR0P",
       "img": "/menu/taqueria/pescado-taco.png",
       "name": "3x Pescado (Fish) Tacos",
-      "originalPrice": 11.25
+      "originalPrice": 1125
     },
     {
       "tags": [],
       "_id": "IEt50RPjQqGPz7X5m5WaR",
       "img": "/menu/taqueria/chorizo-taco.png",
       "name": "3x Chorizo (Sausage) Tacos",
-      "originalPrice": 11.25
+      "originalPrice": 1125
     },
     {
       "tags": [],
       "_id": "c-67feK6I6Ad_dJRKTr6w",
       "img": "/menu/taqueria/barbocoa-taco.png",
       "name": "3x Barbacoa (Lamb) Tacos",
-      "originalPrice": 11.25
+      "originalPrice": 1125
     },
     {
       "tags": [],
       "_id": "DskCXQWchhxAo_KrLZiNh",
       "img": "/menu/taqueria/flauta-plate.png",
       "name": "Pollo Flauta Plate",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "description": "3 rolled crispy tacos w/ lettuce, salsa, guacamole, cheese and crema and side of rice and beans"
     },
     {
@@ -924,7 +1263,7 @@ POST rests/_doc/
       "_id": "pmuZPcloW76KRBWpOAkPe",
       "img": "/menu/taqueria/roja-enchiladas.png",
       "name": "Roja Enchiladas",
-      "originalPrice": 11.50,
+      "originalPrice": 1150,
       "description": "two chicken-rolled corn tortillas topped w/ red sauce and served w/ red Mexican rice and pinto beans"
     }
   ],
@@ -948,15 +1287,17 @@ POST rests/_doc/
     "geo": {
       "lat": 40.745980,
       "lon": -74.028680
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
       "_id": "YBCvO0V2z3UDSfC6evRZe",
       "img": "/menu/margheritas/fettucine-alfredo.png",
       "name": "Fettuccine Alfredo",
-      "originalPrice": 10.95,
+      "originalPrice": 1095,
       "tags": [],
       "discription": "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce"
     },
@@ -964,7 +1305,7 @@ POST rests/_doc/
       "_id": "leM-xEuV4ucGVV2GdcM3x",
       "img": "/menu/margheritas/penne-vodka.png",
       "name": "Penne Vodka",
-      "originalPrice": 10.95,
+      "originalPrice": 1095,
       "tags": [],
       "discription": "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka"
     },
@@ -972,7 +1313,7 @@ POST rests/_doc/
       "_id": "umQoRB1zA7dpb2lZ_eta1",
       "img": "/menu/margheritas/rigatoni-w-meat-sauce.png",
       "name": "Rigatoni w/ Meat Sauce",
-      "originalPrice": 10.95,
+      "originalPrice": 1095,
       "tags": [],
       "discription": "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese"
     },
@@ -980,14 +1321,14 @@ POST rests/_doc/
       "_id": "zFSbyFbfXkD-pSI6p-ETG",
       "img": "/menu/margheritas/chicken-cutlet.png",
       "name": "Chicken Cutlet Sandwich",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "tags": [],
       "discription": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo"
     },
     {
       "_id": "kmXktTAR0c0FA7aA9RwJj",
       "img": "/menu/margheritas/sausage-n-peppers.png",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "tags": [],
       "name": "Sausage, Peppers, and Onions Sandwich"
     },
@@ -995,7 +1336,7 @@ POST rests/_doc/
       "_id": "uxeKzlMF-24OF8GXTrhUm",
       "img": "/menu/margheritas/fresh-mozz-and-roasted-peps-sandwhich.png",
       "name": "Fresh Mozzarella & Roasted Red Peppers Sandwich",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "tags": ["Vegan", "Vegetarian"],
       "discription": "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia"
     }
@@ -1020,15 +1361,17 @@ POST rests/_doc/
     "geo": {
       "lat": 40.738461,
       "lon": -74.030937
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
       "_id": "EYfOpNG2KTRNhHVZSGHmm",
       "img": "/menu/precious-chinese/beef-over-broccoli.jpg",
       "name": "Beef w/ Broccoli",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     },
@@ -1036,7 +1379,7 @@ POST rests/_doc/
       "_id": "XQNJ7ElD4zFmjmvdOiTdc",
       "img": "/menu/precious-chinese/general-tsos-chicken.png",
       "name": "General Tsos Chicken",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     },
@@ -1044,7 +1387,7 @@ POST rests/_doc/
       "_id": "4T5aQ9FLI8lyoA3zoToKt",
       "img": "/menu/precious-chinese/tangerine-chicken.png",
       "name": "Tangerine Chicken",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     },
@@ -1052,7 +1395,7 @@ POST rests/_doc/
       "_id": "Cl0wYEgZ3fg1kk7qzRQ45",
       "img": "/menu/precious-chinese/pepper-steak-w-onions.png",
       "name": "Pepper Steak w/ Onions",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     },
@@ -1060,7 +1403,7 @@ POST rests/_doc/
       "_id": "4wogDeH4Kmasoz6fIDnny",
       "img": "/menu/precious-chinese/chicken-w-broccoli.png",
       "name": "Chicken w/ Broccoli",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     },
@@ -1068,7 +1411,7 @@ POST rests/_doc/
       "_id": "kFRbIxYEWI7awVYQnFkkI",
       "img": "/menu/precious-chinese/diced-chicken-w-hot-pepper-sauce-and-peanuts.png",
       "name": "Diced Chicken w/ Hot Pepper Sauce and Peanuts",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "w/ rice and egg roll"
     }
@@ -1093,15 +1436,17 @@ POST rests/_doc/
     "geo": {
       "lat": 40.753580,
       "lon": -74.029220
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
       "_id": "jvKgxB63mkjKYJPbZ6Xuq",
       "img": "/menu/malibu-diner/western-omelette.png",
       "name": "Western Omelette",
-      "originalPrice": 10.50,
+      "originalPrice": 1050,
       "tags": [],
       "discription": "w/ diced ham, green peppers and onions. Served w/ home fries and toast"
     },
@@ -1109,7 +1454,7 @@ POST rests/_doc/
       "_id": "UBhDDFonMB9uV6oynwlzB",
       "img": "/menu/malibu-diner/western-wrap.png",
       "name": "Western Breakfast Wrap",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "tags": [],
       "discription": "w/ scrambled eggs, diced ham, onions, green Pepperp and Monterey Jack cheese. Served w/ home fries"
     },
@@ -1117,7 +1462,7 @@ POST rests/_doc/
       "_id": "TDorla9_Ha4r98yNoguFa",
       "img": "/menu/malibu-diner/cheeseburger.png",
       "name": "Cheeseburger on a Roll",
-      "originalPrice": 11.50,
+      "originalPrice": 1150,
       "tags": [],
       "discription": "melted American, lettuce, tomato. Served w/ fries and coleslaw"
     },
@@ -1125,7 +1470,7 @@ POST rests/_doc/
       "_id": "FmoCjgnlAeKVBrt0CJlc8",
       "img": "/menu/malibu-diner/pastrami.png",
       "name": "Hot Pastrami Sandwich",
-      "originalPrice": 9.95,
+      "originalPrice": 995,
       "tags": [],
       "discription": "served w/ potato salad and pickle"
     },
@@ -1133,7 +1478,7 @@ POST rests/_doc/
       "_id": "LDD-JA6VJcM-JaGy2xWeP",
       "img": "/menu/malibu-diner/reuben-sandwhich.png",
       "name": "Reuben Sandwich",
-      "originalPrice": 8.50,
+      "originalPrice": 850,
       "tags": [],
       "discription": "served w/ fries and coleslaw"
     },
@@ -1141,7 +1486,7 @@ POST rests/_doc/
       "_id": "5vVHQdd2NzgVjKORYUUDA",
       "img": "/menu/malibu-diner/chicken-fajita-panini.png",
       "name": "Chicken Fajita Panini",
-      "originalPrice": 8.25,
+      "originalPrice": 825,
       "tags": [],
       "discription": "grilled chicken with roasted peppers, caramelized onions, cheddar cheese and salsa. Served with french fries"
     }
@@ -1166,8 +1511,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.731100,
       "lon" : -74.067660
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -1176,21 +1523,21 @@ POST rests/_doc/
       "name" : "Turkey & Bacon Triple Decker",
       "description" : "w/ lettuce & tomato",
       "tags": [],
-      "originalPrice" : 10.65
+      "originalPrice" : 1065
     },
     {
       "_id" : "SSZnRga_jPP8mHSK_eECe",
       "img" : "/menu/vip-diner/penne-rigate-ala-vodka.jpg",
       "name" : "Penne Rigate Ala Vodka",
       "tags": [],
-      "originalPrice" : 11.5
+      "originalPrice" : 115
     },
     {
       "_id" : "FMHSwI21-jLwyGMeXnEK-",
       "img" : "/menu/vip-diner/philly-cheesesteak.jpg",
       "name" : "Philly Cheese Steak",
       "tags": [],
-      "originalPrice" : 8.95,
+      "originalPrice" : 895,
       "description" : "w/ fries, peppers, onions & american cheese on hero bread"
     },
     {
@@ -1198,7 +1545,7 @@ POST rests/_doc/
       "img" : "/menu/vip-diner/penne-with-broccoli.jpg",
       "name" : "Penne Rigate with Broccoli",
       "tags": [],
-      "originalPrice" : 10.95
+      "originalPrice" : 1095
     },
     {
       "_id" : "-egup_S0NcSlZVcqATo1G",
@@ -1206,7 +1553,7 @@ POST rests/_doc/
       "name" : "Chopped Sirloin Steak",
       "description" : "w/ mushroom sauce",
       "tags": [],
-      "originalPrice" : 12.95
+      "originalPrice" : 1295
     },
     {
       "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
@@ -1214,7 +1561,7 @@ POST rests/_doc/
       "name" : "Hero Chicken Parmigiana",
       "tags": [],
       "description" : "on italian bread w/ fries",
-      "originalPrice" : 8.95
+      "originalPrice" : 895
     }
   ],
   "profile" : {
@@ -1239,8 +1586,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.739250,
       "lon" : -74.029970
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -1249,7 +1598,7 @@ POST rests/_doc/
       "name" : "Ahi Tuna Sushirito",
       "description" : "sushi burrito - ahi tuna, rice, masago, seaweed salad, cucumbers, lettuce, furikake, spicy mayo",
       "tags": [],
-      "originalPrice" : 11.00
+      "originalPrice" : 1100
     },
     {
       "_id" : "CDjPVPS-aYryMw4IgOp-g",
@@ -1257,14 +1606,14 @@ POST rests/_doc/
       "description" : "sushi burrito - salmon, rice, tamago, masago, seaweed salad, kimchi, furikake, spicy mayo",
       "name" : "Salmon Sushirito",
       "tags": [],
-      "originalPrice" : 11.00
+      "originalPrice" : 1100
     },
     {
       "_id" : "UEI91oRqzN8kelLOB0BVL",
       "img" : "/menu/south-street/ahi-tuna-poke-bowl.jpg",
       "name" : "Ahi Tuna Poke Bowl",
       "tags": [],
-      "originalPrice" : 11.00,
+      "originalPrice" : 1100,
       "description" : "ahi tuna, rice, masago, tamago, scallions, seaweed salad, tempura flakes, furikake, poke sauce"
     },
     {
@@ -1272,7 +1621,7 @@ POST rests/_doc/
       "img" : "/menu/south-street/spicy-tuna-poke-bowl.jpg",
       "name" : "Spicy Tuna Poke Bowl",
       "tags": [],
-      "originalPrice" : 11.00,
+      "originalPrice" : 1100,
       "description" : "spicy tuna, rice, masago, corn, kimchi, scallions, tempura flakes, furikake, spicy mayo"
     },
     {
@@ -1281,7 +1630,7 @@ POST rests/_doc/
       "name" : "Salmon Tropical Poke Bowl",
       "description" : "salmon, rice, tamago, corn, mango, guacamole, tempura flakes, furikake, spicy mayo",
       "tags": [],
-      "originalPrice" : 11.00
+      "originalPrice" : 1100
     },
     {
       "_id" : "xWp3HOISfefgYVRJ8NWHE",
@@ -1289,7 +1638,7 @@ POST rests/_doc/
       "name" : "Ahi Tuna Tropical Salad",
       "tags": [],
       "description" : "spicy tuna, lettuce, edamame, guacamole, seaweed salad, cucumbers, tempura flakes, furikake, spicy mayo",
-      "originalPrice" : 11.00
+      "originalPrice" : 1100
     }
   ],
   "profile" : {
@@ -1314,8 +1663,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.721200,
       "lon" : -74.045770
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -1392,8 +1743,10 @@ POST rests/_doc/
     "geo": {
       "lat": 40.744920,
       "lon": -74.050520
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
@@ -1444,8 +1797,6 @@ POST rests/_doc/
   }
 }
 
-
-
 POST rests/_doc/
 {
   "createdDate" : 1585714539021,
@@ -1459,8 +1810,10 @@ POST rests/_doc/
     "geo" : {
       "lat" : 40.716130,
       "lon" : -74.036100
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers" : [ ],
   "menu" : [
     {
@@ -1528,8 +1881,10 @@ POST rests/_doc/
     "geo": {
       "lat": 40.718520,
       "lon": -74.043920
-    }
+    },
+    "timezone": "America/New_York"
   },
+  "taxRate": 0.0625,
   "managers": [],
   "menu": [
     {
@@ -1696,3 +2051,179 @@ POST rest/_doc/
     ]
   }
 }
+
+###############################
+
+
+POST _reindex
+{
+  "source": {
+    "index": "orders"
+  },
+  "dest": {
+    "index": "orders2"
+  },
+  "script": {
+    "source": """
+      ctx._source.deliveries = [];
+      params.delivery.deliveryTime = ctx._source.deliveryTime;
+      params.delivery.deliveryDate = ctx._source.deliveryDate;
+      params.delivery.meals = ctx._source.rest.meals;
+      params.delivery.status = ctx._source.status;
+      for (int i = 0; i < params.delivery.meals.length; i++) {
+        params.delivery.meals[i].tags = [];
+        params.delivery.meals[i].restId = ctx._source.rest.restId;
+        params.delivery.meals[i].restName = "name";
+        params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
+        params.delivery.meals[i].planName = "Standard";
+      }
+      ctx._source.deliveries.add(params.delivery);
+      ctx._source.remove("status");
+      ctx._source.remove("rest");
+      ctx._source.remove("deliveryTime");
+      ctx._source.remove("deliveryDate");
+      ctx._source.costs.mealPlans = [];
+      params.mealPlan.mealPrice = ctx._source.costs.mealPrice;
+      ctx._source.costs.mealPlans.add(params.mealPlan);
+      ctx._source.remove("costs.mealPrice");
+    """,
+    "params": {
+      "delivery": {},
+      "mealPlan": {
+        "stripePlanId": "plan_H4mjyvjuE1fObC",
+        "planName": "Standard"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+POST /orders/_doc
+{
+  "consumer" : {
+    "userId" : "google-oauth2|115801346721485756808",
+    "profile" : {
+      "name" : "simon vuong",
+      "email" : "simon.orchideats@gmail.com",
+      "phone" : "6095138166",
+      "card" : {
+        "last4" : "4242",
+        "expMonth" : 4,
+        "expYear" : 2024
+      },
+      "destination" : {
+        "address" : {
+          "address1" : "16 rainbow dr",
+          "city" : "mays landing",
+          "state" : "NJ",
+          "zip" : "08330"
+        },
+        "instructions" : ""
+      }
+    }
+  },
+  "stripeSubscriptionId" : "sub_HAnXi6Th5ibEs5",
+  "cartUpdatedDate" : 1587974655544,
+  "createdDate" : 1587974655544,
+  "invoiceDate" : 1589184255000,
+  "costs" : {
+    "tax" : 794,
+    "tip" : 0,
+    "mealPrices" : [
+      {
+        "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+        "planName" : "Standard",
+        "mealPrice" : 999
+      }
+    ],
+    "percentFee" : 0,
+    "flatRateFee" : 0,
+    "deliveryFee" : 400
+  },
+  "deliveries" : [
+    {
+      "deliveryDate" : 1588230708308,
+      "deliveryTime" : "ThreePToFiveP",
+      "discount" : null,
+      "meals" : [
+        {
+          "mealId" : "Cl0wYEgZ3fg1kk7qzRQ45",
+          "img" : "/menu/precious-chinese/pepper-steak-w-onions.png",
+          "name" : "Pepper Steak w/ Onions",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "EYfOpNG2KTRNhHVZSGHmm",
+          "img" : "/menu/precious-chinese/beef-over-broccoli.jpg",
+          "name" : "Beef w/ Broccoli",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "4T5aQ9FLI8lyoA3zoToKt",
+          "img" : "/menu/precious-chinese/tangerine-chicken.png",
+          "name" : "Tangerine Chicken",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        },
+        {
+          "mealId" : "XQNJ7ElD4zFmjmvdOiTdc",
+          "img" : "/menu/precious-chinese/general-tsos-chicken.png",
+          "name" : "General Tsos Chicken",
+          "quantity" : 1,
+          "restId" : "9yFhNnEBBGf1BFEfX0UK",
+          "restName" : "Precious Chinese Cuisine",
+          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
+          "planName" : "Standard",
+          "taxRate" : 0.06625
+        }
+      ],
+      "status" : "Open"
+    }
+  ],
+  "donationCount" : 0
+}
+
+
+
+
+
+
+GET /orders/_doc/YIntyXEB3mzlaF51oZa3
+
+
+
+
+
+
+
+
+
+
+

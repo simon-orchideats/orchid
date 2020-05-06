@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 // import { IRestService } from './../../rests/restService';
 // import { IConsumerService } from './../../consumer/consumerService';
 // import { IPlanService } from './../../plans/planService';

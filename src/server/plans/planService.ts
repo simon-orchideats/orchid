@@ -1,14 +1,9 @@
-import { IPlan } from './../../plan/planModel';
+import { MIN_MEALS, IPlan, PlanName } from './../../plan/planModel';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 
-const DEFAULT_PLAN_COUNT = 4;
-
 export interface IPlanService {
   getAvailablePlans(): Promise<IPlan[]>
-  getDefaultPlan(): Promise<IPlan>
-  getPlan(planId: string): Promise<IPlan | null>
-  getPlanByCount(count: number): Promise<IPlan | null>
 }
 
 class PlanService implements IPlanService {
@@ -24,53 +19,29 @@ class PlanService implements IPlanService {
         limit: 3,
         active: true,
       });
-      return plans.data.map(plan => ({
-        stripeId: plan.id,
-        mealCount: parseFloat(plan.metadata.mealCount),
-        mealPrice: parseFloat(plan.metadata.mealPrice),
-        weekPrice: plan.amount! / 100,
-      }))
+      let min: number | null = MIN_MEALS;
+      return plans.data.map(p => {
+        if (!p.tiers) throw new Error('Could not get tiers');
+        if (!p.nickname) throw new Error('No plan nickname');
+        return {
+          stripePlanId: p.id,
+          name: p.nickname as PlanName,
+          tiers: p.tiers.map(tier => {
+            if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);
+            if (min === null) throw new Error('min is null');
+            const res = {
+              minMeals: min,
+              maxMeals: tier.up_to,
+              mealPrice: tier.unit_amount,
+            };
+            min = res.maxMeals && res.maxMeals + 1;
+            return res;
+          })
+        }
+      })
     } catch (e) {
       console.error(`[PlanService] could not get plans. '${e.stack}'`);
       throw new Error('Internal Server Error');
-    }
-  }
-
-  async getDefaultPlan(): Promise<IPlan> {
-    try {
-      const plan = await this.getPlanByCount(4);
-      if (!plan) throw new Error(`Default plan of count ${DEFAULT_PLAN_COUNT} not found`);
-      return plan;
-    } catch (e) {
-      console.error(`[PlanService] could not get default plan. '${e.stack}'`);
-      throw new Error('Internal Server Error');
-    }
-  }
-
-  async getPlanByCount(count: number): Promise<IPlan | null> {
-    try {
-      const plans = await this.getAvailablePlans();
-      const target = plans.find(plan => plan.mealCount === count);
-      return target ? target : null;
-    } catch (e) {
-      console.error(`[PlanService] could not get plans. '${e.stack}'`);
-      throw new Error('Internal Server Error');
-    }
-  }
-
-  async getPlan(planId: string): Promise<IPlan | null> {
-    try {
-      const plan = await this.stripe.plans.retrieve(planId);
-      if (!plan.active) throw new Error(`Plan ${planId} is inactive`);
-      return {
-        stripeId: plan.id,
-        mealCount: parseFloat(plan.metadata.mealCount),
-        mealPrice: parseFloat(plan.metadata.mealPrice),
-        weekPrice: plan.amount! / 100,
-      }
-    } catch (e) {
-      console.error(`[PlanService] could not get plan '${planId}'. ${e.stack}'`);
-      return null;
     }
   }
 }

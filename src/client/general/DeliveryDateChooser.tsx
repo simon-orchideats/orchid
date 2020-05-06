@@ -1,9 +1,10 @@
 import ToggleButton from '@material-ui/lab/ToggleButton';
-import { makeStyles, FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
+import { makeStyles, FormControl, Select, MenuItem, Typography } from "@material-ui/core";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { deliveryDay, deliveryTime, ConsumerPlan } from "../../consumer/consumerModel";
-import { useState, useRef, useEffect } from "react";
 import withClientApollo from '../utils/withClientApollo';
+import { getNextDeliveryDate } from '../../order/utils';
+import { useGetConsumer } from '../../consumer/consumerService';
 
 const useStyles = makeStyles(theme => ({
   smallPaddingBottom: {
@@ -23,18 +24,16 @@ const DeliveryDateChooser: React.FC<{
   day: deliveryDay
   onTimeChange: (t: deliveryTime) => void
   time: deliveryTime
+  limit?: number
 }> = ({
   onDayChange,
   day,
   onTimeChange,
   time,
+  limit,
 }) => {
   const classes = useStyles();
-  const inputLabel = useRef<HTMLLabelElement>(null);
-  const [labelWidth, setLabelWidth] = useState(0);
-  useEffect(() => {
-    setLabelWidth(inputLabel.current!.offsetWidth);
-  }, []);
+  const consumer = useGetConsumer();
   return (
     <>
       <ToggleButtonGroup
@@ -47,45 +46,42 @@ const DeliveryDateChooser: React.FC<{
           onDayChange(d);
         }}
       >
-        <ToggleButton value={0}>
-          Sun
+        <ToggleButton value={0} disabled={!!limit && getNextDeliveryDate(0).valueOf() >= limit}>
+          Su
         </ToggleButton>
-        <ToggleButton value={3}>
-          Wed
+        <ToggleButton value={1} disabled={!!limit && getNextDeliveryDate(1).valueOf() >= limit}>
+          M
         </ToggleButton>
-        <ToggleButton value={5}>
-          Fri
+        <ToggleButton value={2} disabled={!!limit && getNextDeliveryDate(2).valueOf() >= limit}>
+          T
+        </ToggleButton>
+        <ToggleButton value={3} disabled={!!limit && getNextDeliveryDate(3).valueOf() >= limit}>
+          W
+        </ToggleButton>
+        <ToggleButton value={4} disabled={!!limit && getNextDeliveryDate(4).valueOf() >= limit}>
+          Th
+        </ToggleButton>
+        <ToggleButton value={5} disabled={!!limit && getNextDeliveryDate(5).valueOf() >= limit}>
+          F
+        </ToggleButton>
+        <ToggleButton value={6} disabled={!!limit && getNextDeliveryDate(6).valueOf() >= limit}>
+          Sa
         </ToggleButton>
       </ToggleButtonGroup>
+      {
+        (!consumer.data || !consumer.data.Plan) &&
+        <Typography variant='body1'>
+          First delivery day: <b>{getNextDeliveryDate(day).format('M/D/YY')}</b>
+        </Typography>
+      }
       <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-        <InputLabel ref={inputLabel}>
-          Another day
-        </InputLabel>
-        <Select
-          labelWidth={labelWidth}
-          value={day === 0 || day === 3 || day === 5 ? '' : day}
-          onChange={e => onDayChange(e.target.value as deliveryDay)}
-        >
-          <MenuItem value={1}>Mon</MenuItem>
-          <MenuItem value={2}>Tue</MenuItem>
-          <MenuItem value={4}>Thur</MenuItem>
-          <MenuItem value={6}>Sat</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
-        <InputLabel>
-          Preferred delivery time
-        </InputLabel>
         <Select
           value={time}
           onChange={e => onTimeChange(e.target.value as deliveryTime)}
         >
-          {/* <MenuItem value={'OnePToTwoP'}>{ConsumerPlan.getDeliveryTimeStr('OnePToTwoP')}</MenuItem>
-          <MenuItem value={'TwoPToThreeP'}>{ConsumerPlan.getDeliveryTimeStr('TwoPToThreeP')}</MenuItem> */}
-          <MenuItem value={'ThreePToFourP'}>{ConsumerPlan.getDeliveryTimeStr('ThreePToFourP')}</MenuItem>
-          <MenuItem value={'FourPToFiveP'}>{ConsumerPlan.getDeliveryTimeStr('FourPToFiveP')}</MenuItem>
-          <MenuItem value={'FivePToSixP'}>{ConsumerPlan.getDeliveryTimeStr('FivePToSixP')}</MenuItem>
-          <MenuItem value={'SixPToSevenP'}>{ConsumerPlan.getDeliveryTimeStr('SixPToSevenP')}</MenuItem>
+          {/* <MenuItem value={'OnePToThreeP'}>{ConsumerPlan.getDeliveryTimeStr('OnePToThreeP')}</MenuItem> */}
+          <MenuItem value={'ThreePToFiveP'}>{ConsumerPlan.getDeliveryTimeStr('ThreePToFiveP')}</MenuItem>
+          <MenuItem value={'FivePToSevenP'}>{ConsumerPlan.getDeliveryTimeStr('FivePToSevenP')}</MenuItem>
         </Select>
       </FormControl>
     </>

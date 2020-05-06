@@ -1,22 +1,21 @@
-
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
-import { CuisineType, deliveryDay, ConsumerPlan, deliveryTime } from '../../consumer/consumerModel';
-import PlanCards from '../../client/plan/PlanCards';
+import { CuisineType, ConsumerPlan, deliveryDay, deliveryTime, Schedule, MealPlan } from '../../consumer/consumerModel';
 import RenewalChooser from '../../client/general/RenewalChooser';
-import DeliveryDateChooser from '../../client/general/DeliveryDateChooser';
 import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
-import Router from "next/router";
-import { useUpdateCartPlanId } from "../../client/global/state/cartState";
-import { Plan } from "../../plan/planModel";
-import { menuRoute } from "../menu";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { useGetAvailablePlans } from "../../plan/planService";
-import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseCuisineMetrics, sendCancelSubscriptionMetrics, sendChooseDeliveryTimeMetrics } from "../../client/consumer/myPlanMetrics";
+import { sendChooseCuisineMetrics } from "../../client/consumer/myPlanMetrics";
+import Counter from "../../client/menu/Counter";
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
+import PreferredSchedule from "../../client/general/PreferredSchedule";
+import { MIN_MEALS } from "../../plan/planModel";
+import { menuRoute } from "../menu";
+import Link from "next/link";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -25,6 +24,22 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'left',
     background: 'none',
     paddingBottom: theme.spacing(4),
+  },
+  button: {
+    borderRadius: 10,
+  },
+  row: {
+    maxWidth: 200,
+    display: 'flex',
+  },
+  minusButton: {
+    backgroundColor: `${theme.palette.grey[600]}`,
+    '&:hover': {
+      backgroundColor: theme.palette.grey[800],
+    },
+    '&:disabled': {
+      backgroundColor: theme.palette.grey[300],
+    },
   },
   paperContainer: {
     display: 'flex',
@@ -52,104 +67,144 @@ const myPlan = () => {
   const classes = useStyles();
   const consumer = useRequireConsumer(myPlanRoute);
   const plan = consumer.data && consumer.data.Plan;
+  const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
   const cuisines = plan ? plan.Cuisines : [];
-  const day = plan ? plan.DeliveryDay : 0;
-  const deliveryTime = plan ? plan.deliveryTime : ConsumerPlan.getDefaultDeliveryTime();
-  const plans = useGetAvailablePlans();
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const validateCuisineRef= useRef<() => boolean>();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
-  const setCartStripePlanId = useUpdateCartPlanId();
-  const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
   const notify = useNotify();
   useMutationResponseHandler(cancelSubscriptionRes, () => {
     notify('Plan canceled.', NotificationType.success, false);
   });
   useMutationResponseHandler(updateMyPlanRes, () => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!plans.data) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
     if (!prevPlan) {
       const err = new Error('No prev plan');
       console.error(err.stack);
       throw err;
     }
     let msg = '.';
-    const newMealCount = Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data);
-    const prevMealCount = Plan.getPlanCount(prevPlan.StripePlanId, plans.data);
-    const newDeliveryDay = consumer.data.Plan.DeliveryDay;
-    if (newMealCount > prevMealCount) {
-      msg = `. We added ${Math.abs(newMealCount - prevMealCount)} meals to your upcoming deliveries.`
-    } else if (newMealCount < prevMealCount) {
-      msg = `. We removed ${Math.abs(newMealCount - prevMealCount)} meals from your upcoming deliveries.`
-    } else if (newDeliveryDay !== prevPlan.DeliveryDay) {
-      msg = ` with new delivery day.`
+    const oldMealCount = MealPlan.getTotalCount(prevPlan.mealPlans);
+    const newMealCount = MealPlan.getTotalCount(consumer.data.Plan.MealPlans);
+    const oldCuisines = prevPlan.Cuisines;
+    const newCuisines = consumer.data.Plan.Cuisines;
+    const oldSchedule = prevPlan.Schedules;
+    const newSchedule = consumer.data.Plan.Schedules;
+    if (oldMealCount !== newMealCount) {
+      msg = `. We will pick ${newMealCount} meals for you in the future.`
+    } else if (!ConsumerPlan.areCuisinesEqual(oldCuisines, newCuisines)) {
+      msg = `. We will pick new cuisines for you in the future.`;
+    } else if (!Schedule.equalsLists(oldSchedule, newSchedule)) {
+      msg = '. We will follow your new schedule in the future.'
     }
     notify(`Plan updated${msg}`, NotificationType.success, false);
   });
-  const onClickCardNoSubscription = (plan: Plan) => {
-    Router.push(menuRoute);
-    setCartStripePlanId(plan.stripeId);
-  };
+  if (!consumer.data && !consumer.loading && !consumer.error) {
+    return <Typography>Logging you in...</Typography>
+  }
+  if (consumer.error) {
+    console.error(`Error getting consumer in my-plan: ${consumer.error}`);
+    return null;
+  }
   const noConsumerPlanErr = () => {
     const err = new Error(`No consumer plan '${JSON.stringify(consumer.data)}' for update plan`);
     console.error(err.stack);
     return err;
   }
-  const updatePlan = (plan: Plan) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!plans.data) {
-      const err = new Error('No plan');
-      console.error(err.stack);
-      throw err;
-    }
-    if (consumer.data.Plan.StripePlanId === plan.StripeId) return;
-    setPrevPlan(consumer.data.Plan);
-    sendChoosePlanMetrics(
-      plan.MealPrice,
-      plan.MealCount,
-      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
-      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
-    );
-    updateMyPlan(
-      new ConsumerPlan({
-        ...consumer.data.Plan,
-        stripePlanId: plan.stripeId,
-      }),
-      consumer.data
-    );
-  };
-  const updateDay = (deliveryDay: deliveryDay) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (consumer.data.Plan.DeliveryDay === deliveryDay) return;
-    setPrevPlan(consumer.data.Plan);
-    sendChooseDeliveryDayMetrics(deliveryDay, consumer.data.Plan.DeliveryDay);
-    updateMyPlan(
-      new ConsumerPlan({
-        ...consumer.data.Plan,
-        deliveryDay,
-      }),
-      consumer.data
-    );
-  };
-  
-  const updateDeliveryTime = (deliveryTime: deliveryTime) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (consumer.data.Plan.DeliveryTime === deliveryTime) return;
-    setPrevPlan(consumer.data.Plan);
-    sendChooseDeliveryTimeMetrics(deliveryTime, consumer.data.Plan.DeliveryTime)
-    updateMyPlan(
-      new ConsumerPlan({
-        ...consumer.data.Plan,
-        deliveryTime,
-      }),
-      consumer.data
-    );
-  };
+  if (!consumer.data) {
+    if (consumer.loading) return <Typography variant='body1'>Loading...</Typography>;
+    const err = new Error('No consumer data');
+    console.error(err.stack);
+    return null;
+  }
 
+  const count = plan ? plan.MealPlans[0].MealCount : 0;
+  const allowedDeliveries = Math.floor(count / MIN_MEALS);
+
+  const onRemoveMeal = () => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    const plan = consumer.data.Plan;
+    const mealCount = count - 1;
+    const newAllowedDeliveries = Math.floor(mealCount / MIN_MEALS);
+    if (newAllowedDeliveries < plan.Schedules.length) {
+      notify(`Too many deliveries for ${mealCount} meals. Remove 1 first`, NotificationType.error, false);
+      return;
+    }
+    if (mealCount < MIN_MEALS) return;
+    setPrevPlan(plan);
+    updateMyPlan(
+      new ConsumerPlan({
+        ...plan,
+        mealPlans: [
+          new MealPlan({
+            ...plan.MealPlans[0],
+            mealCount,
+          })
+        ]
+      }),
+      consumer.data
+    );
+  }
+  const onAddMeal = () => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    const plan = consumer.data.Plan;
+    setPrevPlan(plan);
+    updateMyPlan(
+      new ConsumerPlan({
+        ...plan,
+        mealPlans: [
+          new MealPlan({
+            ...plan.MealPlans[0],
+            mealCount: count + 1,
+          })
+        ]
+      }),
+      consumer.data
+    );
+  }
+  const addSchedule = () => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    const plan = consumer.data.Plan;
+    setPrevPlan(plan);
+    const schedules = plan.Schedules.map(s => new Schedule(s));
+    schedules.push(Schedule.getDefaultSchedule());
+    updateMyPlan(
+      new ConsumerPlan({
+        ...plan,
+        schedules,
+      }),
+      consumer.data
+    );
+  };
+  const removeSchedule = (i: number) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    const plan = consumer.data.Plan;
+    setPrevPlan(plan);
+    const schedules = plan.Schedules.map(s => new Schedule(s));
+    schedules.splice(i, 1);
+    updateMyPlan(
+      new ConsumerPlan({
+        ...plan,
+        schedules,
+      }),
+      consumer.data
+    );
+  }
+  const updateSchedule = (i: number, day: deliveryDay, time: deliveryTime) => {
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    const plan = consumer.data.Plan;
+    setPrevPlan(plan);
+    const newSchedule = new Schedule({ day, time });
+    const schedules = plan.Schedules.map(s => new Schedule(s));
+    schedules[i] = newSchedule;
+    updateMyPlan(
+      new ConsumerPlan({
+        ...plan,
+        schedules,
+      }),
+      consumer.data
+    );
+  }
   const updateCuisines = (cuisines: CuisineType[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
@@ -163,32 +218,12 @@ const myPlan = () => {
     );
   };
   const onCancelSubscription = () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!plans.data) {
-      const err = new Error('No plan');
-      console.error(err.stack);
-      throw err;
-    }
-    sendCancelSubscriptionMetrics(
-      Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
-      Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
-    );
+    // sendCancelSubscriptionMetrics(
+    //   Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
+    //   Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
+    // );
     cancelSubscription();
   }
-  if (!consumer.data && !consumer.loading && !consumer.error) {
-    return <Typography>Logging you in...</Typography>
-  }
-  if (consumer.error) {
-    console.error(`Error getting consumer in my-plan: ${consumer.error}`);
-    return null;
-  }
-  if (!consumer.data ) {
-    if (consumer.loading) return <Typography variant='body1'>Loading...</Typography>;
-    const err = new Error('No consumer plan');
-    console.error(err.stack);
-    return null;
-  }
-
   return (
     <Container maxWidth='lg' className={classes.container}>
       <Notifier />
@@ -200,31 +235,64 @@ const myPlan = () => {
         plan ? 
           <>
             <Typography
-              variant='h6'
+              variant='h4'
               color='primary'
               className={classes.verticalPadding}
             >
-              Preferred meal plan
+              Meals enjoyed per week
             </Typography>
             <Typography variant='subtitle2' className={classes.subtitle}>
               Upcoming deliveries will automatically update their meals
             </Typography>
-            <PlanCards selectedPlanId={plan.StripePlanId} onClickCard={plan => updatePlan(plan)}/>
+            <div className={classes.row}>
+              <Counter
+                subtractDisabled={count === MIN_MEALS}
+                onClickSubtract={onRemoveMeal}
+                subtractButtonProps={{
+                  variant: 'contained',
+                  className: `${classes.button} ${classes.minusButton}`
+                }}
+                subractIcon={<RemoveIcon />}
+                chipLabel={count}
+                chipDisabled={!count}
+                onClickAdd={onAddMeal}
+                addIcon={<AddIcon />}
+                addButtonProps={{
+                  variant: 'contained',
+                  color: 'primary',
+                  className: classes.button
+                }}
+              />
+            </div>
+            {
+              count === MIN_MEALS &&
+              <Typography variant='body1'>
+               * Must have at least 4 meals
+              </Typography>
+            }
             <Typography
-              variant='h6'
+              variant='h4'
               color='primary'
               className={classes.verticalPadding}
             >
-              Preferred delivery day
+              Preferred repeat delivery days
             </Typography>
             <Typography variant='subtitle2' className={classes.subtitle}>
               Upcoming deliveries will automatically change dates
             </Typography>
-            <DeliveryDateChooser
-              day={day}
-              onDayChange={day => updateDay(day)}
-              time={deliveryTime}
-              onTimeChange={time => updateDeliveryTime(time)}
+            <Typography
+              variant='subtitle2'
+              color='textSecondary'
+              className={classes.subtitle}
+            >
+              * If a restaurant is closed, we'll deliver the next day
+            </Typography>
+            <PreferredSchedule
+              addSchedule={addSchedule}
+              allowedDeliveries={allowedDeliveries}
+              removeSchedule={removeSchedule}
+              schedules={plan.Schedules}
+              updateSchedule={updateSchedule}
             />
             <RenewalChooser
               cuisines={cuisines}
@@ -244,13 +312,20 @@ const myPlan = () => {
         :
         <>
           <Typography
-            variant='h6'
+            variant='h4'
             color='primary'
             className={classes.verticalPadding}
           >
-            Choose a meal plan to get started
+            Checkout the menu to get started
           </Typography>
-          <PlanCards onClickCard={onClickCardNoSubscription} />
+          <Link href={menuRoute}>
+            <Button
+              variant='contained'
+              color='primary'
+            >
+              SEE MENU
+            </Button>
+          </Link>
         </>
       }
       </Paper>

@@ -1,5 +1,7 @@
+import { PlanName } from './../plan/planModel';
 import { IDestination, Destination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
+import moment from 'moment';
 
 export interface IConsumerProfile {
   readonly name: string
@@ -43,16 +45,16 @@ export class ConsumerProfile implements IConsumerProfile {
 
 export type CuisineType =
   'American'
-  | 'Bbq'
+  // | 'Bbq'
   | 'Chinese'
   | 'Indian'
   | 'Italian'
   | 'Japanese'
   | 'Mediterranean'
   | 'Mexican'
-  | 'Thai'
-  | 'Vegan'
-  | 'Vegetarian'
+  // | 'Thai'
+  // | 'Vegan'
+  // | 'Vegetarian'
 
 export const CuisineTypes: {
   American: 'American',
@@ -82,78 +84,168 @@ export const CuisineTypes: {
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export type deliveryTime =  'NineAToTenA' |
-'TenAToElevenA' |
-'ElevenAToTwelveP' |
-'TwelvePToOneP' |
-'OnePToTwoP' |
-'TwoPToThreeP' |
-'ThreePToFourP' |
-'FourPToFiveP' |
-'FivePToSixP' |
-'SixPToSevenP' |
-'SevenPToEightP' |
-'EightPToNineP' |
-'NinePToTenP'
+export type deliveryTime =  'NineAToElevenA' |
+'ElevenAToOneP' |
+'OnePToThreeP' |
+'ThreePToFiveP' |
+'FivePToSevenP' |
+'SevenPToNineP'
 
 const deliveryTimes: {
-  NineAToTenA: '9am - 10pm',
-  TenAToElevenA: '10am - 11pm',
-  ElevenAToTwelveP: '11am - 12pm',
-  TwelvePToOneP: '12pm - 1pm',
-  OnePToTwoP: '1pm - 2pm',
-  TwoPToThreeP: '2pm - 3pm',
-  ThreePToFourP: '3pm - 4pm',
-  FourPToFiveP: '4pm - 5pm',
-  FivePToSixP: '5pm - 6pm',
-  SixPToSevenP: '6pm - 7pm',
-  SevenPToEightP: '7pm - 8pm',
-  EightPToNineP: '8pm - 9pm',
-  NinePToTenP: '9pm - 10pm',
+  NineAToElevenA: '9am - 11am',
+  ElevenAToOneP: '11am - 1pm',
+  OnePToThreeP: '1pm - 3pm',
+  ThreePToFiveP: '3pm - 5pm',
+  FivePToSevenP: '5pm - 7pm',
+  SevenPToNineP: '7pm - 9pm',
 } = {
-  NineAToTenA: '9am - 10pm',
-  TenAToElevenA: '10am - 11pm',
-  ElevenAToTwelveP: '11am - 12pm',
-  TwelvePToOneP: '12pm - 1pm',
-  OnePToTwoP: '1pm - 2pm',
-  TwoPToThreeP: '2pm - 3pm',
-  ThreePToFourP: '3pm - 4pm',
-  FourPToFiveP: '4pm - 5pm',
-  FivePToSixP: '5pm - 6pm',
-  SixPToSevenP: '6pm - 7pm',
-  SevenPToEightP: '7pm - 8pm',
-  EightPToNineP: '8pm - 9pm',
-  NinePToTenP: '9pm - 10pm',
+  NineAToElevenA: '9am - 11am',
+  ElevenAToOneP: '11am - 1pm',
+  OnePToThreeP: '1pm - 3pm',
+  ThreePToFiveP: '3pm - 5pm',
+  FivePToSevenP: '5pm - 7pm',
+  SevenPToNineP: '7pm - 9pm',
+}
+
+export const defaultDeliveryDay: deliveryDay = 2;
+export const defaultDeliveryTime: deliveryTime = 'ThreePToFiveP';
+
+export interface ISchedule {
+  readonly day: deliveryDay;
+  readonly time: deliveryTime;
+}
+
+export class Schedule implements ISchedule {
+  readonly day: deliveryDay;
+  readonly time: deliveryTime;
+
+  constructor(s: ISchedule) {
+    this.day = s.day;
+    this.time = s.time;
+  }
+
+  public get Day() { return this.day }
+  public get Time() { return this.time }
+
+  static getICopy(s: ISchedule): ISchedule {
+    return {
+      ...s
+    }
+  }
+
+  static getDateTimeStr(date: number, time: deliveryTime) {
+    return `${moment(date).format('ddd M/D')}, ${ConsumerPlan.getDeliveryTimeStr(time)}`
+  }
+
+  static equals(s1: ISchedule, s2: ISchedule) {
+    return s1.day === s2.day && s1.time === s2.time
+  }
+
+  static equalsLists(s1s: ISchedule[], s2s: ISchedule[]) {
+    if (s1s.length !== s2s.length) return false;
+    const s1sCopy = [...s1s];
+    const s2sCopy = [...s2s];
+    for (let i = 0; i < s1s.length; i++) {
+      const findIndex = s2sCopy.findIndex(s2 => Schedule.equals(s1s[i], s2));
+      if (findIndex === -1) return false;
+      s2sCopy.slice(findIndex, 1);
+    }
+    for (let i = 0; i < s2s.length; i++) {
+      const findIndex = s1sCopy.findIndex(s1 => Schedule.equals(s2s[i], s1));
+      if (findIndex === -1) return false;
+      s1sCopy.slice(findIndex, 1);
+    }
+    return true;
+  }
+
+  static getDefaultSchedule() {
+    return new Schedule({
+      day: defaultDeliveryDay,
+      time: defaultDeliveryTime,
+    })
+  }
+}
+
+export interface IMealPlan {
+  readonly stripePlanId: string;
+  readonly planName: PlanName;
+  readonly mealCount: number;
+}
+
+export class MealPlan implements IMealPlan {
+  readonly stripePlanId: string;
+  readonly planName: PlanName;
+  readonly mealCount: number;
+
+  constructor(plan: IMealPlan) {
+    this.stripePlanId = plan.stripePlanId;
+    this.planName = plan.planName;
+    this.mealCount = plan.mealCount;
+  }
+
+  public get StripePlanId() { return this.stripePlanId }
+  public get PlanName() { return this.planName }
+  public get MealCount() { return this.mealCount }
+
+  static getICopy(plan: IMealPlan): IMealPlan {
+    return {
+      ...plan
+    }
+  }
+
+  static equals(p1: MealPlan, p2: MealPlan) {
+    return p1.StripePlanId === p2.StripePlanId
+      && p1.PlanName === p2.PlanName
+      && p1.MealCount === p2.MealCount
+  }
+
+  static equalsLists(p1s: MealPlan[], p2s: MealPlan[]) {
+    if (p1s.length !== p2s.length) return false;
+    const p1Copy = [...p1s];
+    const p2Copy = [...p2s];
+    for (let i = 0; i < p1s.length; i++) {
+      const findIndex = p2Copy.findIndex(p => MealPlan.equals(p1s[i], p));
+      if (findIndex === -1) return false;
+      p2Copy.slice(findIndex, 1);
+    }
+    for (let i = 0; i < p2s.length; i++) {
+      const findIndex = p1Copy.findIndex(p => MealPlan.equals(p2s[i], p));
+      if (findIndex === -1) return false;
+      p1Copy.slice(findIndex, 1);
+    }
+    return true;
+  }
+
+  static getTotalCount(ps: IMealPlan[]) {
+    return ps.reduce<number>((sum, p) => sum + p.mealCount, 0);
+  }
 }
 
 export interface IConsumerPlan {
-  readonly stripePlanId: string
-  readonly deliveryDay: deliveryDay
-  readonly deliveryTime: deliveryTime
+  readonly mealPlans: IMealPlan[]
   readonly cuisines: CuisineType[]
+  readonly schedules: ISchedule[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
-  readonly stripePlanId: string
-  readonly deliveryDay: deliveryDay
-  readonly deliveryTime: deliveryTime
+  readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
+  readonly schedules: Schedule[]
 
   constructor(consumerPlan: IConsumerPlan) {
-    this.stripePlanId = consumerPlan.stripePlanId
-    this.deliveryDay = consumerPlan.deliveryDay;
+    this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
     this.cuisines = consumerPlan.cuisines.map(c => c);
-    this.deliveryTime = consumerPlan.deliveryTime;
+    this.schedules = consumerPlan.schedules.map(s => new Schedule(s));
   }
 
-  public get DeliveryTime() { return this.deliveryTime }
-  public get StripePlanId() { return this.stripePlanId }
-  public get DeliveryDay() { return this.deliveryDay }
   public get Cuisines() { return this.cuisines }
+  public get MealPlans() { return this.mealPlans }
+  public get Schedules() { return this.schedules }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
-      ...plan,
+      mealPlans: plan.mealPlans.map(p => MealPlan.getICopy(p)),
+      schedules: plan.schedules.map(s => Schedule.getICopy(s)),
       cuisines: plan.cuisines.map(c => c),
     }
   }
@@ -162,8 +254,32 @@ export class ConsumerPlan implements IConsumerPlan {
     return deliveryTimes[deliveryTime];
   }
 
-  static getDefaultDeliveryTime(): 'ThreePToFourP' {
-    return 'ThreePToFourP';
+  static getDefaultDeliveryTime(): 'ThreePToFiveP' {
+    return 'ThreePToFiveP';
+  }
+
+  static areCuisinesEqual(c1: CuisineType[], c2: CuisineType[]) {
+    if (c1.length !== c2.length) return false;
+    const c1Copy = [...c1];
+    const c2Copy = [...c2];
+    for (let i = 0; i < c1.length; i++) {
+      const findIndex = c2Copy.findIndex(c => c1[i] === c);
+      if (findIndex === -1) return false;
+      c2Copy.slice(findIndex, 1);
+    }
+    for (let i = 0; i < c2.length; i++) {
+      const findIndex = c1Copy.findIndex(c => c2[i] === c);
+      if (findIndex === -1) return false;
+      c1Copy.slice(findIndex, 1);
+    }
+    return true;
+  }
+
+  static equals(plan1: ConsumerPlan, plan2: ConsumerPlan) {
+    if (!Schedule.equalsLists(plan1.Schedules, plan2.Schedules)) return false;
+    if (!ConsumerPlan.areCuisinesEqual(plan1.Cuisines, plan2.Cuisines)) return false;
+    if (!MealPlan.equalsLists(plan1.MealPlans, plan2.MealPlans)) return false;
+    return true;
   }
 }
 

@@ -1,26 +1,21 @@
+import { Plan } from './../../plan/planModel';
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
-import { IRest } from './../../rest/restModel';
-import { Cart } from './../../order/cartModel';
-import { getAvailablePlans } from './../../plan/planService';
-import { Plan } from './../../plan/planModel';
-import { IOrder, Order, IUpdateOrderInput } from './../../order/orderModel';
+import { IOrder, Order, MealPrice } from './../../order/orderModel';
+import { IUpdateDeliveryInput, Delivery } from './../../order/deliveryModel';
 import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
-import { restFragment } from '../../rest/restFragment';
-import { getRest } from '../../rest/restService';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
     myUpcomingOrders {
       _id
-      deliveryDate
-      deliveryTime
+      invoiceDate
       destination {
         address {
           address1
@@ -31,23 +26,35 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
         }
         instructions
       }
-      mealPrice
-      meals {
-        mealId
-        img
-        name
-        quantity
+      costs {
+        mealPrices {
+          stripePlanId
+          planName
+          mealPrice
+        }
+      }
+      deliveries {
+        deliveryTime
+        deliveryDate
+        meals {
+          mealId
+          img
+          name
+          quantity
+          restId
+          restName
+          stripePlanId
+          planName
+          taxRate
+        }
+        status
       }
       phone
-      rest {
-        ...restFragment
-      }
-      status
       donationCount
       name
+      stripeInvoiceId
     }
   }
-  ${restFragment}
 `
 
 type newConsumer = {
@@ -126,32 +133,31 @@ export const usePlaceOrder = (): [
     ]
   }, [mutation]);
 }
-
-export const useUpdateOrder = (): [
-  (orderId: string, updateOptions: IUpdateOrderInput) => void,
+export const useSkipDelivery = (): [
+  (order: Order, deliveryIndex: number, plans: Plan[]) => void,
   {
     error?: ApolloError 
     data?: MutationBoolRes
   }
 ] => {
-  type res = { updateOrder: MutationBoolRes };
-  type vars = { orderId: string, updateOptions: IUpdateOrderInput }
+  type res = { skipDelivery: MutationBoolRes };
+  type vars = { orderId: string, deliveryIndex: number }
   const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateOrder($orderId: ID!, $updateOptions: UpdateOrderInput!) {
-      updateOrder(orderId: $orderId, updateOptions: $updateOptions) {
+    mutation skipDelivery($orderId: ID!, $deliveryIndex: Int!) {
+      skipDelivery(orderId: $orderId, deliveryIndex: $deliveryIndex) {
         res
         error
       }
     }
   `);
-  const updateOrder = (orderId: string, updateOptions: IUpdateOrderInput) => {
+  const skipDelivery = (order: Order, deliveryIndex: number, plans: Plan[]) => {
     mutate({ 
       variables: {
-        orderId,
-        updateOptions
+        orderId: order.Id,
+        deliveryIndex
       },
       optimisticResponse: {
-        updateOrder: {
+        skipDelivery: {
           res: true,
           error: null,
           //@ts-ignore
@@ -159,80 +165,172 @@ export const useUpdateOrder = (): [
         }
       },
       update: (cache, { data }) => {
-        if (data && data.updateOrder.res) {
-          const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-          if (!upcomingOrders) {
-            const err = new Error('Failed to get upcoming orders for cache update');
-            console.error(err.stack);
-            throw err;
-          }
-          let rest: IRest | null = null;
-          if (updateOptions.restId) {
-            const restRes = getRest(cache, updateOptions.restId)
-            if (!restRes) {
-              const err = new Error('Failed to get rest for cache update');
-              console.error(err.stack);
-              throw err;
-            }
-            rest = restRes.rest;
-          }
-          let mealPrice: number | null = null;
-          const donationCount = updateOptions.donationCount;
-          const mealCount = Cart.getMealCount(updateOptions.meals);
-          const totalMealCount = mealCount + donationCount;
-          if (totalMealCount > 0) {
-            const plans = getAvailablePlans(cache);
-            if (!plans) {
-              const err = new Error('Failed to get plan for cache update');
-              console.error(err.stack);
-              throw err;
-            }
-            mealPrice = Plan.getMealPriceFromCount(totalMealCount, plans.availablePlans);
-          }
-          const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(order => {
-            if (order._id !== orderId) return order;
-            const newOrder = Order.getIOrderFromUpdatedOrderInput(
-              orderId,
-              updateOptions,
-              mealPrice,
-              totalMealCount > 0 ? 'Open' : 'Skipped',
-              rest
-            );
-            //@ts-ignore
-            newOrder.destination.address.__typename = 'Address';
-            //@ts-ignore
-            newOrder.destination.__typename = 'Destination';
-            //@ts-ignore
-            newOrder.meals.forEach(meal => meal.__typename = 'CartMeal');
-            if (rest !== null) {
-              //@ts-ignore
-              newOrder.rest.location.address.__typename = 'Address';
-              //@ts-ignore
-              newOrder.rest.location.__typename = 'Location';
-              //@ts-ignore
-              newOrder.rest.menu.forEach(meal => meal.__typename = 'Meal')
-              //@ts-ignore
-              newOrder.rest.profile.__typename = 'Rest';
-            }
-            //@ts-ignore
-            newOrder.__typename = 'Order';
-            return newOrder;
-          });
-          cache.writeQuery({
-            query: MY_UPCOMING_ORDERS_QUERY,
-            data: {
-              myUpcomingOrders: newUpcomingOrders,
-            }
-          })
+        if (!data || !data.skipDelivery.res) return;
+        const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+        if (!upcomingOrders) {
+          const err = new Error('Failed to get upcoming orders for cache update');
+          console.error(err.stack);
+          throw err;
         }
+        const newDeliveries = order.Deliveries.map((d, i) => 
+          i === deliveryIndex ? 
+            new Delivery({
+              ...d,
+              meals: [],
+              status: 'Skipped',
+            })
+          :
+            new Delivery(d)
+        );
+        const mealPrices = MealPrice.getMealPriceFromDeliveries(
+          plans,
+          newDeliveries,
+          order.DonationCount,
+        )
+        const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
+          if (order._id !== upcomingOrder._id) return upcomingOrder;
+          const copy = Order.getICopy(upcomingOrder);
+          const newOrder: IOrder = {
+            ...copy,
+            costs: {
+              ...copy.costs,
+              mealPrices,
+            },
+            deliveries: newDeliveries,
+          }
+          return Order.addTypenames(newOrder);
+        });
+        cache.writeQuery({
+          query: MY_UPCOMING_ORDERS_QUERY,
+          data: {
+            myUpcomingOrders: newUpcomingOrders,
+          }
+        })
       }
     })
   }
   return useMemo(() => [
-    updateOrder,
+    skipDelivery,
     {
       error: mutation.error,
-      data: mutation.data ? mutation.data.updateOrder : undefined,
+      data: mutation.data ? mutation.data.skipDelivery : undefined,
+    }
+  ], [mutation]);
+}
+
+export const useUpdateDeliveries = (): [
+  (orderId: string, updateOptions: IUpdateDeliveryInput) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { updateDeliveries: MutationBoolRes };
+  type vars = { orderId: string, updateOptions: IUpdateDeliveryInput }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation updateDeliveries($orderId: ID!, $updateOptions: UpdateDeliveryInput!) {
+      updateDeliveries(orderId: $orderId, updateOptions: $updateOptions) {
+        res
+        error
+      }
+    }
+  `);
+  const updateDeliveries = (orderId: string, updateOptions: IUpdateDeliveryInput) => {
+    mutate({ 
+      variables: {
+        orderId,
+        updateOptions
+      },
+      optimisticResponse: {
+        updateDeliveries: {
+          res: true,
+          error: null,
+          //@ts-ignore
+          __typename: "BoolRes",
+        }
+      },
+    })
+  }
+  return useMemo(() => [
+    updateDeliveries,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.updateDeliveries : undefined,
+    }
+  ], [mutation]);
+}
+
+export const useRemoveDonations = (): [
+  (order: Order, plans: Plan[]) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { removeDonations: MutationBoolRes };
+  type vars = { orderId: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation removeDonations($orderId: ID!) {
+      removeDonations(orderId: $orderId) {
+        res
+        error
+      }
+    }
+  `);
+  const removeDonations = (order: Order, plans: Plan[]) => {
+    mutate({ 
+      variables: {
+        orderId: order.Id,
+      },
+      optimisticResponse: {
+        removeDonations: {
+          res: true,
+          error: null,
+          //@ts-ignore
+          __typename: "BoolRes",
+        }
+      },
+      update: (cache, { data }) => {
+        if (!data || !data.removeDonations.res) return;
+        const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+        if (!upcomingOrders) {
+          const err = new Error('Failed to get upcoming orders for cache update');
+          console.error(err.stack);
+          throw err;
+        }
+        const mealPrices = MealPrice.getMealPriceFromDeliveries(
+          plans,
+          order.Deliveries,
+          0,
+        )
+        const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
+          if (order._id !== upcomingOrder._id) return upcomingOrder;
+          
+          const copy = Order.getICopy(upcomingOrder);
+          const newOrder: IOrder = {
+            ...copy,
+            costs: {
+              ...copy.costs,
+              mealPrices,
+            },
+            donationCount: 0,
+          }
+          return Order.addTypenames(newOrder);
+        });
+        cache.writeQuery({
+          query: MY_UPCOMING_ORDERS_QUERY,
+          data: {
+            myUpcomingOrders: newUpcomingOrders,
+          }
+        })
+      }
+    })
+  }
+  return useMemo(() => [
+    removeDonations,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.removeDonations : undefined,
     }
   ], [mutation]);
 }
