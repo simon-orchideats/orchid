@@ -24,6 +24,7 @@ export const events = {
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
   REMOVED_CUISINE: 'Removed cuisine',
+  REMOVED_SCHEDULE: 'Removed schedule',
   SKIPPED_ORDER: 'Skipped order',
   SKIPPED_ORDER_FROM_MEALS: 'Skipped order from meals',
   UPDATED_ADDRESS: 'Updated address',

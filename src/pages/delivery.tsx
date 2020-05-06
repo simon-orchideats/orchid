@@ -16,6 +16,7 @@ import { useUpdateDeliveries } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import moment from "moment";
+import { sendRemoveScheduleMetrics } from "../client/delivery/deliveryMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -66,7 +67,7 @@ const delivery = () => {
     });
     setSchedules(newSchedules);
   }
-  
+
   useMutationResponseHandler(updateDeliveriesRes, () => {
     clearCartMeals();
     Router.push(upcomingDeliveriesRoute);
@@ -93,7 +94,8 @@ const delivery = () => {
   }
   const removeSchedule = (i: number) => {
     const newSchedules = schedules.map(s => new Schedule(s));
-    newSchedules.splice(i, 1);
+    const removed = newSchedules.splice(i, 1);
+    sendRemoveScheduleMetrics(removed[0]);
     setSchedules(newSchedules);
   }
   const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
