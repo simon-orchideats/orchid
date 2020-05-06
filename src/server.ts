@@ -86,7 +86,6 @@ const start = async () => {
   const orderService = initOrderService(elastic, stripe);
 
   restService.setGeoService(geoService);
-  //@ts-ignore //todo simon remove this ignore
   consumerService.setOrderService(orderService);
   consumerService.setPlanService(planService);
   consumerService.setGeoService(geoService);
