@@ -277,9 +277,6 @@ const myPlan = () => {
             >
               Preferred repeat delivery days
             </Typography>
-            <Typography variant='subtitle2' className={classes.subtitle}>
-              Upcoming deliveries will automatically change dates
-            </Typography>
             <Typography
               variant='subtitle2'
               color='textSecondary'
