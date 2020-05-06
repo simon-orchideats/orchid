@@ -116,15 +116,19 @@ POST _reindex
   "script": {
     "source": """
       ctx._source.deliveries = [];
-      params.delivery.deliveryTime = ctx._source.deliveryTime;
+      if (ctx._source.deliveryTime.equals("FivePToSixP") {
+        params.delivery.deliveryTime = "FivePToSevenP";
+      } else if (ctx._source.deliveryTime.equals("ThreePToFourP") {
+        params.delivery.deliveryTime = "ThreePToFiveP";
+      }
       params.delivery.deliveryDate = ctx._source.deliveryDate;
       params.delivery.meals = ctx._source.rest.meals;
       params.delivery.status = ctx._source.status;
       for (int i = 0; i < params.delivery.meals.length; i++) {
         params.delivery.meals[i].tags = [];
         params.delivery.meals[i].restId = ctx._source.rest.restId;
-        params.delivery.meals[i].restName = "name";
-        params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
+        params.delivery.meals[i].restName = "Placeholder";
+        params.delivery.meals[i].stripePlanId = "plan_HE1O8fPf3Nf3Uo";
         params.delivery.meals[i].planName = "Standard";
         params.delivery.meals[i].taxRate = 0.0625;
       }
@@ -136,12 +140,16 @@ POST _reindex
       ctx._source.costs.mealPrices = [];
       params.mealPrice.mealPrice = ctx._source.costs.mealPrice;
       ctx._source.costs.mealPrices.add(params.mealPrice);
-      ctx._source.remove("costs.mealPrice");
+      ctx._source.costs.remove("mealPrice");
+      ctx._source.costs.remove("total");
+      if (ctx._source.invoiceDate < 1588722850526) {
+        ctx._source.stripeInvoiceId = "Placeholder";
+      }
     """,
     "params": {
       "delivery": {},
       "mealPrice": {
-        "stripePlanId": "plan_H4mjyvjuE1fObC",
+        "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
         "planName": "Standard"
       }
     }
