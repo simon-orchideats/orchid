@@ -156,6 +156,113 @@ POST _reindex
   }
 }
 
+
+POST orders/_update/NJnZ03EBTPi9Vy_WrUi7
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+          ctx._source.deliveries[i].meals[j].restName = "China Spice"
+        }
+      }    
+    """,
+    "lang": "painless"
+  }
+}
+
+POST orders/_update/MZnNr3EBTPi9Vy_WHUim
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "South Street"
+      }
+    }   
+    """,
+    "lang": "painless"
+  }
+}
+
+
+POST orders/_update/M5k-vHEBTPi9Vy_WI0ji
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "China Spice"
+      }
+    }   
+    """,
+    "lang": "painless"
+  }
+}
+
+
+POST orders/_update/Mpm8s3EBTPi9Vy_Wwkhk
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
+      }
+    }  
+    """,
+    "lang": "painless"
+  }
+}
+
+
+POST orders/_update/NZnJ13EBTPi9Vy_WKUiJ
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
+      }
+    }    
+    """,
+    "lang": "painless"
+  }
+}
+
+
+POST orders/_update/MJkxmHEBTPi9Vy_WcEhl
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
+      }
+    }    
+    """,
+    "lang": "painless"
+  }
+}
+
+
+POST orders/_update/NplK4HEBTPi9Vy_WmUhN
+{
+  "script" : {
+    "source": """
+    for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+        ctx._source.deliveries[i].meals[j].restName = "China Spice"
+      }
+    }  
+    """,
+    "lang": "painless"
+  }
+}
+
+
+
+
 DELETE orders
 create orders
 
