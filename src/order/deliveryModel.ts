@@ -27,6 +27,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly stripePlanId: string;
   readonly planName: PlanName;
   readonly taxRate: number
+  readonly tags: string[];
 
   constructor(meal: IDeliveryMeal) {
     this.mealId = meal.mealId;
@@ -38,6 +39,7 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.stripePlanId = meal.stripePlanId;
     this.planName = meal.planName;
     this.taxRate = meal.taxRate;
+    this.tags = meal.tags;
   }
 
   public get MealId() { return this.mealId }
@@ -49,6 +51,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get StripePlanId() { return this.stripePlanId }
   public get PlanName() { return this.planName }
   public get TaxRate() { return this.taxRate }
+  public get Tags() { return this.tags }
 
   static getDeliveryMeal(
     meal: IMeal,
@@ -67,6 +70,7 @@ export class DeliveryMeal implements IDeliveryMeal {
       stripePlanId: meal.stripePlanId,
       planName: meal.planName,
       taxRate,
+      tags: meal.tags.map(t => t),
     });
   }
 

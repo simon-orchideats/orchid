@@ -220,7 +220,7 @@ export class Order implements IOrder{
       _id,
       invoiceDate: order.invoiceDate,
       deliveries: order.deliveries,
-      destination: order.consumer.profile.destination!, // todo simon check why NonNullable doesnt work
+      destination: order.consumer.profile.destination!,
       costs: order.costs,
       phone: order.consumer.profile.phone!,
       name: order.consumer.profile.name,

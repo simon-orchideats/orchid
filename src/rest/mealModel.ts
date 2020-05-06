@@ -7,6 +7,7 @@ export interface IMeal {
   readonly originalPrice: number
   readonly stripePlanId: string
   readonly planName: PlanName
+  readonly tags: string[]
 }
 
 export class Meal implements IMeal {
@@ -17,6 +18,7 @@ export class Meal implements IMeal {
   readonly originalPrice: number;
   readonly stripePlanId: string;
   readonly planName: PlanName;
+  readonly tags: string[];
 
   constructor(meal: IMeal) {
     this._id = meal._id;
@@ -26,6 +28,7 @@ export class Meal implements IMeal {
     this.originalPrice = meal.originalPrice;
     this.stripePlanId = meal.stripePlanId;
     this.planName = meal.planName;
+    this.tags = meal.tags;
   }
 
   public get Id() { return this._id }
@@ -35,6 +38,7 @@ export class Meal implements IMeal {
   public get OriginalPrice() { return this.originalPrice }
   public get StripePlanId() { return this.stripePlanId }
   public get PlanName() { return this.planName }
+  public get Tags() { return this.tags }
 
   static getICopy(meal: IMeal): IMeal {
     return {

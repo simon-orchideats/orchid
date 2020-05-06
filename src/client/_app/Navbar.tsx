@@ -17,6 +17,7 @@ import AboutPopper from './AboutPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService } from '../utils/analyticsService';
+import LogRocket from 'logrocket';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -107,7 +108,8 @@ const Navbar: React.FC = () => {
   useMemo(() => {
     const id = consumer.data && consumer.data.Id;
     if (id) {
-      analyticsService.setUserId(id)
+      analyticsService.setUserId(id);
+      LogRocket.identify(id);
     }
   }, [consumer.data && consumer.data.Id]);
   const accountOpen = !!accountAnchor;

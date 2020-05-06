@@ -89,21 +89,6 @@ export class Cart implements ICart {
   public get Schedules() { return this.schedules }
   public get Zip() { return this.zip }
 
-  public setScheduleAndAutoDeliveries(schedules: Schedule[], start?: number) {
-    // we do this so that if a customer decides to add/remove meals AFTER setting deliveries, that
-    // we don't 'reset' their preferred deliveries
-    if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
-      return this;
-    }
-    const newCart = new Cart({
-      ...this,
-      schedules,
-      deliveries: Cart.getDeliveriesFromSchedule(schedules, start),
-    });
-    Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
-    return newCart;
-  }
-
   public static addMealsToExistingDeliveryMeals = (newMeals: IDeliveryMeal[], existingMeals: IDeliveryMeal[]) => {
     newMeals.forEach(newMeal => {
       for (let i = 0; i < existingMeals.length; i++) {
@@ -236,6 +221,80 @@ export class Cart implements ICart {
     }
   }
 
+  public static getDeliveryMeals(
+    meals: IMeal[],
+    restId: string,
+    restName: string,
+    taxRate: number
+  ) {
+    return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
+      const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
+      if (groupIndex === -1) {
+        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName, taxRate));
+      } else {
+        groupings[groupIndex] = new DeliveryMeal({
+          ...groupings[groupIndex],
+          quantity: groupings[groupIndex].quantity + 1,
+        })
+      }
+      return groupings;
+    }, [])
+  }
+
+  public static getStandardMealCount(cart: Cart) {
+    return Object.values(cart.RestMeals).reduce<number>((sum, data) => {
+      const standardCount = data.mealPlans.find(p => p.PlanName === PlanNames.Standard)?.MealCount;
+      sum = sum + (standardCount || 0);
+      return sum;
+    }, 0) + cart.DonationCount;
+  }
+
+  public static getAllowedDeliveries(cart: Cart) {
+    return Math.max(
+      Math.floor(Cart.getStandardMealCount(cart) / 4),
+      1
+    )
+  }
+
+  public static getRestMealCount(mealPlans: MealPlan[]) {
+    return mealPlans.reduce((sum, p) => sum + p.MealCount, 0);
+  }
+
+  public static getNumMeals(meals: IDeliveryMeal[]) {
+    return meals.reduce((sum, m) => sum + m.quantity, 0);
+  }
+
+  public static getCombinedMealPlans(restMeals: RestMeals) {
+    return Object.values(restMeals).reduce<{ [key: string]: MealPlan }>((sum, restMeal) => {
+      restMeal.mealPlans.forEach(mp => {
+        if (sum[mp.StripePlanId]) {
+          sum[mp.StripePlanId] = new MealPlan({
+            ...sum[mp.StripePlanId],
+            mealCount: sum[mp.StripePlanId].MealCount + mp.MealCount,
+          })
+        } else {
+          sum[mp.StripePlanId] = new MealPlan(mp)
+        }
+      }, {});
+      return sum;
+    }, {})
+  }
+
+  public setScheduleAndAutoDeliveries(schedules: Schedule[], start?: number) {
+    // we do this so that if a customer decides to add/remove meals AFTER setting deliveries, that
+    // we don't 'reset' their preferred deliveries
+    if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
+      return this;
+    }
+    const newCart = new Cart({
+      ...this,
+      schedules,
+      deliveries: Cart.getDeliveriesFromSchedule(schedules, start),
+    });
+    Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
+    return newCart;
+  }
+
   public addMeal(
     newMeal: Meal,
     restId: string,
@@ -265,50 +324,6 @@ export class Cart implements ICart {
     }
 
     return newCart;
-  }
-
-  public static getDeliveryMeals(
-    meals: IMeal[],
-    restId: string,
-    restName: string,
-    taxRate: number
-  ) {
-    return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
-      const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
-      if (groupIndex === -1) {
-        groupings.push(DeliveryMeal.getDeliveryMeal(meal, restId, restName, taxRate));
-      } else {
-        groupings[groupIndex] = new DeliveryMeal({
-          ...groupings[groupIndex],
-          quantity: groupings[groupIndex].quantity + 1,
-        })
-      }
-      return groupings;
-    }, [])
-  }
-
-  public static getStandardMealCount(cart: Cart) {
-    return Object.values(cart.RestMeals)
-      .reduce<number>((sum, data) => {
-        const standardCount = data.mealPlans.find(p => p.PlanName === PlanNames.Standard)?.MealCount;
-        sum = sum + (standardCount || 0);
-        return sum;
-      }, 0) + cart.DonationCount;
-  }
-
-  public static getAllowedDeliveries(cart: Cart) {
-    return Math.max(
-      Math.floor(Cart.getStandardMealCount(cart) / 4),
-      1
-    )
-  }
-
-  public static getRestMealCount(mealPlans: MealPlan[]) {
-    return mealPlans.reduce((sum, p) => sum + p.MealCount, 0);
-  }
-
-  public static getNumMeals(meals: IDeliveryMeal[]) {
-    return meals.reduce((sum, m) => sum + m.quantity, 0);
   }
 
   public getCartInput(
