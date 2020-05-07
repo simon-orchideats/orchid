@@ -8,7 +8,7 @@ import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
-import { useRef, createRef, useState } from 'react';
+import { useRef, createRef, useState, Fragment } from 'react';
 import EmailInput from '../client/general/inputs/EmailInput';
 import { useAddMarketingEmail } from '../consumer/consumerService';
 
@@ -46,7 +46,6 @@ const useStyles = makeStyles(theme => ({
   welcomeText: {
     maxWidth: 600 // chosen by inspection
   },
-
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
@@ -62,17 +61,14 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(5),
     marginBottom: theme.spacing(5),
   },
-  verticalPadding: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
   plans: {
-    backgroundImage: `url(/cuttingBoard.jpeg)`,
+    backgroundImage: `url(/home/board.jpeg)`,
     backgroundPosition: '70% 30%',
     backgroundSize: 'cover',
     display: 'flex',
     justifyContent: 'center',
     minHeight: 400,
+    padding: theme.spacing(3),
   },
   reasons: {
     background: 'none',
@@ -84,18 +80,13 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'flex-start',
     textAlign: 'left',
   },
-  paper: {
-    opacity: 0.9,
-    padding: theme.spacing(3),
-    width: '100%',
-    backgroundColor: theme.palette.secondary.main
-  },
   lowWidth: {
     maxWidth: 150,
   },
   microwave: {
     maxWidth: 135,
-    height: 85,
+    height: 75,
+    marginBottom: theme.spacing(1),
   },
   shrinker: {
     [theme.breakpoints.down('xs')]: {
@@ -111,6 +102,8 @@ const useStyles = makeStyles(theme => ({
   donate: {
     backgroundColor: theme.palette.primary.main,
     color: 'white',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   newsLetterInput: {
     marginTop: theme.spacing(2),
@@ -155,14 +148,14 @@ const Welcome = withClientApollo(() => {
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
-        <Typography variant='h3' className={classes.welcomeTitle}>
-          Your week, catered
+        <Typography variant='h2' className={classes.welcomeTitle}>
+          Your week, catered.
         </Typography>
-        <Typography variant='h4' className={classes.mediumVerticalMargin}>
-          Redefine the way you eat
+        <Typography variant='h4' className={classes.title}>
+          redefine the way you eat
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Weekly meal plan subscriptions starting at $9.99. Your favorite restaurants. Delivered same-day fresh. 
+          Weekly meal subscriptions starting at $9.99
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
@@ -175,10 +168,12 @@ const Welcome = withClientApollo(() => {
 const HowItWorks = () => {
   const classes = useStyles();
   const Content: React.FC<{
+    title: string,
     description: string,
     img?: string,
     icon?: JSX.Element,
   }> = ({
+    title,
     description,
     icon,
     img
@@ -196,6 +191,9 @@ const HowItWorks = () => {
         {
           icon && icon
         }
+        <Typography variant='h5'>
+          {title}
+        </Typography>
         <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
           {description}
         </Typography>
@@ -208,9 +206,21 @@ const HowItWorks = () => {
         How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Content description='Select Your Favorite Restaurant & Meals' icon={<RestIcon className={classes.howIcon} />} />
-        <Content description='Tell Us When to Deliver' icon={<TodayIcon className={classes.howIcon} />} />
-        <Content description='Eat Now or Save for Later' img='home/microwave.png' />
+        <Content
+          title='Options'
+          description='Select Your Favorite Restaurant & Meals'
+          icon={<RestIcon className={classes.howIcon} />}
+        />
+        <Content
+          title='Save time'
+          description='Tell Us When to Deliver'
+          icon={<TodayIcon className={classes.howIcon}/>}
+        />
+        <Content
+          title='Flexible'
+          description='Eat Now or Save for Later'
+          img='home/microwave.png'
+        />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
         Questions or Comments? Email us at emily@orchideats.com to learn more.
@@ -225,13 +235,12 @@ const HowItWorks = () => {
 const Donate = () => {
   const classes = useStyles();
   return (
-    <div className={`${classes.verticalPadding} ${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
-      <Typography variant='h4' className={`${classes.title} ${classes.shrinker}`}>
-        Let's help our heroic healthcare workers fight COVID-19.
+    <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
+      <Typography variant='h6' className={classes.shrinker}>
+        Help our heroic healthcare workers fight COVID-19
       </Typography>
-      <Typography variant='subtitle1'>
-        Orchid will match all meal donations, now optional in your plan, and deliver to local NYC hospitals.
-        Please join us in doing our part to help on the front lines of this crisis.
+      <Typography variant='body1'>
+        Orchid will match all meal donations, now optional in your plan, and deliver to local NYC hospitals
       </Typography>
     </div>
   );
@@ -250,53 +259,54 @@ const Plans = withClientApollo(() => {
   }
   const classes = useStyles();
   return (
-    <div className={classes.plans}>
-      <Paper className={`${classes.paper} ${classes.centered}`} elevation={0}>
-        <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-          Choose a Plan that Works for You
+    <div className={`${classes.plans} ${classes.centered}`}>
+      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+        Choose a Plan that Works for You
+      </Typography>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+        A plan made to fit your lifestyle. Starting at $9.99 per meal
+      </Typography>
+      <PlanCards />
+      <Link href={menuRoute}>
+        <Button
+          variant='contained'
+          color='primary'
+          className={classes.largeVerticalMargin}
+        >
+          SEE MENU
+        </Button>
+      </Link>
+      <Paper className={classes.newsletterPaper}>
+        <Typography variant='h6'>
+          Schedule Your Meals
         </Typography>
-        <PlanCards />
-        <Link href={menuRoute}>
-          <Button
-            variant='contained'
-            color='primary'
-            className={classes.largeVerticalMargin}
-          >
-            SEE MENU
-          </Button>
-        </Link>
-        <Paper className={classes.newsletterPaper}>
-          <Typography variant='h6'>
-            Schedule Your Meals
-          </Typography>
-          <Typography variant='h6'>
-            sign up for offers, new restaurants and more
-          </Typography>
-          {
-            isSubbed ?
-              <Typography variant='subtitle1'>
-                Thank you!
-              </Typography>
-            :
-              <div className={classes.newsLetterInput}>
-                <EmailInput
-                  variant='outlined'
-                  className={classes.emailInput}
-                  inputRef={emailInputRef}
-                  setValidator={(validator: () => boolean) => {
-                    validateEmailRef.current = validator;
-                  }}
-                />
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={onSubscribe}
-                >
-                  Subscribe
-                </Button>
-              </div>
-          }
-        </Paper>
+        <Typography variant='h6'>
+          sign up for offers, new restaurants and more
+        </Typography>
+        {
+          isSubbed ?
+            <Typography variant='subtitle1'>
+              Thank you!
+            </Typography>
+          :
+            <div className={classes.newsLetterInput}>
+              <EmailInput
+                variant='outlined'
+                className={classes.emailInput}
+                inputRef={emailInputRef}
+                setValidator={(validator: () => boolean) => {
+                  validateEmailRef.current = validator;
+                }}
+              />
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={onSubscribe}
+              >
+                Subscribe
+              </Button>
+            </div>
+        }
       </Paper>
     </div>
   )
@@ -447,7 +457,7 @@ const Benefits = () => {
         Who we are
       </Typography>
       <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
-        We beleive in connecting the community through food.
+        We believe in connecting the community through food.
       </Typography>
     </>
   )
@@ -458,10 +468,10 @@ const Benefits = () => {
           {title}
           <Grid container>
             {explanations.map((e, i) => 
-              <>
+              <Fragment key={i}>
                 {i !== 0 && <Grid item xs={12} className={classes.largeVerticalMargin} />}
                 <Explanation {...e} />
-              </>
+              </Fragment>
             )}
           </Grid>
         </Container>
@@ -469,8 +479,9 @@ const Benefits = () => {
       <Hidden smUp implementation='js'>
         <Container maxWidth='xs' className={`${classes.centered} ${classes.reasons} ${classes.largeVerticalMargin}`}>
           {title}
-          {explanations.map(({ title, description }) => 
+          {explanations.map(({ title, description }, i) => 
             <MobileBlock
+              key={i}
               title={title}
               description={description}
             />
