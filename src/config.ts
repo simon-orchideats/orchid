@@ -266,7 +266,7 @@ const production: config = {
         key: '3aa095499fd45cab00cbb40c5a65a9da',
       },
       ga: {
-        trackingId: 'UA-158803692-1',
+        trackingId: 'UA-158791511-1',
       }
     },
   },

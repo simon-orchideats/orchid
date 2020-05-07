@@ -1,7 +1,6 @@
 import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
-import { plansRoute } from './plans';
 import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
@@ -21,10 +20,11 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  verticalCenter: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center'
+  whoImg: {
+    minHeight: 250,
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center'
   },
   welcome: {
     [theme.breakpoints.down('lg')]: {
@@ -35,7 +35,7 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(/bowls.jpg)`,
     backgroundPosition: '50% 75%',
     backgroundSize: 'cover',
-    height: 500,
+    height: 400,
     marginTop: -theme.mixins.navbar.marginBottom,
   },
   welcomeTitle: {
@@ -46,12 +46,7 @@ const useStyles = makeStyles(theme => ({
   welcomeText: {
     maxWidth: 600 // chosen by inspection
   },
-  explanationImg: {
-    height: 200
-  },
-  plansDescription: {
-    maxWidth: 400 // chosen by inspection
-  },
+
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
@@ -67,9 +62,9 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(5),
     marginBottom: theme.spacing(5),
   },
-  largeVerticalPadding: {
-    paddingTop: theme.spacing(5),
-    paddingBottom: theme.spacing(5),
+  verticalPadding: {
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
   },
   plans: {
     backgroundImage: `url(/cuttingBoard.jpeg)`,
@@ -88,7 +83,6 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'flex-start',
     textAlign: 'left',
-    maxWidth: 350,
   },
   paper: {
     opacity: 0.9,
@@ -144,6 +138,12 @@ const useStyles = makeStyles(theme => ({
       marginRight: 0,
       marginBottom: theme.spacing(2),
     },
+  },
+  who: {
+    [theme.breakpoints.down('xs')]: {
+      textAlign: 'center',
+    },
+    backgroundColor: theme.palette.common.white,    
   },
 }));
 
@@ -225,8 +225,8 @@ const HowItWorks = () => {
 const Donate = () => {
   const classes = useStyles();
   return (
-    <div className={`${classes.largeVerticalPadding} ${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
-      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+    <div className={`${classes.verticalPadding} ${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
+      <Typography variant='h4' className={`${classes.title} ${classes.shrinker}`}>
         Let's help our heroic healthcare workers fight COVID-19.
       </Typography>
       <Typography variant='subtitle1'>
@@ -300,7 +300,7 @@ const Plans = withClientApollo(() => {
       </Paper>
     </div>
   )
-})
+});
 
 const Benefits = () => {
   const classes = useStyles();
@@ -308,7 +308,6 @@ const Benefits = () => {
     <>
       <Typography
         variant='h4'
-        color='primary'
         className={`${classes.verticalMargin} ${classes.shrinker}`}
       >
         {title}
@@ -344,9 +343,14 @@ const Benefits = () => {
     let right;
     if (imgLeft) {
       left = (
-        <Grid item xs={5} className={classes.verticalCenter}>
-          <img src={img} alt='logo' className={classes.explanationImg} />
-        </Grid>
+        <Grid
+          item
+          xs={5}
+          className={classes.whoImg}
+          style={{
+            backgroundImage: `url(${img})`,
+          }}
+        />
       )
       right = (
         <Grid item xs={5}>
@@ -370,9 +374,14 @@ const Benefits = () => {
         </Grid>
       );
       right = (
-        <Grid item xs={5} className={classes.verticalCenter}>
-          <img src={img} alt='logo' className={classes.explanationImg} />
-        </Grid>
+        <Grid
+          item
+          xs={5}
+          className={classes.whoImg}
+          style={{
+            backgroundImage: `url(${img})`,
+          }}
+        />
       )
     }
     return (
@@ -383,83 +392,89 @@ const Benefits = () => {
       </>
     )
   }
-  const sustainableDescription = `No cross-country shipments. No ice packs. No warehouses. Food is delievered fresh from down
-                                  the street in eco-friendly, compostable containers.`
-  const sameDayDescription = 'Every meal is same-day fresh. Enjoy your meal as the chef intended.';
-  const faveRestsDescription = 'Support your local favorites. Change places and flavors every week for infinite variety.'
-  const afordableDescription = `Restaurant quality, without restaurant prices. Restaurants save when you buy ahead in bulk
-                                and we pass those savings to you.`;
+
+  const explanations = [
+    {
+      title: 'Come home to a warm meal',
+      description: `
+        Few things express love like coming home after a long day to a warm meal cooked just for you. Our meals
+        are cooked with care by a local restaurant chef, not in some warehouse across the country. No more tiresome cooking
+        and cleaning or even waiting for delivery. No more thinking about food because we've got you covered. Sit back and
+        enjoy a meal in 3 minutes.
+      `,
+      img: '/home/sharing.jpeg',
+      imgLeft: true
+    },
+    {
+      title: 'No service charge',
+      description: `
+        Neighbors don't nickle and dime each other. There's no service charge buying in-store, so why should
+        buying online be any different? Why do you have to pay, to pay? It's time we redefine online food ordering.
+        This means we will never charge mysterious service fees. No hidden fees, ever.
+      `,
+      img: 'home/trade.jpg',
+      imgLeft: false
+    },
+    {
+      title: 'Save up to 25%',
+      description: `
+        Cooking for friends and family is always better than cooking for just one. This is why we offer meal plans
+        instead of just individual meals. Bulk means savings, and we pass those savings to you. It also means we can give
+        one free delivery every week. You save up to 25% per meal when you order on Orchid. Consider a total of
+        $16.00 per meal after fees vs an honest $11.89.
+      `,
+      img: 'home/bulk.jpg',
+      imgLeft: true
+    },
+    {
+      title: 'Connect the community',
+      description: `
+        Food always tastes better when it comes from someone you know. Ditch cross-country shipments, the ice packs,
+        and the anonymous cooks. Orchid delivers food fresh from down the street. Every meal is same-day fresh and you
+        can enjoy the meal as your neighbor intended.
+      `,
+      img: 'home/rest.jpeg',
+      imgLeft: false,
+    },
+  ]
+  
+  const title = (
+    <>
+      <Typography
+        variant='h2'
+        className={`${classes.largeBottomMargin} ${classes.centered}`}
+      >
+        Who we are
+      </Typography>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+        We beleive in connecting the community through food.
+      </Typography>
+    </>
+  )
   return (
     <>
       <Hidden xsDown implementation='js'>
-        <Container maxWidth='lg' className={`${classes.largeVerticalMargin} ${classes.reasons} ${classes.centered}`}>
+        <Container maxWidth='xl' className={`${classes.largeVerticalMargin} ${classes.reasons} ${classes.centered}`}>
+          {title}
           <Grid container>
-            <Explanation 
-              title='Sustainable'
-              description={sustainableDescription}
-              img='/home/deliverySample.jpeg'
-              imgLeft={true}
-            />
-            <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Explanation 
-              title='Same day cooking'
-              description={sameDayDescription}
-              img='home/fresh.jpeg'
-              imgLeft={false}
-            />
-            <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Explanation 
-              title='Favorite restaurants'
-              description={faveRestsDescription}
-              img='home/rest.jpeg'
-              imgLeft={true}
-            />
-            <Grid item xs={12} className={classes.largeVerticalMargin} />
-            <Explanation 
-              title='Affordable'
-              description={afordableDescription}
-              img='home/chicken.jpeg'
-              imgLeft={false}
-            />
+            {explanations.map((e, i) => 
+              <>
+                {i !== 0 && <Grid item xs={12} className={classes.largeVerticalMargin} />}
+                <Explanation {...e} />
+              </>
+            )}
           </Grid>
-          <Link href={plansRoute}>
-            <Button
-              variant='outlined'
-              color='primary'
-              className={classes.largeVerticalMargin}
-            >
-              SEE PLANS
-            </Button>
-          </Link>
         </Container>
       </Hidden>
       <Hidden smUp implementation='js'>
         <Container maxWidth='xs' className={`${classes.centered} ${classes.reasons} ${classes.largeVerticalMargin}`}>
-          <MobileBlock
-            title='Sustainable'
-            description={sustainableDescription}
-          />
-          <MobileBlock
-            title='Same day cooking'
-            description={sameDayDescription}
-          />
-          <MobileBlock
-            title='Favorite restaurants'
-            description={faveRestsDescription}
-          />
-          <MobileBlock
-            title='Affordable'
-            description={afordableDescription}
-          />
-          <Link href={plansRoute}>
-            <Button
-              variant='outlined'
-              color='primary'
-              className={classes.largeBottomMargin}
-            >
-              SEE PLANS
-            </Button>
-          </Link>
+          {title}
+          {explanations.map(({ title, description }) => 
+            <MobileBlock
+              title={title}
+              description={description}
+            />
+          )}
         </Container>
       </Hidden>
     </>
@@ -471,9 +486,9 @@ const Index = () => {
     <>
       <Welcome />
       <Donate />
-      <HowItWorks />
-      <Plans />
       <Benefits />
+      <Plans />
+      <HowItWorks />
       <Footer />
     </>
   )

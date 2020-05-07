@@ -2,6 +2,8 @@ import { isServer } from './isServer';
 import { activeConfig } from '../../config';
 import { AmplitudeClient } from 'amplitude-js';
 import Router from 'next/router'
+import { Cart } from '../../order/cartModel';
+import { IPlan, Tier } from '../../plan/planModel';
 
 const amplitude: {
   getInstance: () => AmplitudeClient
@@ -24,6 +26,7 @@ export const events = {
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
   REMOVED_CUISINE: 'Removed cuisine',
+  REMOVED_SCHEDULE: 'Removed schedule',
   SKIPPED_ORDER: 'Skipped order',
   SKIPPED_ORDER_FROM_MEALS: 'Skipped order from meals',
   UPDATED_ADDRESS: 'Updated address',
@@ -31,7 +34,7 @@ export const events = {
   UPDATED_PHONE: 'Updated phone',
 }
 
-class AnalyticsService {
+export class AnalyticsService {
   private static _instance: AnalyticsService;
 
   private didInit: boolean = false;
@@ -103,6 +106,41 @@ class AnalyticsService {
       console.error(err.stack);
       throw err;
     }
+  }
+
+  public static sendMenuMetrics(
+    summaryEventName: string,
+    itemEventName: string,
+    cart: Cart,
+    plans: IPlan[]
+  ) {
+    const fields = Object.values(Cart.getCombinedMealPlans(cart.RestMeals)).reduce<
+      { [key: string]: number }
+    >((sum, rm) => {
+      sum[rm.PlanName + '-Count'] = rm.MealCount;
+      sum[rm.PlanName + '-Price'] = Tier.getMealPrice(rm.PlanName, rm.MealCount, plans);
+      return sum;
+    }, {});
+    analyticsService.trackEvent(summaryEventName, {
+      donationCount: cart.DonationCount,
+      ...fields,
+    });
+    Object.values(cart.RestMeals).forEach(rm => {
+      rm.meals.forEach(m => {
+        for (let i = 0; i < m.Quantity; i++) {
+          m.Tags.forEach(t => {
+            analyticsService.trackEvent(itemEventName, {
+              planName: m.PlanName,
+              planId: m.StripePlanId,
+              restId: m.RestId,
+              restName: m.RestName,
+              mealId: m.MealId,
+              tag: t,
+            });
+          });
+        }
+      })
+    });
   }
 }
 

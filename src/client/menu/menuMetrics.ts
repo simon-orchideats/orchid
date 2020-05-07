@@ -1,30 +1,12 @@
-// @ts-nocheck
-
+import { IPlan } from './../../plan/planModel';
 import { Cart } from '../../order/cartModel';
-import { analyticsService, events } from "../utils/analyticsService";
+import { AnalyticsService, analyticsService, events } from "../utils/analyticsService";
 
 export const sendCartMenuMetrics = (
   cart: Cart,
-  restName: string | null,
-  planMealPrice: number,
-  planMealCount: number
+  plans: IPlan[],
 ) => {
-  // analyticsService.trackEvent(events.FILLED_CART, {
-  //   restId: cart.RestId,
-  //   restName,
-  //   donationCount: cart.DonationCount,
-  //   cartMealCount: Cart.getMealCount(cart.Meals),
-  //   planMealPrice,
-  //   planMealCount,
-  // });
-  // cart.Meals.forEach(meal => {
-  //   for (let i = 0; i < meal.Quantity; i++) {
-  //     analyticsService.trackEvent(events.FILLED_CART_MEALS, {
-  //       name: meal.Name,
-  //       mealId: meal.MealId,
-  //     });
-  //   }
-  // });
+  AnalyticsService.sendMenuMetrics(events.FILLED_CART, events.FILLED_CART_MEALS, cart, plans);
 }
 
 export const sendZipMetrics = (
