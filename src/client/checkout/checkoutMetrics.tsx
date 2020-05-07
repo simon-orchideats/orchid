@@ -1,17 +1,17 @@
-//@ts-ignore
+//@ts-nocheck
 
 import { Cart } from '../../order/cartModel';
-import { AnalyticsService, events } from "../utils/analyticsService";
-// import { CuisineType } from '../../consumer/consumerModel';
-// import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseDeliveryTimeMetrics, sendChooseCuisineMetrics } from '../consumer/myPlanMetrics';
+import { AnalyticsService, analyticsService, events } from "../utils/analyticsService";
+import { CuisineType } from '../../consumer/consumerModel';
+import { sendChoosePlanMetrics, sendChooseDeliveryDayMetrics, sendChooseDeliveryTimeMetrics, sendChooseCuisineMetrics } from '../consumer/myPlanMetrics';
 
-// export const sendCheckoutMetrics = (
-//   cart: Cart,
-//   planMealPrice: number,
-//   planMealCount: number,
-//   cuisines: CuisineType[],
-//   restName?: string,
-// ) => {
+export const sendCheckoutMetrics = (
+  cart: Cart,
+  planMealPrice: number,
+  planMealCount: number,
+  cuisines: CuisineType[],
+  restName?: string,
+) => {
   AnalyticsService.sendMenuMetrics(events.CHECKEDOUT, events.CHECKEDOUT_MEALS, cart, plans);
   
   // sendChoosePlanMetrics(planMealPrice, planMealCount);
@@ -28,4 +28,4 @@ import { AnalyticsService, events } from "../utils/analyticsService";
   // sendChooseDeliveryDayMetrics(cart.DeliveryDay);
   // sendChooseDeliveryTimeMetrics(cart.DeliveryTime);
   // sendChooseCuisineMetrics(cuisines);
-// }
+}
