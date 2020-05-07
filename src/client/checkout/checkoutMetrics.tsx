@@ -1,4 +1,4 @@
-//@ts-ignore
+//@ts-nocheck
 
 import { Cart } from '../../order/cartModel';
 import { AnalyticsService, analyticsService, events } from "../utils/analyticsService";
