@@ -42,6 +42,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.175rem'
     },
+    fontWeight: 500,
   },
   welcomeText: {
     maxWidth: 600 // chosen by inspection
@@ -418,7 +419,7 @@ const Benefits = () => {
     {
       title: 'No service charge',
       description: `
-        Neighbors don't nickle and dime each other. There's no service charge buying in-store, so why should
+        Neighbors don't nickle and dime each other. There's no service charge when buying in-store, so why should
         buying online be any different? Why do you have to pay, to pay? It's time we redefine online food ordering.
         This means we will never charge mysterious service fees. No hidden fees, ever.
       `,
@@ -430,8 +431,8 @@ const Benefits = () => {
       description: `
         Cooking for friends and family is always better than cooking for just one. This is why we offer meal plans
         instead of just individual meals. Bulk means savings, and we pass those savings to you. It also means we can give
-        one free delivery every week. You save up to 25% per meal when you order on Orchid. Consider a total of
-        $16.00 per meal after fees vs an honest $11.89.
+        one free delivery every week. You save up to 25% per meal when you order on Orchid. Consider our competitors at
+        $16.00 per meal after fees vs. an honest $11.89.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
