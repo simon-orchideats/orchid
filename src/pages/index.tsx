@@ -441,8 +441,8 @@ const Benefits = () => {
       title: 'Connect the community',
       description: `
         Food always tastes better when it comes from someone you know. Ditch cross-country shipments, the ice packs,
-        and the anonymous cooks. Orchid delivers food same-day fresh from down the street so you can enjoy the meal as your
-        local neighbor intended.
+        and the anonymous cooks. Every meal comes from your favorite local restaurants and is delivered same-day fresh
+        from down the street.
       `,
       img: 'home/rest.jpeg',
       imgLeft: false,
