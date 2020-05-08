@@ -120,7 +120,7 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
           {
             mealPrices.map(mp => (
-              <Typography variant='body1'>
+              <Typography variant='body1' key={mp.stripePlanId}>
                 ${(mp.mealPrice / 100).toFixed(2)} ea
               </Typography>
             ))

@@ -8,14 +8,16 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { sendChooseCuisineMetrics } from "../../client/consumer/myPlanMetrics";
+import { sendChooseCuisineMetrics, sendUpdateScheduleMetrics, sendAddScheduleMetrics, sendRemoveScheduleMetrics, sendUpdatePlanMetrics } from "../../client/consumer/myPlanMetrics";
 import Counter from "../../client/menu/Counter";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import PreferredSchedule from "../../client/general/PreferredSchedule";
-import { MIN_MEALS } from "../../plan/planModel";
+import { MIN_MEALS, Tier, PlanNames } from "../../plan/planModel";
 import { menuRoute } from "../menu";
 import Link from "next/link";
+import { debounce } from 'lodash';
+import { useGetAvailablePlans } from "../../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -29,8 +31,12 @@ const useStyles = makeStyles(theme => ({
     borderRadius: 10,
   },
   row: {
-    maxWidth: 200,
+    maxWidth: 225,
     display: 'flex',
+    alignItems: 'center',
+  },
+  price: {
+    paddingLeft: theme.spacing(2),
   },
   minusButton: {
     backgroundColor: `${theme.palette.grey[600]}`,
@@ -70,9 +76,13 @@ const myPlan = () => {
   const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
   const cuisines = plan ? plan.Cuisines : [];
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
+  const plans = useGetAvailablePlans();
   const validateCuisineRef= useRef<() => boolean>();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
   const notify = useNotify();
+  // useRef because we want a store this delayedFetch between renders, otherwise we always redefine the delayedFetch
+  // which means useEffect calls a different function on each run which means we never actually delay anything.
+  const debouncedSendChoosePlanMetrics = useRef(debounce(sendUpdatePlanMetrics, 4000));
   useMutationResponseHandler(cancelSubscriptionRes, () => {
     notify('Plan canceled.', NotificationType.success, false);
   });
@@ -117,12 +127,15 @@ const myPlan = () => {
     console.error(err.stack);
     return null;
   }
-
   const count = plan ? plan.MealPlans[0].MealCount : 0;
   const allowedDeliveries = Math.floor(count / MIN_MEALS);
-
   const onRemoveMeal = () => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
     const plan = consumer.data.Plan;
     const mealCount = count - 1;
     const newAllowedDeliveries = Math.floor(mealCount / MIN_MEALS);
@@ -132,42 +145,62 @@ const myPlan = () => {
     }
     if (mealCount < MIN_MEALS) return;
     setPrevPlan(plan);
+    const newMealPlans = [
+      new MealPlan({
+        ...plan.MealPlans[0],
+        mealCount,
+      })
+    ];
+    debouncedSendChoosePlanMetrics.current(
+      newMealPlans,
+      plan.MealPlans,
+      plans.data,
+    )
     updateMyPlan(
       new ConsumerPlan({
         ...plan,
-        mealPlans: [
-          new MealPlan({
-            ...plan.MealPlans[0],
-            mealCount,
-          })
-        ]
+        mealPlans: newMealPlans
       }),
       consumer.data
     );
   }
   const onAddMeal = () => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
     const plan = consumer.data.Plan;
+    const newMealPlans = [
+      new MealPlan({
+        ...plan.MealPlans[0],
+        mealCount: count + 1,
+      })
+    ];
     setPrevPlan(plan);
+    debouncedSendChoosePlanMetrics.current(
+      newMealPlans,
+      plan.MealPlans,
+      plans.data,
+    );
     updateMyPlan(
       new ConsumerPlan({
         ...plan,
-        mealPlans: [
-          new MealPlan({
-            ...plan.MealPlans[0],
-            mealCount: count + 1,
-          })
-        ]
+        mealPlans: newMealPlans
       }),
       consumer.data
     );
   }
+
   const addSchedule = () => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     const plan = consumer.data.Plan;
     setPrevPlan(plan);
     const schedules = plan.Schedules.map(s => new Schedule(s));
-    schedules.push(Schedule.getDefaultSchedule());
+    const newSchedule = Schedule.getDefaultSchedule();
+    schedules.push(newSchedule);
+    sendAddScheduleMetrics(newSchedule, schedules.length);
     updateMyPlan(
       new ConsumerPlan({
         ...plan,
@@ -181,7 +214,8 @@ const myPlan = () => {
     const plan = consumer.data.Plan;
     setPrevPlan(plan);
     const schedules = plan.Schedules.map(s => new Schedule(s));
-    schedules.splice(i, 1);
+    const removedSchedules = schedules.splice(i, 1);
+    sendRemoveScheduleMetrics(removedSchedules[0], schedules.length);
     updateMyPlan(
       new ConsumerPlan({
         ...plan,
@@ -197,6 +231,7 @@ const myPlan = () => {
     const newSchedule = new Schedule({ day, time });
     const schedules = plan.Schedules.map(s => new Schedule(s));
     schedules[i] = newSchedule;
+    sendUpdateScheduleMetrics(newSchedule);
     updateMyPlan(
       new ConsumerPlan({
         ...plan,
@@ -263,6 +298,13 @@ const myPlan = () => {
                   className: classes.button
                 }}
               />
+              <Typography
+                variant='body1'
+                color='textSecondary'
+                className={classes.price}
+              >
+                {plans.data && `($${(Tier.getMealPrice(PlanNames.Standard, count, plans.data) / 100).toFixed(2)} ea)`}
+              </Typography>
             </div>
             {
               count === MIN_MEALS &&

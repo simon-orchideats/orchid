@@ -264,7 +264,7 @@ export class Cart implements ICart {
     return meals.reduce((sum, m) => sum + m.quantity, 0);
   }
 
-  public static getCombinedMealPlans(restMeals: RestMeals) {
+  public static getCombinedMealPlans(restMeals: RestMeals, donationCount: number) {
     return Object.values(restMeals).reduce<{ [key: string]: MealPlan }>((sum, restMeal) => {
       restMeal.mealPlans.forEach(mp => {
         if (sum[mp.StripePlanId]) {
@@ -273,7 +273,10 @@ export class Cart implements ICart {
             mealCount: sum[mp.StripePlanId].MealCount + mp.MealCount,
           })
         } else {
-          sum[mp.StripePlanId] = new MealPlan(mp)
+          sum[mp.StripePlanId] = new MealPlan({
+            ...mp,
+            mealCount: mp.MealCount + (mp.PlanName === PlanNames.Standard ? donationCount : 0),
+          });
         }
       }, {});
       return sum;

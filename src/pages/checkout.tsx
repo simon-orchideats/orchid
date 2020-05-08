@@ -26,7 +26,7 @@ import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
 import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
 import { useGetAvailablePlans } from "../plan/planService";
-// import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
+import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -239,15 +239,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     }
-
-    // todo simon: enable metrics
-    // sendCheckoutMetrics(
-    //   cart,
-    //   Plan.getMealPrice(cart.StripePlanId, plans.data),
-    //   Plan.getPlanCount(cart.StripePlanId, plans.data),
-    //   cuisines,
-    //   cart.RestName ? cart.RestName : undefined,
-    // )
+    sendCheckoutMetrics(
+      cart,
+      plans.data,
+      cuisines,
+    )
     if (!consumer || !consumer.data) {
       signUp(emailInputRef.current!.value, accountName, password);
     } else {

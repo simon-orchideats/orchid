@@ -73,6 +73,9 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
   },
+  menuLink: {
+    maxWidth: 65,
+  },
   logo: {
     [theme.breakpoints.down('xs')]: {
       width: 100,
@@ -130,6 +133,7 @@ const Navbar: React.FC = () => {
       </Typography>
     </Link>
   );
+  let barIsStep = true;
   let bar;
   if (currRoute === `${menuRoute}` && isUpdating) {
     bar = (
@@ -198,10 +202,11 @@ const Navbar: React.FC = () => {
       </div>
     )
   } else {
+    barIsStep = false;
     bar = (
       <>
         <Link href={menuRoute}>
-          <Typography variant='button' className={classes.link}>Menu</Typography>
+          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
         </Link>
         <div className={classes.about} onClick={onClickAbout}>
           <Typography variant='button' className={classes.link}>About</Typography>
@@ -241,9 +246,12 @@ const Navbar: React.FC = () => {
       >
         <Container className={classes.container} maxWidth='lg'>
           <Toolbar className={classes.toolbar}>
-            <Link href={indexRoute}>
-              <img src='/logo.png' alt='logo' className={classes.logo} />
-            </Link>
+            {
+              (isMdAndUp || !barIsStep) &&
+              <Link href={indexRoute}>
+                <img src='/logo.png' alt='logo' className={classes.logo} />
+              </Link>
+            }
             {bar}
             {account}
           </Toolbar>

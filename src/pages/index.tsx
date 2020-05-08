@@ -39,9 +39,6 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.mixins.navbar.marginBottom,
   },
   welcomeTitle: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '2.175rem'
-    },
     fontWeight: 500,
   },
   welcomeText: {
@@ -237,7 +234,7 @@ const Donate = () => {
   const classes = useStyles();
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
-      <Typography variant='h6' className={classes.shrinker}>
+      <Typography variant='h6'>
         Help our heroic healthcare workers fight COVID-19
       </Typography>
       <Typography variant='body1'>
@@ -409,9 +406,9 @@ const Benefits = () => {
       title: 'Come home to a warm meal',
       description: `
         Few things express love like coming home after a long day to a warm meal cooked just for you. Our meals
-        are cooked with care by a local restaurant chef, not in some warehouse across the country. No more tiresome cooking
-        and cleaning or even waiting for delivery. No more thinking about food because we've got you covered. Sit back and
-        enjoy a meal in 3 minutes.
+        are cooked with care by a local restaurant chef, not by a stranger in some warehouse across the country. No more
+        tiresome cooking and cleaning or even waiting for delivery. No more thinking about food because we've got you
+        covered. Sit back and enjoy a meal in 3 minutes.
       `,
       img: '/home/sharing.jpeg',
       imgLeft: true

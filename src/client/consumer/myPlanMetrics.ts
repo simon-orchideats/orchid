@@ -1,6 +1,8 @@
-import { deliveryTime } from './../../consumer/consumerModel';
+import { AnalyticsService } from './../utils/analyticsService';
+import { Schedule, MealPlan } from './../../consumer/consumerModel';
 import { analyticsService, events } from "../utils/analyticsService";
 import { CuisineType } from '../../consumer/consumerModel';
+import { IPlan } from '../../plan/planModel';
 
 export const sendCancelSubscriptionMetrics = (
   fromPlanMealPrice: number,
@@ -16,60 +18,26 @@ export const sendChooseCuisineMetrics = (
   newCuisines: CuisineType[],
   oldCuisines: CuisineType[] = [],
 ) => {
-  const addedCuisines: CuisineType[] = [];
-  const removedCuisines: CuisineType[] = [];
-  oldCuisines.forEach(old => {
-    if (!newCuisines.find(newC => newC === old)) {
-      removedCuisines.push(old);
-    }
-  });
-  newCuisines.forEach(newC => {
-    if (!oldCuisines.find(old => old === newC)) {
-      addedCuisines.push(newC);
-    }
-  });
-  addedCuisines.forEach(cuisine => {
-    analyticsService.trackEvent(events.ADDED_CUISINE, {
-      cuisine
-    });
-  });
-  removedCuisines.forEach(cuisine => {
-    analyticsService.trackEvent(events.REMOVED_CUISINE, {
-      cuisine
-    });
-  });
+  AnalyticsService.sendCuisineMetrics(newCuisines, oldCuisines);
 }
 
-export const sendChooseDeliveryDayMetrics = (
-  toDay: number,
-  fromDay?: number,
-) => {
-  analyticsService.trackEvent(events.CHOSE_DELIVERY_DAY, {
-    toDay,
-    fromDay,
-  });
+export const sendUpdateScheduleMetrics = (newSchedule: Schedule) => {
+  AnalyticsService.sendUpdateScheduleMetrics(newSchedule)
 }
 
-export const sendChooseDeliveryTimeMetrics = (
-  toTime: deliveryTime,
-  fromTime?: deliveryTime,
-) => {
-  analyticsService.trackEvent(events.CHOSE_DELIVERY_TIME, {
-    toTime,
-    fromTime,
-  });
+export const sendAddScheduleMetrics = (newSchedule: Schedule, numSchedules: number) => {
+  AnalyticsService.sendUpdateScheduleMetrics(newSchedule, numSchedules);
+  AnalyticsService.sendAddScheduleMetrics(newSchedule);
 }
 
-export const sendChoosePlanMetrics = (
-  toPlanMealPrice: number,
-  toPlanMealCount: number,
-  fromPlanMealPrice?: number,
-  fromPlanMealCount?: number,
+export const sendRemoveScheduleMetrics = (removedSchedule: Schedule, numSchedules: number) => {
+  AnalyticsService.sendRemoveScheduleMetrics(removedSchedule, numSchedules);
+}
+
+export const sendUpdatePlanMetrics = (
+  newMealPlans: MealPlan[],
+  oldMealPlans: MealPlan[],
+  plans: IPlan[]
 ) => {
-  analyticsService.trackEvent(events.CHOSE_PLAN, {
-    toPlanMealPrice,
-    toPlanMealCount,
-    fromPlanMealPrice,
-    fromPlanMealCount,
-  });
+  AnalyticsService.sendUpdatePlanMetrics(newMealPlans, oldMealPlans, plans);
 }

@@ -7,7 +7,6 @@ import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliverie
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
-import { sendCartMenuMetrics } from "./menuMetrics";
 
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
@@ -50,17 +49,11 @@ const MenuCart: React.FC<{
     query: { updating: 'true' }
   }
   const onNext = () => {
-    if (!plans.data) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
     if (!cart) {
       const err = new Error('Missing cart');
       console.error(err.stack);
       throw err;
     }
-    sendCartMenuMetrics(cart, plans.data);
     if (isUpdating) {
       Router.push({
         pathname: deliveryRoute,

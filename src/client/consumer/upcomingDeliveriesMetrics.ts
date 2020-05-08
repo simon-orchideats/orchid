@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { sendChoosePlanMetrics } from './myPlanMetrics';
+import { sendUpdatePlanMetrics } from './myPlanMetrics';
 import { Order } from './../../order/orderModel';
 import { Cart } from '../../order/cartModel';
 import { analyticsService, events } from "../utils/analyticsService";
