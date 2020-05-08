@@ -1,17 +1,10 @@
 import { AnalyticsService } from './../utils/analyticsService';
 import { Schedule, MealPlan } from './../../consumer/consumerModel';
-import { analyticsService, events } from "../utils/analyticsService";
 import { CuisineType } from '../../consumer/consumerModel';
 import { IPlan } from '../../plan/planModel';
 
-export const sendCancelSubscriptionMetrics = (
-  fromPlanMealPrice: number,
-  fromPlanMealCount: number
-) => {
-  analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
-    fromPlanMealPrice,
-    fromPlanMealCount,
-  });
+export const sendCancelSubscriptionMetrics = (oldMealPlans: MealPlan[], plans: IPlan[]) => {
+  AnalyticsService.sendCancelSubscriptionMetrics(oldMealPlans, plans);
 }
 
 export const sendChooseCuisineMetrics = (

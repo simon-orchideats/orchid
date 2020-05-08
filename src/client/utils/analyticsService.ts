@@ -19,7 +19,7 @@ export const events = {
   CHECKEDOUT: 'Checkedout',
   CHOSE_DELIVERY_DAY: 'Chose delivery day',
   CHOSE_DELIVERY_TIME: 'Chose delivery time',
-  CHOSE_PLAN: 'Chose plan', // using
+  CHOSE_PLAN: 'Chose plan',
   CHOSE_MEAL_DELIVERY: 'Chose meal delivery',
   CHOSE_DELIVERY_COUNT: 'Chose delivery count',
   CHOSE_SCHEDULE_COUNT: 'Chose schedule count',
@@ -102,6 +102,7 @@ export class AnalyticsService {
    */
   public async trackEvent(eventName: string, properties?: object): Promise<amplitude.LogReturn> {
     this.throwIfNoInit();
+    console.log(eventName, properties);
     return amplitude.getInstance().logEvent(eventName, properties ? properties : undefined);
   }
 
@@ -140,6 +141,12 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CHECKEDOUT, {
       donationCount: cart.DonationCount,
       ...fields,
+    });
+  }
+
+  public static sendCancelSubscriptionMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
+    analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
+      ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
   }
 

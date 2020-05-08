@@ -8,7 +8,7 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { sendChooseCuisineMetrics, sendUpdateScheduleMetrics, sendAddScheduleMetrics, sendRemoveScheduleMetrics, sendUpdatePlanMetrics } from "../../client/consumer/myPlanMetrics";
+import { sendChooseCuisineMetrics, sendUpdateScheduleMetrics, sendAddScheduleMetrics, sendRemoveScheduleMetrics, sendUpdatePlanMetrics, sendCancelSubscriptionMetrics } from "../../client/consumer/myPlanMetrics";
 import Counter from "../../client/menu/Counter";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
@@ -253,10 +253,13 @@ const myPlan = () => {
     );
   };
   const onCancelSubscription = () => {
-    // sendCancelSubscriptionMetrics(
-    //   Plan.getMealPrice(consumer.data.Plan.StripePlanId, plans.data),
-    //   Plan.getPlanCount(consumer.data.Plan.StripePlanId, plans.data),
-    // );
+    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!plans.data) {
+      const err = new Error('Missing plans');
+      console.error(err.stack);
+      throw err;
+    }
+    sendCancelSubscriptionMetrics(consumer.data.Plan.MealPlans, plans.data);
     cancelSubscription();
   }
   return (
