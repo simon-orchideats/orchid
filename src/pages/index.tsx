@@ -427,12 +427,12 @@ const Benefits = () => {
       imgLeft: false
     },
     {
-      title: 'Save up to 25%',
+      title: 'Save up to 38%',
       description: `
         Cooking for friends and family is always better than cooking for just one. This is why we offer meal plans
         instead of just individual meals. Bulk means savings, and we pass those savings to you. It also means we can give
-        one free delivery every week. You save up to 25% per meal when you order on Orchid. Consider our competitors at
-        $16.00 per meal after fees vs. an honest $11.89.
+        one free delivery every week. You save up to 38% per meal when you order on Orchid. Save with us at an honest
+        $9.99 per meal vs $16.00 per meal after fees when compared to ordering with other food apps.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
@@ -441,8 +441,8 @@ const Benefits = () => {
       title: 'Connect the community',
       description: `
         Food always tastes better when it comes from someone you know. Ditch cross-country shipments, the ice packs,
-        and the anonymous cooks. Orchid delivers food fresh from down the street. Every meal is same-day fresh and you
-        can enjoy the meal as your neighbor intended.
+        and the anonymous cooks. Orchid delivers food same-day fresh from down the street so you can enjoy the meal as your
+        local neighbor intended.
       `,
       img: 'home/rest.jpeg',
       imgLeft: false,
