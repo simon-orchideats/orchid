@@ -36,15 +36,12 @@ class RestService implements IRestService {
         body: {
           query: {
             bool: {
-              // must : {
-              //   match_all: {}
-              // },
               filter: {
                 bool: {
                   must: [
                     {
                       geo_distance : {
-                        distance: '2mi',
+                        distance: '2.25mi',
                         'location.geo' : {
                           lat,
                           lon

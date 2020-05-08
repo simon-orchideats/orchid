@@ -100,6 +100,9 @@ const delivery = () => {
   }
   const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     if (isExpanded) setExpanded(panel);
+    if (panel === 'assignments') {
+      setScheduleAndAutoDeliveries(schedules, start);
+    }
   };
   const setDates = () => {
     setScheduleAndAutoDeliveries(schedules, start);
@@ -165,6 +168,7 @@ const delivery = () => {
         <ExpansionPanel
           expanded={expanded === 'assignments'} 
           className={classes.panel}
+          disabled={isPreferredScheduleNextDisabled}
           onChange={handleExpander('assignments')}
         >
           <ExpansionPanelSummary>
