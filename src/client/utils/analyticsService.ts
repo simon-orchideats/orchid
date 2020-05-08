@@ -4,8 +4,9 @@ import { activeConfig } from '../../config';
 import { AmplitudeClient } from 'amplitude-js';
 import Router from 'next/router'
 import { Cart } from '../../order/cartModel';
-import { IPlan, Tier } from '../../plan/planModel';
+import { IPlan, Tier, PlanNames } from '../../plan/planModel';
 import { Schedule, MealPlan, CuisineType } from '../../consumer/consumerModel';
+import { Order } from '../../order/orderModel';
 
 const amplitude: {
   getInstance: () => AmplitudeClient
@@ -20,8 +21,9 @@ export const events = {
   CHOSE_DELIVERY_DAY: 'Chose delivery day',
   CHOSE_DELIVERY_TIME: 'Chose delivery time',
   CHOSE_PLAN: 'Chose plan',
-  CHOSE_MEAL_DELIVERY: 'Chose meal delivery',
+  CHOSE_DELIVERY_MEALS: 'Chose delivery meals',
   CHOSE_DELIVERY_COUNT: 'Chose delivery count',
+  CHOSE_DELIVERY_MEAL_TAG: 'Chose delivery meal tag',
   CHOSE_SCHEDULE_COUNT: 'Chose schedule count',
   EDITED_ORDER: 'Edited order',
   EDITED_ORDER_FROM_MEALS: 'Edited order from meals',
@@ -33,8 +35,9 @@ export const events = {
   REMOVED_CHECKOUT_SCHEDULE: 'Removed checkout schedule',
   REMOVED_PLAN_SCHEDULE: 'Removed plan schedule',
   REMOVED_PLAN: 'Removed plan',
-  SKIPPED_ORDER: 'Skipped order',
-  SKIPPED_ORDER_FROM_MEALS: 'Skipped order from meals',
+  SKIPPED_DELIVERY: 'Skipped delivery',
+  SKIPPED_DELIVERY_MEALS: 'Skipped delivery meals',
+  SKIPPED_DELIVERY_MEAL_TAG: 'Skipped delivery meal tag',
   UPDATED_ADDRESS: 'Updated address',
   UPDATED_CARD: 'Updated card',
   UPDATED_PHONE: 'Updated phone',
@@ -221,14 +224,16 @@ export class AnalyticsService {
     deliveries.forEach(d => {
       d.Meals.forEach(m => {
         for (let i = 0; i < m.Quantity; i++) {
+          analyticsService.trackEvent(events.CHOSE_DELIVERY_MEALS, {
+            mealId: m.MealId,
+            mealName: m.Name,
+            restId: m.RestId,
+            restName: m.RestName,
+            planName: m.PlanName,
+            planId: m.StripePlanId,
+          });
           m.Tags.forEach(t => {
-            analyticsService.trackEvent(events.CHOSE_MEAL_DELIVERY, {
-              mealId: m.MealId,
-              mealName: m.Name,
-              restId: m.RestId,
-              restName: m.RestName,
-              planName: m.PlanName,
-              planId: m.StripePlanId,
+            analyticsService.trackEvent(events.CHOSE_DELIVERY_MEAL_TAG, {
               tag: t,
             });
           });
@@ -262,6 +267,64 @@ export class AnalyticsService {
       analyticsService.trackEvent(events.REMOVED_CUISINE, {
         cuisine
       });
+    });
+  }
+
+  public static sendSkipDeliveryMetrics(
+    order: Order,
+    deliveryIndex: number,
+  ) {
+    let skippedMealsCount = 0;
+    order.Deliveries[deliveryIndex].Meals.forEach(m => {
+      skippedMealsCount += m.Quantity;
+      for (let i = 0; i < m.Quantity; i++) {
+        analyticsService.trackEvent(events.SKIPPED_DELIVERY_MEALS, {
+          mealId: m.MealId,
+          mealName: m.Name,
+          restId: m.RestId,
+          restName: m.RestName,
+          planName: m.PlanName,
+          planId: m.StripePlanId,
+        });
+        m.Tags.forEach(t => {
+          analyticsService.trackEvent(events.SKIPPED_DELIVERY_MEAL_TAG, {
+            tag: t,
+          });
+        });
+      }
+    });
+
+    type mealCounts =  { [key: string]: number };
+    const mealCounts: mealCounts = order.Deliveries.reduce<mealCounts>((sum, d) => {
+      const deliverySum = d.Meals.reduce<mealCounts>((sum, m) => {
+        if (sum[m.StripePlanId]) {
+          sum[m.StripePlanId] += m.Quantity;
+        } else {
+          sum[m.StripePlanId] = m.Quantity
+        }
+        return sum;
+      }, {});
+      return Object.entries(deliverySum).reduce<mealCounts>((sum, [stripePlanId, count]) => {
+        if (sum[stripePlanId]) {
+          sum[stripePlanId] += count;
+        } else {
+          sum[stripePlanId] = count;
+        }
+        return sum;
+      }, sum);
+    }, {})
+
+    const fields = order.Costs.MealPrices.reduce<
+      { [key: string]: number }
+    >((sum, mp) => {
+      sum[mp.PlanName + '-Count'] = mealCounts[mp.StripePlanId] + (mp.PlanName === PlanNames.Standard ? order.DonationCount : 0)
+      sum[mp.PlanName + '-Price'] = mp.MealPrice;
+      return sum;
+    }, {});
+
+    analyticsService.trackEvent(events.SKIPPED_DELIVERY, {
+      ...fields,
+      mealsSkipped: skippedMealsCount,
     });
   }
 

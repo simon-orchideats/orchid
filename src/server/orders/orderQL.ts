@@ -19,15 +19,6 @@ export const _OrderQL = gql`
     phone: String!
   }
 
-  input CartMealInput {
-    mealId: ID!
-    img: String
-    name: String!
-    quantity: Int!
-    stripePlanId: ID!
-    planName: ID!
-  }
-
   input DeliveryInput {
     deliveryTime: DeliveryTime!
     deliveryDate: Float!
@@ -63,6 +54,7 @@ export const _OrderQL = gql`
     stripePlanId: ID!
     planName: ID!
     taxRate: Float!
+    tags: [String!]!
   }
 
   type Delivery {

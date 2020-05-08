@@ -23,6 +23,7 @@ import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
+import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -237,12 +238,12 @@ const DeliveryOverview: React.FC<{
     });
   };
   const onSkip = (deliveryIndex: number) => {
-    // todo simon: metrics for this
     if (!plans) {
       const err = new Error('Missing plans');
       console.error(err.stack);
       throw err;
     }
+    sendSkipDeliveryMetrics(order, deliveryIndex);
     skipDelivery(order, deliveryIndex, plans);
   }
   const onRemoveDonations = () => {

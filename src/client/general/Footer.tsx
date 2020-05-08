@@ -60,7 +60,7 @@ const Footer = () => {
               </Typography>
             </div>
           </Grid>
-          <Grid sm={1} />
+          <Grid item sm={1} />
           <Grid
             item
             xs={6}
@@ -100,7 +100,7 @@ const Footer = () => {
               </Typography>
             </Link>
           </Grid>
-          <Grid sm={1} />
+          <Grid item sm={1} />
           <Grid
             item
             xs={6}
@@ -124,7 +124,7 @@ const Footer = () => {
               </Typography>
             </Link>
           </Grid>
-          <Grid sm={1} />
+          <Grid item sm={1} />
           <Grid
             item
             xs={6}

@@ -40,7 +40,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
 
 /**
- * todo prevent cross state orders
+ * if i cancel, and there are no deliveries, order should be deleted
  */
 
 init({

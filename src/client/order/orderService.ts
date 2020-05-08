@@ -46,6 +46,7 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
           stripePlanId
           planName
           taxRate
+          tags
         }
         status
       }

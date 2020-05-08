@@ -1,18 +1,24 @@
 // @ts-nocheck
 
-import { sendUpdatePlanMetrics } from './myPlanMetrics';
-import { Order } from './../../order/orderModel';
-import { Cart } from '../../order/cartModel';
-import { analyticsService, events } from "../utils/analyticsService";
+// import { sendUpdatePlanMetrics } from './myPlanMetrics';
+// import { Order, MealPrice } from './../../order/orderModel';
+// import { Cart } from '../../order/cartModel';
+import {
+  // analyticsService,
+  // events,
+  AnalyticsService
+} from "../utils/analyticsService";
+import { IPlan } from '../../plan/planModel';
+import { MealPrice, Order } from '../../order/orderModel';
 
-export const sendEditOrderMetrics = (
-  fromOrder: Order,
-  fromPlanMealCount: number | null,
-  toCart: Cart,
-  toPlanMealPrice: number,
-  toPlanMealCount: number,
-  toRestName?: string
-) => {
+// export const sendEditOrderMetrics = (
+//   fromOrder: Order,
+//   fromPlanMealCount: number | null,
+//   toCart: Cart,
+//   toPlanMealPrice: number,
+//   toPlanMealCount: number,
+//   toRestName?: string
+// ) => {
   // analyticsService.trackEvent(events.EDITED_ORDER, {
   //   fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
   //   fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
@@ -49,27 +55,11 @@ export const sendEditOrderMetrics = (
   //   fromOrder.MealPrice || undefined,
   //   fromPlanMealCount || undefined
   // );
-}
+// }
 
-export const sendSkippedOrderMetrics = (
-  fromOrder: Order,
-  fromPlanMealPrice: number,
-  fromPlanMealCount: number
+export const sendSkipDeliveryMetrics = (
+  order: Order,
+  deliveryIndex: number,
 ) => {
-  // analyticsService.trackEvent(events.SKIPPED_ORDER, {
-  //   fromRestId: fromOrder.Rest ? fromOrder.Rest.Id : undefined,
-  //   fromRestName: fromOrder.Rest ? fromOrder.Rest.Profile.Name : undefined,
-  //   fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
-  //   fromOrderDonationCountCount: fromOrder.DonationCount,
-  //   fromPlanMealPrice,
-  //   fromPlanMealCount, 
-  // });
-  // fromOrder.Meals.forEach(meal => {
-  //   for (let i = 0; i < meal.Quantity; i++) {
-  //     analyticsService.trackEvent(events.SKIPPED_ORDER_FROM_MEALS, {
-  //       name: meal.Name,
-  //       mealId: meal.MealId,
-  //     });
-  //   }
-  // })
+  AnalyticsService.sendSkipDeliveryMetrics(order, deliveryIndex);
 }
