@@ -23,7 +23,7 @@ import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
+import { sendSkipDeliveryMetrics, sendRemoveDonationMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -207,16 +207,10 @@ const DeliveryOverview: React.FC<{
   const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  let canEdit = order.StripeInvoiceId
+  let canEdit = !order.StripeInvoiceId
     && Date.now() <= moment(order.InvoiceDate).startOf('d').valueOf()
-    && consumer.Plan
-    && order.DonationCount > 0;
-  for (let i = 0; i < order.Deliveries.length; i++) {
-    if (order.Deliveries[i].Status === 'Open' || order.Deliveries[i].Status === 'Skipped') {
-      canEdit = true;
-      break;
-    }
-  }
+    && !!consumer.Plan
+
   const start = moment(order.InvoiceDate).subtract(1, 'w');
   const query = {
     updating: 'true',
@@ -247,12 +241,12 @@ const DeliveryOverview: React.FC<{
     skipDelivery(order, deliveryIndex, plans);
   }
   const onRemoveDonations = () => {
-    // todo simon metrics for this
     if (!plans) {
       const err = new Error('Missing plans');
       console.error(err.stack);
       throw err;
     }
+    sendRemoveDonationMetrics(order);
     removeDonations(order, plans);
   }
   const open = !!anchorEl;

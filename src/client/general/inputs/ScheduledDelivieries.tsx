@@ -56,14 +56,12 @@ const ScheduleDeliveries: React.FC<{
   isUpdating?: boolean
   movable?: boolean
   onSkip?: (deliveryIndex: number) => void,
-  onUpdate?: (deliveryIndex: number) => void,
   setError?: (err: boolean) => void,
 }> = ({
   deliveries,
   isUpdating = false,
   movable = false,
   onSkip,
-  onUpdate,
   setError,
 }) => {
   const classes = useStyles();
@@ -104,18 +102,6 @@ const ScheduleDeliveries: React.FC<{
             <Typography variant='h6' align='center'>
               {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
             </Typography>
-            {
-              'Status' in d && (d.Status === 'Open' || d.Status === 'Skipped') && onUpdate && isUpdating &&
-              <Button
-                variant='contained'
-                color='primary'
-                fullWidth
-                className={classes.button}
-                onClick={() => onUpdate(deliveryIndex)}
-              >
-                Update
-              </Button>
-            }
             {
               'Status' in d && d.Status === 'Open' && onSkip && !isUpdating &&
               <Button

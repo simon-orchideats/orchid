@@ -11,3 +11,7 @@ export const sendUpdateCardMetrics = () => {
 export const sendUpdatePhoneMetrics = () => {
   analyticsService.trackEvent(events.UPDATED_PHONE);
 }
+
+export const sendUpdateInstructionsMetrics = () => {
+  analyticsService.trackEvent(events.UPDATED_INSTRUCTIONS);
+}

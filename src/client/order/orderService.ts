@@ -10,53 +10,40 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
+import { orderFragment } from '../../order/orderFragment';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
     myUpcomingOrders {
-      _id
-      invoiceDate
-      destination {
-        address {
-          address1
-          address2
-          city
-          state
-          zip
-        }
-        instructions
-      }
-      costs {
-        mealPrices {
-          stripePlanId
-          planName
-          mealPrice
-        }
-      }
-      deliveries {
-        deliveryTime
-        deliveryDate
-        meals {
-          mealId
-          img
-          name
-          quantity
-          restId
-          restName
-          stripePlanId
-          planName
-          taxRate
-          tags
-        }
-        status
-      }
-      phone
-      donationCount
-      name
-      stripeInvoiceId
+      ...orderFragment
     }
   }
+  ${orderFragment}
 `
+
+export const useGetOrder = (orderId: string | null) => {
+  type res = { order: IOrder }
+  const res = useQuery<res>(
+    gql`
+      query order($orderId: ID!) {
+        order(orderId: $orderId) {
+          ...orderFragment
+        }
+      }
+      ${orderFragment}
+    `, 
+    {
+      skip: !orderId,
+      variables: { orderId },
+    }
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: res.data ? new Order(res.data.order) : res.data
+  }
+}
+
 
 type newConsumer = {
   _id: string,
@@ -134,6 +121,7 @@ export const usePlaceOrder = (): [
     ]
   }, [mutation]);
 }
+
 export const useSkipDelivery = (): [
   (order: Order, deliveryIndex: number, plans: Plan[]) => void,
   {

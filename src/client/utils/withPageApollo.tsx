@@ -159,7 +159,8 @@ function createApolloClient(ctx: Context, initialState = {}) {
   const cache = new InMemoryCache({
     cacheRedirects: {
       Query: {
-        rest: (_root, { restId }, { getCacheKey }) => getCacheKey({ __typename: 'Rest', _id: restId })
+        rest: (_root, { restId }, { getCacheKey }) => getCacheKey({ __typename: 'Rest', _id: restId }),
+        order: (_root, { orderId }, { getCacheKey }) => getCacheKey({ __typename: 'Order', _id: orderId })
       }
     }
   }).restore(initialState);

@@ -166,6 +166,7 @@ export interface IOrderService {
   ): Promise<MutationConsumerRes>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
   processTaxesAndFees(
     stripeCustomerId: string,
     invoiceId: string,
@@ -429,22 +430,6 @@ class OrderService {
     // }
  // }
 
-  //@ts-ignore todo simon: do we still need this?
-  private async getOrder(orderId: string, fields?: string[]) {
-    const options: any = {
-      index: ORDER_INDEX,
-      id: orderId,
-    };
-    if (fields) options._source = fields;
-    try {
-      const res: ApiResponse<EOrder> = await this.elastic.getSource(options);
-      return res.body;
-    } catch (e) {
-      console.error(`[OrderService] failed to get order '${orderId}'`, e.stack);
-      return null;
-    }
-  }
-
   private async validateOrderUpdate (orderId: string, signedInUser: SignedInUser) {
     if (!signedInUser) throw getNotSignedInErr()
     const stripeCustomerId = signedInUser.stripeCustomerId;
@@ -459,7 +444,7 @@ class OrderService {
       console.error('[OrderService]', msg)
       throw new Error(`[OrderService]: ${msg}`)
     } 
-    const targetOrder = await this.getOrder(orderId);
+    const targetOrder = await this.getEOrder(orderId);
     if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
     if (targetOrder.consumer.userId !== signedInUser._id) {
       const msg = 'Can only update your own orders';
@@ -561,6 +546,38 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${invoiceDate}`, e.stack);
       throw e;
+    }
+  }
+  
+  private async getEOrder(orderId: string, fields?: string[]) {
+    const options: any = {
+      index: ORDER_INDEX,
+      id: orderId,
+    };
+    if (fields) options._source = fields;
+    try {
+      const res: ApiResponse<EOrder> = await this.elastic.getSource(options);
+      return res.body;
+    } catch (e) {
+      console.error(`[OrderService] failed to get EOrder '${orderId}'`, e.stack);
+      return null;
+    }
+  }
+
+  // todo simon: add validation. can only get orders that belong to you
+  public async getIOrder(signedInUser: SignedInUser, orderId: string, fields?: string[]) {
+    if (!signedInUser) throw getNotSignedInErr()
+    const options: any = {
+      index: ORDER_INDEX,
+      id: orderId,
+    };
+    if (fields) options._source = fields;
+    try {
+      const res: ApiResponse<EOrder> = await this.elastic.getSource(options);
+      return Order.getIOrderFromEOrder(orderId, res.body);
+    } catch (e) {
+      console.error(`[OrderService] failed to get IOrder '${orderId}'`, e.stack);
+      return null;
     }
   }
 

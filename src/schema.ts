@@ -20,6 +20,7 @@ const query = gql`
     myUpcomingOrders: [Order!]!
     nearbyRests(zip: String): [Rest!]!
     rest(restId: ID!): Rest!
+    order(orderId: ID!): Order!
     myConsumer: Consumer
   }
 `

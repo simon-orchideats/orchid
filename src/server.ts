@@ -41,6 +41,9 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 
 /**
  * if i cancel, and there are no deliveries, order should be deleted
+ * 
+ * 
+ * // what happens if i try to edit a delivery thats got some confirmations?
  */
 
 init({

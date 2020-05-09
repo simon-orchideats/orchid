@@ -15,7 +15,7 @@ import { NotificationType } from "../../client/notification/notificationModel";
 import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
-import { sendUpdateAddressMetrics, sendUpdatePhoneMetrics, sendUpdateCardMetrics } from "../../client/consumer/profileMetrics";
+import { sendUpdateAddressMetrics, sendUpdatePhoneMetrics, sendUpdateCardMetrics, sendUpdateInstructionsMetrics } from "../../client/consumer/profileMetrics";
 import BaseInput from "../../client/general/inputs/BaseInput";
 const useStyles = makeStyles(theme => ({
   container: {
@@ -219,7 +219,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         instructions: instructionsInputRef.current!.value,
       },
     }
-    // todo simon send metrics for updating instructions
+    sendUpdateInstructionsMetrics();
     updateMyProfile(consumerData, updatedProfile);
   }
   const onCancelInstructions = () => {

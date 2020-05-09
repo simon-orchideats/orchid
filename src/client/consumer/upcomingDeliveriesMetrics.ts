@@ -1,61 +1,9 @@
-// @ts-nocheck
+import { AnalyticsService } from "../utils/analyticsService";
+import { Order } from '../../order/orderModel';
 
-// import { sendUpdatePlanMetrics } from './myPlanMetrics';
-// import { Order, MealPrice } from './../../order/orderModel';
-// import { Cart } from '../../order/cartModel';
-import {
-  // analyticsService,
-  // events,
-  AnalyticsService
-} from "../utils/analyticsService";
-import { IPlan } from '../../plan/planModel';
-import { MealPrice, Order } from '../../order/orderModel';
-
-// export const sendEditOrderMetrics = (
-//   fromOrder: Order,
-//   fromPlanMealCount: number | null,
-//   toCart: Cart,
-//   toPlanMealPrice: number,
-//   toPlanMealCount: number,
-//   toRestName?: string
-// ) => {
-  // analyticsService.trackEvent(events.EDITED_ORDER, {
-  //   fromRestId: fromOrder.Rest && fromOrder.Rest.Id,
-  //   fromRestName: fromOrder.Rest && fromOrder.Rest.Profile.Name,
-  //   fromOrderMealCount: Cart.getMealCount(fromOrder.Meals),
-  //   fromOrderDonationCount: fromOrder.DonationCount,
-  //   fromPlanMealPrice: fromOrder.MealPrice,
-  //   fromPlanMealCount,
-  //   toRestId: toCart.RestId,
-  //   toRestName,
-  //   toCartMealCount: Cart.getMealCount(toCart.Meals),
-  //   toCartDonationCount: toCart.DonationCount,
-  //   toPlanMealPrice,
-  //   toPlanMealCount,
-  // });
-  // fromOrder.Meals.forEach(meal => {
-  //   for (let i = 0; i < meal.Quantity; i++) {
-  //     analyticsService.trackEvent(events.EDITED_ORDER_FROM_MEALS, {
-  //       name: meal.Name,
-  //       mealId: meal.MealId,
-  //     });
-  //   }
-  // })
-  // toCart.Meals.forEach(meal => {
-  //   for (let i = 0; i < meal.Quantity; i++) {
-  //     analyticsService.trackEvent(events.EDITED_ORDER_TO_MEALS, {
-  //       name: meal.Name,
-  //       mealId: meal.MealId,
-  //     });
-  //   }
-  // });
-  // sendChoosePlanMetrics(
-  //   toPlanMealPrice,
-  //   toPlanMealCount,
-  //   fromOrder.MealPrice || undefined,
-  //   fromPlanMealCount || undefined
-  // );
-// }
+export const sendRemoveDonationMetrics = (order: Order) => {
+  AnalyticsService.sendRemoveDonationsMetrics(order);
+}
 
 export const sendSkipDeliveryMetrics = (
   order: Order,

@@ -25,14 +25,16 @@ export const events = {
   CHOSE_DELIVERY_COUNT: 'Chose delivery count',
   CHOSE_DELIVERY_MEAL_TAG: 'Chose delivery meal tag',
   CHOSE_SCHEDULE_COUNT: 'Chose schedule count',
-  EDITED_ORDER: 'Edited order',
-  EDITED_ORDER_FROM_MEALS: 'Edited order from meals',
-  EDITED_ORDER_TO_MEALS: 'Edited order to meals',
+  EDITED_DELIVERY_TO_PLAN: 'Edited delivery to plan',
+  EDITED_DELIVERY_FROM_PLAN: 'Edited delivery from plan',
+  EDITED_DELIVERY_FROM_MEALS: 'Edited delivery from meals',
+  EDITED_DELIVERY_FROM_TAGS: 'Edited delivery from tags',
   ENTERED_ZIP: 'Entered zip',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
   REMOVED_CUISINE: 'Removed cuisine',
   REMOVED_CHECKOUT_SCHEDULE: 'Removed checkout schedule',
+  REMOVED_DONATIONS_FROM_DELIVERY: 'Removed donations from delivery',
   REMOVED_PLAN_SCHEDULE: 'Removed plan schedule',
   REMOVED_PLAN: 'Removed plan',
   SKIPPED_DELIVERY: 'Skipped delivery',
@@ -41,6 +43,7 @@ export const events = {
   UPDATED_ADDRESS: 'Updated address',
   UPDATED_CARD: 'Updated card',
   UPDATED_PHONE: 'Updated phone',
+  UPDATED_INSTRUCTIONS: 'Updated instructions',
 }
 
 const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =>
@@ -51,6 +54,59 @@ const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =
     sum[rm.PlanName + '-Price'] = Tier.getMealPrice(rm.PlanName, rm.MealCount, plans);
     return sum;
   }, {});
+
+const getMealCounts = (order: Order) => {
+  type mealCountsType =  { [key: string]: number };
+  const mealCounts: mealCountsType = order.Deliveries.reduce<mealCountsType>((sum, d) => {
+    const deliverySum = d.Meals.reduce<mealCountsType>((sum, m) => {
+      if (sum[m.StripePlanId]) {
+        sum[m.StripePlanId] += m.Quantity;
+      } else {
+        sum[m.StripePlanId] = m.Quantity
+      }
+      return sum;
+    }, {});
+    return Object.entries(deliverySum).reduce<mealCountsType>((sum, [stripePlanId, count]) => {
+      if (sum[stripePlanId]) {
+        sum[stripePlanId] += count;
+      } else {
+        sum[stripePlanId] = count;
+      }
+      return sum;
+    }, sum);
+  }, {})
+
+  return order.Costs.MealPrices.reduce<
+    { [key: string]: number }
+  >((sum, mp) => {
+    let count = mealCounts[mp.StripePlanId] || 0;
+    sum[mp.PlanName + '-Count'] = count + (mp.PlanName === PlanNames.Standard ? order.DonationCount : 0)
+    sum[mp.PlanName + '-Price'] = mp.MealPrice;
+    return sum;
+  }, {});
+}
+
+const trackDeliveries = (deliveries: DeliveryInput[], mealEvent: string, tagEvent: string) => {
+  deliveries.forEach(d => {
+    d.Meals.forEach(m => {
+      for (let i = 0; i < m.Quantity; i++) {
+        analyticsService.trackEvent(mealEvent, {
+          mealId: m.MealId,
+          mealName: m.Name,
+          restId: m.RestId,
+          restName: m.RestName,
+          planName: m.PlanName,
+          planId: m.StripePlanId,
+        });
+        m.Tags.forEach(t => {
+          analyticsService.trackEvent(tagEvent, {
+            tag: t,
+          });
+        });
+      }
+    });
+  });
+}
 
 export class AnalyticsService {
   private static _instance: AnalyticsService;
@@ -221,25 +277,7 @@ export class AnalyticsService {
   }
 
   public static sendDeliveryMetrics(deliveries: DeliveryInput[]) {
-    deliveries.forEach(d => {
-      d.Meals.forEach(m => {
-        for (let i = 0; i < m.Quantity; i++) {
-          analyticsService.trackEvent(events.CHOSE_DELIVERY_MEALS, {
-            mealId: m.MealId,
-            mealName: m.Name,
-            restId: m.RestId,
-            restName: m.RestName,
-            planName: m.PlanName,
-            planId: m.StripePlanId,
-          });
-          m.Tags.forEach(t => {
-            analyticsService.trackEvent(events.CHOSE_DELIVERY_MEAL_TAG, {
-              tag: t,
-            });
-          });
-        }
-      });
-    });
+    trackDeliveries(deliveries, events.CHOSE_DELIVERY_MEALS, events.CHOSE_DELIVERY_MEAL_TAG);
     analyticsService.trackEvent(events.CHOSE_DELIVERY_COUNT, {
       count: deliveries.length,
     });
@@ -270,6 +308,14 @@ export class AnalyticsService {
     });
   }
 
+  public static sendRemoveDonationsMetrics(order: Order) {
+    const fields = getMealCounts(order);
+    analyticsService.trackEvent(events.REMOVED_DONATIONS_FROM_DELIVERY, {
+      donationsRemoved: order.DonationCount,
+      ...fields,
+    });
+  }
+
   public static sendSkipDeliveryMetrics(
     order: Order,
     deliveryIndex: number,
@@ -293,39 +339,31 @@ export class AnalyticsService {
         });
       }
     });
-
-    type mealCounts =  { [key: string]: number };
-    const mealCounts: mealCounts = order.Deliveries.reduce<mealCounts>((sum, d) => {
-      const deliverySum = d.Meals.reduce<mealCounts>((sum, m) => {
-        if (sum[m.StripePlanId]) {
-          sum[m.StripePlanId] += m.Quantity;
-        } else {
-          sum[m.StripePlanId] = m.Quantity
-        }
-        return sum;
-      }, {});
-      return Object.entries(deliverySum).reduce<mealCounts>((sum, [stripePlanId, count]) => {
-        if (sum[stripePlanId]) {
-          sum[stripePlanId] += count;
-        } else {
-          sum[stripePlanId] = count;
-        }
-        return sum;
-      }, sum);
-    }, {})
-
-    const fields = order.Costs.MealPrices.reduce<
-      { [key: string]: number }
-    >((sum, mp) => {
-      sum[mp.PlanName + '-Count'] = mealCounts[mp.StripePlanId] + (mp.PlanName === PlanNames.Standard ? order.DonationCount : 0)
-      sum[mp.PlanName + '-Price'] = mp.MealPrice;
-      return sum;
-    }, {});
-
+    const fields = getMealCounts(order);
     analyticsService.trackEvent(events.SKIPPED_DELIVERY, {
       ...fields,
       mealsSkipped: skippedMealsCount,
     });
+  }
+
+  public static sendUpdateOrderMetrics(
+    cart: Cart,
+    order: Order,
+    plans: IPlan[],
+  ) {
+    AnalyticsService.sendDeliveryMetrics(cart.Deliveries);
+    analyticsService.trackEvent(events.EDITED_DELIVERY_TO_PLAN, {
+      donationCount: cart.DonationCount,
+      ...copyMealPlansWithPriceAndCount(
+        Object.values(Cart.getCombinedMealPlans(cart.RestMeals, cart.DonationCount)),
+        plans
+      ),
+    });
+    analyticsService.trackEvent(events.EDITED_DELIVERY_FROM_PLAN, {
+      donationCount: order.DonationCount,
+      ...getMealCounts(order),
+    });
+    trackDeliveries(order.Deliveries, events.EDITED_DELIVERY_FROM_MEALS, events.EDITED_DELIVERY_FROM_TAGS);
   }
 
   public static sendZipMetrics(zip: string) {

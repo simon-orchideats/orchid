@@ -12,11 +12,12 @@ import Link from "next/link";
 import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
 import PreferredSchedule from "../client/general/PreferredSchedule";
-import { useUpdateDeliveries } from "../client/order/orderService";
+import { useUpdateDeliveries, useGetOrder } from "../client/order/orderService";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import moment from "moment";
-import { sendRemoveScheduleMetrics } from "../client/delivery/deliveryMetrics";
+import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/delivery/deliveryMetrics";
+import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -48,11 +49,13 @@ const delivery = () => {
   const [schedules, setSchedules] = useState<Schedule[]>(
     cart && cart.Schedules.length > 0 ? cart.Schedules : [ Schedule.getDefaultSchedule() ]
   );
+  const plans = useGetAvailablePlans();
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const urlQuery = useRouter().query;
   const updatingParam = urlQuery.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const orderId = urlQuery.orderId as string
+  const order = useGetOrder(orderId);
   const limit = parseFloat(urlQuery.limit as string)
   const start = parseFloat(urlQuery.start as string);
   const startDate = moment(start).format('M/D/YY');
@@ -73,12 +76,22 @@ const delivery = () => {
     Router.push(upcomingDeliveriesRoute);
   });
   const onUpdateOrder = () => {
-    // todo simon: metrics here
     if (!cart) {
       const err = new Error('Cart is empty for update order');
       console.error(err.stack);
       throw err;
-    } 
+    }
+    if (!plans.data) {
+      const err = new Error('No plans');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!order.data) {
+      const err = new Error('No order');
+      console.error(err.stack);
+      throw err;
+    }
+    sendUpdateOrderMetrics(cart, order.data, plans.data);
     updateDeliveries(
       orderId, 
       {
@@ -194,6 +207,7 @@ const delivery = () => {
           <ExpansionPanelDetails className={classes.col}>
             <ScheduleDeliveries
               deliveries={cart.Deliveries}
+              isUpdating={isUpdating}
               setError={cart.DonationCount === 0 ? setHasScheduleError : undefined}
               movable
             />

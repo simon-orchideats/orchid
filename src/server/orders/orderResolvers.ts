@@ -6,6 +6,10 @@ import { IUpdateDeliveryInput } from '../../order/deliveryModel';
 export const OrderQueryResolvers: ServerResolovers = {
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {
     return await getOrderService().getMyUpcomingIOrders(signedInUser);
+  },
+
+  order: async(_root, { orderId }: { orderId: string }, { signedInUser }) => {
+    return await getOrderService().getIOrder(signedInUser, orderId);
   }
 }
 
