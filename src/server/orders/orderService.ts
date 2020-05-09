@@ -887,21 +887,34 @@ class OrderService {
         deliveries: newDeliveries,
         costs,
       }
-      try {
-        await this.elastic.update({
-          index: ORDER_INDEX,
-          id: order._id,
-          // wait_for because this is deleteByQuery is called immediately after and we need to wait for
-          // this update to refresh otherwise, we get conflicts in the deleteByQuery
-          refresh: 'wait_for',
-          body: {
-            doc: newOrder,
-          }
-        });
-      } catch (e) {
-        console.error(`Failed to update '${order._id}' with new order '${JSON.stringify(newOrder)}'`)
+      if (newOrder.deliveries.length > 0) {
+        try {
+          await this.elastic.update({
+            index: ORDER_INDEX,
+            id: order._id,
+            // wait_for because this is deleteByQuery is called immediately after and we need to wait for
+            // this update to refresh otherwise, we get conflicts in the deleteByQuery
+            refresh: 'wait_for',
+            body: {
+              doc: newOrder,
+            }
+          });
+        } catch (e) {
+          console.error(`Failed to update '${order._id}' with new order '${JSON.stringify(newOrder)}'`)
+        }
+      } else {
+        try {
+          await this.elastic.delete({
+            index: ORDER_INDEX,
+            id: order._id,
+            // wait_for because this is deleteByQuery is called immediately after and we need to wait for
+            // this update to refresh otherwise, we get conflicts in the deleteByQuery
+            refresh: 'wait_for',
+          });
+        } catch (e) {
+          console.error(`Failed to delete '${order._id}'`)
+        }
       }
-
       return {
         _id: order._id,
         deliveries: newOrder.deliveries,
@@ -1096,7 +1109,7 @@ class OrderService {
         delivery.status === 'Confirmed'
         || delivery.status === 'Returned'
         || delivery.status === 'Complete'
-     );
+      );
       currentDeliveries = targetDeliveries.concat(currentDeliveries);
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);

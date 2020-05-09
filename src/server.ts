@@ -39,13 +39,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
 
-/**
- * if i cancel, and there are no deliveries, order should be deleted
- * 
- * 
- * // what happens if i try to edit a delivery thats got some confirmations?
- */
-
 init({
   dsn: activeConfig.server.sentry.dsn,
   integrations: [
