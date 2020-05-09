@@ -143,7 +143,8 @@ const delivery = () => {
                   1. Choose days for week {startDate} - {endDate}
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  These days are only for this order. We disabled days too far past your billing day.
+                  These days are only for this order. We disabled days too far past your billing day. If a restaurant is
+                  closed, we'll deliver the next day
                 </Typography>
               </div>
               :
@@ -152,7 +153,8 @@ const delivery = () => {
                   1. Choose subscription delivery dates
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  Orchid will deliver meals at these times each week
+                  Orchid will deliver meals at these times each week. If a restaurant is closed, we'll deliver the next
+                  day
                 </Typography>
               </div>
             }

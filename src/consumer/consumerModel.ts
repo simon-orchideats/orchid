@@ -84,31 +84,28 @@ export const CuisineTypes: {
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export type deliveryTime =  'NineAToElevenA' |
-'ElevenAToOneP' |
-'OnePToThreeP' |
-'ThreePToFiveP' |
-'FivePToSevenP' |
-'SevenPToNineP'
+export type deliveryTime =  'TenAToTwelveP' |
+'TwelvePToTwoP' |
+'TwoPToFourP' |
+'FourPToSixP' |
+'SixPToEightP'
 
 const deliveryTimes: {
-  NineAToElevenA: '9am - 11am',
-  ElevenAToOneP: '11am - 1pm',
-  OnePToThreeP: '1pm - 3pm',
-  ThreePToFiveP: '3pm - 5pm',
-  FivePToSevenP: '5pm - 7pm',
-  SevenPToNineP: '7pm - 9pm',
+  TenAToTwelveP: '10am - 12pm',
+  TwelvePToTwoP: '12pm - 2pm',
+  TwoPToFourP: '2pm - 4pm',
+  FourPToSixP: '4pm - 6pm',
+  SixPToEightP: '6pm - 8pm',
 } = {
-  NineAToElevenA: '9am - 11am',
-  ElevenAToOneP: '11am - 1pm',
-  OnePToThreeP: '1pm - 3pm',
-  ThreePToFiveP: '3pm - 5pm',
-  FivePToSevenP: '5pm - 7pm',
-  SevenPToNineP: '7pm - 9pm',
+  TenAToTwelveP: '10am - 12pm',
+  TwelvePToTwoP: '12pm - 2pm',
+  TwoPToFourP: '2pm - 4pm',
+  FourPToSixP: '4pm - 6pm',
+  SixPToEightP: '6pm - 8pm',
 }
 
 export const defaultDeliveryDay: deliveryDay = 2;
-export const defaultDeliveryTime: deliveryTime = 'ThreePToFiveP';
+export const defaultDeliveryTime: deliveryTime = 'SixPToEightP';
 
 export interface ISchedule {
   readonly day: deliveryDay;
@@ -254,8 +251,8 @@ export class ConsumerPlan implements IConsumerPlan {
     return deliveryTimes[deliveryTime];
   }
 
-  static getDefaultDeliveryTime(): 'ThreePToFiveP' {
-    return 'ThreePToFiveP';
+  static getDefaultDeliveryTime(): 'SixPToEightP' {
+    return 'SixPToEightP';
   }
 
   static areCuisinesEqual(c1: CuisineType[], c2: CuisineType[]) {

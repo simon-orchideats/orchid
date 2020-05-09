@@ -70,7 +70,7 @@ const faqs = () => {
       <Paper elevation={0} className={classes.faq}>
         <Container maxWidth='lg' className={classes.container}>
           <Typography variant='h2' className={classes.header}>
-            FAQs
+            FAQ
           </Typography>
           <Typography variant='h6' className={classes.title}>
             SUBSCRIPTION
@@ -196,7 +196,7 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What days of the week do you deliver?'
-            a="Every day."
+            a="Every day. If your restaurant is closed on a specific day, we'll deliver it the next day."
           />
           <Qa
             q='Who delivers my meals?'
@@ -206,7 +206,8 @@ const faqs = () => {
           />
           <Qa
             q='What time of day will meals be delivered?'
-            a="You can choose from our 2 delivery windows, 3pm - 5pm and 5pm - 7pm."
+            a="You can choose from our 2 delivery windows, 4pm - 6pm and 6pm - 8pm. We'll let you know precise ETA the
+            day before."
           />
           <Qa
             q='How can I add delivery instructions?'
@@ -214,7 +215,8 @@ const faqs = () => {
           />
           <Qa
             q='Does someone have to be home to recieve my delivery?'
-            a="No, but we'll text you before arriving. If you are unavailable, we'll leave the food at your doorstep."
+            a="No, but we'll call/text you before arriving. We'll text you our preceise ETA the day before so you can
+            plan ahead. If you're unavailable when we arrive for delivery, we'll leave the food at your doorstep."
           />
           <Qa
             q='Where do you deliver?'

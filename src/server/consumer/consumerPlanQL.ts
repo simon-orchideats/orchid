@@ -18,12 +18,11 @@ const CuisineTypeQL = gql`
 
 const DeliveryTimeQL = gql`
   enum DeliveryTime {
-    NineAToElevenA
-    ElevenAToOneP
-    OnePToThreeP
-    ThreePToFiveP
-    FivePToSevenP
-    SevenPToNineP
+    TenAToTwelveP
+    TwelvePToTwoP
+    TwoPToFourP
+    FourPToSixP
+    SixPToEightP
   }
 `
 

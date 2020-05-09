@@ -118,7 +118,8 @@ const Confirmation: React.FC<{
         2 days before their delivery.
       </Typography>
       <Typography variant='body1'>
-        You can review and edit your order below. We'll text you the day of your delivery.
+        You can review and edit your order below. We'll text you a day before with a specific ETA and also on the day of
+        your delivery.
       </Typography>
     </Paper>
   )

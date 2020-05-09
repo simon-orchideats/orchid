@@ -71,7 +71,7 @@ const plans = () => {
           <div className={classes.row}>
             <Detail
               img='plans/burrito.jpg'
-              description='Meals are cooked and delivered on the same day. Ready to eat in 3 minutes.'
+              description='Meals are cooked and delivered on the same day. Eat in 3 minutes.'
             />
             <Divider orientation='vertical' className={classes.divider} />
             <Detail

@@ -405,20 +405,17 @@ const Benefits = () => {
     {
       title: 'Come home to a warm meal',
       description: `
-        Few things express love like coming home after a long day to a warm meal cooked just for you. Our meals
-        are cooked with care by a local restaurant chef, not by a stranger in some warehouse across the country. No more
-        tiresome cooking and cleaning or even waiting for delivery. No more thinking about food because we've got you
-        covered. Sit back and enjoy a meal in 3 minutes.
+        Few things express love like coming home after a long day to a warm meal. No more waiting for a delivery or
+        stressing over what's for dinner. Enjoy a meal in a few minutes.
       `,
       img: '/home/sharing.jpeg',
       imgLeft: true
     },
     {
-      title: 'No service charge',
+      title: 'No service charge, ever',
       description: `
-        Neighbors don't nickle and dime each other. There's no service charge when buying in-store, so why should
-        buying online be any different? Why do you have to pay, to pay? It's time we redefine online food ordering.
-        This means we will never charge mysterious service fees. No hidden fees, ever.
+        There's no service fee when buying in-store, so why charge one online? Neighbors don't nickle and dime each
+        other, so neither do we. Let's redefine ordering food online together.
       `,
       img: 'home/trade.jpg',
       imgLeft: false
@@ -426,10 +423,9 @@ const Benefits = () => {
     {
       title: 'Save up to 38%',
       description: `
-        Cooking for friends and family is always better than cooking for just one. This is why we offer meal plans
-        instead of just individual meals. Bulk means savings, and we pass those savings to you. It also means we can give
-        one free delivery every week. You save up to 38% per meal when you order on Orchid. Save with us at an honest
-        $9.99 per meal vs $16.00 per meal after fees when compared to ordering with other food apps.
+        Cooking for family is more rewarding than cooking for just one. That's why we offer meal plans over single
+        meals. You get bulk savings and one free delivery per week. Save with each meal at $9.99 vs $16.00 after fees on
+        other food apps.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
@@ -437,9 +433,8 @@ const Benefits = () => {
     {
       title: 'Connect the community',
       description: `
-        Food always tastes better when it comes from someone you know. Ditch cross-country shipments, the ice packs,
-        and the anonymous cooks. Every meal comes from your favorite local restaurants and is delivered same-day fresh
-        from down the street.
+        Food tastes better when cooked by somone you know. Ditch cross-country shipments, ice packs, and warehouse cooks
+        from other meal plans. We deliver meals same-day fresh from local restaurants down the street.
       `,
       img: 'home/rest.jpeg',
       imgLeft: false,
