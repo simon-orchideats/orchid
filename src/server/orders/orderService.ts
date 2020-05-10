@@ -7,7 +7,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, CuisineType, IConsumerProfile, MealPlan, IConsumer, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, IConsumer, Consumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -125,29 +125,6 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
   ],
 })
 
-//@ts-ignore todo simon: do we still need this?
-const removeMealsRandomly = (meals: IDeliveryMeal[], numMealsToRemove: number) => {
-  const chooseRandomly = getItemChooser<IDeliveryMeal>(meals);
-  for (let i = 0; i < numMealsToRemove; i++) {
-    let randomMeal = chooseRandomly();
-    let targetIndex = meals.findIndex(m => m.mealId === randomMeal.mealId);
-    while (targetIndex === -1) {
-      // this is possible if the randomly chosen meal was already removed from meals
-      randomMeal = chooseRandomly();
-      targetIndex = meals.findIndex(m => m.mealId === randomMeal.mealId);
-    }
-    const targetMeal = meals[targetIndex];
-    if (targetMeal.quantity === 1) {
-      meals.splice(targetIndex, 1);
-    } else {
-      meals[targetIndex] = {
-        ...targetMeal,
-        quantity: targetMeal.quantity - 1,
-      };
-    }
-  }
-}
-
 export interface IOrderService {
   addAutomaticOrder(
     addedWeeks: number,
@@ -155,8 +132,8 @@ export interface IOrderService {
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ): Promise<void>
-  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'>>
-  deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'>>
+  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null>
+  deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'> | null>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
     signedInUser: SignedInUser,
@@ -223,37 +200,20 @@ class OrderService {
     this.restService = restService;
   }
 
-  //@ts-ignore todo simon: do we still need this?
-  private async chooseRandomRestAndMeals(cuisines: CuisineType[], mealCount: number) {
-    try {
-      if (!this.restService) throw new Error('No rest service');
-      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu', 'taxRate'])
-      if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
-      const rest = rests[Math.floor(Math.random() * rests.length)];
-      return {
-        restId: rest._id,
-        meals: chooseRandomMeals(rest.menu, mealCount, rest._id, rest.profile.name, rest.taxRate),
-      };
-    } catch (e) {
-      console.error(`[OrderService] could not auto pick rests and meals`, e.stack)
-      throw e;
-    }
-  }
-
   private async getCurrentOrder(userId: string): Promise<{
     _id: string,
     order: EOrder,
-  }> {
+  } | null> {
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
         index: ORDER_INDEX,
         size: 1000,
         body: myUnpaidOrdersQuery(userId)
       });
+
+      // this the case after this week's order has no confirmed meals and the consumer cancels the plan
       if (res.body.hits.total.value === 0) {
-        const err = new Error('No unpaid orders');
-        console.error(err.stack);
-        throw err;
+        return null;
       };
       const order = res.body.hits.hits[0];
       return {
@@ -475,9 +435,14 @@ class OrderService {
       if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
       if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumer._id}'`);
       if (!this.restService) throw new Error('Missing RestService');
+      if (!consumer.profile.destination) throw new Error (`Consumer '${consumer._id}' missing destination`);
       const cuisines = consumer.plan.cuisines;
       const plan = consumer.plan;
-      const rests = await this.restService.getRestsByCuisines(cuisines, ['menu', 'profile', 'location', 'taxRate']);
+      const rests = await this.restService.getNearbyRests(
+        consumer.profile.destination.address.zip,
+        cuisines,
+        ['menu', 'profile', 'location', 'taxRate']
+      );
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
       const deliveries: IDeliveryInput[] = [];
       const totalMeals = MealPlan.getTotalCount(plan.mealPlans);
@@ -842,9 +807,10 @@ class OrderService {
     }
   }
 
-  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'>> {
+  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null> {
     try {
       const order = await this.getCurrentOrder(userId);
+      if (!order) return null;
       const newOrder: Pick<EOrder, 'deliveries'> = {
         deliveries: order.order.deliveries.map(d => ({
           ...d,
@@ -869,11 +835,11 @@ class OrderService {
     }
   }
 
-  async deleteCurrentOrderUnconfirmedDeliveries(userId: string): Promise<Pick<IOrder, 'deliveries' | '_id'>>  {
+  async deleteCurrentOrderUnconfirmedDeliveries(userId: string): Promise<Pick<IOrder, 'deliveries' | '_id'> | null>  {
     try {
       if (!this.planService) throw new Error ('PlanService not set');
-
       const order = await this.getCurrentOrder(userId);
+      if (!order) throw new Error(`Missing current order for user '${userId}'`)
       const plans = await this.planService.getAvailablePlans();
       const newDeliveries = order.order.deliveries.filter(d => d.status === 'Confirmed');
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, newDeliveries, order.order.donationCount);
@@ -899,8 +865,13 @@ class OrderService {
               doc: newOrder,
             }
           });
+          return {
+            _id: order._id,
+            deliveries: newOrder.deliveries,
+          }
         } catch (e) {
-          console.error(`Failed to update '${order._id}' with new order '${JSON.stringify(newOrder)}'`)
+          console.error(`Failed to update '${order._id}' with new order '${JSON.stringify(newOrder)}'`, e.stack);
+          throw e;
         }
       } else {
         try {
@@ -911,13 +882,11 @@ class OrderService {
             // this update to refresh otherwise, we get conflicts in the deleteByQuery
             refresh: 'wait_for',
           });
+          return null;
         } catch (e) {
-          console.error(`Failed to delete '${order._id}'`)
+          console.error(`Failed to delete '${order._id}'`, e.stack);
+          throw e;
         }
-      }
-      return {
-        _id: order._id,
-        deliveries: newOrder.deliveries,
       }
     } catch (e) {
       console.error(`[OrderService] failed to deleteCurrentOrderUnconfirmedDeliveries for userId '${userId}'`, e.stack);

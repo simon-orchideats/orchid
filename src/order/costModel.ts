@@ -41,6 +41,7 @@ export class Cost implements ICost {
   }
 
   public static getDeliveryFee(deliveries: IDeliveryInput[]) {
+    if (deliveries.length === 0) return 0;
     return (deliveries.length - 1) * deliveryFee
   }
 

@@ -7,9 +7,8 @@ import { ERest, IRest } from './../../rest/restModel';
 const REST_INDEX = 'rests';
 
 export interface IRestService {
-  getNearbyRests: (zip: string) => Promise<IRest[]>
+  getNearbyRests: (zip: string, cuisines?: CuisineType[], fields?: string[]) => Promise<IRest[]>
   getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
-  getRestsByCuisines: (cuisines: CuisineType[], fields?: string[]) => Promise<IRest[]>
 }
 
 class RestService implements IRestService {
@@ -24,13 +23,13 @@ class RestService implements IRestService {
     this.geoService = geoService;
   }
 
-  async getNearbyRests(zip: string): Promise<IRest[]> {
+  async getNearbyRests(zip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
     try {
       if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getGeocodeByZip(zip);
       if (!geo) return [];
       const { lat, lon, state } = geo;
-      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search({
+      const options: any = {
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
         body: {
@@ -52,20 +51,29 @@ class RestService implements IRestService {
                       term: {
                         'location.address.state': state
                       }
-                    }
+                    },
                   ]
                 }
               }
             }
           }
         }
-      });
+      }
+      if (cuisines) {
+        options.body.query.bool.filter.bool.must.push({
+          terms: {
+            'profile.tags.keyword': cuisines
+          }
+        });
+      }
+      if (fields) options._source = fields;
+      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
       return res.body.hits.hits.map(({ _id, _source }) => ({
         ..._source,
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby rests for '${zip}'. '${e.stack}'`);
+      console.error(`[RestService] could not get nearby rests for '${zip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }
@@ -84,35 +92,6 @@ class RestService implements IRestService {
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
       return null;
-    }
-  }
-
-  async getRestsByCuisines(cuisines: CuisineType[], fields?: string[]): Promise<IRest[]> {
-    const options: any = {
-      index: REST_INDEX,
-      size: 1000,
-      body: {
-        query: {
-          bool: {
-            filter: {
-              terms: {
-                'profile.tags.keyword': cuisines
-              }
-            }
-          }
-        }
-      }
-    };
-    if (fields) options._source = fields;
-    try {
-      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
-      return res.body.hits.hits.map(({ _id, _source }) => ({
-        ..._source,
-        _id
-      }))
-    } catch (e) {
-      console.error(`[RestService] could not get rests of cuisines '${JSON.stringify(cuisines)}'. '${e.stack}'`);
-      throw e;
     }
   }
 }

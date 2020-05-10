@@ -79,6 +79,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (invoice.billing_reason === 'subscription_create') return;
       const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
+      if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
       await getOrderService().processTaxesAndFees(
         stripeCustomerId,
@@ -86,8 +87,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         todaysOrder.costs,
         todaysOrder.deliveries.length - 1,
       )
-      // happens when subscription is canceled and we return since you can't set usage for a
-      // canceled subscription
+      // happens when subscription is canceled with some deliveries this week confirmed & paid. we return since you
+      // can't set usage for a canceled subscription
       if (!consumer.plan) return;
       const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
       invoice.lines.data.forEach(li => {

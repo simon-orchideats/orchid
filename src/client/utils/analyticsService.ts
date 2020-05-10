@@ -161,7 +161,6 @@ export class AnalyticsService {
    */
   public async trackEvent(eventName: string, properties?: object): Promise<amplitude.LogReturn> {
     this.throwIfNoInit();
-    console.log(eventName, properties);
     return amplitude.getInstance().logEvent(eventName, properties ? properties : undefined);
   }
 

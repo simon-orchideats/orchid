@@ -114,17 +114,18 @@ class ConsumerService implements IConsumerService {
       if (!subscriptionId) throw new Error('Missing stripe subscription id');
 
       const todaysOrder = await this.orderService.deleteCurrentOrderUnconfirmedDeliveries(signedInUser._id);
-      const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
-      const stripeSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-
-      await Promise.all(stripeSubscription.items.data.map(si => {
-        const count = numConfirmedMeals[si.plan.id] || 0;
-        return orderService.setOrderUsage(si.id, count, Math.round(Date.now() / 1000)).catch(e => {
-          console.error(`Could not set order usage count of '${count}' with sub item '${si.id}' for sub plan
-          '${si.plan.id}'`, e.stack);
-          throw e;
-        });
-      }));
+      if (todaysOrder) {
+        const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
+        const stripeSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+        await Promise.all(stripeSubscription.items.data.map(si => {
+          const count = numConfirmedMeals[si.plan.id] || 0;
+          return orderService.setOrderUsage(si.id, count, Math.round(Date.now() / 1000)).catch(e => {
+            console.error(`Could not set order usage count of '${count}' with sub item '${si.id}' for sub plan
+            '${si.plan.id}'`, e.stack);
+            throw e;
+          });
+        }));
+      }
 
       const p1 = this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
         const msg = `Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
