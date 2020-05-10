@@ -40,7 +40,7 @@ class RestService implements IRestService {
                   must: [
                     {
                       geo_distance : {
-                        distance: '2.25mi',
+                        distance: '3mi',
                         'location.geo' : {
                           lat,
                           lon
