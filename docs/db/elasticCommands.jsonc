@@ -28,6 +28,24 @@ GET /rests/_search?
   }
 }
 
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.menu.length; i++) {
+        ctx._source.menu[i].tags.add("Japanese");
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match": {
+      "profile.name.keyword": "Ozu Foods"
+    }
+  }
+}
+
 GET /rests/_search?
 {
   "query" : {
@@ -256,13 +274,15 @@ POST rests/_update_by_query
 {
   "script" : {
     "source": """
-      ctx._source.createdDate = ctx._source.createdDate
+      for (int i = 0; i < ctx._source.menu.length; i++) {
+        ctx._source.menu[i].tags.add("Italian");
+      }
     """,
     "lang": "painless"
   },
   "query": {
     "match": {
-      "profile.name": "Malibu Diner"
+      "profile.name.keyword": "Margherita's"
     }
   }
 }
@@ -519,20 +539,6 @@ POST orders/_delete_by_query
 GET /rests/_mapping
 GET /orders/_mapping
 GET /consumers/_mapping
-
-
-PUT rests/_mapping
-{
-  "properties": {
-    "location": {
-      "properties": {
-        "timezone": {
-          "type": "keyword"
-        }
-      }
-    }
-  }
-}
 
 PUT /rests2/
 {
