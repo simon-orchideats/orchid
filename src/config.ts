@@ -263,7 +263,7 @@ const production: config = {
     },
     analytics: {
       amplitude: {
-        key: '3aa095499fd45cab00cbb40c5a65a9da',
+        key: '35ea69d808cb339c24ec4e13b0bd46e3',
       },
       ga: {
         trackingId: 'UA-158791511-1',
