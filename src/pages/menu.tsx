@@ -20,6 +20,7 @@ const useStyles = makeStyles(theme => ({
   menu: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
+    width: '100%',
   },
   link: {
     color: theme.palette.common.link,
@@ -27,12 +28,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     marginRight: theme.spacing(2),
-  },
-  zipPlan: {
-    alignSelf: 'stretch',
-    flexBasis: '100%',
-    display: 'flex',
-    alignItems: 'center',
   },
   row: {
     display: 'flex',
@@ -112,16 +107,18 @@ const menu = () => {
                 <ArrowDropDownIcon />
               </Link>
             :
-              <div className={classes.zipPlan}>
-                <Link
-                  className={classes.link}
-                  color='inherit'
-                  onClick={onClickZip}
-                >
-                  <LocationOnIcon />
-                </Link>
-                {rests.data && <MenuMiniCart />}
-              </div>
+                rests.data &&
+                <MenuMiniCart 
+                  zip={
+                    <Link
+                      className={classes.link}
+                      color='inherit'
+                      onClick={onClickZip}
+                    >
+                      <LocationOnIcon />
+                    </Link>
+                  }
+                />
             }
           </Paper>
           {rests.loading && <Typography>Loading...</Typography>}

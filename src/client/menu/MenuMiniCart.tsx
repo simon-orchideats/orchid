@@ -3,6 +3,8 @@ import MenuCart from "./MenuCart";
 import Counter from "./Counter";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { useState } from "react";
+import CartMealGroup from "../order/CartMealGroup";
+import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 const useStyles = makeStyles(theme => ({
   suggestion: {
     color: theme.palette.warning.main,
@@ -13,6 +15,9 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
+  scrollable: {
+    overflowX: 'scroll',
+  },
   bar: {
     display: 'flex',
     alignItems: 'center',
@@ -22,6 +27,7 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
   },
   heart: {
     height: 24,
@@ -32,16 +38,29 @@ const useStyles = makeStyles(theme => ({
   },
   icon: {
     paddingLeft: 0,
+  },
+  meals: {
+    display: 'flex',
+    alignItems: 'center',
+    maxWidth: 150,
   }
 }));
 
-const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
+const MenuMiniCart: React.FC<{
+  hideNext?: boolean,
+  zip: React.ReactNode,
+}> = ({
+  hideNext = false,
+  zip,
+}) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleHelp = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
   const isHelperOpen = Boolean(anchorEl);
+  const addMealToCart = useAddMealToCart();
+  const removeMealFromCart = useRemoveMealFromCart();
   if (hideNext) return null;
   return (
     <MenuCart
@@ -80,6 +99,7 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               </Typography>
             </Paper>
           </Popover>
+          {zip}
           <Counter
             subtractDisabled={!donationCount}
             onClickSubtract={decrementDonationCount}
@@ -111,6 +131,29 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             {confirmText}
           </Button>
         </div>
+        <div className={`${classes.bar} ${classes.scrollable}`}>
+          {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
+            restMeals.meals.map(deliveryMeal => (
+              <div className={classes.meals}>
+                <CartMealGroup
+                  textSize='body2'
+                  onAddMeal={() => addMealToCart(
+                    deliveryMeal.mealId,
+                    deliveryMeal,
+                    restId,
+                    deliveryMeal.RestName,
+                    deliveryMeal.TaxRate
+                  )}
+                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal.mealId)}
+                  key={deliveryMeal.MealId}
+                  mealId={deliveryMeal.MealId}
+                  name={deliveryMeal.Name}
+                  quantity={deliveryMeal.Quantity}
+                />
+              </div>
+            ))
+          ))}
+        </div>
         {(!cart || !cart.Zip) && (
           <Typography variant='body1' className={classes.suggestion}>
             Enter zip to continue
@@ -125,7 +168,6 @@ const MenuMiniCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             {suggestion}
           </Typography>
         )}
-        {/* </div> */}
       </div>
     )} />
   )
