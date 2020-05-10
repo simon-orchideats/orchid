@@ -28,10 +28,10 @@ const RestMenu: React.FC<{
 }) => {
   const classes = useStyles();
   const meals = rest.Menu.map(meal => {
-    let defaultCount = 0;
+    let count = 0;
     if (cartMeals) {
       const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
-      if (index >= 0) defaultCount = cartMeals[index].Quantity;
+      if (index >= 0) count = cartMeals[index].Quantity;
     }
     return (
       <Grid
@@ -44,7 +44,7 @@ const RestMenu: React.FC<{
           restId={rest.Id}
           restName={rest.Profile.Name}
           meal={meal} 
-          defaultCount={defaultCount}
+          count={count}
           taxRate={rest.TaxRate}
         />
       </Grid>

@@ -54,14 +54,15 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get Tags() { return this.tags }
 
   static getDeliveryMeal(
-    meal: IMeal,
+    mealId: string,
+    meal: IMeal | IDeliveryMeal,
     restId: string,
     restName: string,
     taxRate: number,
     quantity: number = 1
   ) {
     return new DeliveryMeal({
-      mealId: meal._id,
+      mealId,
       img: meal.img,
       name: meal.name,
       quantity,

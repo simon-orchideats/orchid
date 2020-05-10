@@ -5,6 +5,7 @@ import MenuCart from "./MenuCart";
 import { useState } from "react";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import Counter from "./Counter";
+import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -50,6 +51,8 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
   const isHelperOpen = Boolean(anchorEl);
+  const addMealToCart = useAddMealToCart();
+  const removeMealFromCart = useRemoveMealFromCart();
   return (
     <MenuCart
       render={(
@@ -71,13 +74,21 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               <Typography variant='h6'>
                 {restMeals.meals[0].restName}
               </Typography>
-              {restMeals.meals.map(mealGroup => (
+              {restMeals.meals.map(deliveryMeal => (
                 <CartMealGroup
-                  key={mealGroup.MealId}
-                  mealId={mealGroup.MealId}
-                  name={mealGroup.Name}
-                  img={mealGroup.Img}
-                  quantity={mealGroup.Quantity}
+                  onAddMeal={() => addMealToCart(
+                    deliveryMeal.mealId,
+                    deliveryMeal,
+                    restId,
+                    deliveryMeal.RestName,
+                    deliveryMeal.TaxRate
+                  )}
+                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal.mealId)}
+                  key={deliveryMeal.MealId}
+                  mealId={deliveryMeal.MealId}
+                  name={deliveryMeal.Name}
+                  img={deliveryMeal.Img}
+                  quantity={deliveryMeal.Quantity}
                 />
               ))}
             </div>

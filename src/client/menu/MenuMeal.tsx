@@ -4,7 +4,6 @@ import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartSta
 import { makeStyles, Card, CardMedia, CardContent, Typography } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { useState } from "react";
 import Counter from './Counter';
 
 const useStyles = makeStyles(theme => ({
@@ -65,28 +64,25 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
-  defaultCount: number
+  count: number
   meal: Meal,
   restId: string,
   restName: string,
   taxRate: number,
 }> = ({
-  defaultCount,
+  count,
   meal,
   restId,
   restName,
   taxRate
 }) => {
   const classes = useStyles({ meal });
-  const [count, updateCount] = useState(defaultCount);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
-    updateCount(count + 1);
-    addMealToCart(new Meal(meal), restId, restName, taxRate);
+    addMealToCart(meal.Id, new Meal(meal), restId, restName, taxRate);
   }
   const onRemoveMeal = () => {
-    updateCount(count - 1);
     removeMealFromCart(restId, meal.Id);
   }
   return (
