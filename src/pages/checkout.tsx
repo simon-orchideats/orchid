@@ -104,20 +104,24 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 
   useEffect(() => {
     if (signUpRes.error) {
+      setDidPlaceOrder(false);
       notify('Sorry, something went wrong', NotificationType.error, false);
     }
     if (signUpRes.data !== undefined) {
       if (signUpRes.data.error) {
+        setDidPlaceOrder(false);
         notify(signUpRes.data.error, NotificationType.error, false);
       } else {
         if (!cart || !pm.current) {
           const err = new Error(`Cart or paymentMethod empty cart '${cart}' pm '${pm.current}'`);
           console.error(err.stack)
+          setDidPlaceOrder(false);
           throw err;
         }
         if (!signUpRes.data.res) {
           const err = new Error('Sign up res is null but has no error');
           console.error(err.stack)
+          setDidPlaceOrder(false);
           throw err;
         }
         placeOrder(
@@ -216,16 +220,19 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         paymentMethod,
       })}`);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (!plans.data) {
       const err = new Error(`No plans`);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (!pm.current) {
       const err = new Error(`No payment method`);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     sendCheckoutMetrics(
@@ -237,6 +244,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (!email) {
         const err = new Error(`No email`);
         console.error(err.stack);
+        setDidPlaceOrder(false);
         throw err;
       }
       signUp(email, accountName, password);
@@ -282,27 +290,32 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!stripe) {
       const err = new Error('Stripe not initialized');
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (!cart) {
       const err =  new Error('Cart is null');
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (!elements) {
       const err =  new Error('No elements');
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (!plans.data) {
       const err = new Error(`No plans`);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     const cardElement = elements.getElement('cardNumber');
     if (!cardElement) {
       const err =  new Error('No card element');
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     const billingName = (!consumer || !consumer.data) ? accountName : consumer.data.Profile.Name;
@@ -315,6 +328,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     } catch (e) {
       const err = new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     if (pm.current.error) {
@@ -322,6 +336,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       const msg = pm.current.error.message || 'Sorry something went wrong with your card. Please try another card';
       notify(msg, NotificationType.error, false);
       console.error(err.stack);
+      setDidPlaceOrder(false);
       throw err;
     }
     doPlaceOrder(
