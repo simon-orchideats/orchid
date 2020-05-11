@@ -71,7 +71,7 @@ const DeliveryDateChooser: React.FC<{
       {
         (!consumer.data || !consumer.data.Plan) &&
         <Typography variant='body1'>
-          First delivery day: <b>{getNextDeliveryDate(day).format('M/D/YY')}</b>
+          <b>First delivery day: {getNextDeliveryDate(day).format('M/D/YY')}</b>
         </Typography>
       }
       <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
