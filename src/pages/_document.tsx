@@ -30,7 +30,7 @@ export default class MyDocument extends Document {
               `,
             }}
           />
-
+          <meta property="og:image" content="/logo.png" />
           {/* PWA primary color */}
           <meta name="theme-color" content={getTheme().palette.primary.main} />
           <link
