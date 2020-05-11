@@ -103,7 +103,7 @@ const ZipModal: React.FC<{
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
               <form onSubmit={findFood}>
                 <Typography variant='h3' className={classes.title}>
-                  Subscribe to meal plans from local restaurants you love
+                  Subscribe to meal plans from local eats you love in JC & Hoboken
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={12} md={6}>
@@ -116,7 +116,7 @@ const ZipModal: React.FC<{
                       defaultValue={defaultZip}
                       onChange={e => setZip(e.target.value)}
                       margin='none'
-                      placeholder='Zip'
+                      placeholder='Your zip'
                     />
                   </Grid>
                   <Grid item xs={12} sm={12} md={6}>
