@@ -60,6 +60,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const notify = useNotify();
   const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer();
+  const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const validateAddressRef = useRef<() => boolean>();
   const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
@@ -83,13 +84,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
-
   useEffect(() => {
     if (placeOrderRes.error) {
+      setDidPlaceOrder(false);
       notify('Sorry, something went wrong', NotificationType.error, false);
     }
     if (placeOrderRes.data !== undefined) {
       if (placeOrderRes.data.error) {
+        setDidPlaceOrder(false);
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
         Router.push({
@@ -190,10 +192,91 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
   }
+  const doPlaceOrder = async (
+    email?: string,
+    addr1?: string,
+    addr2?: string,
+    city?: string,
+    zip?: string,
+    phone?: string,
+    paymentMethod?: stripe.paymentMethod.PaymentMethod,
+  ) => {
+    if (
+      !addr1
+      || !city
+      || !zip
+      || !phone
+      || !paymentMethod
+    ) {
+      const err = new Error(`Undefined inputs ${JSON.stringify({
+        addr1,
+        city,
+        zip,
+        phone,
+        paymentMethod,
+      })}`);
+      console.error(err.stack);
+      throw err;
+    }
+    if (!plans.data) {
+      const err = new Error(`No plans`);
+      console.error(err.stack);
+      throw err;
+    }
+    if (!pm.current) {
+      const err = new Error(`No payment method`);
+      console.error(err.stack);
+      throw err;
+    }
+    sendCheckoutMetrics(
+      cart,
+      plans.data,
+      cuisines,
+    )
+    if (!consumer || !consumer.data) {
+      if (!email) {
+        const err = new Error(`No email`);
+        console.error(err.stack);
+        throw err;
+      }
+      signUp(email, accountName, password);
+    } else {
+      placeOrder(
+        {
+          _id: consumer.data.Id,
+          name: consumer.data.Profile.Name,
+          email: consumer.data.Profile.Email,
+        },
+        cart.getCartInput(
+          addr1,
+          addr2 || null,
+          city,
+          state as state,
+          zip,
+          phone,
+          Card.getCardFromStripe(paymentMethod.card),
+          paymentMethod.id,
+          deliveryInstructions,
+          cuisines
+        ),
+      );
+    }
+  }
 
-  const onClickPlaceOrder = async () => {
+
+  const onClickPlaceOrder = async (
+    email?: string,
+    addr1?: string,
+    addr2?: string,
+    city?: string,
+    zip?: string,
+    phone?: string,
+  ) => {
+    if (didPlaceOrder) return;
+    setDidPlaceOrder(true);
     if (!validate()) {
       notify('Please fix errors', NotificationType.error, true);
+      setDidPlaceOrder(false);
       return
     };
     if (!stripe) {
@@ -236,38 +319,22 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
     if (pm.current.error) {
       const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.current.error)}`);
+      const msg = pm.current.error.message || 'Sorry something went wrong with your card. Please try another card';
+      notify(msg, NotificationType.error, false);
       console.error(err.stack);
       throw err;
     }
-    sendCheckoutMetrics(
-      cart,
-      plans.data,
-      cuisines,
-    )
-    if (!consumer || !consumer.data) {
-      signUp(emailInputRef.current!.value, accountName, password);
-    } else {
-      placeOrder(
-        {
-          _id: consumer.data.Id,
-          name: consumer.data.Profile.Name,
-          email: consumer.data.Profile.Email,
-        },
-        cart.getCartInput(
-          addr1InputRef.current!.value,
-          addr2InputRef.current!.value,
-          cityInputRef.current!.value,
-          state as state,
-          zipInputRef.current!.value,
-          phoneInputRef.current!.value,
-          Card.getCardFromStripe(pm.current.paymentMethod!.card),
-          pm.current.paymentMethod!.id,
-          deliveryInstructions,
-          cuisines
-        ),
-      );
-    }
+    doPlaceOrder(
+      email,
+      addr1,
+      addr2,
+      city,
+      zip,
+      phone,
+      pm.current.paymentMethod
+    );
   }
+
   return (
     <Container
       maxWidth='xl'
@@ -438,7 +505,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             lg={3}
           >
             <StickyDrawer>
-              <CheckoutCart onPlaceOrder={onClickPlaceOrder} />
+              <CheckoutCart
+                onPlaceOrder={() => onClickPlaceOrder(
+                  emailInputRef.current?.value,
+                  addr1InputRef.current?.value,
+                  addr2InputRef.current?.value,
+                  cityInputRef.current?.value,
+                  zipInputRef.current?.value,
+                  phoneInputRef.current?.value,
+                )}
+                loading={didPlaceOrder}
+              />
             </StickyDrawer>
           </Grid>
         }
@@ -449,7 +526,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             sm={12}
             className={`${classes.inputs} ${classes.title}`}
           >
-            <CheckoutCart buttonBottom onPlaceOrder={onClickPlaceOrder} />
+            <CheckoutCart
+              buttonBottom
+              onPlaceOrder={() => onClickPlaceOrder(
+                emailInputRef.current!.value,
+                addr1InputRef.current!.value,
+                addr2InputRef.current!.value,
+                cityInputRef.current!.value,
+                zipInputRef.current!.value,
+                phoneInputRef.current!.value,
+              )}
+              loading={didPlaceOrder}
+            />
           </Grid>
         }
       </Grid>

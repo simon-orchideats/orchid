@@ -9,6 +9,8 @@ import { Schedule } from "../../consumer/consumerModel";
 import { Cost } from "../../order/costModel";
 import { Cart } from "../../order/cartModel";
 import { MealPrice } from "../../order/orderModel";
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
@@ -39,9 +41,11 @@ const useStyles = makeStyles(theme => ({
 type props = {
   onPlaceOrder: () => void
   buttonBottom?: boolean
+  loading: boolean,
 }
 
 const CheckoutCart: React.FC<props> = ({
+  loading,
   onPlaceOrder,
   buttonBottom = false,
 }) => {
@@ -53,13 +57,14 @@ const CheckoutCart: React.FC<props> = ({
   const mealPrices = MealPrice.getMealPriceFromDeliveries(plans.data, cart.Deliveries, cart.DonationCount);
   const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
   const button = (
-    <Button
+  <Button
       variant='contained'
       color='primary'
+      disabled={loading}
       onClick={onPlaceOrder}
       className={classes.button}
     >
-      Place order
+      {loading ? <CircularProgress size={25} /> : 'Place order'}
     </Button>
   );
   const taxes = Cost.getTaxes(cart.Deliveries, mealPrices);

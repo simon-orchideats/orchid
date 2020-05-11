@@ -11,6 +11,8 @@ import Footer from '../client/general/Footer';
 import { useRef, createRef, useState, Fragment } from 'react';
 import EmailInput from '../client/general/inputs/EmailInput';
 import { useAddMarketingEmail } from '../consumer/consumerService';
+import WeekendIcon from '@material-ui/icons/Weekend';
+import MoneyOffIcon from '@material-ui/icons/MoneyOff';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -83,7 +85,7 @@ const useStyles = makeStyles(theme => ({
   },
   microwave: {
     maxWidth: 135,
-    height: 75,
+    height: 78,
     marginBottom: theme.spacing(1),
   },
   shrinker: {
@@ -93,6 +95,9 @@ const useStyles = makeStyles(theme => ({
   },
   howIcon: {
     fontSize: 90,
+  },
+  relaxIcon: {
+    fontSize: 85,
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -153,7 +158,7 @@ const Welcome = withClientApollo(() => {
           redefine the way you eat
         </Typography>
         <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Weekly meal subscriptions starting at $9.99
+          Weekly meal subscriptions from local restaurants starting at $9.99
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
@@ -176,7 +181,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={4} md={4}>
+    <Grid item xs={12} sm={2} md={2}>
       <div className={classes.centered}>
         {
           img &&
@@ -204,21 +209,33 @@ const HowItWorks = () => {
         How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
+        <Grid item xs={12} sm={1} md={1} />
         <Content
-          title='Options'
-          description='Select Your Favorite Restaurant & Meals'
+          title='Mix and Match'
+          description='Pick meals from any restaurant'
           icon={<RestIcon className={classes.howIcon} />}
         />
         <Content
+          title='Affordable'
+          description='Save 26-38% vs other apps'
+          icon={<MoneyOffIcon className={classes.howIcon} />}
+        />
+        <Content
           title='Save time'
-          description='Tell Us When to Deliver'
+          description='Tell us when to deliver'
           icon={<TodayIcon className={classes.howIcon}/>}
         />
         <Content
           title='Flexible'
-          description='Eat Now or Save for Later'
+          description='Eat now, share, or save for later'
           img='home/microwave.png'
         />
+        <Content
+          title='Relax'
+          description='Pick new meals or let us do it for you'
+          icon={<WeekendIcon className={classes.howIcon} />}
+        />
+        <Grid item xs={12} sm={1} md={1} />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
         Questions or Comments? Email us at emily@orchideats.com to learn more.
@@ -259,10 +276,10 @@ const Plans = withClientApollo(() => {
   return (
     <div className={`${classes.plans} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        Choose a Plan that Works for You
+        Choose a Plan
       </Typography>
       <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
-        A plan made to fit your lifestyle. Starting at $9.99 per meal
+        Customize a meal plan to fit your lifestyle. Starting at $9.99 per meal
       </Typography>
       <PlanCards />
       <Link href={menuRoute}>
@@ -403,10 +420,19 @@ const Benefits = () => {
 
   const explanations = [
     {
+      title: 'Neighborhood food',
+      description: `
+        Food tastes better when cooked by somone you know. Ditch cross-country shipments, ice packs, and warehouse cooks
+        from other meal plans. We deliver meals same-day fresh from local restaurants down the street.
+      `,
+      img: 'home/rest.jpeg',
+      imgLeft: false,
+    },
+    {
       title: 'Come home to a warm meal',
       description: `
-        Few things express love like coming home after a long day to a warm meal. No more waiting for a delivery or
-        stressing over what's for dinner. Enjoy a meal in a few minutes.
+      Few things express love like coming home to a warm meal after a long day. No more waiting for a delivery or
+      stressing over what to cook. Enjoy a meal right away.
       `,
       img: '/home/sharing.jpeg',
       imgLeft: true
@@ -421,23 +447,14 @@ const Benefits = () => {
       imgLeft: false
     },
     {
-      title: 'Save up to 38%',
+      title: 'Save 26-38%',
       description: `
-        Cooking for family is more rewarding than cooking for just one. That's why we offer meal plans over single
-        meals. You get bulk savings and one free delivery per week. Save with each meal at $9.99 vs $16.00 after fees on
+        Cooking 1 meal is inefficient. That's why we offer meal plans over single
+        meals. You get bulk savings and a free weekly delivery. Save with each meal at $9.99 vs $16.00 after fees on
         other food apps.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
-    },
-    {
-      title: 'Connect the community',
-      description: `
-        Food tastes better when cooked by somone you know. Ditch cross-country shipments, ice packs, and warehouse cooks
-        from other meal plans. We deliver meals same-day fresh from local restaurants down the street.
-      `,
-      img: 'home/rest.jpeg',
-      imgLeft: false,
     },
   ]
   
@@ -490,9 +507,9 @@ const Index = () => {
     <>
       <Welcome />
       <Donate />
-      <Benefits />
-      <Plans />
       <HowItWorks />
+      <Plans />
+      <Benefits />
       <Footer />
     </>
   )
