@@ -11,6 +11,8 @@ import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
+import { CuisineType, CuisineTypes } from "../consumer/consumerModel";
+import Filter from "../client/menu/Filter";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -27,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
   row: {
     display: 'flex',
@@ -63,12 +65,17 @@ const menu = () => {
   const cart = useGetCart();
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
+  const [cuisines, setCuisines] = useState(Object.values<CuisineType>(CuisineTypes));
   const rests = useGetNearbyRests(zip);
+  const onFilterCuisines = (cuisines: CuisineType[]) => {
+    setCuisines(cuisines);
+  };
   const RestMenus = rests.data && rests.data.map(rest => 
     <RestMenu
       key={rest.Id}
       rest={rest}
       cartMeals={cart?.RestMeals[rest.Id]?.meals}
+      cuisinesFilter={cuisines}
     />
   )
   const hasNoRests = !rests.loading && !rests.error && rests.data && rests.data.length === 0;
@@ -77,6 +84,17 @@ const menu = () => {
   const onClickZip = () => {
     setOpen(true);
   }
+  const zipButton = (
+    <Link
+      className={classes.link}
+      color='inherit'
+      onClick={onClickZip}
+    >
+      <LocationOnIcon />
+      <Typography>{zip ? zip : 'Zip'}</Typography>
+      <ArrowDropDownIcon />
+    </Link>
+  );
   return (
     <Container
       maxWidth='xl'
@@ -101,24 +119,21 @@ const menu = () => {
           <Paper className={classes.filters}>
             {
               isMdAndUp ?
-              <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                <LocationOnIcon />
-                <Typography>{zip ? zip : 'Zip'}</Typography>
-                <ArrowDropDownIcon />
-              </Link>
+              <div className={classes.row}>
+                {zipButton}
+                <Filter cuisines={cuisines} onClickCuisine={onFilterCuisines} />
+              </div>
             :
-                rests.data &&
-                <MenuMiniCart 
-                  zip={
-                    <Link
-                      className={classes.link}
-                      color='inherit'
-                      onClick={onClickZip}
-                    >
-                      <LocationOnIcon />
-                    </Link>
-                  }
-                />
+              rests.data &&
+              <MenuMiniCart
+                filter={
+                  <Filter
+                    cuisines={cuisines}
+                    onClickCuisine={onFilterCuisines}
+                    zip={zipButton}
+                  />
+                }
+              />
             }
           </Paper>
           {rests.loading && <Typography>Loading...</Typography>}

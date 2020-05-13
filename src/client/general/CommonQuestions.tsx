@@ -69,9 +69,9 @@ const Faq = () => {
         />
         <Expander
           q='What makes Orchid different from other delivery websites?'
-          a="Orchid provides weekly meals from your favorite LOCAL restaurants in bulk. We combine bulk meals with
-          personalized delivery times to save you time and money. Quality is our top priority, which is why we only
-          partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
+          a="Orchid provides weekly mix-and-match meals from your favorite local restaurants in bulk. We combine bulk
+          meals with personalized delivery times to save you time and money. Quality is our top priority, which is why
+          we only partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
         />
         <Expander
           q='How many restaurants can I pick?'

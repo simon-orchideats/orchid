@@ -18,10 +18,6 @@ const useStyles = makeStyles(theme => ({
   paddingBottom: {
     paddingBottom: theme.spacing(2),
   },
-  summary: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -35,6 +31,8 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     marginBottom: theme.spacing(2),
+    // so that the button doesn't shrink on safari. determined by inspection
+    minHeight: 36,
   },
 }));
 
@@ -57,9 +55,10 @@ const CheckoutCart: React.FC<props> = ({
   const mealPrices = MealPrice.getMealPriceFromDeliveries(plans.data, cart.Deliveries, cart.DonationCount);
   const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
   const button = (
-  <Button
+    <Button
       variant='contained'
       color='primary'
+      fullWidth
       disabled={loading}
       onClick={onPlaceOrder}
       className={classes.button}
@@ -118,7 +117,8 @@ const CheckoutCart: React.FC<props> = ({
         )) 
       }
       <Divider className={classes.divider} />
-      <div className={classes.summary}>
+      {/* necessary div so that the rows dont reduce in height in safari */}
+      <div>
         <div className={classes.row}>
           <Typography variant='body1'>
             {mealCount} meal plan

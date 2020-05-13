@@ -64,7 +64,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
-  count: number
+  count: number,
   meal: Meal,
   restId: string,
   restName: string,

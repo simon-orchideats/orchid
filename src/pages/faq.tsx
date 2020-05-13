@@ -83,9 +83,9 @@ const faqs = () => {
           />
           <Qa
             q='What makes Orchid different from other delivery websites?'
-            a="Orchid provides weekly meals from your favorite LOCAL restaurants in bulk. We combine bulk meals with
-            personalized delivery times to save you time and money. Quality is our top priority, which is why we only
-            partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
+            a="Orchid provides weekly mix-and-match meals from your favorite local restaurants in bulk. We combine bulk
+            meals with personalized delivery times to save you time and money. Quality is our top priority, which is why
+            we only partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
           />
           <Qa
             q='How many restaurants can I pick?'
@@ -93,12 +93,12 @@ const faqs = () => {
           />
           <Qa
             q="Do I need to pick meals every week?"
-            a="Forgot to pick your meal? No worries. Our team will hand select your favorite meals based off your preferences. 
+            a="Forgot to pick your meal? No worries. Our team will hand select your favorite meals based on your preferences. 
             Otherwise, we recommend coming back to orchideats.com to choose the meals you'd like to receive every week."
           />
           <Qa
             q='How do I update my subscription or delivery?'
-            a={`You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
+            a={`You can perform permanent updates to your recurring subscription in the My Plan page. These changes will
             affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can make
             1-time manual updates on a specific order from the Upcoming Deliveries if the upcoming deliveries require
             any adjustments`}
@@ -189,7 +189,7 @@ const faqs = () => {
           />
           <Qa
             q='How long will my meals last?'
-            a="From the time of delivery, each meal will last for a week so long it is stored proprely."
+            a="From the time of delivery, each meal will last for a week so long it is stored properly."
           />
           <Typography variant='h6' className={classes.title}>
             DELIVERY
@@ -206,7 +206,7 @@ const faqs = () => {
           />
           <Qa
             q='What time of day will meals be delivered?'
-            a="You can choose from our 2 delivery windows, 4pm - 6pm and 6pm - 8pm. We'll let you know precise ETA the
+            a="You can choose from our 2 delivery windows, 4pm - 6pm and 6pm - 8pm. We'll let you know the precise ETA the
             day before."
           />
           <Qa
@@ -214,8 +214,8 @@ const faqs = () => {
             a="You can add instructions at checkout."
           />
           <Qa
-            q='Does someone have to be home to recieve my delivery?'
-            a="No, but we'll call/text you before arriving. We'll text you our preceise ETA the day before so you can
+            q='Does someone have to be home to receive my delivery?'
+            a="No, but we'll call/text you before arriving. We'll text you our precise ETA the day before so you can
             plan ahead. If you're unavailable when we arrive for delivery, we'll leave the food at your doorstep."
           />
           <Qa
@@ -237,7 +237,7 @@ const faqs = () => {
           <Qa
             q='How do I reset my password?'
             a="You can logout by clicking the top right corner of the website. Once logged out, you can click
-            login to go to login page. At the bottom of the login page, below entering your password, you can click
+            login to go to the login page. At the bottom of the login page, below entering your password, you can click
             Don't remember your password?"
           />
           <Qa

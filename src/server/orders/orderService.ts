@@ -673,13 +673,16 @@ class OrderService {
           destination: cart.destination,
         }
       };
-
       const order = Order.getNewOrder(
         { _id: signedInUser._id, ...consumer },
         cart.deliveries,
         cart.donationCount,
         subscription.current_period_end * 1000,
         mealPrices,
+        // make updated date 5 seconds past created date to indicate
+        // non auto generated order
+        moment().valueOf(),
+        moment().add(5, 's').valueOf(),
       );
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
