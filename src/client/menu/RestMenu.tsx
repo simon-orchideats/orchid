@@ -4,6 +4,7 @@ import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { DeliveryMeal } from '../../order/deliveryModel';
 import { CuisineType } from '../../consumer/consumerModel';
+import { Meal } from '../../rest/mealModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -18,7 +19,23 @@ const useStyles = makeStyles(theme => ({
   meals: {
     padding: theme.spacing(1, 3, 3),
   },
-}))
+}));
+
+const isMealInFilter = (meal: Meal, cuisines: CuisineType[]) => {
+  let mealIsInCuisineFilter = false;
+  for (let i = 0; i < cuisines.length; i++) {
+    for (let j = 0; j < meal.Tags.length; j++) {
+      if (meal.Tags[j] === cuisines[i]) {
+        mealIsInCuisineFilter = true;
+        break;
+      }
+      if (mealIsInCuisineFilter) {
+        break;
+      }
+    }
+  }
+  return mealIsInCuisineFilter;
+}
 
 const RestMenu: React.FC<{
   cartMeals?: DeliveryMeal[],
@@ -31,19 +48,8 @@ const RestMenu: React.FC<{
 }) => {
   const classes = useStyles();
   const meals = rest.Menu.map(meal => {
-    let mealIsInCuisineFilter = false;
-    for (let i = 0; i < cuisinesFilter.length; i++) {
-      for (let j = 0; j < meal.Tags.length; j++) {
-        if (meal.Tags[j] === cuisinesFilter[i]) {
-          mealIsInCuisineFilter = true;
-          break;
-        }
-        if (mealIsInCuisineFilter) {
-          break;
-        }
-      }
-    }
-    if (!mealIsInCuisineFilter) return null;
+    const isInFilter = isMealInFilter(meal, cuisinesFilter);
+    if (!isInFilter) return null;
     let count = 0;
     if (cartMeals) {
       const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
@@ -65,7 +71,8 @@ const RestMenu: React.FC<{
         />
       </Grid>
     )
-  })
+  });
+  if (meals.every(m => m === null)) return null;
   return (
     <Paper className={classes.paper}>
       <div className={classes.summary}>
@@ -87,21 +94,39 @@ const RestMenu: React.FC<{
 }
 
 export default React.memo(RestMenu, (prevProps, nextProps) => {
-  if (prevProps.cuisinesFilter.length !== nextProps.cuisinesFilter.length) return false;
-  if (prevProps.rest === nextProps.rest) {
-    const prevCartMeals = prevProps.cartMeals;
-    const nextCartMeals = nextProps.cartMeals;
-    if (!prevCartMeals && !nextCartMeals) return true;
-    if (!prevCartMeals && nextCartMeals) return false;
-    if (prevCartMeals && !nextCartMeals) return false;
-    // should not happen, but added to make typescript happy
-    if (!prevCartMeals || !nextCartMeals) return false;
-
-    if (prevCartMeals.length === 0 && nextCartMeals.length === 0) return true;
-    if (prevCartMeals.length !== nextCartMeals.length) return false;
-    for (let i = 0; i < prevCartMeals.length; i++) {
-      if (!nextCartMeals.find(m => m.equals(prevCartMeals[i]))) return false;
+  if (prevProps.rest.Id !== nextProps.rest.Id) return false;
+  const prevRestMeals = prevProps.rest.Menu.map(meal => 
+    isMealInFilter(meal, prevProps.cuisinesFilter) ? meal.Id : null,
+  ).sort();
+  const nextRestMeals = nextProps.rest.Menu.map(meal =>
+    isMealInFilter(meal, nextProps.cuisinesFilter) ? meal.Id : null,
+  ).sort();
+  const areEqual = prevRestMeals.length === nextRestMeals.length
+    && prevRestMeals.every((mealId, index) => mealId === nextRestMeals[index]);
+  if (!areEqual) return false;
+  const prevCartMeals = prevProps.cartMeals;
+  const nextCartMeals = nextProps.cartMeals;
+  if (!prevCartMeals && !nextCartMeals) return true;
+  if (!prevCartMeals && nextCartMeals) return false;
+  if (prevCartMeals && !nextCartMeals) return false;
+  // should not happen, but added to make typescript happy
+  if (!prevCartMeals || !nextCartMeals) return false;
+  for (let i = 0; i < prevCartMeals.length; i++) {
+    for (let j = 0; j < prevRestMeals.length; j++) {
+      const mealInNextCart = nextCartMeals.find(deliveryMeal => prevRestMeals.includes(deliveryMeal.MealId));
+      if (prevCartMeals[i].MealId === prevRestMeals[j]) {
+        if (!mealInNextCart || mealInNextCart.Quantity < prevCartMeals[i].Quantity || mealInNextCart.Quantity > prevCartMeals[i].Quantity) {
+          return false;
+        }
+      } else {
+        if (mealInNextCart) {
+          return false;
+        }
+      }
     }
   }
-  return false;
+  for (let i = 0; i < prevCartMeals.length; i++) {
+    if (!nextCartMeals.find(m => m.equals(prevCartMeals[i]))) return false;
+  }
+  return true;
 });
