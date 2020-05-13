@@ -3,6 +3,7 @@ import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { DeliveryMeal } from '../../order/deliveryModel';
+import { CuisineType } from '../../consumer/consumerModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -20,14 +21,29 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const RestMenu: React.FC<{
-  cartMeals?: DeliveryMeal[]
+  cartMeals?: DeliveryMeal[],
+  cuisinesFilter: CuisineType[],
   rest: Rest
 }> = ({
   cartMeals,
+  cuisinesFilter,
   rest
 }) => {
   const classes = useStyles();
   const meals = rest.Menu.map(meal => {
+    let mealIsInCuisineFilter = false;
+    for (let i = 0; i < cuisinesFilter.length; i++) {
+      for (let j = 0; j < meal.Tags.length; j++) {
+        if (meal.Tags[j] === cuisinesFilter[i]) {
+          mealIsInCuisineFilter = true;
+          break;
+        }
+        if (mealIsInCuisineFilter) {
+          break;
+        }
+      }
+    }
+    if (!mealIsInCuisineFilter) return null;
     let count = 0;
     if (cartMeals) {
       const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
@@ -71,6 +87,7 @@ const RestMenu: React.FC<{
 }
 
 export default React.memo(RestMenu, (prevProps, nextProps) => {
+  if (prevProps.cuisinesFilter.length !== nextProps.cuisinesFilter.length) return false;
   if (prevProps.rest === nextProps.rest) {
     const prevCartMeals = prevProps.cartMeals;
     const nextCartMeals = nextProps.cartMeals;

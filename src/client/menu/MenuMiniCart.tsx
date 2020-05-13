@@ -3,8 +3,10 @@ import MenuCart from "./MenuCart";
 import Counter from "./Counter";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { useState } from "react";
-import CartMealGroup from "../order/CartMealGroup";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
+
 const useStyles = makeStyles(theme => ({
   suggestion: {
     color: theme.palette.warning.main,
@@ -12,8 +14,8 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: theme.spacing(1),
   },
   button: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
   scrollable: {
     overflowX: 'scroll',
@@ -41,6 +43,9 @@ const useStyles = makeStyles(theme => ({
   },
   meals: {
     display: 'flex',
+    flexDirection: 'column',
+    textOverflow: 'ellipsis',
+    justifyContent: 'center',
     alignItems: 'center',
     maxWidth: 150,
   }
@@ -48,17 +53,17 @@ const useStyles = makeStyles(theme => ({
 
 const MenuMiniCart: React.FC<{
   hideNext?: boolean,
-  zip: React.ReactNode,
+  filter: React.ReactNode,
 }> = ({
   hideNext = false,
-  zip,
+  filter,
 }) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [helpAnchor, setHelpAnchor] = useState<null | HTMLElement>(null);
   const handleHelp = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
+    setHelpAnchor(helpAnchor ? null : event.currentTarget);
   };
-  const isHelperOpen = Boolean(anchorEl);
+  const isHelperOpen = Boolean(helpAnchor);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   if (hideNext) return null;
@@ -80,8 +85,8 @@ const MenuMiniCart: React.FC<{
         <div className={classes.bar}>
           <Popover
             open={isHelperOpen}
-            anchorEl={anchorEl}
-            onClose={() => setAnchorEl(null)} 
+            anchorEl={helpAnchor}
+            onClose={() => setHelpAnchor(null)} 
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'left',
@@ -99,7 +104,7 @@ const MenuMiniCart: React.FC<{
               </Typography>
             </Paper>
           </Popover>
-          {zip}
+          {filter}
           <Counter
             subtractDisabled={!donationCount}
             onClickSubtract={decrementDonationCount}
@@ -134,22 +139,36 @@ const MenuMiniCart: React.FC<{
         <div className={`${classes.bar} ${classes.scrollable}`}>
           {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
             restMeals.meals.map(deliveryMeal => (
-              <div key={deliveryMeal.mealId} className={classes.meals}>
-                <CartMealGroup
-                  textSize='body2'
-                  onAddMeal={() => addMealToCart(
-                    deliveryMeal.mealId,
-                    deliveryMeal,
-                    restId,
-                    deliveryMeal.RestName,
-                    deliveryMeal.TaxRate
-                  )}
-                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal.mealId)}
-                  key={deliveryMeal.MealId}
-                  mealId={deliveryMeal.MealId}
-                  name={deliveryMeal.Name}
-                  quantity={deliveryMeal.Quantity}
-                />
+              <div className={classes.meals} key={deliveryMeal.mealId}>
+                <div className={classes.bar}>
+                  <Button
+                    size='small'
+                    variant='text'
+                    color='primary'
+                    onClick={() => addMealToCart(
+                      deliveryMeal.mealId,
+                      deliveryMeal,
+                      restId,
+                      deliveryMeal.RestName,
+                      deliveryMeal.TaxRate
+                    )}
+                  >
+                    <AddIcon />
+                    </Button>
+                  <Typography variant='subtitle2'>
+                    {deliveryMeal.Quantity}
+                  </Typography>
+                  <Button
+                    size='small'
+                    variant='text'
+                    onClick={() => removeMealFromCart(restId, deliveryMeal.mealId)}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                </div>
+                <Typography variant='body2' align='center'>
+                  {deliveryMeal.name.toUpperCase()}
+                </Typography>
               </div>
             ))
           ))}

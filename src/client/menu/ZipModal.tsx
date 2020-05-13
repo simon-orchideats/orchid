@@ -75,7 +75,7 @@ const ZipModal: React.FC<{
 }) => {
   const classes = useStyles();
   const [error, setError] = useState('');
-  const [zip, setZip] = useState<string>('');
+  const [zip, setZip] = useState<string>(defaultZip);
   const updateCartZip = useUpdateZip()
   const findFood = (e: React.SyntheticEvent) => {
     e.preventDefault();
