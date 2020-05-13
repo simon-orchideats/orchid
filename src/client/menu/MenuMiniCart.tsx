@@ -134,7 +134,7 @@ const MenuMiniCart: React.FC<{
         <div className={`${classes.bar} ${classes.scrollable}`}>
           {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
             restMeals.meals.map(deliveryMeal => (
-              <div className={classes.meals}>
+              <div key={deliveryMeal.mealId} className={classes.meals}>
                 <CartMealGroup
                   textSize='body2'
                   onAddMeal={() => addMealToCart(
