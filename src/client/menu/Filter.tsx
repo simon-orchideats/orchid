@@ -12,6 +12,9 @@ const useStyles = makeStyles(theme => ({
   popper: {
     padding: theme.spacing(2),
   },
+  link: {
+    color: theme.palette.common.link,
+  },
 }));
 
 const Filter: React.FC<{
@@ -84,7 +87,7 @@ const Filter: React.FC<{
       </Popover>
       <Button
         variant='text'
-        color='primary'
+        className={classes.link}
         onClick={onClickFilter}
       >
         Filter
