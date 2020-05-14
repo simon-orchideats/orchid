@@ -953,7 +953,7 @@ class OrderService {
         }
       );
     } catch (e) {
-      console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}'`);
+      console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}' and timestamp '${timestamp}'`);
       throw e;
     }
   }

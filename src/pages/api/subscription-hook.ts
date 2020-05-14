@@ -49,6 +49,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   res.json({ received: true });
   const invoice = event.data.object as Stripe.Invoice
+  // important to do this before looking up consumerByStripeId since if we just created the account,
+  // the consumer may not exist in our system yet
+  if (invoice.billing_reason === 'subscription_create') return;
+
   const stripeCustomerId = invoice.customer as string;
   const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
   if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
@@ -77,7 +81,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else {
     try {
-      if (invoice.billing_reason === 'subscription_create') return;
       const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
       if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
