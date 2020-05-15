@@ -253,7 +253,10 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumerByStripeId(stripeCustomerId: string): Promise<IConsumer> {
+  async getConsumerByStripeId(stripeCustomerId: string): Promise<{
+    _id: string,
+    consumer: EConsumer,
+  }> {
     try {
       const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
         index: CONSUMER_INDEX,
@@ -272,7 +275,10 @@ class ConsumerService implements IConsumerService {
       });
       if (res.body.hits.total.value === 0) throw new Error(`Consumer with stripeId '${stripeCustomerId}' not found`);
       const consumer = res.body.hits.hits[0];
-      return Consumer.getIConsumerFromEConsumer(consumer._id, consumer._source);
+      return {
+        _id: consumer._id,
+        consumer: consumer._source
+      };
     } catch (e) {
       console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
       throw new Error('Internal Server Error');

@@ -7,10 +7,7 @@ export interface IGeoService {
   getGeocode: (street: string, city: string, state: state, zip: string) => Promise<{
     lat: string,
     lon: string,
-    timezone: {
-      name: string,
-      shortName: string,
-    }
+    timezone: string,
   }>
 
   getGeocodeByZip: (zip: string) => Promise<{
@@ -50,10 +47,7 @@ class GeoService implements IGeoService{
           return {
             lat: lat as string,
             lon: lng as string,
-            timezone: {
-              name: fields.timezone.name as string,
-              shortName: fields.timezone.abbreviation as string
-            }
+            timezone: fields.timezone.name as string,
           }
         }
       }

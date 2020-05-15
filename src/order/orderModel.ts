@@ -2,14 +2,14 @@ import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
 import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
-import { IConsumerProfile, IConsumer, IMealPlan } from './../consumer/consumerModel';
+import { EConsumerProfile, EConsumer, IMealPlan } from './../consumer/consumerModel';
 import { ICost, Cost } from './costModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
   readonly consumer: {
     readonly userId: string
-    readonly profile: IConsumerProfile
+    readonly profile: EConsumerProfile
   },
   readonly costs: ICost
   readonly createdDate: number
@@ -236,7 +236,8 @@ export class Order implements IOrder{
   }
 
   static getNewOrder(
-    consumer: IConsumer,
+    consumerId: string,
+    consumer: EConsumer,
     deliveries: IDeliveryInput[],
     donationCount: number,
     invoiceDate: number,
@@ -252,7 +253,7 @@ export class Order implements IOrder{
     const now = moment();
     return {
       consumer: {
-        userId: consumer._id,
+        userId: consumerId,
         profile: consumer.profile
       },
       stripeSubscriptionId: consumer.stripeSubscriptionId,

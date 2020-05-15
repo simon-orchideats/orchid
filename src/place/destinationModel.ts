@@ -27,11 +27,8 @@ export class Destination implements IDestination {
 
 export interface EDestination extends IDestination {
   readonly geo: {
-    lat: string,
-    lon: string,
+    readonly lat: string,
+    readonly lon: string,
   }
-  timezone: {
-    name: string,
-    shortName: string,
-  }
+  readonly timezone: string,
 }

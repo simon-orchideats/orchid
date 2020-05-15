@@ -54,7 +54,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (invoice.billing_reason === 'subscription_create') return;
 
   const stripeCustomerId = invoice.customer as string;
-  const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+  const consumerRes = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+  const consumer = consumerRes.consumer;
   if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
   
   if (consumer.plan && consumer.plan.mealPlans.length === 0) {
@@ -68,6 +69,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const plans = await getPlanService().getAvailablePlans();
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
       await getOrderService().addAutomaticOrder(
+        consumerRes._id,
         // 2 weeks because 1 week would be nextnext order
         2,
         consumer,

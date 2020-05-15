@@ -7,7 +7,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, IConsumer, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, Consumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -127,8 +127,9 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
 
 export interface IOrderService {
   addAutomaticOrder(
+    userId: string,
     addedWeeks: number,
-    consumer: IConsumer,
+    consumer: EConsumer,
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ): Promise<void>
@@ -426,16 +427,17 @@ class OrderService {
   }
 
   public async addAutomaticOrder(
+    consumerId: string,
     addedWeeks: number,
-    consumer: IConsumer,
+    consumer: EConsumer,
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ) {
     try {
-      if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
-      if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumer._id}'`);
+      if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumerId}'`);
+      if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumerId}'`);
       if (!this.restService) throw new Error('Missing RestService');
-      if (!consumer.profile.destination) throw new Error (`Consumer '${consumer._id}' missing destination`);
+      if (!consumer.profile.destination) throw new Error (`Consumer '${consumerId}' missing destination`);
       const cuisines = consumer.plan.cuisines;
       const plan = consumer.plan;
       const rests = await this.restService.getNearbyRests(
@@ -498,6 +500,7 @@ class OrderService {
       );
 
       const automatedOrder = Order.getNewOrder(
+        consumerId,
         consumer,
         deliveries,
         0,
@@ -509,7 +512,7 @@ class OrderService {
         body: automatedOrder
       })
     } catch (e) {
-      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${invoiceDate}`, e.stack);
+      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumerId} and invoiceDate ${invoiceDate}`, e.stack);
       throw e;
     }
   }
@@ -686,7 +689,8 @@ class OrderService {
         }
       };
       const order = Order.getNewOrder(
-        { _id: signedInUser._id, ...consumer },
+        signedInUser._id,
+        consumer,
         cart.deliveries,
         cart.donationCount,
         subscription.current_period_end * 1000,
@@ -703,8 +707,9 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       this.addAutomaticOrder(
+        signedInUser._id,
         1,
-        { _id: signedInUser._id, ...consumer },
+        consumer,
         moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
         mealPrices,
       ).catch(e => {

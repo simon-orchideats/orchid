@@ -882,6 +882,12 @@ PUT /orders/
                       }
                     }
                   },
+                  "geo": {
+                    "type": "geo_point"
+                  },
+                  "timezone": {
+                    "type": "keyword"
+                  },
                   "instructions": {
                     "type": "text"
                   }
@@ -1010,6 +1016,12 @@ PUT /consumers/
                     "type": "keyword"
                   }
                 }
+              },
+              "geo": {
+                "type": "geo_point"
+              },
+              "timezone": {
+                "type": "keyword"
               }
             }
           }
