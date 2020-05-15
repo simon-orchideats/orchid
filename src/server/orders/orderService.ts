@@ -592,7 +592,7 @@ class OrderService {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
       if (!this.restService) throw new Error ('RestService not set');
       if (!this.planService) throw new Error('PlanService not set');
-
+      if (!this.geoService) throw new Error('GeoService not set');
       const validation = await this.validateCart(cart);
       if (validation) {
         return {
@@ -653,9 +653,14 @@ class OrderService {
         console.error(`Failed to get available plans: '${e.stack}'`);
         throw e;
       }
-
+      const addr = cart.destination.address;
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
-
+      const geo = await this.geoService.getGeocode(
+        addr.address1,
+        addr.city,
+        addr.state,
+        addr.zip,
+      );
       const consumer: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId,
@@ -670,7 +675,14 @@ class OrderService {
           email: signedInUser.profile.email,
           phone: cart.phone,
           card: cart.card,
-          destination: cart.destination,
+          destination: {
+            ...cart.destination,
+            geo: {
+              lat: geo.lat,
+              lon: geo.lon,
+            },
+            timezone: geo.timezone
+          },
         }
       };
       const order = Order.getNewOrder(
@@ -702,7 +714,7 @@ class OrderService {
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
         signedInUser.profile.name,
-        cart.destination.address,
+        addr,
       ).catch(e => {
         console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
       })
@@ -1057,6 +1069,7 @@ class OrderService {
       if (!res.order) throw new Error('Missing order'); 
       const targetOrder = res.order;
       const updatedDeliveries: IDeliveryInput[] = [];
+      // todo: use consumer timezone instead of rest timezone
       let limit: number | undefined;
       let totalCount = 0;
       for (let i = 0; i < updateOptions.deliveries.length; i++) {

@@ -24,3 +24,14 @@ export class Destination implements IDestination {
     }
   }
 }
+
+export interface EDestination extends IDestination {
+  readonly geo: {
+    lat: string,
+    lon: string,
+  }
+  timezone: {
+    name: string,
+    shortName: string,
+  }
+}

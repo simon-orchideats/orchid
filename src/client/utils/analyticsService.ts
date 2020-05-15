@@ -7,6 +7,7 @@ import { Cart } from '../../order/cartModel';
 import { IPlan, Tier, PlanNames } from '../../plan/planModel';
 import { Schedule, MealPlan, CuisineType } from '../../consumer/consumerModel';
 import { Order } from '../../order/orderModel';
+import moment from 'moment';
 
 const amplitude: {
   getInstance: () => AmplitudeClient
@@ -94,6 +95,8 @@ const trackDeliveries = (deliveries: DeliveryInput[], mealEvent: string, tagEven
           mealId: m.MealId,
           mealName: m.Name,
           restId: m.RestId,
+          deliveryTime: d.deliveryTime,
+          deliveryDay: moment(d.deliveryDate).day(),
           restName: m.RestName,
           planName: m.PlanName,
           planId: m.StripePlanId,

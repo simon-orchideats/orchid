@@ -351,22 +351,34 @@ class ConsumerService implements IConsumerService {
         state,
         zip
       } = profile.destination.address;
+      let geo;
       try {
-        await this.geoService.getGeocode(address1, city, state, zip);
+        geo = await this.geoService.getGeocode(address1, city, state, zip);
       } catch (e) {
         return {
           res: null,
           error: `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
         }
       }
+      const doc: Pick<EConsumer, 'profile'> = {
+        profile: {
+          ...profile,
+          destination: {
+            ...profile.destination,
+            geo: {
+              lat: geo.lat,
+              lon: geo.lon
+            },
+            timezone: geo.timezone
+          },
+        },
+      }
       const res = await this.elastic.update({
           index: CONSUMER_INDEX,
           id: signedInUser._id,
           _source: 'true',
           body: {
-            doc: {
-              profile,
-            }
+            doc
           }
         });
       const newConsumer = {

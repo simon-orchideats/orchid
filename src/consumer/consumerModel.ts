@@ -1,5 +1,5 @@
 import { PlanName } from './../plan/planModel';
-import { IDestination, Destination } from './../place/destinationModel';
+import { IDestination, Destination, EDestination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 import moment from 'moment';
 
@@ -9,6 +9,10 @@ export interface IConsumerProfile {
   readonly phone: string | null
   readonly card: ICard | null
   readonly destination: IDestination | null
+}
+
+export interface EConsumerProfile extends IConsumerProfile{
+  readonly destination: EDestination | null
 }
 
 export class ConsumerProfile implements IConsumerProfile {
@@ -283,13 +287,14 @@ export class ConsumerPlan implements IConsumerPlan {
 export interface EConsumer {
   readonly createdDate: number,
   readonly plan: IConsumerPlan | null
-  readonly profile: IConsumerProfile
+  readonly profile: EConsumerProfile
   readonly stripeCustomerId: string | null
   readonly stripeSubscriptionId: string | null
 }
 
-export interface IConsumer extends Omit<EConsumer, 'createdDate'> {
+export interface IConsumer extends Omit<EConsumer, 'createdDate' | 'profile'> {
   readonly _id: string
+  readonly profile: IConsumerProfile
 }
 
 export class Consumer implements IConsumer {
