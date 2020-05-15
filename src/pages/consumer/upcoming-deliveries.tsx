@@ -20,7 +20,7 @@ import { isServer } from "../../client/utils/isServer";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import moment from "moment";
-import { Consumer } from "../../consumer/consumerModel";
+import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics, sendRemoveDonationMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
@@ -118,7 +118,7 @@ const Confirmation: React.FC<{
       </div>
       <Typography variant='body1'>
         You will be billed a week from today, based on the number of meals confirmed. Meals are confirmed
-        2 days before their delivery.
+        1 day before their delivery.
       </Typography>
       <Typography variant='body1'>
         You can review and edit your order below. We'll text you a day before with a specific ETA and also on the day of
@@ -219,7 +219,7 @@ const DeliveryOverview: React.FC<{
   const query = {
     updating: 'true',
     orderId: order.Id,
-    limit: moment(order.InvoiceDate).add(3, 'd').startOf('d').valueOf(),
+    limit: moment(order.InvoiceDate).add(MIN_DAYS_AHEAD + 1, 'd').startOf('d').valueOf(),
     start: start.startOf('d').valueOf(),
   };
   const onEdit = () => {

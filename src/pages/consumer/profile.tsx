@@ -414,7 +414,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             :
             <>
               <Labels
-                primary='Delivery instructions'
+                primary='Special requests or instructions'
                 secondary={instructionsLabel ? instructionsLabel : ''}
               />
               <ListItemSecondaryAction>

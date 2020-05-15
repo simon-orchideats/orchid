@@ -1,5 +1,5 @@
 import { Cost, ICost } from './../../order/costModel';
-import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
+import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
@@ -7,7 +7,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -66,7 +66,7 @@ const validatePhone = (phone: string) => {
 
   //@ts-ignore todo simon: do we still need this?
 const validateDeliveryDate = (date: number, now = Date.now()) => {
-  if (!isDate2DaysLater(date, now)) {
+  if (!isDateMinDaysLater(date, now)) {
     console.warn('[OrderService]', `Delivery date '${date}' is not 2 days in advance`);
     return `Delivery date '${moment(date).format(adjustmentDateFormat)}' is not 2 days in advance`;
   }
@@ -1083,7 +1083,7 @@ class OrderService {
         if (!limit) {
           const rest = await this.restService?.getRest(delivery.meals[0].restId);
           if (!rest) throw new Error(`Failed to find rest ${updatedDeliveries[0].meals[0].restId}`)
-          limit = moment(targetOrder.invoiceDate).tz(rest.location.timezone).add(3,'d').startOf('d').valueOf()
+          limit = moment(targetOrder.invoiceDate).tz(rest.location.timezone).add(MIN_DAYS_AHEAD + 1, 'd').startOf('d').valueOf()
         }
         if (delivery.deliveryDate >= limit) {
           throw new Error (`Delivery date ${delivery.deliveryDate} cannot be equal or past ${limit}`);

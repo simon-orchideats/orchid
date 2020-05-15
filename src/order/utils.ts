@@ -1,4 +1,4 @@
-import { deliveryDay } from './../consumer/consumerModel';
+import { deliveryDay, MIN_DAYS_AHEAD } from './../consumer/consumerModel';
 import moment from 'moment';
 
 export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, timezone?: string) => {
@@ -22,17 +22,17 @@ export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, tim
     }
   }
   const deliveryDate = moment(startDate).day(day).startOf('day');
-  const twoDaysAfterStartDate = moment(startDate).add(2, 'd');
-  if (deliveryDate.isAfter(twoDaysAfterStartDate)) return deliveryDate;
+  const minDaysAfterStartDate = moment(startDate).add(MIN_DAYS_AHEAD, 'd');
+  if (deliveryDate.isAfter(minDaysAfterStartDate)) return deliveryDate;
   const datePlus7 = deliveryDate.add(7, 'd');
   // this is false when the chosen delivery day is earlier in the week
-  if (datePlus7.isAfter(twoDaysAfterStartDate)) return datePlus7
+  if (datePlus7.isAfter(minDaysAfterStartDate)) return datePlus7
   return datePlus7.add(7, 'd');
 }
 
-export const isDate2DaysLater = (date: number, startDate = Date.now()) => {
-  const twoDaysAfterStartDate = moment(startDate).add(2, 'd');
-  return moment(date).isAfter(twoDaysAfterStartDate) ? true : false;
+export const isDateMinDaysLater = (date: number, startDate = Date.now()) => {
+  const minDaysAfterStartDate = moment(startDate).add(MIN_DAYS_AHEAD, 'd');
+  return moment(date).isAfter(minDaysAfterStartDate) ? true : false;
 }
 
 export const round2 = (num: number) => Math.round((num + Number.EPSILON) * 100) / 100

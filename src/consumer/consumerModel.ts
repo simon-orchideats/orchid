@@ -3,6 +3,8 @@ import { IDestination, Destination, EDestination } from './../place/destinationM
 import { ICard, Card } from './../card/cardModel';
 import moment from 'moment';
 
+export const MIN_DAYS_AHEAD = 1;
+
 export interface IConsumerProfile {
   readonly name: string
   readonly email: string
