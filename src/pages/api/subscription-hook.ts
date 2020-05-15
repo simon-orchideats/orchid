@@ -83,7 +83,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else {
     try {
-      const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
+      const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumerRes._id);
       if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
       await getOrderService().processTaxesAndFees(
