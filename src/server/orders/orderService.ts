@@ -636,10 +636,21 @@ class OrderService {
           throw e;
         }
       }
-
+      
+      const addr = cart.destination.address;
+      const geo = await this.geoService.getGeocode(
+        addr.address1,
+        addr.city,
+        addr.state,
+        addr.zip,
+      );
+      const billingStartDateSeconds = Math.round(moment().tz(geo.timezone).endOf('d').valueOf() / 1000)
       try {
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
+          // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
+          //invoice creation...
+          billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
         });
@@ -656,14 +667,7 @@ class OrderService {
         console.error(`Failed to get available plans: '${e.stack}'`);
         throw e;
       }
-      const addr = cart.destination.address;
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
-      const geo = await this.geoService.getGeocode(
-        addr.address1,
-        addr.city,
-        addr.state,
-        addr.zip,
-      );
       const consumer: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId,
