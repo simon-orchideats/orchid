@@ -7,7 +7,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -133,7 +133,6 @@ export interface IOrderService {
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ): Promise<void>
-  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'> | null>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
@@ -142,6 +141,10 @@ export interface IOrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes>
+  getCurrentOrder(userId: string): Promise<{
+    _id: string,
+    order: EOrder,
+  } | null>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
@@ -201,7 +204,7 @@ class OrderService {
     this.restService = restService;
   }
 
-  private async getCurrentOrder(userId: string): Promise<{
+  public async getCurrentOrder(userId: string): Promise<{
     _id: string,
     order: EOrder,
   } | null> {
@@ -672,11 +675,14 @@ class OrderService {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
-        plan: {
-          mealPlans,
-          schedules,
-          cuisines,
-        },
+        plan: ConsumerPlan.getEConsumerPlanFromIConsumerPlan(
+          {
+            mealPlans,
+            schedules,
+            cuisines,
+          },
+          subscription
+        ),
         profile: {
           name: signedInUser.profile.name,
           email: signedInUser.profile.email,
@@ -802,7 +808,15 @@ class OrderService {
       const targetOrder = res.order;
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0)
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'deliveries'> = {
+      const doc: Omit<
+        EOrder, 
+        'stripeSubscriptionId'
+        | 'createdDate'
+        | 'invoiceDate'
+        | 'consumer'
+        | 'deliveries'
+        | 'plans'
+      > = {
         costs: {
           ...targetOrder.costs,
           mealPrices
@@ -828,34 +842,6 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] couldn't Remove Donations for '${orderId}'`, e.stack);
       throw new Error('Internal Server Error');
-    }
-  }
-
-  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null> {
-    try {
-      const order = await this.getCurrentOrder(userId);
-      if (!order) return null;
-      const newOrder: Pick<EOrder, 'deliveries'> = {
-        deliveries: order.order.deliveries.map(d => ({
-          ...d,
-          status: 'Confirmed',
-        }))
-      }
-      await this.elastic.update({
-        index: ORDER_INDEX,
-        id: order._id,
-        body: {
-          doc: newOrder,
-        }
-      });
-      return {
-        _id: order._id,
-        deliveries: newOrder.deliveries,
-        costs: order.order.costs,
-      };
-    } catch (e) {
-      console.error(`[OrderService] failed to confirmCurrentOrderDeliveries for userId '${userId}'`, e.stack);
-      throw e;
     }
   }
 
@@ -1030,7 +1016,15 @@ class OrderService {
       }
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
+      const doc: Omit<
+        EOrder,
+        'stripeSubscriptionId'
+        | 'createdDate'
+        | 'invoiceDate'
+        | 'consumer'
+        | 'donationCount'
+        | 'plans'
+      > = {
         costs: {
           ...targetOrder.costs,
           tax: Cost.getTaxes(targetOrder.deliveries, mealPrices),
@@ -1098,17 +1092,38 @@ class OrderService {
         updatedDeliveries.push(delivery);
         delivery.meals.forEach(meal => totalCount += meal.quantity);
       }
-      let currentDeliveries = updatedDeliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }));
       const targetDeliveries = targetOrder.deliveries.filter(delivery =>
         delivery.status === 'Confirmed'
         || delivery.status === 'Returned'
         || delivery.status === 'Complete'
       );
-      currentDeliveries = targetDeliveries.concat(currentDeliveries);
+      const currentDeliveries = targetDeliveries.concat(updatedDeliveries.map<IDelivery>(delivery => ({
+        ...delivery,
+        status: 'Open',
+        meals: delivery.meals.map(m => {
+          const sub = targetOrder.plans.find(p => p.stripePlanId === m.stripePlanId);
+          if (!sub) {
+            const err = new Error(`Missing order meal plan for stripePlanId ${m.stripePlanId}`);
+            console.error(err.stack);
+            throw err;
+          }
+          return {
+            ...m,
+            stripeSubscriptionItemId: sub.stripeSubscriptionItemId
+          }
+        })
+      })));
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);
       try {
-        const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
+        const doc: Omit<
+          EOrder,
+          'stripeSubscriptionId'
+          | 'createdDate'
+          | 'invoiceDate'
+          | 'consumer'
+          | 'plans'
+        > = {
           costs: {
             ...targetOrder.costs,
             tax: Cost.getTaxes(currentDeliveries, mealPrices),

@@ -1,3 +1,8 @@
+for all the consumers, add stripeSubId to the mealPlans
+
+for all orders, go to each meal and add subId
+
+
 rest db
 
 create rests2

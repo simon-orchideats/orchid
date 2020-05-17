@@ -7,7 +7,7 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile, EConsumerPlan, ConsumerPlan } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -410,15 +410,23 @@ class ConsumerService implements IConsumerService {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-
+      let plan: EConsumerPlan;
+      try {
+        const res = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
+        plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlan(newPlan, res);
+      } catch (e) {
+        console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
+        throw e;
+      }
+      const doc: Pick<EConsumer, 'plan'> = {
+        plan,
+      }
       const updatedConsumer = await this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         _source: 'true',
         body: {
-          doc: {
-            plan: newPlan,
-          }
+          doc
         }
       })
 

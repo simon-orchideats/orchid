@@ -73,6 +73,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         // 2 weeks because 1 week would be nextnext order
         2,
         consumer,
+        // stripeSubscriptionItems,
         // 3 weeks because 2 week would be nextnext order
         moment().add(3, 'w').valueOf(),
         mealPrices,
@@ -83,31 +84,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else {
     try {
-      const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumerRes._id);
+      const todaysOrder = await getOrderService().getCurrentOrder(consumerRes._id);
+      // this is possible when a subscription is canceled and today's order had no confirmed deliveries
+      // so it was deleted
       if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
       await getOrderService().processTaxesAndFees(
         stripeCustomerId,
         invoice.id,
-        todaysOrder.costs,
-        todaysOrder.deliveries.length - 1,
+        todaysOrder.order.costs,
+        todaysOrder.order.deliveries.length - 1,
       )
-      // happens when subscription is canceled with some deliveries this week confirmed & paid. we return since you
-      // can't set usage for a canceled subscription
-      if (!consumer.plan) return;
-      const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
-      invoice.lines.data.forEach(li => {
-        // if it's not a subscription line item, do nothing
-        if (!li.subscription_item || !li.plan) return
-        const timestamp = li.period.end - 60;
-        getOrderService().setOrderUsage(
-          li.subscription_item,
-          numConfirmedMeals[li.plan.id],
-          timestamp
-        ).catch(e => {
-          console.error(`Failed to set order usage for order '${todaysOrder._id}'`, e.stack);
-        });
-      });
     } catch (e) {
       console.error('[SubscriptionHook] failed to confirm deliveries for order', e.stack);
       throw e;
