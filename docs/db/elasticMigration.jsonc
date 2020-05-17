@@ -1,6 +1,16 @@
 for all the consumers, add stripeSubId to the mealPlans
 
-for all orders, go to each meal and add subId
+for all orders, 
+  - go to each meal and add stripeSubscriptionItemId
+  - add plans = [
+      emailplan {
+        stripeSubscriptionItemId
+        readonly stripePlanId: string;
+        readonly planName: PlanName;
+        readonly mealCount: number;
+      }
+    ]
+  }
 
 
 rest db
