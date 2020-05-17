@@ -83,6 +83,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else {
     try {
+      const secondsInDayWith10SecondBuffer = 86410;
+      const isInvoiceWithinTrial = (invoice.period_end - invoice.period_start) < secondsInDayWith10SecondBuffer
+      if (isInvoiceWithinTrial) return
       const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumerRes._id);
       if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);

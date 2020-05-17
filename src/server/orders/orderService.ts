@@ -649,7 +649,8 @@ class OrderService {
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
           // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
-          //invoice creation...
+          // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
+          // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
           billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
@@ -697,7 +698,7 @@ class OrderService {
         consumer,
         cart.deliveries,
         cart.donationCount,
-        subscription.current_period_end * 1000,
+        moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
         mealPrices,
         // make updated date 5 seconds past created date to indicate
         // non auto generated order
@@ -714,7 +715,7 @@ class OrderService {
         signedInUser._id,
         1,
         consumer,
-        moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
+        moment(billingStartDateSeconds * 1000).add(2, 'w').valueOf(),
         mealPrices,
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)

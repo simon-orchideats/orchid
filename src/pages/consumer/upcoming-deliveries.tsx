@@ -1,7 +1,7 @@
 import { makeStyles, Typography, Container, Paper, Divider, Popover, useTheme, useMediaQuery, Theme, Grid, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useGetUpcomingOrders, useSkipDelivery, useRemoveDonations } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
@@ -390,22 +390,21 @@ const UpcomingDeliveries = () => {
   const consumerData = consumer.data;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
-  const OrderOverviews = useMemo(() => {
+  let OrderOverviews;
     if (orders.loading) {
-      return <Typography variant='body1'>Loading...</Typography>
+      OrderOverviews = <Typography variant='body1'>Loading...</Typography>
+    } else if (orders.data && orders.data.length === 0) {
+      OrderOverviews = <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
+    } else {
+      OrderOverviews = consumerData && orders.data && orders.data.map(order => 
+        <DeliveryOverview
+          key={order.Id}
+          order={order}
+          isUpdating={isUpdating}
+          consumer={consumerData}
+        />
+      )
     }
-    if (orders.data && orders.data.length === 0) {
-      return <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
-    }
-    return consumerData && orders.data && orders.data.map(order => 
-      <DeliveryOverview
-        key={order.Id}
-        order={order}
-        isUpdating={isUpdating}
-        consumer={consumerData}
-      />
-    )
-  }, [orders.data, orders.loading, consumerData, isUpdating, cart]);
 
   if (needsCart && !cart) {
     const err = new Error('Needs cart, but no cart');
