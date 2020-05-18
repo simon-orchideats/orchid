@@ -119,7 +119,9 @@ POST orders/_update_by_query
           'planName': "Standard",
           'mealCount': 4
         ];
-        ctx._source.plans = plans;
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
       }
       
       if (ctx._source.consumer.profile.email.equals("joshtolens@gmail.com")) {
@@ -135,7 +137,9 @@ POST orders/_update_by_query
           'planName': "Standard",
           'mealCount': 4
         ];
-        ctx._source.plans = plans;
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
       }
       
       if (ctx._source.consumer.profile.email.equals("dbustosloves@gmail.com")) {
@@ -151,7 +155,9 @@ POST orders/_update_by_query
           'planName': "Standard",
           'mealCount': 4
         ];
-        ctx._source.plans = plans;
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
       }
       
       if (ctx._source.consumer.profile.email.equals("nephercr@gmail.com")) {
@@ -167,7 +173,9 @@ POST orders/_update_by_query
           'planName': "Standard",
           'mealCount': 4
         ];
-        ctx._source.plans = plans;
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
       }
       
       if (ctx._source.consumer.profile.email.equals("lschairer011@gmail.com")) {
@@ -183,7 +191,9 @@ POST orders/_update_by_query
           'planName': "Standard",
           'mealCount': 4
         ];
-        ctx._source.plans = plans;
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
       }
       
       if (ctx._source.consumer.profile.email.equals("arvinderbaring@gmail.com")) {
