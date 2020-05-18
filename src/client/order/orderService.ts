@@ -327,7 +327,7 @@ export const useRemoveDonations = (): [
 
 type upcomingOrdersRes = { myUpcomingOrders: IOrder[] }
 export const useGetUpcomingOrders = () => {
-  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY, { fetchPolicy: 'cache-and-network' });
+  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY, { fetchPolicy: 'network-only' });
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
   ), [res.data]);

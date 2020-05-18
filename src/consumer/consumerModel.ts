@@ -1,7 +1,10 @@
 import { PlanName } from './../plan/planModel';
-import { IDestination, Destination } from './../place/destinationModel';
+import { IDestination, Destination, EDestination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 import moment from 'moment';
+import Stripe from 'stripe';
+
+export const MIN_DAYS_AHEAD = 1;
 
 export interface IConsumerProfile {
   readonly name: string
@@ -9,6 +12,10 @@ export interface IConsumerProfile {
   readonly phone: string | null
   readonly card: ICard | null
   readonly destination: IDestination | null
+}
+
+export interface EConsumerProfile extends IConsumerProfile{
+  readonly destination: EDestination | null
 }
 
 export class ConsumerProfile implements IConsumerProfile {
@@ -169,6 +176,10 @@ export interface IMealPlan {
   readonly mealCount: number;
 }
 
+export interface EMealPlan extends IMealPlan {
+  readonly stripeSubscriptionItemId: string
+}
+
 export class MealPlan implements IMealPlan {
   readonly stripePlanId: string;
   readonly planName: PlanName;
@@ -222,6 +233,10 @@ export interface IConsumerPlan {
   readonly mealPlans: IMealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedules: ISchedule[]
+}
+
+export interface EConsumerPlan extends IConsumerPlan {
+  readonly mealPlans: EMealPlan[]
 }
 
 export class ConsumerPlan implements IConsumerPlan {
@@ -278,18 +293,38 @@ export class ConsumerPlan implements IConsumerPlan {
     if (!MealPlan.equalsLists(plan1.MealPlans, plan2.MealPlans)) return false;
     return true;
   }
+
+  static getEConsumerPlanFromIConsumerPlan(plan: IConsumerPlan, subscription: Stripe.Subscription): EConsumerPlan {
+    return {
+      ...plan,
+      mealPlans: plan.mealPlans.map(p => {
+        const subItem = subscription.items.data.find(item => item.plan.id === p.stripePlanId);
+        if (!subItem) {
+          const err = new Error(`Missing subscription item id for plan ${p.stripePlanId}`);
+          console.error(err.stack);
+          throw err;
+        }
+        return {
+          ...p,
+          stripeSubscriptionItemId: subItem.id,
+        }
+      }),
+    }
+  }
 }
 
 export interface EConsumer {
   readonly createdDate: number,
-  readonly plan: IConsumerPlan | null
-  readonly profile: IConsumerProfile
+  readonly plan: EConsumerPlan | null
+  readonly profile: EConsumerProfile
   readonly stripeCustomerId: string | null
   readonly stripeSubscriptionId: string | null
 }
 
-export interface IConsumer extends Omit<EConsumer, 'createdDate'> {
+export interface IConsumer extends Omit<EConsumer, 'createdDate' | 'profile' | 'plan'> {
   readonly _id: string
+  readonly profile: IConsumerProfile
+  readonly plan: IConsumerPlan | null
 }
 
 export class Consumer implements IConsumer {

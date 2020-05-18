@@ -12,6 +12,10 @@ export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'orig
   readonly taxRate: number
 }
 
+export interface EDeliveryMeal extends IDeliveryMeal {
+  readonly stripeSubscriptionItemId: string
+}
+
 export interface IUpdateDeliveryInput {
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[]
@@ -137,6 +141,10 @@ export class DeliveryInput implements IDeliveryInput {
 
 export interface IDelivery extends IDeliveryInput {
   readonly status: DeliveryStatus
+}
+
+export interface EDelivery extends IDelivery {
+  readonly meals: EDeliveryMeal[]
 }
 
 export class Delivery extends DeliveryInput implements IDelivery {

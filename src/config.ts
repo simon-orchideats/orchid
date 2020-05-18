@@ -136,8 +136,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
     },
     mailChimp: {
       key: process.env.MAIL_CHIMP_KEY!,
-      audienceId: 'a58d64a3e9',
-      dataCenter: 'us19'
+      audienceId: '8646b559dc',
+      dataCenter: 'us18'
     },
     stripe: {
       key: process.env.STRIPE_KEY!,
@@ -226,8 +226,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
     },
     mailChimp: {
       key: process.env.MAIL_CHIMP_KEY!,
-      audienceId: 'a58d64a3e9',
-      dataCenter: 'us19'
+      audienceId: '8646b559dc',
+      dataCenter: 'us18'
     },
     stripe: {
       key: process.env.STRIPE_KEY!,

@@ -7,7 +7,7 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile, EConsumerPlan, ConsumerPlan } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -253,7 +253,10 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumerByStripeId(stripeCustomerId: string): Promise<IConsumer> {
+  async getConsumerByStripeId(stripeCustomerId: string): Promise<{
+    _id: string,
+    consumer: EConsumer,
+  }> {
     try {
       const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
         index: CONSUMER_INDEX,
@@ -272,7 +275,10 @@ class ConsumerService implements IConsumerService {
       });
       if (res.body.hits.total.value === 0) throw new Error(`Consumer with stripeId '${stripeCustomerId}' not found`);
       const consumer = res.body.hits.hits[0];
-      return Consumer.getIConsumerFromEConsumer(consumer._id, consumer._source);
+      return {
+        _id: consumer._id,
+        consumer: consumer._source
+      };
     } catch (e) {
       console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
       throw new Error('Internal Server Error');
@@ -351,22 +357,34 @@ class ConsumerService implements IConsumerService {
         state,
         zip
       } = profile.destination.address;
+      let geo;
       try {
-        await this.geoService.getGeocode(address1, city, state, zip);
+        geo = await this.geoService.getGeocode(address1, city, state, zip);
       } catch (e) {
         return {
           res: null,
           error: `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
         }
       }
+      const doc: Pick<EConsumer, 'profile'> = {
+        profile: {
+          ...profile,
+          destination: {
+            ...profile.destination,
+            geo: {
+              lat: geo.lat,
+              lon: geo.lon
+            },
+            timezone: geo.timezone
+          },
+        },
+      }
       const res = await this.elastic.update({
           index: CONSUMER_INDEX,
           id: signedInUser._id,
           _source: 'true',
           body: {
-            doc: {
-              profile,
-            }
+            doc
           }
         });
       const newConsumer = {
@@ -392,15 +410,23 @@ class ConsumerService implements IConsumerService {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-
+      let plan: EConsumerPlan;
+      try {
+        const res = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
+        plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlan(newPlan, res);
+      } catch (e) {
+        console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
+        throw e;
+      }
+      const doc: Pick<EConsumer, 'plan'> = {
+        plan,
+      }
       const updatedConsumer = await this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         _source: 'true',
         body: {
-          doc: {
-            plan: newPlan,
-          }
+          doc
         }
       })
 

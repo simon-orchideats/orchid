@@ -1,5 +1,5 @@
 import { Cost, ICost } from './../../order/costModel';
-import { getNextDeliveryDate, isDate2DaysLater } from './../../order/utils';
+import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
@@ -7,7 +7,7 @@ import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, IConsumer, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -66,7 +66,7 @@ const validatePhone = (phone: string) => {
 
   //@ts-ignore todo simon: do we still need this?
 const validateDeliveryDate = (date: number, now = Date.now()) => {
-  if (!isDate2DaysLater(date, now)) {
+  if (!isDateMinDaysLater(date, now)) {
     console.warn('[OrderService]', `Delivery date '${date}' is not 2 days in advance`);
     return `Delivery date '${moment(date).format(adjustmentDateFormat)}' is not 2 days in advance`;
   }
@@ -127,12 +127,12 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
 
 export interface IOrderService {
   addAutomaticOrder(
+    userId: string,
     addedWeeks: number,
-    consumer: IConsumer,
+    consumer: EConsumer,
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ): Promise<void>
-  confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'> | null>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
@@ -141,6 +141,10 @@ export interface IOrderService {
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes>
+  getCurrentOrder(userId: string): Promise<{
+    _id: string,
+    order: EOrder,
+  } | null>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
@@ -200,7 +204,7 @@ class OrderService {
     this.restService = restService;
   }
 
-  private async getCurrentOrder(userId: string): Promise<{
+  public async getCurrentOrder(userId: string): Promise<{
     _id: string,
     order: EOrder,
   } | null> {
@@ -426,16 +430,17 @@ class OrderService {
   }
 
   public async addAutomaticOrder(
+    consumerId: string,
     addedWeeks: number,
-    consumer: IConsumer,
+    consumer: EConsumer,
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ) {
     try {
-      if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumer._id}'`);
-      if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumer._id}'`);
+      if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumerId}'`);
+      if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumerId}'`);
       if (!this.restService) throw new Error('Missing RestService');
-      if (!consumer.profile.destination) throw new Error (`Consumer '${consumer._id}' missing destination`);
+      if (!consumer.profile.destination) throw new Error (`Consumer '${consumerId}' missing destination`);
       const cuisines = consumer.plan.cuisines;
       const plan = consumer.plan;
       const rests = await this.restService.getNearbyRests(
@@ -498,6 +503,7 @@ class OrderService {
       );
 
       const automatedOrder = Order.getNewOrder(
+        consumerId,
         consumer,
         deliveries,
         0,
@@ -509,7 +515,7 @@ class OrderService {
         body: automatedOrder
       })
     } catch (e) {
-      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumer._id} and invoiceDate ${invoiceDate}`, e.stack);
+      console.error(`[OrderService] failed to addAutomaticOrder for consumer ${consumerId} and invoiceDate ${invoiceDate}`, e.stack);
       throw e;
     }
   }
@@ -592,7 +598,7 @@ class OrderService {
       if (!this.consumerService) throw new Error ('ConsumerService not set');
       if (!this.restService) throw new Error ('RestService not set');
       if (!this.planService) throw new Error('PlanService not set');
-
+      if (!this.geoService) throw new Error('GeoService not set');
       const validation = await this.validateCart(cart);
       if (validation) {
         return {
@@ -633,10 +639,23 @@ class OrderService {
           throw e;
         }
       }
-
+      
+      const addr = cart.destination.address;
+      const geo = await this.geoService.getGeocode(
+        addr.address1,
+        addr.city,
+        addr.state,
+        addr.zip,
+      );
+      // - 60 seconds for extra buffer
+      const billingStartDateSeconds = Math.floor(moment().tz(geo.timezone).endOf('d').valueOf() / 1000) - 60;
       try {
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',
+          // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
+          // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
+          // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
+          billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
         });
@@ -653,31 +672,40 @@ class OrderService {
         console.error(`Failed to get available plans: '${e.stack}'`);
         throw e;
       }
-
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
-
       const consumer: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
-        plan: {
-          mealPlans,
-          schedules,
-          cuisines,
-        },
+        plan: ConsumerPlan.getEConsumerPlanFromIConsumerPlan(
+          {
+            mealPlans,
+            schedules,
+            cuisines,
+          },
+          subscription
+        ),
         profile: {
           name: signedInUser.profile.name,
           email: signedInUser.profile.email,
           phone: cart.phone,
           card: cart.card,
-          destination: cart.destination,
+          destination: {
+            ...cart.destination,
+            geo: {
+              lat: geo.lat,
+              lon: geo.lon,
+            },
+            timezone: geo.timezone
+          },
         }
       };
       const order = Order.getNewOrder(
-        { _id: signedInUser._id, ...consumer },
+        signedInUser._id,
+        consumer,
         cart.deliveries,
         cart.donationCount,
-        subscription.current_period_end * 1000,
+        moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
         mealPrices,
         // make updated date 5 seconds past created date to indicate
         // non auto generated order
@@ -691,9 +719,10 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       this.addAutomaticOrder(
+        signedInUser._id,
         1,
-        { _id: signedInUser._id, ...consumer },
-        moment(subscription.current_period_end * 1000).add(1, 'w').valueOf(),
+        consumer,
+        moment(billingStartDateSeconds * 1000).add(2, 'w').valueOf(),
         mealPrices,
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
@@ -702,7 +731,7 @@ class OrderService {
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
         signedInUser.profile.name,
-        cart.destination.address,
+        addr,
       ).catch(e => {
         console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
       })
@@ -781,7 +810,15 @@ class OrderService {
       const targetOrder = res.order;
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, 0)
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'deliveries'> = {
+      const doc: Omit<
+        EOrder, 
+        'stripeSubscriptionId'
+        | 'createdDate'
+        | 'invoiceDate'
+        | 'consumer'
+        | 'deliveries'
+        | 'plans'
+      > = {
         costs: {
           ...targetOrder.costs,
           mealPrices
@@ -807,34 +844,6 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] couldn't Remove Donations for '${orderId}'`, e.stack);
       throw new Error('Internal Server Error');
-    }
-  }
-
-  async confirmCurrentOrderDeliveries(userId: string): Promise<Pick<IOrder, '_id' | 'deliveries' | 'costs'> | null> {
-    try {
-      const order = await this.getCurrentOrder(userId);
-      if (!order) return null;
-      const newOrder: Pick<EOrder, 'deliveries'> = {
-        deliveries: order.order.deliveries.map(d => ({
-          ...d,
-          status: 'Confirmed',
-        }))
-      }
-      await this.elastic.update({
-        index: ORDER_INDEX,
-        id: order._id,
-        body: {
-          doc: newOrder,
-        }
-      });
-      return {
-        _id: order._id,
-        deliveries: newOrder.deliveries,
-        costs: order.order.costs,
-      };
-    } catch (e) {
-      console.error(`[OrderService] failed to confirmCurrentOrderDeliveries for userId '${userId}'`, e.stack);
-      throw e;
     }
   }
 
@@ -953,7 +962,7 @@ class OrderService {
         }
       );
     } catch (e) {
-      console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}'`);
+      console.error(`[OrderService] failed to set usage of number '${numMeals}' for subscriptionItemId '${subscriptionItemId}' and timestamp '${timestamp}'`);
       throw e;
     }
   }
@@ -1009,7 +1018,15 @@ class OrderService {
       }
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, targetOrder.deliveries, targetOrder.donationCount);
-      const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer' | 'donationCount'> = {
+      const doc: Omit<
+        EOrder,
+        'stripeSubscriptionId'
+        | 'createdDate'
+        | 'invoiceDate'
+        | 'consumer'
+        | 'donationCount'
+        | 'plans'
+      > = {
         costs: {
           ...targetOrder.costs,
           tax: Cost.getTaxes(targetOrder.deliveries, mealPrices),
@@ -1057,6 +1074,7 @@ class OrderService {
       if (!res.order) throw new Error('Missing order'); 
       const targetOrder = res.order;
       const updatedDeliveries: IDeliveryInput[] = [];
+      // todo: use consumer timezone instead of rest timezone
       let limit: number | undefined;
       let totalCount = 0;
       for (let i = 0; i < updateOptions.deliveries.length; i++) {
@@ -1065,7 +1083,7 @@ class OrderService {
         if (!limit) {
           const rest = await this.restService?.getRest(delivery.meals[0].restId);
           if (!rest) throw new Error(`Failed to find rest ${updatedDeliveries[0].meals[0].restId}`)
-          limit = moment(targetOrder.invoiceDate).tz(rest.location.timezone).add(3,'d').startOf('d').valueOf()
+          limit = moment(targetOrder.invoiceDate).tz(rest.location.timezone).add(MIN_DAYS_AHEAD + 1, 'd').startOf('d').valueOf()
         }
         if (delivery.deliveryDate >= limit) {
           throw new Error (`Delivery date ${delivery.deliveryDate} cannot be equal or past ${limit}`);
@@ -1076,17 +1094,38 @@ class OrderService {
         updatedDeliveries.push(delivery);
         delivery.meals.forEach(meal => totalCount += meal.quantity);
       }
-      let currentDeliveries = updatedDeliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' }));
       const targetDeliveries = targetOrder.deliveries.filter(delivery =>
         delivery.status === 'Confirmed'
         || delivery.status === 'Returned'
         || delivery.status === 'Complete'
       );
-      currentDeliveries = targetDeliveries.concat(currentDeliveries);
+      const currentDeliveries = targetDeliveries.concat(updatedDeliveries.map<IDelivery>(delivery => ({
+        ...delivery,
+        status: 'Open',
+        meals: delivery.meals.map(m => {
+          const sub = targetOrder.plans.find(p => p.stripePlanId === m.stripePlanId);
+          if (!sub) {
+            const err = new Error(`Missing order meal plan for stripePlanId ${m.stripePlanId}`);
+            console.error(err.stack);
+            throw err;
+          }
+          return {
+            ...m,
+            stripeSubscriptionItemId: sub.stripeSubscriptionItemId
+          }
+        })
+      })));
       const plans = await this.planService.getAvailablePlans()
       const mealPrices = MealPrice.getMealPriceFromDeliveries(plans, currentDeliveries, updateOptions.donationCount);
       try {
-        const doc: Omit<EOrder, 'stripeSubscriptionId' | 'createdDate' | 'invoiceDate' | 'consumer'> = {
+        const doc: Omit<
+          EOrder,
+          'stripeSubscriptionId'
+          | 'createdDate'
+          | 'invoiceDate'
+          | 'consumer'
+          | 'plans'
+        > = {
           costs: {
             ...targetOrder.costs,
             tax: Cost.getTaxes(currentDeliveries, mealPrices),

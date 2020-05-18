@@ -1,19 +1,20 @@
 import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
-import { IDelivery, Delivery, IDeliveryInput } from './deliveryModel';
+import { IDelivery, Delivery, IDeliveryInput, EDelivery } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
-import { IConsumerProfile, IConsumer, IMealPlan } from './../consumer/consumerModel';
+import { EConsumerProfile, EConsumer, IMealPlan, EMealPlan } from './../consumer/consumerModel';
 import { ICost, Cost } from './costModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
   readonly consumer: {
     readonly userId: string
-    readonly profile: IConsumerProfile
+    readonly profile: EConsumerProfile
   },
   readonly costs: ICost
   readonly createdDate: number
   readonly invoiceDate: number
+  readonly plans: EMealPlan[]
   readonly stripeInvoiceId?: string,
   readonly deliveries: IDelivery[]
   readonly stripeSubscriptionId: string
@@ -236,7 +237,8 @@ export class Order implements IOrder{
   }
 
   static getNewOrder(
-    consumer: IConsumer,
+    consumerId: string,
+    consumer: EConsumer,
     deliveries: IDeliveryInput[],
     donationCount: number,
     invoiceDate: number,
@@ -249,10 +251,16 @@ export class Order implements IOrder{
       console.error(err.stack);
       throw err;
     }
+    if (!consumer.plan) {
+      const err = new Error('Missing plan');
+      console.error(err.stack);
+      throw err;
+    }
+    const plans = consumer.plan.mealPlans;
     const now = moment();
     return {
       consumer: {
-        userId: consumer._id,
+        userId: consumerId,
         profile: consumer.profile
       },
       stripeSubscriptionId: consumer.stripeSubscriptionId,
@@ -267,7 +275,23 @@ export class Order implements IOrder{
         flatRateFee: 0,
         deliveryFee: Cost.getDeliveryFee(deliveries),
       },
-      deliveries: deliveries.map<IDelivery>(delivery => ({ ...delivery, status: 'Open' })),
+      plans,
+      deliveries: deliveries.map<EDelivery>(delivery => ({
+        ...delivery,
+        meals: delivery.meals.map(m => {
+          const plan = plans.find(mp => mp.stripePlanId === m.stripePlanId);
+          if (!plan) {
+            const err = new Error(`Missing order plan for stripePlanId ${m.stripePlanId}`);
+            console.error(err);
+            throw err;
+          }
+          return {
+            ...m,
+            stripeSubscriptionItemId: plan.stripeSubscriptionItemId
+          }
+        }),
+        status: 'Open'
+      })),
       donationCount,
     }
   }

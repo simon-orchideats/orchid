@@ -8,7 +8,6 @@ import Cors from 'micro-cors'
 import { activeConfig } from '../../config';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MealPrice } from '../../order/orderModel';
-import { Delivery } from '../../order/deliveryModel';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
   apiVersion: '2020-03-02',
@@ -49,8 +48,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   res.json({ received: true });
   const invoice = event.data.object as Stripe.Invoice
+  // important to do this before looking up consumerByStripeId since if we just created the account,
+  // the consumer may not exist in our system yet
+  if (invoice.billing_reason === 'subscription_create') return;
+
   const stripeCustomerId = invoice.customer as string;
-  const consumer = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+  const consumerRes = await getConsumerService().getConsumerByStripeId(stripeCustomerId);
+  const consumer = consumerRes.consumer;
   if (!consumer) throw new Error (`Consumer not found with stripeCustomerId ${stripeCustomerId}`)
   
   if (consumer.plan && consumer.plan.mealPlans.length === 0) {
@@ -64,6 +68,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const plans = await getPlanService().getAvailablePlans();
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
       await getOrderService().addAutomaticOrder(
+        consumerRes._id,
         // 2 weeks because 1 week would be nextnext order
         2,
         consumer,
@@ -77,32 +82,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else {
     try {
-      if (invoice.billing_reason === 'subscription_create') return;
-      const todaysOrder = await getOrderService().confirmCurrentOrderDeliveries(consumer._id);
+      const secondsInDayWith10SecondBuffer = 86410;
+      const isInvoiceWithinTrial = (invoice.period_end - invoice.period_start) < secondsInDayWith10SecondBuffer
+      if (isInvoiceWithinTrial) return
+      const todaysOrder = await getOrderService().getCurrentOrder(consumerRes._id);
+      // this is possible when a subscription is canceled and today's order had no confirmed deliveries
+      // so it was deleted
       if (!todaysOrder) return;
       await getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id);
       await getOrderService().processTaxesAndFees(
         stripeCustomerId,
         invoice.id,
-        todaysOrder.costs,
-        todaysOrder.deliveries.length - 1,
+        todaysOrder.order.costs,
+        todaysOrder.order.deliveries.length - 1,
       )
-      // happens when subscription is canceled with some deliveries this week confirmed & paid. we return since you
-      // can't set usage for a canceled subscription
-      if (!consumer.plan) return;
-      const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
-      invoice.lines.data.forEach(li => {
-        // if it's not a subscription line item, do nothing
-        if (!li.subscription_item || !li.plan) return
-        const timestamp = li.period.end - 60;
-        getOrderService().setOrderUsage(
-          li.subscription_item,
-          numConfirmedMeals[li.plan.id],
-          timestamp
-        ).catch(e => {
-          console.error(`Failed to set order usage for order '${todaysOrder._id}'`, e.stack);
-        });
-      });
     } catch (e) {
       console.error('[SubscriptionHook] failed to confirm deliveries for order', e.stack);
       throw e;

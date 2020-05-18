@@ -827,6 +827,9 @@ PUT /orders/
               },
               "taxRate": {
                 "type": "float"
+              },
+              "stripeSubscriptionItemId": {
+                "type": "keyword"
               }
             }
           }
@@ -881,6 +884,12 @@ PUT /orders/
                         "type": "keyword"
                       }
                     }
+                  },
+                  "geo": {
+                    "type": "geo_point"
+                  },
+                  "timezone": {
+                    "type": "keyword"
                   },
                   "instructions": {
                     "type": "text"
@@ -943,6 +952,22 @@ PUT /orders/
       },
       "donationCount": {
         "type": "integer"
+      },
+      "plans": {
+        "properties": {
+          "stripeSubscriptionItemId": {
+            "type": "keyword"
+          },
+          "stripePlanId": {
+            "type": "keyword"
+          },
+          "planName": {
+            "type": "keyword"
+          },
+          "mealCount": {
+            "type": "integer"
+          }
+        }
       }
     }
   }
@@ -1010,6 +1035,12 @@ PUT /consumers/
                     "type": "keyword"
                   }
                 }
+              },
+              "geo": {
+                "type": "geo_point"
+              },
+              "timezone": {
+                "type": "keyword"
               }
             }
           }
@@ -1026,6 +1057,9 @@ PUT /consumers/
                 "type": "keyword"
               },
               "mealCount": {
+                "type": "keyword"
+              },
+              "stripeSubscriptionItemId": {
                 "type": "keyword"
               }
             }

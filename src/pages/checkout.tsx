@@ -408,7 +408,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               md={6}
             >
               <TextField
-                label='Delivery instructions'
+                label='Special requests or instructions'
                 variant='outlined'
                 size='small'
                 fullWidth
