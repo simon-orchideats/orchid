@@ -73,7 +73,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         // 2 weeks because 1 week would be nextnext order
         2,
         consumer,
-        // stripeSubscriptionItems,
         // 3 weeks because 2 week would be nextnext order
         moment().add(3, 'w').valueOf(),
         mealPrices,

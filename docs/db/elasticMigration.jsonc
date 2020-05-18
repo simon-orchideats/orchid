@@ -13,280 +13,260 @@ for all orders,
   }
 
 
-rest db
 
-create rests2
 
-POST _reindex
+
+PUT consumers/_mapping
 {
-  "source": {
-    "index": "rests"
-  },
-  "dest": {
-    "index": "rests2"
-  },
-  "script": {
-    "source": """
-      def menu = ctx._source.menu;
-      for (int i = 0; i < menu.length; i++) {
-        menu[i].planName = 'Standard';
-        menu[i].stripePlanId = 'plan_HAP4XaO5a1ewwt';
-      }
-      ctx._source.location.timezone = 'America/New_York';
-      ctx._source.taxRate = 0.0625
-    """,
-    "params": {
-      "delivery": {}
-    }
-  }
-}
-
-DELETE rests
-create rests
-
-POST _reindex
-{
-  "source": {
-    "index": "rests2"
-  },
-  "dest": {
-    "index": "rests"
-  }
-}
-
-
-
-/////////
-consumers db
-
-create consumers2
-
-POST _reindex
-{
-  "source": {
-    "index": "consumers2",
-    "_source": {
-      "excludes": [
-        "plan.stripePlanId",
-        // "plan.deliveryDay",
-        // "plan.deliveryTime"
-      ]
-    }
-  },
-  "dest": {
-    "index": "consumers"
-  },
-  "script": {
-    "source": """
-      ctx._source.plan.mealPlans = params.mealPlans;
-      ctx._source.plan.mealPlans.add(params.mealPlan);
-      ctx._source.plan.schedules = params.schedules
-      params.schedule.day = ctx._source.plan.deliveryDay;
-      if (ctx._source.plan.deliveryTime.equals("FivePToSixP") {
-        params.schedule.time = "FivePToSevenP";
-      } else if (ctx._source.plan.deliveryTime.equals("ThreePToFourP") {
-        params.schedule.time = "ThreePToFiveP";
-      }
-      ctx._source.plan.schedules.add(params.schedule);
-    """,
-    "params": {
-      "schedule": {},
-      "schedules": [],
-      "mealPlans": [],
-      "mealPlan": {
-        "stripePlanId": "plan_H4mjyvjuE1fObC",
-        "planName": "Standard",
-        "mealCount": 4
-      }
-    }
-  }
-}
-
-DELETE consumers
-create consumers
-
-POST _reindex
-{
-  "source": {
-    "index": "consumers2"
-  },
-  "dest": {
-    "index": "consumers"
-  }
-}
-
-
-////////////
-
-create orders2
-
-POST _reindex
-{
-  "source": {
-    "index": "orders"
-  },
-  "dest": {
-    "index": "orders2"
-  },
-  "script": {
-    "source": """
-      ctx._source.deliveries = [];
-      if (ctx._source.deliveryTime.equals("FivePToSixP") {
-        params.delivery.deliveryTime = "FivePToSevenP";
-      } else if (ctx._source.deliveryTime.equals("ThreePToFourP") {
-        params.delivery.deliveryTime = "ThreePToFiveP";
-      }
-      params.delivery.deliveryDate = ctx._source.deliveryDate;
-      params.delivery.meals = ctx._source.rest.meals;
-      params.delivery.status = ctx._source.status;
-      for (int i = 0; i < params.delivery.meals.length; i++) {
-        params.delivery.meals[i].tags = [];
-        params.delivery.meals[i].restId = ctx._source.rest.restId;
-        params.delivery.meals[i].restName = "Placeholder";
-        params.delivery.meals[i].stripePlanId = "plan_HE1O8fPf3Nf3Uo";
-        params.delivery.meals[i].planName = "Standard";
-        params.delivery.meals[i].taxRate = 0.0625;
-      }
-      ctx._source.deliveries.add(params.delivery);
-      ctx._source.remove("status");
-      ctx._source.remove("rest");
-      ctx._source.remove("deliveryTime");
-      ctx._source.remove("deliveryDate");
-      ctx._source.costs.mealPrices = [];
-      params.mealPrice.mealPrice = ctx._source.costs.mealPrice;
-      ctx._source.costs.mealPrices.add(params.mealPrice);
-      ctx._source.costs.remove("mealPrice");
-      ctx._source.costs.remove("total");
-      if (ctx._source.invoiceDate < 1588722850526) {
-        ctx._source.stripeInvoiceId = "Placeholder";
-      }
-    """,
-    "params": {
-      "delivery": {},
-      "mealPrice": {
-        "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-        "planName": "Standard"
-      }
-    }
-  }
-}
-
-
-POST orders/_update/NJnZ03EBTPi9Vy_WrUi7
-{
-  "script" : {
-    "source": """
-      for (int i = 0; i < ctx._source.deliveries.length; i++) {
-        for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-          ctx._source.deliveries[i].meals[j].restName = "China Spice"
+  "properties": {
+    "plan": {
+      "properties": {
+        "mealPlans" : {
+          "properties": {
+            "stripeSubscriptionItemId": {
+              "type": "keyword"
+            }
+          }
         }
-      }    
-    """,
-    "lang": "painless"
+      }
+    }
   }
 }
 
-POST orders/_update/MZnNr3EBTPi9Vy_WHUim
+PUT orders/_mapping
+{
+  "properties": {
+    "deliveries": {
+      "properties": {
+        "meals" : {
+          "properties": {
+            "stripeSubscriptionItemId": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    },
+    "mealPlans": {
+      "properties": {
+        "stripeSubscriptionItemId": {
+          "type": "keyword"
+        },
+        "stripePlanId": {
+          "type": "keyword"
+        },
+        "planName": {
+          "type": "keyword"
+        },
+        "mealCount": {
+          "type": "integer"
+        },
+      }
+    }
+  }
+}
+
+
+POST consumers/_update_by_query
 {
   "script" : {
     "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "South Street"
+      if (ctx._source.profile.email.equals("barooah93@yahoo.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HFwXfMRvb7haPM"
       }
-    }   
+      
+      if (ctx._source.profile.email.equals("joshtolens@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HGAMgvVpR6ZyBz"
+      }
+      
+      if (ctx._source.profile.email.equals("dbustosloves@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HFwL6iJSt6M1Zb"
+      }
+      
+      if (ctx._source.profile.email.equals("nephercr@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HGGTprcjFTkXir"
+      }
+      
+      if (ctx._source.profile.email.equals("lschairer011@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HFANFFbxqMtAE0"
+      }
+      
+      if (ctx._source.profile.email.equals("arvinderbaring@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HH5AzYNsAZ7JcC"
+      }
     """,
     "lang": "painless"
-  }
-}
-
-
-POST orders/_update/M5k-vHEBTPi9Vy_WI0ji
-{
-  "script" : {
-    "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "China Spice"
-      }
-    }   
-    """,
-    "lang": "painless"
-  }
-}
-
-
-POST orders/_update/Mpm8s3EBTPi9Vy_Wwkhk
-{
-  "script" : {
-    "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
-      }
-    }  
-    """,
-    "lang": "painless"
-  }
-}
-
-
-POST orders/_update/NZnJ13EBTPi9Vy_WKUiJ
-{
-  "script" : {
-    "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
-      }
-    }    
-    """,
-    "lang": "painless"
-  }
-}
-
-
-POST orders/_update/MJkxmHEBTPi9Vy_WcEhl
-{
-  "script" : {
-    "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "Vip Diner"
-      }
-    }    
-    """,
-    "lang": "painless"
-  }
-}
-
-
-POST orders/_update/NplK4HEBTPi9Vy_WmUhN
-{
-  "script" : {
-    "source": """
-    for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-        ctx._source.deliveries[i].meals[j].restName = "China Spice"
-      }
-    }  
-    """,
-    "lang": "painless"
-  }
-}
-
-
-
-
-DELETE orders
-create orders
-
-POST _reindex
-{
-  "source": {
-    "index": "orders2"
   },
-  "dest": {
-    "index": "orders"
+  "query": { 
+    "match_all": {}
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      if (ctx._source.consumer.profile.email.equals("barooah93@yahoo.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HFwXfMRvb7haPM"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HFwXfMRvb7haPM",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        ctx._source.plans = plans;
+      }
+      
+      if (ctx._source.consumer.profile.email.equals("joshtolens@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HGAMgvVpR6ZyBz"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HGAMgvVpR6ZyBz",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        ctx._source.plans = plans;
+      }
+      
+      if (ctx._source.consumer.profile.email.equals("dbustosloves@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HFwL6iJSt6M1Zb"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HFwL6iJSt6M1Zb",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        ctx._source.plans = plans;
+      }
+      
+      if (ctx._source.consumer.profile.email.equals("nephercr@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HGGTprcjFTkXir"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HGGTprcjFTkXir",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        ctx._source.plans = plans;
+      }
+      
+      if (ctx._source.consumer.profile.email.equals("lschairer011@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HFANFFbxqMtAE0"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HFANFFbxqMtAE0",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        ctx._source.plans = plans;
+      }
+      
+      if (ctx._source.consumer.profile.email.equals("arvinderbaring@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HH5AzYNsAZ7JcC"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HH5AzYNsAZ7JcC",
+          'stripePlanId': "plan_HE1O8fPf3Nf3Uo",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////// DEVVVVVVVVVVVVVVV
+
+
+
+
+
+POST consumers/_update_by_query
+{
+  "script" : {
+    "source": """
+      if (ctx._source.profile.email.equals("simon.orchideats@gmail.com")) {
+        ctx._source.plan.mealPlans[0].stripeSubscriptionItemId = "si_HIT5mu4RXyja7W"
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      if (ctx._source.consumer.profile.email.equals("simon.orchideats@gmail.com")) {
+        for (int i = 0; i < ctx._source.deliveries.length; i++) {
+          def delivery = ctx._source.deliveries[i];
+          for (int j = 0; j < delivery.meals.length; j++) {
+            delivery.meals[j].stripeSubscriptionItemId = "si_HIT5mu4RXyja7W"
+          }
+        }
+        def plans = [
+          'stripeSubscriptionItemId': "si_HIT5mu4RXyja7W",
+          'stripePlanId': "plan_HDGgkmXFCPQTlq",
+          'planName': "Standard",
+          'mealCount': 4
+        ];
+        def list = new ArrayList();
+        list.add(plans);
+        ctx._source.plans = list;
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
   }
 }

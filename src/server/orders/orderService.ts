@@ -647,7 +647,8 @@ class OrderService {
         addr.state,
         addr.zip,
       );
-      const billingStartDateSeconds = Math.round(moment().tz(geo.timezone).endOf('d').valueOf() / 1000)
+      // - 60 seconds for extra buffer
+      const billingStartDateSeconds = Math.floor(moment().tz(geo.timezone).endOf('d').valueOf() / 1000) - 60;
       try {
         subscription = await this.stripe.subscriptions.create({
           proration_behavior: 'none',

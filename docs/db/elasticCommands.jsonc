@@ -827,6 +827,9 @@ PUT /orders/
               },
               "taxRate": {
                 "type": "float"
+              },
+              "stripeSubscriptionItemId": {
+                "type": "keyword"
               }
             }
           }
@@ -949,6 +952,22 @@ PUT /orders/
       },
       "donationCount": {
         "type": "integer"
+      },
+      "plans": {
+        "properties": {
+          "stripeSubscriptionItemId": {
+            "type": "keyword"
+          },
+          "stripePlanId": {
+            "type": "keyword"
+          },
+          "planName": {
+            "type": "keyword"
+          },
+          "mealCount": {
+            "type": "integer"
+          }
+        }
       }
     }
   }
@@ -1038,6 +1057,9 @@ PUT /consumers/
                 "type": "keyword"
               },
               "mealCount": {
+                "type": "keyword"
+              },
+              "stripeSubscriptionItemId": {
                 "type": "keyword"
               }
             }
