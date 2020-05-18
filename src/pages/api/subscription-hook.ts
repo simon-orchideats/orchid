@@ -8,7 +8,6 @@ import Cors from 'micro-cors'
 import { activeConfig } from '../../config';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MealPrice } from '../../order/orderModel';
-import { Delivery } from '../../order/deliveryModel';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
   apiVersion: '2020-03-02',
