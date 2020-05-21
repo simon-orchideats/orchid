@@ -1,3 +1,4 @@
+import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
 import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
@@ -22,6 +23,8 @@ import moment from 'moment-timezone';
 import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput } from '../../order/deliveryModel';
 
 const ORDER_INDEX = 'orders';
+const PROMO_INDEX = 'promos';
+
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
@@ -126,6 +129,7 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
 })
 
 export interface IOrderService {
+  applyPromo(promo: string, name: string, addrStr: string): Promise<MutationPromoRes>
   addAutomaticOrder(
     userId: string,
     addedWeeks: number,
@@ -535,6 +539,90 @@ class OrderService {
     }
   }
 
+  public async applyPromo(code: string, phone: string, fullAddr: string) {
+    try {
+      let coupon;
+      try {
+        coupon = await this.stripe.coupons.retrieve(code);
+      } catch (e) {
+        if (e.statusCode === 404) {
+          return {
+            res: null,
+            error: `Promo code "${code}" doesn't exist`
+          }
+        }
+        console.error(`Failed to get stripe coupon with code '${code}`, e.stack);
+        throw e;
+      }
+      const iCoupon: IPromo = {
+        stripeCouponId: coupon.id,
+        amountOff: coupon.amount_off,
+        percentOff: coupon.percent_off,
+      }
+      const key = (fullAddr + phone.replace(/\D/g, '')).replace(/\s/g, '');
+      console.log(key);
+      let res: ApiResponse<SearchResponse<EPromo>>;
+      try {
+        res = await this.elastic.search({
+          index: PROMO_INDEX,
+          size: 1000,
+          body: {
+            query: {
+              bool: {
+                filter: {
+                  bool: {
+                    must: [
+                      {
+                        term: {
+                          stripeCouponId: code
+                        } as Pick<EPromo, 'stripeCouponId'>
+                      },
+                      {
+                        term: {
+                          fullAddrWithPhoneKey: key
+                        } as Pick<EPromo, 'fullAddrWithPhoneKey'>
+                      },
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error(`Failed to get promo '${code}' with key '${key}'`, e.stack);
+        throw e;
+      }
+      if (res.body.hits.total.value === 0) {
+        return {
+          res: iCoupon,
+          error: null,
+        };
+      };
+  
+      if (res.body.hits.total.value > 1) {
+        throw new Error(`Found mulitple promos with code ${code} for key '${key}'`);
+      }
+    
+      const eCoupon = res.body.hits.hits[0];
+  
+      if (Date.now() < eCoupon._source.nextAllowedRedemptionDate) {
+        return {
+          res: null,
+          error: 'Coupon has already been redeemed.'
+        }
+      } else {
+        return {
+          res: iCoupon,
+          error: null,
+        } 
+      }
+    } catch (e) {
+      console.error(`Failed to apply promo ${code} for address '${fullAddr}' and phone '${phone}'`, e.stack);
+      throw e;
+    }
+  }
+
   // todo simon: add validation. can only get orders that belong to you
   public async getIOrder(signedInUser: SignedInUser, orderId: string, fields?: string[]) {
     if (!signedInUser) throw getNotSignedInErr()
@@ -737,6 +825,8 @@ class OrderService {
       })
 
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
+
+      // refresh access token so client can pick up new fields in token
       if (req && res) await refetchAccessToken(req, res);
       return {
         res: Consumer.getIConsumerFromEConsumer(signedInUser._id, consumer),

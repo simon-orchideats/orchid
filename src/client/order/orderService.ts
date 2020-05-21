@@ -1,3 +1,4 @@
+import { MutationPromoRes, Promo } from './../../order/promoModel';
 import { Plan } from './../../plan/planModel';
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
@@ -20,6 +21,51 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
   }
   ${orderFragment}
 `
+
+export const useApplyPromo = (): [
+  (promoCode: string, phone: string, fullAddr: string) => void,
+  {
+    error?: ApolloError 
+    data?: {
+      res: Promo | null,
+      error: string | null
+    },
+  }
+] => {
+  type res = { applyPromo: MutationPromoRes };
+  type vars = { promoCode: string, phone: string, fullAddr: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation applyPromo($promoCode: String!, $phone: String!, $fullAddr: String!) {
+      applyPromo(promoCode: $promoCode, phone: $phone, fullAddr: $fullAddr) {
+        res {
+          stripeCouponId
+          percentOff
+          amountOff
+        }
+        error
+      }
+    }
+  `);
+  const applyPromo = (promoCode: string, phone: string, fullAddr: string) => {
+    mutate({
+      variables: { promoCode, phone, fullAddr },
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.applyPromo.res && new Promo(mutation.data.applyPromo.res),
+      error: mutation.data.applyPromo.error
+    }
+    return [
+      applyPromo,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
+}
+
 
 export const useGetOrder = (orderId: string | null) => {
   type res = { order: IOrder }

@@ -108,6 +108,11 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
+  promotion: {
+    backgroundColor: theme.palette.secondary.main,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+  },
   newsLetterInput: {
     marginTop: theme.spacing(2),
     paddingLeft: theme.spacing(2),
@@ -134,6 +139,9 @@ const useStyles = makeStyles(theme => ({
       marginRight: 0,
       marginBottom: theme.spacing(2),
     },
+  },
+  bold: {
+    fontWeight: 600,
   },
   who: {
     [theme.breakpoints.down('xs')]: {
@@ -502,10 +510,25 @@ const Benefits = () => {
   )
 }
 
+const Promotion = () => {
+  const classes = useStyles();
+  return (
+    <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
+      <Typography variant='h4' className={classes.bold}>
+        Limited time promotion
+      </Typography>
+      <Typography variant='h4' className={classes.bold}>
+        $10 off your first order, applied at checkout! 
+      </Typography>
+    </div>
+  );
+}
+
 const Index = () => {
   return (
     <>
       <Welcome />
+      <Promotion />
       <Donate />
       <HowItWorks />
       <Plans />

@@ -801,6 +801,20 @@ PUT /orders/
               "mealId": {
                 "type": "keyword"
               },
+              // probably add this down the line
+              // "coupon": {
+              //   "properties": {
+              //     "couponId": {
+              //       "type": "keyword"
+              //     },
+              //     "amountOff": {
+              //       "type": "integer"
+              //     },
+              //     "percentOff": {
+              //       "type": "integer"
+              //     }
+              //   }
+              // },
               "img": {
                 "type": "keyword"
               },
@@ -1079,6 +1093,30 @@ PUT /consumers/
           }
         }
       }
+    }
+  }
+}
+
+
+PUT /promos/
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "stripeCouponId": {
+        "type": "keyword"
+      },
+      "fullAddrWithPhoneKey": {
+        "type": "keyword"
+      },
+      "lastRedemptionDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "nextAllowedRedemptionDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
     }
   }
 }

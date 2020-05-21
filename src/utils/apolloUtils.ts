@@ -1,3 +1,4 @@
+import { MutationPromoRes } from './../order/promoModel';
 import { useNotify } from './../client/global/state/notificationState';
 import { NotificationType } from './../client/notification/notificationModel';
 import { useEffect } from 'react';
@@ -83,7 +84,7 @@ const getSignedInUser = async (req?: IncomingMessage, res?: OutgoingMessage): Pr
 
 type handlerRes = {
   error?: ApolloError 
-  data?: MutationBoolRes | MutationConsumerRes
+  data?: MutationBoolRes | MutationConsumerRes | MutationPromoRes
 };
 export const useMutationResponseHandler:(
   res: handlerRes,

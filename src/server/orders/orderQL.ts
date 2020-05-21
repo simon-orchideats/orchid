@@ -80,6 +80,17 @@ export const _OrderQL = gql`
     deliveryFee: Float!
   }
 
+  type Promo {
+    stripeCouponId: ID!
+    percentOff: Int
+    amountOff: Int
+  }
+
+  type PromoRes {
+    res: Promo
+    error: String
+  }
+
   type Order {
     _id: ID!
     invoiceDate: Float!

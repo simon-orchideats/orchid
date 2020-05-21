@@ -14,6 +14,25 @@ export const OrderQueryResolvers: ServerResolovers = {
 }
 
 export const OrderMutationResolvers: ServerResolovers = {
+  applyPromo: async (
+    _root,
+    {
+      promoCode,
+      phone,
+      fullAddr
+    }: {
+      promoCode: string
+      phone: string
+      fullAddr: string
+    },
+  ) => {
+    try {
+      return await getOrderService().applyPromo(promoCode, phone, fullAddr);
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
+  },
+
   placeOrder: async (
     _root,
     { cart }: { cart: ICartInput },

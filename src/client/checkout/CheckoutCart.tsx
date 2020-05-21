@@ -10,6 +10,8 @@ import { Cost } from "../../order/costModel";
 import { Cart } from "../../order/cartModel";
 import { MealPrice } from "../../order/orderModel";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import BaseInput from "../general/inputs/BaseInput";
+import { RefObject } from "react";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -37,15 +39,23 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type props = {
-  onPlaceOrder: () => void
+  amountOff: number
   buttonBottom?: boolean
+  defaultPromo?: string
   loading: boolean,
+  onApplyPromo: () => void
+  onPlaceOrder: () => void
+  promoRef: RefObject<HTMLInputElement>
 }
 
 const CheckoutCart: React.FC<props> = ({
-  loading,
-  onPlaceOrder,
+  amountOff,
   buttonBottom = false,
+  defaultPromo,
+  loading,
+  onApplyPromo,
+  onPlaceOrder,
+  promoRef,
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
@@ -54,7 +64,7 @@ const CheckoutCart: React.FC<props> = ({
   const mealCount = Cart.getStandardMealCount(cart);
   const mealPrices = MealPrice.getMealPriceFromDeliveries(plans.data, cart.Deliveries, cart.DonationCount);
   const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
-  const button = (
+  const orderButton = (
     <Button
       variant='contained'
       color='primary'
@@ -66,13 +76,42 @@ const CheckoutCart: React.FC<props> = ({
       {loading ? <CircularProgress size={25} /> : 'Place order'}
     </Button>
   );
+  const applyPromoButton = (
+    <Button
+      variant='outlined'
+      fullWidth
+      onClick={onApplyPromo}
+      className={classes.button}
+    >
+      Apply promo
+    </Button>
+  );
+  const promoInput = (
+    <BaseInput
+      // using key to force BaseInput to rerender, otherwise updates to defaultValue don't get shown. we do this because
+      // using a controlled component with setState on the promo code value is laggy when being updated
+      // so we went the ref route and if we do ref route, we need defaultValue
+      key={defaultPromo}
+      className={classes.button}
+      label='Promo code'
+      inputRef={promoRef}
+      defaultValue={defaultPromo}
+    />
+  )
   const taxes = Cost.getTaxes(cart.Deliveries, mealPrices);
   const deliveryFee = Cost.getDeliveryFee(cart.Deliveries);
-  const total = ((taxes + planPrice + (deliveryFee * (cart.Schedules.length - 1))) / 100).toFixed(2);
+  const total = ((taxes + planPrice - amountOff + (deliveryFee * (cart.Schedules.length - 1))) / 100).toFixed(2);
   const restMealsPerDelivery = Cart.getRestMealsPerDelivery(cart.deliveries);
   return (
     <>
-      {!buttonBottom && button}
+      {
+        !buttonBottom &&
+        <>
+          {orderButton}
+          {promoInput}
+          {applyPromoButton}
+        </>
+      }
       <Typography
         variant='h6'
         color='primary'
@@ -154,6 +193,14 @@ const CheckoutCart: React.FC<props> = ({
               </Typography>
           }
         </div>
+        <div className={classes.row}>
+          <Typography variant='body1'>
+            Promo
+          </Typography>
+          <Typography variant='body1' color='primary'>
+            <b>-${(amountOff / 100).toFixed(2)}</b>
+          </Typography>
+        </div>
         <div className={`${classes.row} ${classes.paddingBottom}`} >
           <Typography variant='body1' color='primary'>
             Total
@@ -162,7 +209,14 @@ const CheckoutCart: React.FC<props> = ({
             ${total}
           </Typography>
         </div>
-        {buttonBottom && button}
+        {
+          buttonBottom && 
+          <>
+            {promoInput}
+            {applyPromoButton}
+            {orderButton}
+          </>
+        }
         <Typography variant='body2' className={classes.hint}>
           Your first payment will occur on {moment().add(1, 'w').format('M/D')} and will automatically renew every week
           unless canceled. Your price per meal is determined by the actual number of meals received per week, not

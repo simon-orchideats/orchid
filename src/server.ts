@@ -39,6 +39,13 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 // todo think about how we're going to "confirm" orders. and how when updating an order, we need to check if hte order
 // is already confirmed. originally we were gonna listen for stripe payment event and then use that
 
+
+// when updating card, make sure i reset the default payment
+
+// place order with coupon, this hsould make a entry. then try to use it again with same phone and
+// address, should get an error. then change the timestamp. should not get an error
+// when placing order, coupon is assuemd to be good for now so we just update the timestamp or alteratively we
+// add the entry if it doenst already exist
 init({
   dsn: activeConfig.server.sentry.dsn,
   integrations: [

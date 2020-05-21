@@ -77,7 +77,7 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What is Orchid?'
-            a="Orchid allows YOU to receive your favorite restaurant meals every week at one low cost. We're a weekly
+            a="Orchid allows to receive your favorite restaurant meals every week at one low cost. We're a weekly
             subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
             fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
           />

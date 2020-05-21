@@ -1,4 +1,72 @@
+PUT /promos/
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "stripeCouponId": {
+        "type": "keyword"
+      },
+      "fullAddrWithPhone": {
+        "type": "keyword"
+      },
+      "lastRedemptionDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "nextAllowedRedemptionDate": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////
+
+
+
+
+
 for all the consumers, add stripeSubId to the mealPlans
+
 
 for all orders, 
   - go to each meal and add stripeSubscriptionItemId

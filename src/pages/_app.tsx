@@ -9,11 +9,11 @@ import { isServer } from '../client/utils/isServer';
 import LogRocket from 'logrocket';
 import { activeConfig } from '../config';
 import { analyticsService } from '../client/utils/analyticsService';
-import { Router } from 'next/router';
+import { Router, withRouter } from 'next/router';
 
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 
-export default class MyApp extends App {
+class MyApp extends App {
   
   async componentDidMount() {
     // Remove the server-side injected CSS.
@@ -26,7 +26,27 @@ export default class MyApp extends App {
           shouldAggregateConsoleErrors: true,
         }
       });
-      Router.events.on('routeChangeComplete', () => {
+      // depending on the the route being loaded, sometimes router doesn't see promo param
+      // which is why we try again inside the routeChangeComplete
+      const promo = this.props.router.query.promo as string;
+      const amountOff = this.props.router.query.amountOff as string;
+      let prevPromo: string | false = promo;
+      let prevAmountOff: string | false = amountOff;
+      Router.events.on('routeChangeComplete', url => {
+        if (prevAmountOff === undefined) {
+          prevAmountOff = amountOff || false;
+        }
+        if (prevPromo === undefined) {
+          prevPromo = promo || false;
+        }
+        if (
+          prevPromo
+          && !this.props.router.query.promo 
+          && prevAmountOff 
+          && !this.props.router.query.amountOff
+        ) {
+          this.props.router.replace(`${url}?promo=${prevPromo}&amountOff=${amountOff}`);
+        };
         window.scroll({
           top: 0,
           left: 0,
@@ -54,3 +74,5 @@ export default class MyApp extends App {
     );
   }
 }
+
+export default withRouter(MyApp);

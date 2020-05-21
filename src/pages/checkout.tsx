@@ -2,7 +2,7 @@ import { Typography, makeStyles, Grid, Container, TextField, useMediaQuery, Them
 import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
-import Router from 'next/router'
+import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
 import { useState, useEffect, useRef, createRef } from "react";
@@ -13,7 +13,7 @@ import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "rea
 import { CuisineType, CuisineTypes } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
-import { usePlaceOrder } from "../client/order/orderService";
+import { usePlaceOrder, useApplyPromo } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
@@ -27,6 +27,7 @@ import GLogo from "../client/checkout/GLogo";
 import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
 import { useGetAvailablePlans } from "../plan/planService";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
+import { useMutationResponseHandler } from "../utils/apolloUtils";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -58,6 +59,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const cart = useGetCart();
   const signInGoogle = useGoogleSignIn();
   const notify = useNotify();
+  const router = useRouter();
   const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer();
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
@@ -69,6 +71,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [state, setState] = useState<state | ''>('NJ');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
+  const [applyPromo, applyPromoRes] = useApplyPromo();
+  const promoInputRef = createRef<HTMLInputElement>();
+  const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
   const [cuisines, setCuisines] = useState<CuisineType[]>(Object.values(CuisineTypes));
   const [accountName, setAccountName] = useState<string>('');
@@ -84,6 +89,23 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
+
+  useEffect(() => {
+    if (router.query.amountOff !== undefined) {
+      setAmountOff(parseFloat(router.query.amountOff as string));
+    }
+  }, [router.query.amountOff]);
+
+  useMutationResponseHandler(applyPromoRes, () => {
+    if (!applyPromoRes.data?.res?.AmountOff) {
+      const err = new Error('Missing amount off');
+      console.error(err.stack);
+      throw err;
+    }
+    notify('Promo applied', NotificationType.success, true);
+    setAmountOff(applyPromoRes.data.res.AmountOff);
+  });
+
   useEffect(() => {
     if (placeOrderRes.error) {
       setDidPlaceOrder(false);
@@ -350,6 +372,36 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     );
   }
 
+
+  const onApplyPromo = () => {
+    if (!validate()) {
+      notify('Please fix errors', NotificationType.error, true);
+      return
+    };
+    if (!promoInputRef.current?.value) return;
+    applyPromo(
+      promoInputRef.current!.value,
+      phoneInputRef.current!.value,
+      addr1InputRef.current!.value +(addr2InputRef.current?.value || '') + cityInputRef.current!.value + zipInputRef.current!.value + state
+    );
+  }
+
+  const checkoutCartProps = {
+    amountOff: amountOff ?? 0,
+    onPlaceOrder: () => onClickPlaceOrder(
+      emailInputRef.current?.value,
+      addr1InputRef.current?.value,
+      addr2InputRef.current?.value,
+      cityInputRef.current?.value,
+      zipInputRef.current?.value,
+      phoneInputRef.current?.value,
+    ),
+    loading: didPlaceOrder,
+    promoRef: promoInputRef,
+    defaultPromo: router.query.promo as string,
+    onApplyPromo,
+  }
+
   return (
     <Container
       maxWidth='xl'
@@ -520,17 +572,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             lg={3}
           >
             <StickyDrawer>
-              <CheckoutCart
-                onPlaceOrder={() => onClickPlaceOrder(
-                  emailInputRef.current?.value,
-                  addr1InputRef.current?.value,
-                  addr2InputRef.current?.value,
-                  cityInputRef.current?.value,
-                  zipInputRef.current?.value,
-                  phoneInputRef.current?.value,
-                )}
-                loading={didPlaceOrder}
-              />
+              <CheckoutCart {...checkoutCartProps} />
             </StickyDrawer>
           </Grid>
         }
@@ -541,18 +583,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             sm={12}
             className={`${classes.inputs} ${classes.title}`}
           >
-            <CheckoutCart
-              buttonBottom
-              onPlaceOrder={() => onClickPlaceOrder(
-                emailInputRef.current!.value,
-                addr1InputRef.current!.value,
-                addr2InputRef.current!.value,
-                cityInputRef.current!.value,
-                zipInputRef.current!.value,
-                phoneInputRef.current!.value,
-              )}
-              loading={didPlaceOrder}
-            />
+            <CheckoutCart {...checkoutCartProps} buttonBottom />
           </Grid>
         }
       </Grid>
