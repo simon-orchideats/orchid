@@ -72,20 +72,22 @@ export const _OrderQL = gql`
     mealPrice: Float!
   }
 
-  type Costs {
-    tax: Float!
-    tip: Float!
-    mealPrices: [MealPrice!]!
-    percentFee: Float
-    flatRateFee: Float
-    deliveryFee: Float!
-  }
-
   type Promo {
     stripeCouponId: ID!
     percentOff: Int
     amountOff: Int
   }
+
+  type Costs {
+    tax: Float!
+    tip: Float!
+    mealPrices: [MealPrice!]!
+    promos: [Promo]
+    percentFee: Float
+    flatRateFee: Float
+    deliveryFee: Float!
+  }
+
 
   type PromoRes {
     res: Promo

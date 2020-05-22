@@ -288,6 +288,13 @@ const DeliveryOverview: React.FC<{
               '0 meals'
             }
           </Typography>
+          {
+            order.Costs.Promos && order.Costs.Promos.length === 1 &&
+            <Typography variant='body1' color='primary'>
+              <b>{order.Costs.Promos[0].AmountOff && `-$${(order.Costs.Promos[0].AmountOff / 100).toFixed(2)} in savings`}</b>
+              <b>{order.Costs.Promos[0].PercentOff && `-$${(order.Costs.Promos[0].PercentOff).toFixed(2)} in savings`}</b>
+            </Typography>
+          }
         </Grid>
         <Grid
           item

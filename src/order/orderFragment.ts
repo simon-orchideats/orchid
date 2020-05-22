@@ -21,6 +21,11 @@ const orderFragment = gql`
         planName
         mealPrice
       }
+      promos {
+        stripeCouponId
+        percentOff
+        amountOff
+      }
     }
     deliveries {
       deliveryTime
