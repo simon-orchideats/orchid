@@ -80,8 +80,9 @@ const DeliveryDateChooser: React.FC<{
           onChange={e => onTimeChange(e.target.value as deliveryTime)}
         >
           {/* <MenuItem value={'OnePToThreeP'}>{ConsumerPlan.getDeliveryTimeStr('OnePToThreeP')}</MenuItem> */}
-          <MenuItem value={'FourPToSixP'}>{ConsumerPlan.getDeliveryTimeStr('FourPToSixP')}</MenuItem>
+          <MenuItem value={'FivePToSevenP'}>{ConsumerPlan.getDeliveryTimeStr('FivePToSevenP')}</MenuItem>
           <MenuItem value={'SixPToEightP'}>{ConsumerPlan.getDeliveryTimeStr('SixPToEightP')}</MenuItem>
+          <MenuItem value={'SevenPToNineP'}>{ConsumerPlan.getDeliveryTimeStr('SevenPToNineP')}</MenuItem>
         </Select>
       </FormControl>
     </>

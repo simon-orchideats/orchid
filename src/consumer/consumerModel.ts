@@ -95,20 +95,27 @@ export type deliveryTime =  'TenAToTwelveP' |
 'TwelvePToTwoP' |
 'TwoPToFourP' |
 'FourPToSixP' |
-'SixPToEightP'
+'FivePToSevenP' |
+'SixPToEightP' |
+'SevenPToNineP'
+
 
 const deliveryTimes: {
   TenAToTwelveP: '10am - 12pm',
   TwelvePToTwoP: '12pm - 2pm',
   TwoPToFourP: '2pm - 4pm',
   FourPToSixP: '4pm - 6pm',
+  FivePToSevenP: '5pm - 7pm',
   SixPToEightP: '6pm - 8pm',
+  SevenPToNineP: '7pm - 9pm',
 } = {
   TenAToTwelveP: '10am - 12pm',
   TwelvePToTwoP: '12pm - 2pm',
   TwoPToFourP: '2pm - 4pm',
   FourPToSixP: '4pm - 6pm',
+  FivePToSevenP: '5pm - 7pm',
   SixPToEightP: '6pm - 8pm',
+  SevenPToNineP: '7pm - 9pm',
 }
 
 export const defaultDeliveryDay: deliveryDay = 2;

@@ -22,7 +22,9 @@ const DeliveryTimeQL = gql`
     TwelvePToTwoP
     TwoPToFourP
     FourPToSixP
+    FivePToSevenP
     SixPToEightP
+    SevenPToNineP
   }
 `
 
