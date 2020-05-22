@@ -1,10 +1,10 @@
-import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
+import { MutationPromoRes, IPromo, EPromo, welcomePromoSubscriptionMetaKey } from '../../order/promoModel';
 import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
-import { IAddress } from './../../place/addressModel';
+import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
@@ -41,6 +41,10 @@ const chooseRandomMeals = (
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
   return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
 }
+
+// place this fn in here instead of in Promo model so that it stays serverside and client cannot see how we
+// check for dupe promo redemptions
+const getPromoKey = (phone: string, fullAddr: string) => (fullAddr + phone.replace(/\D/g, '')).replace(/\s/g, '')
 
 /**
  * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
@@ -129,7 +133,6 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
 })
 
 export interface IOrderService {
-  applyPromo(promo: string, name: string, addrStr: string): Promise<MutationPromoRes>
   addAutomaticOrder(
     userId: string,
     addedWeeks: number,
@@ -137,6 +140,7 @@ export interface IOrderService {
     invoiceDate: number,
     mealPrices: IMealPrice[]
   ): Promise<void>
+  applyPromo(code: string, subscriptionId: string): Promise<void>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'> | null>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
@@ -151,6 +155,7 @@ export interface IOrderService {
   } | null>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  getPromo(promo: string, phone: string, addrStr: string): Promise<MutationPromoRes>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
   processTaxesAndFees(
     stripeCustomerId: string,
@@ -274,7 +279,104 @@ class OrderService {
         console.warn('[OrderService]', msg, e.stack);
         return msg;
       });
-    } 
+    }
+
+  private async validatePromo(code: string, phone: string, fullAddr: string): Promise<{
+    ePromo: EPromo | null,
+    iPromo: IPromo | null,
+    error: string | null
+  }> {
+    try {
+      let promo;
+      try {
+        promo = await this.stripe.coupons.retrieve(code);
+      } catch (e) {
+        if (e.statusCode === 404) {
+          return {
+            ePromo: null,
+            iPromo: null,
+            error: `Promo code "${code}" doesn't exist`
+          }
+        }
+        console.error(`Failed to get stripe coupon with code '${code}`, e.stack);
+        throw e;
+      }
+      const key = getPromoKey(phone, fullAddr);
+      console.log(code, key);
+      let res: ApiResponse<SearchResponse<EPromo>>;
+      try {
+        res = await this.elastic.search({
+          index: PROMO_INDEX,
+          size: 1000,
+          body: {
+            query: {
+              bool: {
+                filter: {
+                  bool: {
+                    must: [
+                      {
+                        term: {
+                          stripeCouponId: code
+                        } as Pick<EPromo, 'stripeCouponId'>
+                      },
+                      {
+                        term: {
+                          fullAddrWithPhoneKey: key
+                        } as Pick<EPromo, 'fullAddrWithPhoneKey'>
+                      },
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error(`Failed to get promo '${code}' with key '${key}'`, e.stack);
+        throw e;
+      }
+
+      const iPromo: IPromo = {
+        stripeCouponId: promo.id,
+        amountOff: promo.amount_off,
+        percentOff: promo.percent_off,
+      }
+      console.log(res.body.hits.total);
+      if (res.body.hits.total.value === 0) {
+        return {
+          ePromo: null,
+          iPromo,
+          error: null,
+        };
+      };
+  
+      if (res.body.hits.total.value > 1) {
+        throw new Error(`Found mulitple promos with code ${code} for key '${key}'`);
+      }
+    
+      const ePromo = res.body.hits.hits[0];
+      console.log(ePromo._source.nextAllowedRedemptionDate);
+      if (Date.now() < ePromo._source.nextAllowedRedemptionDate) {
+        return {
+          ePromo: null,
+          iPromo: null,
+          error: 'Coupon has already been redeemed.'
+        }
+      } else {
+        return {
+          ePromo: {
+            _id: ePromo._id,
+            ...ePromo._source
+          },
+          iPromo,
+          error: null,
+        } 
+      }
+    } catch (e) {
+      console.error(`Failed to validate promo ${code} for address '${fullAddr}' and phone '${phone}'`, e.stack);
+      throw e;
+    }
+  }
 
   //@ts-ignore // todo simon: do this
   private validatePlan(planId: string, cartMealCount: number) {
@@ -433,6 +535,74 @@ class OrderService {
     }
   }
 
+  private async redeemPromo(promoCode: string, phone: string, addrStr: string): Promise<MutationPromoRes> {
+    try {
+      const promo = await this.validatePromo(promoCode, phone, addrStr);
+      if (promo.error) {
+        return {
+          res: null,
+          error: promo.error,
+        }
+      }
+
+      const lastRedemptionDate = Date.now();
+      const nextAllowedRedemptionDate = moment(lastRedemptionDate).add(6, 'M').valueOf();
+
+      if (promo.ePromo) {
+        const doc: Pick<EPromo, 'lastRedemptionDate' | 'nextAllowedRedemptionDate'> = {
+          lastRedemptionDate,
+          nextAllowedRedemptionDate,
+        }
+        try {
+          await this.elastic.update({
+            index: PROMO_INDEX,
+            id: promo.ePromo._id,
+            body: {
+              doc,
+            }
+          });
+        } catch (e) {
+          console.error(`Failed to update promo '${promo.ePromo._id}'`, e.stack);
+          throw e;
+        }
+      } else if (promo.iPromo) {
+        const key = getPromoKey(phone, addrStr);
+        const body: Omit<EPromo, '_id'> = {
+          stripeCouponId: promo.iPromo.stripeCouponId,
+          fullAddrWithPhoneKey: getPromoKey(phone, addrStr),
+          lastRedemptionDate,
+          nextAllowedRedemptionDate,
+        }
+        try {
+          await this.elastic.index({
+            index: PROMO_INDEX,
+            body,
+          })
+        } catch (e) {
+          console.error(`Failed to add promo '${promo.iPromo.stripeCouponId}' with key '${key}'`, e.stack);
+          throw e;
+        }
+      } else {
+        throw new Error('Promo validation passed but missing iPromo and ePromo');
+      }
+      return {
+        res: promo.iPromo,
+        error: null
+      }
+    } catch (e) {
+      console.error(`[OrderService]: Failed to redeem promo '${promoCode}' for phone '${phone}' and addr '${addrStr}'`, e.stack);
+      throw e;
+    }
+  }
+
+  public async applyPromo(promoCode: string, subscriptionId: string) {
+    this.stripe.subscriptions.update(subscriptionId, {
+      coupon: promoCode
+    }).catch(e => {
+      console.error(`[OrderService] Failed to update subscription '${subscriptionId}' with promo code '${promoCode}'`, e.stack)
+    });
+  }
+
   public async addAutomaticOrder(
     consumerId: string,
     addedWeeks: number,
@@ -539,83 +709,12 @@ class OrderService {
     }
   }
 
-  public async applyPromo(code: string, phone: string, fullAddr: string) {
+  public async getPromo(code: string, phone: string, fullAddr: string): Promise<MutationPromoRes> {
     try {
-      let coupon;
-      try {
-        coupon = await this.stripe.coupons.retrieve(code);
-      } catch (e) {
-        if (e.statusCode === 404) {
-          return {
-            res: null,
-            error: `Promo code "${code}" doesn't exist`
-          }
-        }
-        console.error(`Failed to get stripe coupon with code '${code}`, e.stack);
-        throw e;
-      }
-      const iCoupon: IPromo = {
-        stripeCouponId: coupon.id,
-        amountOff: coupon.amount_off,
-        percentOff: coupon.percent_off,
-      }
-      const key = (fullAddr + phone.replace(/\D/g, '')).replace(/\s/g, '');
-      console.log(key);
-      let res: ApiResponse<SearchResponse<EPromo>>;
-      try {
-        res = await this.elastic.search({
-          index: PROMO_INDEX,
-          size: 1000,
-          body: {
-            query: {
-              bool: {
-                filter: {
-                  bool: {
-                    must: [
-                      {
-                        term: {
-                          stripeCouponId: code
-                        } as Pick<EPromo, 'stripeCouponId'>
-                      },
-                      {
-                        term: {
-                          fullAddrWithPhoneKey: key
-                        } as Pick<EPromo, 'fullAddrWithPhoneKey'>
-                      },
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        });
-      } catch (e) {
-        console.error(`Failed to get promo '${code}' with key '${key}'`, e.stack);
-        throw e;
-      }
-      if (res.body.hits.total.value === 0) {
-        return {
-          res: iCoupon,
-          error: null,
-        };
-      };
-  
-      if (res.body.hits.total.value > 1) {
-        throw new Error(`Found mulitple promos with code ${code} for key '${key}'`);
-      }
-    
-      const eCoupon = res.body.hits.hits[0];
-  
-      if (Date.now() < eCoupon._source.nextAllowedRedemptionDate) {
-        return {
-          res: null,
-          error: 'Coupon has already been redeemed.'
-        }
-      } else {
-        return {
-          res: iCoupon,
-          error: null,
-        } 
+      const res = await this.validatePromo(code, phone, fullAddr);
+      return {
+        res: res.iPromo,
+        error: res.error,
       }
     } catch (e) {
       console.error(`Failed to apply promo ${code} for address '${fullAddr}' and phone '${phone}'`, e.stack);
@@ -695,6 +794,30 @@ class OrderService {
         }
       }
 
+      const addr = cart.destination.address;
+      const fullAddrStr = Address.getFullAddrStr(
+        addr.address1,
+        addr.city,
+        addr.state,
+        addr.zip,
+        addr.address2
+      )
+      let promo;
+      if (cart.promo) {
+        const promoRes = await this.redeemPromo(
+          cart.promo,
+          cart.phone,
+          fullAddrStr
+        );
+        if (!promoRes.res || promoRes.error) {
+          return {
+            res: null,
+            error: promoRes.error,
+          }
+        }
+        promo = promoRes.res;
+      }
+
       const {
         cuisines,
         schedules,
@@ -728,7 +851,6 @@ class OrderService {
         }
       }
       
-      const addr = cart.destination.address;
       const geo = await this.geoService.getGeocode(
         addr.address1,
         addr.city,
@@ -745,6 +867,9 @@ class OrderService {
           // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
           billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
+          metadata: {
+            [welcomePromoSubscriptionMetaKey]: promo?.stripeCouponId || null,
+          },
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
         });
       } catch (e) {
@@ -795,8 +920,9 @@ class OrderService {
         cart.donationCount,
         moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
         mealPrices,
+        promo && [ promo ],
         // make updated date 5 seconds past created date to indicate
-        // non auto generated order
+        // non auto generated order. this is a hack
         moment().valueOf(),
         moment().add(5, 's').valueOf(),
       );

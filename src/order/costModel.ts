@@ -1,9 +1,11 @@
 import { IMealPrice, MealPrice } from './orderModel';
 import { IDeliveryInput } from './deliveryModel';
+import { IPromo, Promo } from './promoModel';
 export interface ICost {
   readonly tax: number
   readonly tip: number
   readonly mealPrices: IMealPrice[]
+  readonly promos?: IPromo[]
   readonly percentFee: number
   readonly flatRateFee: number
   readonly deliveryFee: number
@@ -13,6 +15,7 @@ export class Cost implements ICost {
   readonly tax: number
   readonly tip: number
   readonly mealPrices: MealPrice[]
+  readonly promos?: Promo[]
   readonly percentFee: number
   readonly flatRateFee: number
   readonly deliveryFee: number
@@ -24,6 +27,7 @@ export class Cost implements ICost {
     this.percentFee = cost.percentFee;
     this.flatRateFee = cost.flatRateFee;
     this.deliveryFee = cost.deliveryFee;
+    this.promos = cost.promos && cost.promos.map(p => new Promo(p));
   }
 
   public get Tax() { return this.tax }
@@ -32,11 +36,13 @@ export class Cost implements ICost {
   public get PercentFee() { return this.percentFee }
   public get FlatRateFee() { return this.flatRateFee }
   public get DeliveryFee() { return this.deliveryFee }
+  public get Promos() { return this.promos }
 
   public static getICopy(c: ICost) {
     return {
       ...c,
       mealPrices: c.mealPrices.map(mp => MealPrice.getICopy(mp)),
+      promos: c.promos && c.promos.map(p => Promo.getICopy(p)),
     }
   }
 

@@ -4,6 +4,7 @@ import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
 import { EConsumerProfile, EConsumer, IMealPlan, EMealPlan } from './../consumer/consumerModel';
 import { ICost, Cost } from './costModel';
+import { IPromo } from './promoModel';
 
 export interface EOrder {
   readonly cartUpdatedDate: number
@@ -243,6 +244,7 @@ export class Order implements IOrder{
     donationCount: number,
     invoiceDate: number,
     mealPrices: IMealPrice[],
+    promos?: IPromo[],
     createdDate?: number,
     updatedDate?: number,
   ): EOrder {
@@ -271,6 +273,7 @@ export class Order implements IOrder{
         tax: Cost.getTaxes(deliveries, mealPrices),
         tip: 0,
         mealPrices,
+        promos,
         percentFee: 0,
         flatRateFee: 0,
         deliveryFee: Cost.getDeliveryFee(deliveries),

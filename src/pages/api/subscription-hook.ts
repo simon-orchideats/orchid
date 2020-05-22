@@ -8,6 +8,7 @@ import Cors from 'micro-cors'
 import { activeConfig } from '../../config';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MealPrice } from '../../order/orderModel';
+import { welcomePromoSubscriptionMetaKey } from '../../order/promoModel';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
   apiVersion: '2020-03-02',
@@ -40,13 +41,25 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
 
-  if (event.type !== 'invoice.upcoming' && event.type !== 'invoice.created') {
+  if (event.type !== 'invoice.upcoming' && event.type !== 'invoice.created' && event.type !== 'customer.subscription.updated') {
     console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
     res.json({ received: true });
     return;
   }
 
   res.json({ received: true });
+
+  if (event.type = 'customer.subscription.updated') {
+    const sub = event.data.object as Stripe.Subscription;
+    const promo = sub.metadata[welcomePromoSubscriptionMetaKey];
+    if (sub.billing_cycle_anchor === sub.current_period_start && promo) {
+      getOrderService().applyPromo(promo, sub.id).catch(e => {
+        console.error(`Failed to apply promo '${promo}' to subscription '${sub.id}'`, e.stack);
+      });
+    }
+    return;
+  } 
+
   const invoice = event.data.object as Stripe.Invoice
   // important to do this before looking up consumerByStripeId since if we just created the account,
   // the consumer may not exist in our system yet
@@ -62,7 +75,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   };
 
   const mealPlans = consumer.plan ? consumer.plan.mealPlans : [];
-
   if (event.type === 'invoice.upcoming') {
     try {
       const plans = await getPlanService().getAvailablePlans();

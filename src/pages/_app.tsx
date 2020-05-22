@@ -28,16 +28,16 @@ class MyApp extends App {
       });
       // depending on the the route being loaded, sometimes router doesn't see promo param
       // which is why we try again inside the routeChangeComplete
-      const promo = this.props.router.query.promo as string;
-      const amountOff = this.props.router.query.amountOff as string;
-      let prevPromo: string | false = promo;
-      let prevAmountOff: string | false = amountOff;
+      // also important that we keep using the query.{value} instead of storing it in a variable, otherwise the logic
+      // doesn't work
+      let prevPromo: string | false = this.props.router.query.promo as string;
+      let prevAmountOff: string | false = this.props.router.query.amountOff as string;
       Router.events.on('routeChangeComplete', url => {
         if (prevAmountOff === undefined) {
-          prevAmountOff = amountOff || false;
+          prevAmountOff = this.props.router.query.amountOff as string || false;
         }
         if (prevPromo === undefined) {
-          prevPromo = promo || false;
+          prevPromo = this.props.router.query.promo as string || false;
         }
         if (
           prevPromo
@@ -45,7 +45,7 @@ class MyApp extends App {
           && prevAmountOff 
           && !this.props.router.query.amountOff
         ) {
-          this.props.router.replace(`${url}?promo=${prevPromo}&amountOff=${amountOff}`);
+          this.props.router.replace(`${url}?promo=${prevPromo}&amountOff=${prevAmountOff}`);
         };
         window.scroll({
           top: 0,

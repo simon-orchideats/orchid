@@ -14,7 +14,7 @@ export const OrderQueryResolvers: ServerResolovers = {
 }
 
 export const OrderMutationResolvers: ServerResolovers = {
-  applyPromo: async (
+  getPromo: async (
     _root,
     {
       promoCode,
@@ -27,7 +27,7 @@ export const OrderMutationResolvers: ServerResolovers = {
     },
   ) => {
     try {
-      return await getOrderService().applyPromo(promoCode, phone, fullAddr);
+      return await getOrderService().getPromo(promoCode, phone, fullAddr);
     } catch (e) {
       throw new Error('Internal Server Error');
     }

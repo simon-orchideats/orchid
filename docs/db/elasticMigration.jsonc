@@ -6,7 +6,7 @@ PUT /promos/
       "stripeCouponId": {
         "type": "keyword"
       },
-      "fullAddrWithPhone": {
+      "fullAddrWithPhoneKey": {
         "type": "keyword"
       },
       "lastRedemptionDate": {
@@ -21,8 +21,30 @@ PUT /promos/
   }
 }
 
+PUT orders/_mapping
+{
+  "properties": {
+    "costs": {
+      "properties": {
+        "promos": {
+          "properties": {
+            "stripeCouponId": {
+              "type": "keyword"
+            },
+            "percentOff": {
+              "type": "integer"
+            },
+            "amountOff": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
-
+make sure you turn on the proper events for webhooks
 
 
 

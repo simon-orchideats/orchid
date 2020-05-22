@@ -467,7 +467,6 @@ export const getConsumerService = () => {
       apiVersion: '2020-03-02',
     }),
   );
-  //@ts-ignore
   consumerService!.setOrderService(getOrderService());
   consumerService!.setPlanService(getPlanService());
   consumerService!.setGeoService(getGeoService());

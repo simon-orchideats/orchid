@@ -12,6 +12,7 @@ import moment from "moment";
 export interface ICartInput {
   readonly paymentMethodId: string
   readonly card: ICard
+  readonly promo?: string
   readonly consumerPlan: IConsumerPlan
   readonly donationCount: number
   readonly phone: string
@@ -342,6 +343,7 @@ export class Cart implements ICart {
     paymentMethodId: string,
     instructions: string,
     cuisines: CuisineType[],
+    promo?: string,
   ): ICartInput {
     const mealPlans = Object.values(this.restMeals).reduce<MealPlan[]>((plans, restMeal) => {
       restMeal.mealPlans.forEach(mp => {
@@ -372,6 +374,7 @@ export class Cart implements ICart {
       paymentMethodId,
       card,
       phone,
+      promo,
       consumerPlan: {
         mealPlans,
         schedules: this.Schedules,

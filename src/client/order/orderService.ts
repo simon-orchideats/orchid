@@ -22,7 +22,7 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
   ${orderFragment}
 `
 
-export const useApplyPromo = (): [
+export const useGetPromo = (): [
   (promoCode: string, phone: string, fullAddr: string) => void,
   {
     error?: ApolloError 
@@ -32,11 +32,11 @@ export const useApplyPromo = (): [
     },
   }
 ] => {
-  type res = { applyPromo: MutationPromoRes };
+  type res = { getPromo: MutationPromoRes };
   type vars = { promoCode: string, phone: string, fullAddr: string }
   const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation applyPromo($promoCode: String!, $phone: String!, $fullAddr: String!) {
-      applyPromo(promoCode: $promoCode, phone: $phone, fullAddr: $fullAddr) {
+    mutation getPromo($promoCode: String!, $phone: String!, $fullAddr: String!) {
+      getPromo(promoCode: $promoCode, phone: $phone, fullAddr: $fullAddr) {
         res {
           stripeCouponId
           percentOff
@@ -46,18 +46,18 @@ export const useApplyPromo = (): [
       }
     }
   `);
-  const applyPromo = (promoCode: string, phone: string, fullAddr: string) => {
+  const getPromo = (promoCode: string, phone: string, fullAddr: string) => {
     mutate({
       variables: { promoCode, phone, fullAddr },
     })
   }
   return useMemo(() => {
     const data = mutation.data && {
-      res: mutation.data.applyPromo.res && new Promo(mutation.data.applyPromo.res),
-      error: mutation.data.applyPromo.error
+      res: mutation.data.getPromo.res && new Promo(mutation.data.getPromo.res),
+      error: mutation.data.getPromo.error
     }
     return [
-      applyPromo,
+      getPromo,
       {
         error: mutation.error,
         data,

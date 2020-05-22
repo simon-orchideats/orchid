@@ -6,14 +6,14 @@ import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
 import { useState, useEffect, useRef, createRef } from "react";
-import { state } from "../place/addressModel";
+import { state, Address } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { CuisineType, CuisineTypes } from "../consumer/consumerModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
-import { usePlaceOrder, useApplyPromo } from "../client/order/orderService";
+import { usePlaceOrder, useGetPromo } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
@@ -71,7 +71,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [state, setState] = useState<state | ''>('NJ');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  const [applyPromo, applyPromoRes] = useApplyPromo();
+  const [applyPromo, applyPromoRes] = useGetPromo();
   const promoInputRef = createRef<HTMLInputElement>();
   const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
@@ -226,6 +226,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     zip?: string,
     phone?: string,
     paymentMethod?: stripe.paymentMethod.PaymentMethod,
+    promo?: string
   ) => {
     if (
       !addr1
@@ -287,7 +288,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           deliveryInstructions,
-          cuisines
+          cuisines,
+          promo,
         ),
       );
     }
@@ -301,6 +303,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     city?: string,
     zip?: string,
     phone?: string,
+    promo?: string,
   ) => {
     if (didPlaceOrder) return;
     setDidPlaceOrder(true);
@@ -368,7 +371,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       city,
       zip,
       phone,
-      pm.current.paymentMethod
+      pm.current.paymentMethod,
+      promo
     );
   }
 
@@ -382,7 +386,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     applyPromo(
       promoInputRef.current!.value,
       phoneInputRef.current!.value,
-      addr1InputRef.current!.value +(addr2InputRef.current?.value || '') + cityInputRef.current!.value + zipInputRef.current!.value + state
+      Address.getFullAddrStr(
+        addr1InputRef.current!.value,
+        cityInputRef.current!.value,
+        state as state,
+        zipInputRef.current!.value,
+        addr2InputRef.current?.value,
+      )
     );
   }
 
@@ -395,6 +405,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       cityInputRef.current?.value,
       zipInputRef.current?.value,
       phoneInputRef.current?.value,
+      promoInputRef.current?.value,
     ),
     loading: didPlaceOrder,
     promoRef: promoInputRef,

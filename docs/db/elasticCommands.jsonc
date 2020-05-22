@@ -936,6 +936,19 @@ PUT /orders/
           "tip": {
             "type": "integer"
           },
+          "promos": {
+            "properties": {
+              "stripeCouponId": {
+                "type": "keyword"
+              },
+              "percentOff": {
+                "type": "integer"
+              },
+              "amountOff": {
+                "type": "integer"
+              },
+            }
+          },
           "mealPrices": {
             "properties": {
               "stripePlanId": {
