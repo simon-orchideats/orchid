@@ -40,7 +40,7 @@ const mutation = gql`
     updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!
     removeDonations(orderId: ID!): BoolRes!
     updateMyPlan(plan: ConsumerPlanInput!): ConsumerRes!
-    updateMyProfile(profile: ConsumerProfileInput!): ConsumerRes!
+    updateMyProfile(profile: ConsumerProfileInput!, paymentMethodId: String): ConsumerRes!
   }
 `
 

@@ -196,7 +196,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
 
     sendUpdateCardMetrics();
-    updateMyProfile(consumerData, updatedProfile);
+    updateMyProfile(consumerData, updatedProfile, pm.paymentMethod!.id);
     setIsUpdatingCard(false);
   };
   const onCancelCard = () => {

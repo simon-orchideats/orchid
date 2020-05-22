@@ -28,7 +28,7 @@ export interface IConsumerService {
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
   upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
-  updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile) => Promise<MutationConsumerRes>
+  updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
 
 class ConsumerService implements IConsumerService {
@@ -345,12 +345,13 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile): Promise<MutationConsumerRes> {
+  async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string): Promise<MutationConsumerRes> {
     try {
       if (!this.geoService) return Promise.reject('GeoService not set');
       if (!signedInUser) throw getNotSignedInErr();
       if (!profile.destination) throw new Error('Missing destination');
       if (!this.orderService) throw new Error('Order service not set');
+      if (!signedInUser.stripeCustomerId) throw new Error(`Missing stripe customer id for '${signedInUser._id}'`)
       const {
         address1,
         city,
@@ -391,6 +392,19 @@ class ConsumerService implements IConsumerService {
         _id: signedInUser._id,
         ...res.body.get._source
       };
+      if (paymentMethodId) {
+        await this.stripe.setupIntents.create({
+          confirm: true,
+          customer: signedInUser.stripeCustomerId,
+          payment_method: paymentMethodId,
+          payment_method_types: ['card']
+        });
+        await this.stripe.customers.update(signedInUser.stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        });
+      }
       await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
       this.upsertMarketingEmail(signedInUser.profile.email, profile.name, profile.destination.address).catch(e => {
         console.error(`[ConsumerService] failed to upsert marketing email for email '${signedInUser.profile.email}'`, e.stack)

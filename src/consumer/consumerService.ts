@@ -98,7 +98,7 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
 }
 
 export const useUpdateMyProfile = (): [
-  (consumer: Consumer, profile: IConsumerProfile) => void,
+  (consumer: Consumer, profile: IConsumerProfile, paymentMethodId?: string) => void,
   {
     error?: ApolloError 
     data?: {
@@ -108,10 +108,10 @@ export const useUpdateMyProfile = (): [
   }
 ] => {
   type res = { updateMyProfile: MutationConsumerRes };
-  type vars = { profile: IConsumerProfile }
+  type vars = { profile: IConsumerProfile, paymentMethodId?: string }
   const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateMyProfile($profile: ConsumerProfileInput!) {
-      updateMyProfile(profile: $profile) {
+    mutation updateMyProfile($profile: ConsumerProfileInput!, $paymentMethodId: String) {
+      updateMyProfile(profile: $profile, paymentMethodId: $paymentMethodId) {
         res {
           ...consumerFragment
         }
@@ -120,9 +120,9 @@ export const useUpdateMyProfile = (): [
     }
     ${consumerFragment}
   `);
-  const updateMyProfile = (consumer: Consumer, profile: IConsumerProfile) => {
+  const updateMyProfile = (consumer: Consumer, profile: IConsumerProfile, paymentMethodId?: string) => {
     mutate({
-      variables: { profile },
+      variables: { profile, paymentMethodId },
       optimisticResponse: {
         updateMyProfile: { 
           res: copyWithTypenames({ ...consumer, profile }),

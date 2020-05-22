@@ -33,7 +33,18 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     }
   },
 
-  updateMyProfile: async(_root, { profile }: { profile: IConsumerProfile }, { signedInUser }) => {
-    return await getConsumerService().updateMyProfile(signedInUser, profile );
+  updateMyProfile: async(
+    _root,
+    {
+      profile,
+      paymentMethodId
+    }: {
+      profile: IConsumerProfile,
+      paymentMethodId?: string
+    },
+    {
+      signedInUser
+    }) => {
+    return await getConsumerService().updateMyProfile(signedInUser, profile, paymentMethodId);
   }
 }
