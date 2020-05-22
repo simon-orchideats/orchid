@@ -162,7 +162,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            cuisines
+            cuisines,
+            promoInputRef.current?.value,
           )
         );
       }
@@ -395,7 +396,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       )
     );
   }
-
   const checkoutCartProps = {
     amountOff: amountOff ?? 0,
     onPlaceOrder: () => onClickPlaceOrder(

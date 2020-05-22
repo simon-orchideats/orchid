@@ -17,7 +17,7 @@ export const _OrderQL = gql`
     destination: DestinationInput!
     paymentMethodId: String!
     phone: String!
-    promo: String!
+    promo: String
   }
 
   input DeliveryInput {

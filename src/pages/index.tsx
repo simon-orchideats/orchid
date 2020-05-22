@@ -518,7 +518,7 @@ const Promotion = () => {
         Limited time promotion
       </Typography>
       <Typography variant='h4' className={classes.bold}>
-        $10 off your first order, applied at checkout! 
+        $10 off your first order, auto applied at checkout! 
       </Typography>
     </div>
   );

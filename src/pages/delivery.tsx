@@ -8,7 +8,6 @@ import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "
 import { useState, useMemo } from "react";
 import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
-import Link from "next/link";
 import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
 import PreferredSchedule from "../client/general/PreferredSchedule";
@@ -51,7 +50,8 @@ const delivery = () => {
   );
   const plans = useGetAvailablePlans();
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
-  const urlQuery = useRouter().query;
+  const router = useRouter();
+  const urlQuery = router.query;
   const updatingParam = urlQuery.updating;
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const orderId = urlQuery.orderId as string
@@ -70,11 +70,22 @@ const delivery = () => {
     });
     setSchedules(newSchedules);
   }
-
   useMutationResponseHandler(updateDeliveriesRes, () => {
     clearCartMeals();
     Router.push(upcomingDeliveriesRoute);
   });
+  const navToCheckout = () => {
+    const pushing = {
+      pathname: checkoutRoute
+    } as any;
+    if (!router.query.promo) {
+      pushing.query = {
+        promo: 'welcome10',
+        amountOff: 1000,
+      }
+    }
+    Router.push(pushing);
+  }
   const onUpdateOrder = () => {
     if (!cart) {
       const err = new Error('Cart is empty for update order');
@@ -226,17 +237,16 @@ const delivery = () => {
                 Update order
               </Button>
               :
-              <Link href={checkoutRoute}>
                 <Button
                   variant='contained'
                   color='primary'
+                  onClick={navToCheckout}
                   fullWidth
                   className={classes.nextButton}
                   disabled={hasScheduleError}
                 >
                   Next
                 </Button>
-              </Link>
             }
           </ExpansionPanelDetails>
         </ExpansionPanel>
