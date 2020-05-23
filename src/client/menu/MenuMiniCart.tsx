@@ -1,8 +1,5 @@
-import { makeStyles, Typography, Button, IconButton, Popover, Paper } from "@material-ui/core";
+import { makeStyles, Typography, Button } from "@material-ui/core";
 import MenuCart from "./MenuCart";
-import Counter from "./Counter";
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { useState } from "react";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
@@ -13,9 +10,8 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(1),
     paddingLeft: theme.spacing(1),
   },
-  button: {
+  margin: {
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
   },
   scrollable: {
     overflowX: 'scroll',
@@ -41,10 +37,16 @@ const useStyles = makeStyles(theme => ({
   icon: {
     paddingLeft: 0,
   },
+  name: {
+    overflowY: 'scroll',
+    maxHeight: 40
+  },
+  next: {
+    marginLeft: 'auto',
+  },
   meals: {
     display: 'flex',
     flexDirection: 'column',
-    textOverflow: 'ellipsis',
     justifyContent: 'center',
     alignItems: 'center',
     maxWidth: 150,
@@ -59,11 +61,6 @@ const MenuMiniCart: React.FC<{
   filter,
 }) => {
   const classes = useStyles();
-  const [helpAnchor, setHelpAnchor] = useState<null | HTMLElement>(null);
-  const handleHelp = (event: React.MouseEvent<HTMLElement>) => {
-    setHelpAnchor(helpAnchor ? null : event.currentTarget);
-  };
-  const isHelperOpen = Boolean(helpAnchor);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   if (hideNext) return null;
@@ -75,62 +72,20 @@ const MenuMiniCart: React.FC<{
       onNext,
       suggestions,
       _summary,
-      donationCount,
-      incrementDonationCount,
-      decrementDonationCount,
+      _donationCount,
+      _incrementDonationCount,
+      _decrementDonationCount,
       _title,
       confirmText,
     ) => (
       <div className={classes.col}>
-        <div className={classes.bar}>
-          <Popover
-            open={isHelperOpen}
-            anchorEl={helpAnchor}
-            onClose={() => setHelpAnchor(null)} 
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-          >
-            <Paper className={classes.popper}>
-              <Typography variant='body1'>
-                Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
-                donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
-                3 meals on us so we can all help our heros on the frontline.
-              </Typography>
-            </Paper>
-          </Popover>
+        <div className={`${classes.bar} ${classes.margin}`}>
           {filter}
-          <Counter
-            subtractDisabled={!donationCount}
-            onClickSubtract={decrementDonationCount}
-            subractIcon={
-              donationCount ?
-              <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
-              :
-              <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
-            }
-            chipLabel={donationCount}
-            chipDisabled={!donationCount}
-            onClickAdd={incrementDonationCount}
-            addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
-          />
-          <IconButton
-            color='primary'
-            onClick={handleHelp}
-            className={classes.icon}
-          >
-            <HelpOutlineIcon />
-          </IconButton>
           <Button
+            className={classes.next}
             disabled={disabled}
             variant='contained'
             color='primary'
-            className={classes.button}
             onClick={onNext}
           >
             {confirmText}
@@ -166,7 +121,11 @@ const MenuMiniCart: React.FC<{
                     <RemoveIcon />
                   </Button>
                 </div>
-                <Typography variant='body2' align='center'>
+                <Typography
+                  className={classes.name}
+                  variant='body2'
+                  align='center'
+                >
                   {deliveryMeal.name.toUpperCase()}
                 </Typography>
               </div>

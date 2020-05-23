@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Meal } from "../../rest/mealModel";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import Counter from './Counter';
+import ShortTextIcon from '@material-ui/icons/ShortText';
+import AddBoxIcon from '@material-ui/icons/AddBox';
 
 const useStyles = makeStyles(theme => ({
   card: {
     maxWidth: 225,
     background: 'none',
     textAlign: 'center',
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
+    marginLeft: 2,
+    marginRight: 2,
+    [theme.breakpoints.up('md')]: {
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+    },
   },
   content: {
     paddingRight: 0,
     paddingLeft: 0,
+    paddingBottom: `${theme.spacing(1)}px !important`,
+    paddingTop: 4,
+    [theme.breakpoints.up('md')]: {
+      paddingTop: undefined,
+    },
   },
   scaler: ({ meal }: { meal: Meal }) => ({
     width: '100%',
@@ -28,6 +39,9 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     width: '100%',
     height: '100%',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end'
   },
   actionBar: {
     display: 'flex',
@@ -45,8 +59,8 @@ const useStyles = makeStyles(theme => ({
   title: {
     lineHeight: 1.5
   },
-  originalPrice: {
-    color: theme.palette.primary.main
+  imgAdd: {
+    color: theme.palette.common.white
   },
   button: {
     borderRadius: 10,
@@ -58,8 +72,15 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
   },
+  popper: {
+    width: 300,
+    padding: theme.spacing(2),
+  },
   disabledChip: {
     color: theme.palette.text.disabled,
+  },
+  detail: {
+    fontSize: '1rem',
   }
 }));
 
@@ -76,7 +97,18 @@ const MenuMeal: React.FC<{
   restName,
   taxRate
 }) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles({ meal });
+  const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
+  const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
+  const [desc, setDesc] = useState<string>();
+  const onClickName = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
+    if (!isMdAndUp) {
+      setDescAnchor(descAnchor ? null : event.currentTarget);
+      setDesc(mealDesc || 'No description')
+    }
+  };
+  const isDescOpen = Boolean(descAnchor);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
@@ -87,14 +119,35 @@ const MenuMeal: React.FC<{
   }
   return (
     <Card elevation={0} className={classes.card}>
-      <div className={classes.scaler}>
+      <Popover
+        open={isDescOpen}
+        anchorEl={descAnchor}
+        onClose={() => setDescAnchor(null)} 
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+      >
+        <Paper className={classes.popper}>
+          <Typography variant='body1'>
+            {desc}
+          </Typography>
+        </Paper>
+      </Popover>
+      <div className={classes.scaler} onClick={onAddMeal}>
         {
           meal.Img ?
           <CardMedia
             className={classes.img}
             image={meal.Img}
             title={meal.Img}
-          />
+          >
+            {!isMdAndUp && <AddBoxIcon className={classes.imgAdd} />}
+          </CardMedia>
           :
           <Typography>
             No picture
@@ -102,36 +155,43 @@ const MenuMeal: React.FC<{
         }
       </div>
       <CardContent className={classes.content}>
-        <div className={classes.actionBar}>
-          <Counter
-            subtractDisabled={!count}
-            onClickSubtract={onRemoveMeal}
-            subtractButtonProps={{
-              variant: 'contained',
-              className: `${classes.button} ${classes.minusButton}`
-            }}
-            subractIcon={<RemoveIcon />}
-            chipLabel={count}
-            chipDisabled={!count}
-            onClickAdd={onAddMeal}
-            addIcon={<AddIcon />}
-            addButtonProps={{
-              variant: 'contained',
-              color: 'primary',
-              className: classes.button
-            }}
-          />
-        </div>
+        {
+          isMdAndUp &&
+          <div className={classes.actionBar}>
+            <Counter
+              subtractDisabled={!count}
+              onClickSubtract={onRemoveMeal}
+              subtractButtonProps={{
+                variant: 'contained',
+                className: `${classes.button} ${classes.minusButton}`
+              }}
+              subractIcon={<RemoveIcon />}
+              chipLabel={count}
+              chipDisabled={!count}
+              onClickAdd={onAddMeal}
+              addIcon={<AddIcon />}
+              addButtonProps={{
+                variant: 'contained',
+                color: 'primary',
+                className: classes.button
+              }}
+            />
+          </div>
+        }
         <Typography
           gutterBottom
           variant='subtitle1'
           className={classes.title}
+          onClick={e => onClickName(e, meal.Description)}
         >
-          {meal.Name.toUpperCase()}
+          {meal.Name.toUpperCase()} {!isMdAndUp && <ShortTextIcon className={classes.detail} />}
         </Typography>
-        <Typography variant='body2' color='textSecondary'>
-          {meal.Description}
-        </Typography>
+        {
+          isMdAndUp &&
+          <Typography variant='body2' color='textSecondary'>
+            {meal.Description}
+          </Typography>
+        }
       </CardContent>
     </Card>
   )

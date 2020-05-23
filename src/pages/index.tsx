@@ -111,14 +111,9 @@ const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(2)
   },
-  donate: {
-    backgroundColor: theme.palette.primary.main,
-    color: 'white',
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
   promotion: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
@@ -264,20 +259,6 @@ const HowItWorks = () => {
       <Link href={howItWorksRoute}>
         <Button variant='outlined' color='primary'>Learn More</Button>
       </Link>
-    </div>
-  );
-};
-
-const Donate = () => {
-  const classes = useStyles();
-  return (
-    <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.donate}`}>
-      <Typography variant='h6'>
-        Help our heroic healthcare workers fight COVID-19
-      </Typography>
-      <Typography variant='body1'>
-        Orchid will match all meal donations, now optional in your plan, and deliver to local NYC hospitals
-      </Typography>
     </div>
   );
 };
@@ -592,7 +573,6 @@ const Index = () => {
       <Referral />
       <Welcome />
       <Promotion />
-      <Donate />
       <HowItWorks />
       <Plans />
       <Benefits />

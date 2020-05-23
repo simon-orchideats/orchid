@@ -8,16 +8,22 @@ import { Meal } from '../../rest/mealModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
-    paddingLeft: theme.spacing(4),
     paddingTop: theme.spacing(3),
-    paddingRight: theme.spacing(3),
     paddingBottom: theme.spacing(3),
+    paddingLeft: 4,
+    paddingRight: 4,
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: theme.spacing(4),
+      paddingRight: theme.spacing(3),
+    },
   },
   paper: {
     marginTop: theme.spacing(2),
   },
   meals: {
-    padding: theme.spacing(1, 3, 3),
+    [theme.breakpoints.up('md')]: {
+      padding: theme.spacing(1, 3, 3),
+    },
   },
 }));
 
@@ -59,7 +65,7 @@ const RestMenu: React.FC<{
       <Grid
         item
         key={meal.Id}
-        xs={6}
+        xs={4}
         sm={4}
       >
         <MenuMeal
@@ -80,10 +86,7 @@ const RestMenu: React.FC<{
           {rest.Profile.Name}
         </Typography>
         <Typography variant='subtitle1' color='textSecondary'>
-          {rest.Location.Address.getAddrStr()}
-        </Typography>
-        <Typography variant='subtitle1' color='textSecondary'>
-          {rest.Profile.Phone}
+          {`${rest.Location.Address.Address1}, ${rest.Location.Address.City}`}
         </Typography>
       </div>
       <Grid container className={classes.meals}>

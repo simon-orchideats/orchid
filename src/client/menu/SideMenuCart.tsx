@@ -1,10 +1,7 @@
-import { makeStyles, Typography, Button, Popover, IconButton, Paper } from "@material-ui/core";
+import { makeStyles, Typography, Button } from "@material-ui/core";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
-import { useState } from "react";
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import Counter from "./Counter";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 
 const useStyles = makeStyles(theme => ({
@@ -21,20 +18,6 @@ const useStyles = makeStyles(theme => ({
   bottom: {
     marginTop: 'auto',
   },
-  donationText: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-  donation: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-  },
-  donationCount: {
-    alignSelf: 'stretch',
-    display: 'flex',
-  },
   heart: {
     height: 24,
   },
@@ -46,11 +29,6 @@ const useStyles = makeStyles(theme => ({
 
 const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const handleHelp = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-  };
-  const isHelperOpen = Boolean(anchorEl);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   return (
@@ -62,8 +40,8 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       suggestions,
       summary,
       donationCount,
-      incrementDonationCount,
-      decrementDonationCount,
+      _incrementDonationCount,
+      _decrementDonationCount,
       title,
       confirmText,
     ) => {
@@ -118,51 +96,6 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             !hideNext &&
             <div className={classes.bottom}>
               {meals}
-              <div className={classes.donation}>
-                <Typography className={classes.donationText} variant='body1'>
-                  Share your meal with the community
-                  <IconButton color='primary' onClick={handleHelp}>
-                    <HelpOutlineIcon />
-                  </IconButton>
-                </Typography>
-                <Popover
-                  open={isHelperOpen}
-                  anchorEl={anchorEl}
-                  onClose={() => setAnchorEl(null)} 
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                  }}
-                  transformOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                >
-                  <Paper className={classes.popper}>
-                    <Typography variant='body1'>
-                      Orchid matches every donation you make from your meal plan. So if you choose the 12 meal plan and
-                      donate 3 meals, we'll deliver 9 meals to you and 3 meals to a NYC hospital. We'll donate another
-                      3 meals on us so we can all help our heros on the frontline.
-                    </Typography>
-                  </Paper>
-                </Popover>
-                <div className={classes.donationCount}>
-                  <Counter
-                    subtractDisabled={!donationCount}
-                    onClickSubtract={decrementDonationCount}
-                    subractIcon={
-                      donationCount ?
-                      <img src='menu/heartMinus.png' className={classes.heart} alt='heart' />
-                      :
-                      <img src='menu/heartMinusDisabled.png' className={classes.heart} alt='heart' />
-                    }
-                    chipLabel={donationCount}
-                    chipDisabled={!donationCount}
-                    onClickAdd={incrementDonationCount}
-                    addIcon={<img src='menu/heartPlus.png' className={classes.heart} alt='heart' />}
-                  />
-                </div>
-              </div>
               <Typography variant='body1' color='primary'>
                 {summary}
               </Typography>

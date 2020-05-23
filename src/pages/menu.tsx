@@ -41,8 +41,12 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
   },
   filters: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+    },
+    paddingLeft: 4,
+    paddingRight: 4,
     display: 'flex',
     alignItems: 'center',
     position: 'sticky',
