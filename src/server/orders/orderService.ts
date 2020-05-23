@@ -1,3 +1,4 @@
+import { referralFriendAmmount, referralSelfAmount, ReferralSource, ReferralPromo } from './../../order/promoModel';
 import { MutationPromoRes, IPromo, EPromo, welcomePromoSubscriptionMetaKey } from '../../order/promoModel';
 import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
@@ -284,6 +285,7 @@ class OrderService {
   private async validatePromo(code: string, phone: string, fullAddr: string): Promise<{
     ePromo: EPromo | null,
     iPromo: IPromo | null,
+    referralPromo: ReferralPromo | null,
     error: string | null
   }> {
     try {
@@ -295,6 +297,7 @@ class OrderService {
           return {
             ePromo: null,
             iPromo: null,
+            referralPromo: null,
             error: `Promo code "${code}" doesn't exist`
           }
         }
@@ -302,7 +305,6 @@ class OrderService {
         throw e;
       }
       const key = getPromoKey(phone, fullAddr);
-      console.log(code, key);
       let res: ApiResponse<SearchResponse<EPromo>>;
       try {
         res = await this.elastic.search({
@@ -341,11 +343,21 @@ class OrderService {
         amountOff: promo.amount_off,
         percentOff: promo.percent_off,
       }
-      console.log(res.body.hits.total);
+      let referralPromo: ReferralPromo | null = null;;
+      const meta = {
+        ...promo.metadata
+      } as Partial<ReferralSource>
+      if (meta.stripeCustomerId) {
+        referralPromo = {
+          ...iPromo,
+          referralSource: meta as ReferralSource
+        }
+      }
       if (res.body.hits.total.value === 0) {
         return {
           ePromo: null,
           iPromo,
+          referralPromo,
           error: null,
         };
       };
@@ -355,11 +367,11 @@ class OrderService {
       }
     
       const ePromo = res.body.hits.hits[0];
-      console.log(ePromo._source.nextAllowedRedemptionDate);
       if (Date.now() < ePromo._source.nextAllowedRedemptionDate) {
         return {
           ePromo: null,
           iPromo: null,
+          referralPromo: null,
           error: 'Coupon has already been redeemed.'
         }
       } else {
@@ -369,6 +381,7 @@ class OrderService {
             ...ePromo._source
           },
           iPromo,
+          referralPromo,
           error: null,
         } 
       }
@@ -535,12 +548,17 @@ class OrderService {
     }
   }
 
-  private async redeemPromo(promoCode: string, phone: string, addrStr: string): Promise<MutationPromoRes> {
+  private async redeemPromo(promoCode: string, phone: string, addrStr: string): Promise<{
+    iPromo: IPromo | null,
+    referralPromo: ReferralPromo | null,
+    error: string | null
+  }> {
     try {
       const promo = await this.validatePromo(promoCode, phone, addrStr);
       if (promo.error) {
         return {
-          res: null,
+          iPromo: null,
+          referralPromo: null,
           error: promo.error,
         }
       }
@@ -586,7 +604,8 @@ class OrderService {
         throw new Error('Promo validation passed but missing iPromo and ePromo');
       }
       return {
-        res: promo.iPromo,
+        iPromo: promo.iPromo,
+        referralPromo: promo.referralPromo,
         error: null
       }
     } catch (e) {
@@ -802,20 +821,22 @@ class OrderService {
         addr.zip,
         addr.address2
       )
-      let promo;
+      let iPromo: IPromo | null = null;
+      let referralPromo: ReferralPromo | null = null;
       if (cart.promo) {
         const promoRes = await this.redeemPromo(
           cart.promo,
           cart.phone,
           fullAddrStr
         );
-        if (!promoRes.res || promoRes.error) {
+        if (promoRes.error) {
           return {
             res: null,
             error: promoRes.error,
           }
         }
-        promo = promoRes.res;
+        iPromo = promoRes.iPromo;
+        referralPromo = promoRes.referralPromo;
       }
 
       const {
@@ -868,7 +889,7 @@ class OrderService {
           billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
           metadata: {
-            [welcomePromoSubscriptionMetaKey]: promo?.stripeCouponId || null,
+            [welcomePromoSubscriptionMetaKey]: iPromo?.stripeCouponId || null,
           },
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
         });
@@ -885,6 +906,25 @@ class OrderService {
         console.error(`Failed to get available plans: '${e.stack}'`);
         throw e;
       }
+
+      let newReferralPromo;
+      try {
+        newReferralPromo = await this.stripe.coupons.create({
+          name: signedInUser.profile.name + ' Referral',
+          amount_off: referralFriendAmmount,
+          duration: 'once',
+          currency: 'usd',
+          metadata: {
+            stripeCustomerId,
+            amountOff: referralSelfAmount,
+            percentOff: null,
+          } as ReferralSource
+        });
+      } catch (e) {
+        console.error(`[OrderService] failed to create referral coupon for '${signedInUser._id}'`, e.stack);
+        throw e;
+      }
+  
       const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
       const consumer: EConsumer = {
         createdDate: Date.now(),
@@ -895,8 +935,9 @@ class OrderService {
             mealPlans,
             schedules,
             cuisines,
+            referralCode: newReferralPromo.id,
           },
-          subscription
+          subscription,
         ),
         profile: {
           name: signedInUser.profile.name,
@@ -920,18 +961,13 @@ class OrderService {
         cart.donationCount,
         moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
         mealPrices,
-        promo && [ promo ],
+        iPromo ? [ iPromo ] : undefined,
         // make updated date 5 seconds past created date to indicate
         // non auto generated order. this is a hack
         moment().valueOf(),
         moment().add(5, 's').valueOf(),
       );
-      const indexer = this.elastic.index({
-        index: ORDER_INDEX,
-        body: order
-      })
-      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
-      const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
+
       this.addAutomaticOrder(
         signedInUser._id,
         1,
@@ -941,17 +977,36 @@ class OrderService {
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
       });
-      
       this.consumerService.upsertMarketingEmail(
         signedInUser.profile.email,
         signedInUser.profile.name,
         addr,
       ).catch(e => {
         console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
+      });
+      const indexer = this.elastic.index({
+        index: ORDER_INDEX,
+        body: order
       })
-
+      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
+      const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
 
+      if (referralPromo) {
+        const source = referralPromo.referralSource;
+        if (source.amountOff) {
+          this.stripe.invoiceItems.create({
+            customer: source.stripeCustomerId,
+            amount: -source.amountOff,
+            currency: 'usd',
+            description: `Discount for referring ${signedInUser.profile.name}`
+          }).catch(e => {
+            console.error(`[OrderService] failed to create referral discount invoiceItem for stripeCustomer '${source.stripeCustomerId}'`, e.stack);
+          });
+        } else {
+          console.error(`[OrderService] referralPromo '${referralPromo.stripeCouponId}' missing amount off`);
+        }
+      }
       // refresh access token so client can pick up new fields in token
       if (req && res) await refetchAccessToken(req, res);
       return {

@@ -44,6 +44,7 @@ type props = {
   defaultPromo?: string
   loading: boolean,
   onApplyPromo: () => void
+  onChangePromo: () => void
   onPlaceOrder: () => void
   promoRef: RefObject<HTMLInputElement>
 }
@@ -54,6 +55,7 @@ const CheckoutCart: React.FC<props> = ({
   defaultPromo,
   loading,
   onApplyPromo,
+  onChangePromo,
   onPlaceOrder,
   promoRef,
 }) => {
@@ -93,6 +95,7 @@ const CheckoutCart: React.FC<props> = ({
       // so we went the ref route and if we do ref route, we need defaultValue
       key={defaultPromo}
       className={classes.button}
+      onChange={onChangePromo}
       label='Promo code'
       inputRef={promoRef}
       defaultValue={defaultPromo}

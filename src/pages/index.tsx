@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden } from '@material-ui/core';
+import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden, ClickAwayListener, Tooltip } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -8,11 +8,12 @@ import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
-import { useRef, createRef, useState, Fragment } from 'react';
+import React, { useRef, createRef, useState, Fragment } from 'react';
 import EmailInput from '../client/general/inputs/EmailInput';
-import { useAddMarketingEmail } from '../consumer/consumerService';
+import { useAddMarketingEmail, useGetConsumer } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
+import { referralFriendAmmount, referralSelfAmount, welcomePromoAmount } from '../order/promoModel';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -38,7 +39,15 @@ const useStyles = makeStyles(theme => ({
     backgroundPosition: '50% 75%',
     backgroundSize: 'cover',
     height: 400,
+    marginTop: -theme.mixins.navbar.marginBottom
+  },
+  friends: {
+    background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/friends.jpeg)',
+    backgroundSize: 'cover',
+    height: 800,
+    backgroundPosition: '50% 50%',
     marginTop: -theme.mixins.navbar.marginBottom,
+    marginBottom: theme.spacing(12),
   },
   welcomeTitle: {
     fontWeight: 500,
@@ -109,7 +118,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
   },
   promotion: {
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: theme.palette.background.paper,
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
@@ -149,6 +158,10 @@ const useStyles = makeStyles(theme => ({
     },
     backgroundColor: theme.palette.common.white,    
   },
+  referralText: {
+    backgroundColor: theme.palette.common.white,
+    padding: theme.spacing(4),
+  }
 }));
 
 const Welcome = withClientApollo(() => {
@@ -510,23 +523,73 @@ const Benefits = () => {
   )
 }
 
-const Promotion = () => {
+const Promotion = withClientApollo(() => {
   const classes = useStyles();
+  const consumer = useGetConsumer();
+  const consumerData = consumer.data;
+  if (consumerData && consumerData.Plan) return null;
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant='h4' className={classes.bold}>
         Limited time promotion
       </Typography>
       <Typography variant='h4' className={classes.bold}>
-        $10 off your first order, auto applied at checkout! 
+        ${(welcomePromoAmount / 100).toFixed(2)} off your first order, auto applied at checkout! 
       </Typography>
     </div>
   );
-}
+});
+
+const Referral = withClientApollo(() => {
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const consumer = useGetConsumer();
+  const consumerData = consumer.data;
+  if (!consumerData || !consumerData.Plan) return null;
+  return (
+    <div className={`${classes.friends} ${classes.centered}`}>
+      <div className={`${classes.welcomeText} ${classes.referralText}`}>
+        <Typography variant='h2' className={classes.welcomeTitle}>
+          Refer a friend 
+        </Typography>
+        <Typography variant='h4'>
+          When they checkout with your promo code
+        </Typography>
+        <Typography variant='h4' className={classes.mediumVerticalMargin} onClick={() => {
+          const input = document.createElement('input');
+          document.body.appendChild(input)
+          input.value = consumerData.Plan!.ReferralCode
+          input.select();
+          document.execCommand('copy', false);
+          input.remove();
+        }}>
+          <ClickAwayListener onClickAway={() => setOpen(false)}>
+            <Tooltip
+              disableFocusListener
+              disableHoverListener
+              disableTouchListener
+              open={open}
+              onClose={() => setOpen(false)}
+              title='Copied'
+            >
+              <b onClick={() => setOpen(true)}>
+                {consumerData.Plan.ReferralCode}
+              </b>
+            </Tooltip>
+          </ClickAwayListener>
+        </Typography>
+        <Typography variant='h4'>
+          Get ${(referralSelfAmount / 100).toFixed(2)} off and they get ${(referralFriendAmmount / 100).toFixed(2)} off
+        </Typography>
+      </div>
+    </div>
+  );
+});
 
 const Index = () => {
   return (
     <>
+      <Referral />
       <Welcome />
       <Promotion />
       <Donate />

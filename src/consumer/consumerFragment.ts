@@ -16,6 +16,7 @@ export const consumerFragment = gql`
         time
       }
       cuisines
+      referralCode
     }
     profile {
       name

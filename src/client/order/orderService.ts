@@ -139,7 +139,10 @@ export const usePlaceOrder = (): [
                 address: cart.destination.address,
               },
             },
-            plan: cart.consumerPlan
+            plan: {
+              ...cart.consumerPlan,
+              referralCode: '', // empty string with the intention that it populates later
+            }
           }),
           error: null,
           //@ts-ignore

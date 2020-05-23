@@ -24,6 +24,7 @@ import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics, sendRemoveDonationMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
+import { referralFriendAmmount, referralSelfAmount } from "../../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -427,6 +428,17 @@ const UpcomingDeliveries = () => {
     console.error('No consumer data', consumer.error);
     return <Typography>Error</Typography>
   }
+  const referral = (
+    <Paper className={`${classes.padding} ${classes.marginBottom}`}>
+      <Typography variant='h3' className={classes.marginBottom}>
+        Refer a friend. You get ${(referralSelfAmount / 100).toFixed(2)} off and they get
+        ${(referralFriendAmmount / 100).toFixed(2)} off
+      </Typography>
+      <Typography variant='h3' className={classes.marginBottom}>
+        When they checkout with your promo code <b>{consumerData.Plan?.ReferralCode}</b>
+      </Typography>
+    </Paper>
+  );
   if (needsCart) {
     return (
       <Container maxWidth='xl' className={classes.needsCartContainer}>
@@ -440,6 +452,7 @@ const UpcomingDeliveries = () => {
             <Typography variant='h3' className={`${classes.marginBottom} ${classes.paddingTop}`}>
               Upcoming deliveries
             </Typography>
+            {referral}
             {OrderOverviews}
           </Grid>
           {
@@ -469,6 +482,7 @@ const UpcomingDeliveries = () => {
       <Typography variant='h3' className={classes.marginBottom}>
         Upcoming deliveries
       </Typography>
+      {referral}
       {OrderOverviews}
     </Container>
   );

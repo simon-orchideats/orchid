@@ -1,4 +1,8 @@
 
+export const welcomePromoAmount = 1000;
+export const referralFriendAmmount = 1100;
+export const referralSelfAmount = 1100;
+
 export interface EPromo {
   readonly _id: string
   readonly stripeCouponId: string
@@ -11,6 +15,16 @@ export interface IPromo {
   readonly stripeCouponId: string
   readonly percentOff: number | null
   readonly amountOff: number | null
+}
+
+export type ReferralSource = {
+  readonly stripeCustomerId: string
+  readonly amountOff: number | null
+  readonly percentOff: number | null
+}
+
+export interface ReferralPromo extends IPromo {
+  readonly referralSource: ReferralSource
 }
 
 export class Promo implements IPromo {

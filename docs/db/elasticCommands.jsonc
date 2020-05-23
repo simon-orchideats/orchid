@@ -540,6 +540,29 @@ GET /rests/_mapping
 GET /orders/_mapping
 GET /consumers/_mapping
 
+PUT consumers/_mapping
+{
+  "properties": {
+    "costs": {
+      "properties": {
+        "promos": {
+          "properties": {
+            "stripeCouponId": {
+              "type": "keyword"
+            },
+            "percentOff": {
+              "type": "integer"
+            },
+            "amountOff": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 PUT /rests2/
 {
   "mappings": {
@@ -1103,7 +1126,10 @@ PUT /consumers/
           },
           "cuisines": {
             "type": "keyword"
-          }
+          },
+          "referralCode": {
+            "type": "keyword"
+          },
         }
       }
     }

@@ -240,6 +240,7 @@ export interface IConsumerPlan {
   readonly mealPlans: IMealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedules: ISchedule[]
+  readonly referralCode: string
 }
 
 export interface EConsumerPlan extends IConsumerPlan {
@@ -250,15 +251,18 @@ export class ConsumerPlan implements IConsumerPlan {
   readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedules: Schedule[]
+  readonly referralCode: string
 
   constructor(consumerPlan: IConsumerPlan) {
     this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
     this.cuisines = consumerPlan.cuisines.map(c => c);
     this.schedules = consumerPlan.schedules.map(s => new Schedule(s));
+    this.referralCode = consumerPlan.referralCode;
   }
 
   public get Cuisines() { return this.cuisines }
   public get MealPlans() { return this.mealPlans }
+  public get ReferralCode() { return this.referralCode }
   public get Schedules() { return this.schedules }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
@@ -266,6 +270,7 @@ export class ConsumerPlan implements IConsumerPlan {
       mealPlans: plan.mealPlans.map(p => MealPlan.getICopy(p)),
       schedules: plan.schedules.map(s => Schedule.getICopy(s)),
       cuisines: plan.cuisines.map(c => c),
+      referralCode: plan.referralCode
     }
   }
 

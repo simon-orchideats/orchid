@@ -411,6 +411,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     promoRef: promoInputRef,
     defaultPromo: router.query.promo as string,
     onApplyPromo,
+    onChangePromo: () => {
+      if (amountOff !== 0) setAmountOff(0);
+    }
   }
 
   return (

@@ -1,51 +1,18 @@
-PUT /promos/
-{
-  "mappings": {
-    "dynamic": false,
-    "properties": {
-      "stripeCouponId": {
-        "type": "keyword"
-      },
-      "fullAddrWithPhoneKey": {
-        "type": "keyword"
-      },
-      "lastRedemptionDate": {
-        "type": "date",
-        "format": "epoch_millis"
-      },
-      "nextAllowedRedemptionDate": {
-        "type": "date",
-        "format": "epoch_millis"
-      },
-    }
-  }
-}
 
-PUT orders/_mapping
+PUT consumers/_mapping
 {
   "properties": {
-    "costs": {
+    "plan": {
       "properties": {
-        "promos": {
-          "properties": {
-            "stripeCouponId": {
-              "type": "keyword"
-            },
-            "percentOff": {
-              "type": "integer"
-            },
-            "amountOff": {
-              "type": "integer"
-            }
-          }
+        "referralCode": {
+          "type": "keyword"
         }
       }
     }
   }
 }
 
-make sure you turn on the proper events for webhooks
-
+then make a referral code for each customer and attach it to them
 
 
 

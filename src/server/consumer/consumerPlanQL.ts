@@ -61,6 +61,7 @@ const _ConsumerPlanQL = gql`
     mealPlans: [MealPlan!]!
     schedules: [Schedule!]!
     cuisines: [CuisineType!]!
+    referralCode: String!
   }
 `
 
