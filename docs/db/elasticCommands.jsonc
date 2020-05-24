@@ -236,7 +236,7 @@ POST orders/_update_by_query
   "script" : {
     "source": """
       for (int i = 0; i < ctx._source.deliveries.length; i++) {
-        ctx._source.deliveries[i].status = 'Confirmed';
+        ctx._source.deliveries[i].deliveryDate = ctx._source.deliveries[i].deliveryDate + 86399000
       }
     """,
     "lang": "painless"
