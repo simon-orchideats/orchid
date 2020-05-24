@@ -184,7 +184,7 @@ const MenuMeal: React.FC<{
           className={classes.title}
           onClick={e => onClickName(e, meal.Description)}
         >
-          {meal.Name.toUpperCase()} {!isMdAndUp && <ShortTextIcon className={classes.detail} />}
+          {meal.Name.toUpperCase()} {!isMdAndUp && meal.Description && <ShortTextIcon className={classes.detail} />}
         </Typography>
         {
           isMdAndUp &&

@@ -386,3 +386,23 @@ export const useGetUpcomingOrders = () => {
     data: orders
   }
 }
+
+export const useGetPaidOrders = () => {
+  const res = useQuery<{ myPaidOrders: IOrder[] }>(gql`
+    query myPaidOrders {
+      myPaidOrders {
+          ...orderFragment
+        }
+      }
+      ${orderFragment}
+    `
+  );
+  const orders = useMemo<Order[] | undefined>(() => (
+    res.data ? res.data.myPaidOrders.map(order => new Order(order)) : res.data
+  ), [res.data]);
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: orders
+  }
+}

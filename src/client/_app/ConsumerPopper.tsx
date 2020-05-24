@@ -9,6 +9,8 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
 import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
+import HistoryIcon from '@material-ui/icons/History';
+import { orderHistoryRoute } from '../../pages/consumer/order-history';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -77,6 +79,15 @@ const ConsumerPopper: React.FC<{
           <EventIcon fontSize='large' />
           <Typography variant='h6'>
             Upcoming deliveries
+          </Typography>
+        </div>
+        <div className={classes.row} onClick={() => {
+          Router.push(orderHistoryRoute);
+          onClose();
+        }}>          
+          <HistoryIcon fontSize='large' />
+          <Typography variant='h6'>
+            Order history
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {

@@ -1,11 +1,9 @@
-import { makeStyles, Typography, Container, Paper, Divider, Popover, useTheme, useMediaQuery, Theme, Grid, Button } from "@material-ui/core";
+import { makeStyles, Typography, Container, Paper, useTheme, useMediaQuery, Theme, Grid, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useRef, useEffect } from "react";
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useGetUpcomingOrders, useSkipDelivery, useRemoveDonations } from "../../client/order/orderService";
+import { useGetUpcomingOrders, useSkipDelivery } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
-import { Destination } from "../../place/destinationModel";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
 import { menuRoute } from "../menu";
@@ -23,8 +21,9 @@ import moment from "moment";
 import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { sendSkipDeliveryMetrics, sendRemoveDonationMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
+import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { referralFriendAmmount, referralSelfAmount } from "../../order/promoModel";
+import OrderOverview from "../../client/consumer/OrderOverview";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -33,10 +32,6 @@ const useStyles = makeStyles(theme => ({
   needsCartContainer: {
     background: 'none',
     marginTop: -theme.mixins.navbar.marginBottom,
-  },
-  deliveries: {
-    paddingTop: theme.spacing(2),
-    display: 'flex',
   },
   paddingTop: {
     paddingTop: theme.spacing(2)
@@ -52,44 +47,13 @@ const useStyles = makeStyles(theme => ({
   padding: {
     padding: theme.spacing(2),
   },
-  popover: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
-  deliverTo: {
-    display: 'flex',
-  },
-  img: {
-    width: 30,
-    marginLeft: theme.spacing(1),
-  },
-  donation: {
-    display: 'flex',
-    alignItems: 'center',
-    paddingTop: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-  },
   close: {
     cursor: 'pointer'
-  },
-  hint: {
-    color: theme.palette.text.hint
-  },
-  link: {
-    color: theme.palette.common.link,
-    cursor: 'pointer',
-  },
-  column: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
   },
 }));
 
@@ -129,59 +93,7 @@ const Confirmation: React.FC<{
   )
 }
 
-const DestinationPopper: React.FC<{
-  destination: Destination
-  open: boolean,
-  onClose: () => void,
-  anchorEl: Element | ((element: Element) => Element) | null | undefined
-  name: string
-}> = ({
-  destination,
-  open,
-  onClose,
-  anchorEl,
-  name,
-}) => {
-  const classes = useStyles();
-  return (
-    <Popover
-      open={open}
-      onClose={onClose}
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right',
-      }}
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-    >
-      <Paper className={classes.popover}>
-        <Typography variant='subtitle1'>
-          {name}
-        </Typography>
-        <Typography variant='body1'>
-          {destination.Address.Address1}
-        </Typography>
-        {
-          destination.Address.Address2 &&
-          <Typography variant='body1'>
-            {destination.Address.Address2}
-          </Typography>
-        }
-        <Typography variant='body1'>
-          {destination.Address.City}, {destination.Address.State} {destination.Address.Zip}
-        </Typography>
-        <Typography variant='body1'>
-          {destination.Instructions}
-        </Typography>
-      </Paper>
-    </Popover>
-  )
-}
-
-const DeliveryOverview: React.FC<{
+const UpcomingDeliveryOverview: React.FC<{
   consumer: Consumer,
   order: Order,
   isUpdating: boolean,
@@ -190,28 +102,17 @@ const DeliveryOverview: React.FC<{
   order,
   isUpdating,
 }) => {
-  const classes = useStyles();
   const setCart = useSetCart();
   const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [skipDelivery, skipDeliveryRes] = useSkipDelivery();
-  const [removeDonations, removeDonationsRes] = useRemoveDonations();
   const plansRes = useGetAvailablePlans();
   const plans = plansRes.data;
-  useMutationResponseHandler(removeDonationsRes, () => {
-    Router.replace(upcomingDeliveriesRoute)
-    notify('Donations Removed', NotificationType.success, true);
-    clearCartMeals();
-  });
   useMutationResponseHandler(skipDeliveryRes, () => {
     Router.replace(upcomingDeliveriesRoute)
     notify('Delivery Skipped', NotificationType.success, true);
     clearCartMeals();
   });
-  const onClickDestination = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
   let canEdit = !order.StripeInvoiceId
     && Date.now() <= moment(order.InvoiceDate).startOf('d').valueOf()
     && !!consumer.Plan
@@ -245,142 +146,46 @@ const DeliveryOverview: React.FC<{
     sendSkipDeliveryMetrics(order, deliveryIndex);
     skipDelivery(order, deliveryIndex, plans);
   }
-  const onRemoveDonations = () => {
-    if (!plans) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
+  let action = null;
+  if (canEdit) {
+    if (isUpdating) {
+      action = (
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onSchedule}
+        >
+          Schedule deliveries
+        </Button>
+      )
+    } else {
+      action = (
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onEdit}
+        >
+          Edit deliveries
+        </Button>
+      )
     }
-    sendRemoveDonationMetrics(order);
-    removeDonations(order, plans);
   }
-  const open = !!anchorEl;
   return (
-    <Paper className={classes.marginBottom}>
+    <>
       <Notifier />
-      <DestinationPopper
-        destination={order.Destination}
-        open={open}
-        onClose={() => setAnchorEl(null)}
-        anchorEl={anchorEl}
-        name={consumer.Profile.Name}
-      />
-      <Grid container className={`${classes.row} ${classes.padding}`}>
-        <Grid
-          item
-          xs={6}
-          sm={3}
-        >
-          <Typography variant='subtitle1'>
-            {
-            order.StripeInvoiceId ?
-              'Paid'
-            :
-              `Total for ${start.format('M/D/YY')} - ${moment(order.InvoiceDate).format('M/D/YY')}`
-            }
-          </Typography>
-          <Typography variant='body1' className={classes.hint}>
-            {
-              order.Costs.MealPrices.length > 0 ?
-              order.Costs.MealPrices.map(mp => (
-                `${Order.getMealCount(order, mp.PlanName)} meals (${(mp.MealPrice / 100).toFixed(2)} ea)`
-              ))
-              :
-              '0 meals'
-            }
-          </Typography>
-          {
-            order.Costs.Promos && order.Costs.Promos.length === 1 &&
-            <Typography variant='body1' color='primary'>
-              <b>{order.Costs.Promos[0].AmountOff && `-$${(order.Costs.Promos[0].AmountOff / 100).toFixed(2)} in savings`}</b>
-              <b>{order.Costs.Promos[0].PercentOff && `-$${(order.Costs.Promos[0].PercentOff).toFixed(2)} in savings`}</b>
-            </Typography>
-          }
-        </Grid>
-        <Grid
-          item
-          xs={6}
-          sm={3}
-        >
-          {
-            order.Deliveries.length > 0 &&
-            <>
-              <Typography variant='subtitle1'>
-                Deliver to
-              </Typography>
-              <div className={`${classes.deliverTo} ${classes.link}`} onClick={onClickDestination}>
-                <Typography variant='body1'>
-                  {consumer.Profile.Name}
-                </Typography>
-                <ExpandMoreIcon />
-              </div>
-            </>
-          }
-        </Grid>
-        <Grid
-          item
-          xs={6}
-          sm={3}
-        >
-          <Typography variant='subtitle1'>
-            {order.isAutoGenerated && 'Orchid meals picked for you'}
-          </Typography>
-        </Grid>
-        <Grid
-          item
-          xs={6}
-          sm={3}
-        >
-          {
-            canEdit && !isUpdating &&
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={onEdit}
-            >
-              Edit deliveries
-            </Button>
-          }
-          {
-            canEdit && isUpdating &&
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={onSchedule}
-            >
-              Schedule deliveries
-            </Button>
-          }
-        </Grid>
-      </Grid>
-      <Divider />
-      {
-        order.DonationCount > 0 &&
-        <div className={classes.donation}>
-          <Typography variant='h6'>
-            {order.DonationCount} donations
-          </Typography>
-          <img
-            src='/heartHand.png'
-            alt='heartHand'
-            className={classes.img}
+      <OrderOverview
+        consumer={consumer}
+        order={order}
+        action={action}
+        scheduleDeliveries={
+          <ScheduleDeliveries
+            deliveries={order.Deliveries}
+            onSkip={onSkip}
+            isUpdating={isUpdating}
           />
-           <Button
-            className={classes.link}
-            onClick={onRemoveDonations}
-          >
-            Remove all donations
-          </Button>
-        </div>
-      }
-      <div className={classes.paddingTop}>
-        <ScheduleDeliveries
-          deliveries={order.Deliveries}
-          onSkip={onSkip}
-          isUpdating={isUpdating}
-        />
-      </div>
-    </Paper>
+        }
+      />
+    </>
   )
 }
 
@@ -399,20 +204,20 @@ const UpcomingDeliveries = () => {
   const isUpdating = !!updatingParam && updatingParam === 'true'
   const needsCart = isUpdating && showCart;
   let OrderOverviews;
-    if (orders.loading) {
-      OrderOverviews = <Typography variant='body1'>Loading...</Typography>
-    } else if (orders.data && orders.data.length === 0) {
-      OrderOverviews = <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
-    } else {
-      OrderOverviews = consumerData && orders.data && orders.data.map(order => 
-        <DeliveryOverview
-          key={order.Id}
-          order={order}
-          isUpdating={isUpdating}
-          consumer={consumerData}
-        />
-      )
-    }
+  if (orders.loading) {
+    OrderOverviews = <Typography variant='body1'>Loading...</Typography>
+  } else if (orders.data && orders.data.length === 0) {
+    OrderOverviews = <Typography variant='subtitle1'>No upcoming deliveries. Place an order through menu first.</Typography>
+  } else {
+    OrderOverviews = consumerData && orders.data && orders.data.map(order => 
+      <UpcomingDeliveryOverview
+        key={order.Id}
+        order={order}
+        isUpdating={isUpdating}
+        consumer={consumerData}
+      />
+    )
+  }
 
   if (needsCart && !cart) {
     const err = new Error('Needs cart, but no cart');
@@ -430,11 +235,11 @@ const UpcomingDeliveries = () => {
   }
   const referral = (
     <Paper className={`${classes.padding} ${classes.marginBottom}`}>
-      <Typography variant='h3' className={classes.marginBottom}>
+      <Typography variant='h6' className={classes.marginBottom}>
         Refer a friend. You get ${(referralSelfAmount / 100).toFixed(2)} off and they get
         ${(referralFriendAmmount / 100).toFixed(2)} off
       </Typography>
-      <Typography variant='h3' className={classes.marginBottom}>
+      <Typography variant='h6' className={classes.marginBottom}>
         When they checkout with your promo code <b>{consumerData.Plan?.ReferralCode}</b>
       </Typography>
     </Paper>

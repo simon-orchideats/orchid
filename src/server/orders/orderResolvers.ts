@@ -8,6 +8,15 @@ export const OrderQueryResolvers: ServerResolovers = {
     return await getOrderService().getMyUpcomingIOrders(signedInUser);
   },
 
+  myPaidOrders: async(_root, _args, { signedInUser }) => {
+    try {
+      return await getOrderService().getMyPaidOrders(signedInUser);
+    } catch (e) {
+      console.error(`[OrderResolver] Failed to get myPaidOrders for '${signedInUser?._id}'`)
+      throw new Error('Internal Server Error');
+    }
+  },
+
   order: async(_root, { orderId }: { orderId: string }, { signedInUser }) => {
     return await getOrderService().getIOrder(signedInUser, orderId);
   }

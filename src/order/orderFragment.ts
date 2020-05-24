@@ -26,6 +26,8 @@ const orderFragment = gql`
         percentOff
         amountOff
       }
+      tax
+      deliveryFee
     }
     deliveries {
       deliveryTime

@@ -154,6 +154,7 @@ export interface IOrderService {
     _id: string,
     order: EOrder,
   } | null>
+  getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getPromo(promo: string, phone: string, addrStr: string): Promise<MutationPromoRes>
@@ -755,6 +756,56 @@ class OrderService {
     } catch (e) {
       console.error(`[OrderService] failed to get IOrder '${orderId}'`, e.stack);
       return null;
+    }
+  }
+
+  public async getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+    try {
+      if (!signedInUser) throw getNotSignedInErr()
+      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      term: {
+                        'consumer.userId': signedInUser._id
+                      }
+                    },
+                    {
+                      exists: {
+                        field: 'stripeInvoiceId'
+                      }
+                    }
+                  ],
+                }
+              }
+            }
+          },
+          sort: [
+            {
+              invoiceDate: {
+                order: 'desc',
+              }
+            }
+          ],
+        }
+      });
+      return res.body.hits.hits.map(({ _id, _source }) => {
+        _source.deliveries.sort((d1, d2) => {
+          if (d1.deliveryDate > d2.deliveryDate) return 1;
+          if (d1.deliveryDate < d2.deliveryDate) return -1;
+          return 0;
+        });
+        return Order.getIOrderFromEOrder(_id, _source)
+      });
+    } catch (e) {
+      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser?._id}'`, e.stack);
+      throw e;
     }
   }
 
