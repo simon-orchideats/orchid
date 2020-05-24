@@ -21,7 +21,7 @@ export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, tim
       startDate = moment();
     }
   }
-  const deliveryDate = moment(startDate).day(day).startOf('day');
+  const deliveryDate = moment(startDate).day(day).endOf('day');
   const minDaysAfterStartDate = moment(startDate).add(MIN_DAYS_AHEAD, 'd');
   if (deliveryDate.isAfter(minDaysAfterStartDate)) return deliveryDate;
   const datePlus7 = deliveryDate.add(7, 'd');
