@@ -117,7 +117,7 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
           ],
           must_not: {
             exists: {
-              field: 'stripeInvoiceDate'
+              field: 'stripeInvoiceId'
             }
           }
         }
@@ -1207,7 +1207,7 @@ class OrderService {
                   ],
                   must_not: {
                     exists: {
-                      field: 'stripeInvoiceDate'
+                      field: 'stripeInvoiceId'
                     }
                   }
                 }

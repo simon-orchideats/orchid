@@ -522,7 +522,7 @@ POST orders/_delete_by_query
           ],
           "must_not": {
             "exists": {
-              "field": "stripeInvoiceDate"
+              "field": "stripeInvoiceId"
             }
           }
         }
