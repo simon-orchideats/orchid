@@ -17,6 +17,7 @@ import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import moment from "moment";
 import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/delivery/deliveryMetrics";
 import { useGetAvailablePlans } from "../plan/planService";
+import SyncAltIcon from '@material-ui/icons/SyncAlt';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -25,6 +26,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     background: 'none',
     paddingBottom: theme.spacing(4),
+  },
+  row: {
+    display: 'flex',
   },
   panel: {
     width: '100%'
@@ -213,6 +217,12 @@ const delivery = () => {
                 <Typography variant='body1' color='textSecondary'>
                   Orchid will automatically pick <i>next week's</i> meals based on your schedule. You can
                   always edit 2 days prior to your delivery.
+                </Typography>
+              }
+              {
+                schedules.length > 1 &&
+                <Typography className={classes.row}>
+                  <SyncAltIcon />Scroll left/right to see more
                 </Typography>
               }
             </div>
