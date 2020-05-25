@@ -49,7 +49,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   res.json({ received: true });
 
-  if (event.type = 'customer.subscription.updated') {
+  if (event.type === 'customer.subscription.updated') {
     const sub = event.data.object as Stripe.Subscription;
     const promo = sub.metadata[welcomePromoSubscriptionMetaKey];
     if (sub.billing_cycle_anchor === sub.current_period_start && promo) {
