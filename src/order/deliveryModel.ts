@@ -4,8 +4,17 @@ import { deliveryTime } from './../consumer/consumerModel';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';
  
-export interface IDeliveryMeal extends Omit<IMeal, '_id' | 'description' | 'originalPrice'>{
+export interface IDeliveryMeal extends Omit<
+  IMeal,
+  '_id'
+  | 'description'
+  | 'originalPrice'
+  | 'canAutoPick'
+  | 'addonGroups'
+  | 'optionGroups'
+  > {
   readonly mealId: string
+  readonly choices: string[]
   readonly quantity: number
   readonly restId: string
   readonly restName: string
@@ -25,6 +34,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly mealId: string;
   readonly img?: string;
   readonly name: string;
+  readonly choices: string[]
   readonly quantity: number
   readonly restId: string
   readonly restName: string
@@ -44,9 +54,11 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.planName = meal.planName;
     this.taxRate = meal.taxRate;
     this.tags = meal.tags;
+    this.choices = [ ...meal.choices ]
   }
 
   public get MealId() { return this.mealId }
+  public get Choices() { return this.choices }
   public get Img() { return this.img }
   public get Name() { return this.name }
   public get Quantity() { return this.quantity }
@@ -60,6 +72,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   static getDeliveryMeal(
     mealId: string,
     meal: IMeal | IDeliveryMeal,
+    choices: string[],
     restId: string,
     restName: string,
     taxRate: number,
@@ -71,6 +84,7 @@ export class DeliveryMeal implements IDeliveryMeal {
       name: meal.name,
       quantity,
       restId,
+      choices,
       restName,
       stripePlanId: meal.stripePlanId,
       planName: meal.planName,

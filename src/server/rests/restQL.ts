@@ -1,12 +1,23 @@
 import { gql } from 'apollo-server';
 
 const MealQL = gql`
+  type OptionGroup {
+    names: [String!]!
+  }
+
+  type AddonGroup {
+    names: [String!]!
+    limit: Int
+  }
+
   type Meal {
     _id: ID!
     img: String
     name: String!
     description: String
     originalPrice: Float
+    optionGroups: [OptionGroup!]!
+    addonGroups: [AddonGroup!]!
     stripePlanId: ID!
     planName: ID!
     tags: [String!]!

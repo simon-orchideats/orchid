@@ -21,6 +21,13 @@ const restFragment = gql`
       stripePlanId
       planName
       tags
+      addonGroups {
+        names
+        limit
+      }
+      optionGroups {
+        names
+      }
     }
     profile {
       name

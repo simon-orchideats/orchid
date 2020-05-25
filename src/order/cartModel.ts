@@ -231,7 +231,15 @@ export class Cart implements ICart {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        groupings.push(DeliveryMeal.getDeliveryMeal(meal._id, meal, restId, restName, taxRate));
+        // todo simonv update this to use choices[]
+        groupings.push(DeliveryMeal.getDeliveryMeal(
+          meal._id,
+          meal,
+          [],
+          restId,
+          restName,
+          taxRate
+        ));
       } else {
         groupings[groupIndex] = new DeliveryMeal({
           ...groupings[groupIndex],
@@ -302,12 +310,20 @@ export class Cart implements ICart {
   public addMeal(
     mealId: string,
     newMeal: Meal | DeliveryMeal,
+    choices: string[],
     restId: string,
     restName: string,
     taxRate: number,
   ) {
     const newCart = new Cart(this);
-    const deliveryMeal = DeliveryMeal.getDeliveryMeal(mealId, newMeal, restId, restName, taxRate);
+    const deliveryMeal = DeliveryMeal.getDeliveryMeal(
+      mealId,
+      newMeal,
+      choices,
+      restId,
+      restName,
+      taxRate
+    );
     Cart.addMealToRestMeals(newCart.RestMeals, deliveryMeal);
     if (newCart.Deliveries.length > 0) {
       const firstDelivery = newCart.Deliveries[0];
@@ -317,6 +333,7 @@ export class Cart implements ICart {
           DeliveryMeal.getDeliveryMeal(
             mealId,
             newMeal,
+            choices,
             restId,
             restName,
             taxRate,

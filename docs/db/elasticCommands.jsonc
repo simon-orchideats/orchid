@@ -1,10 +1,127 @@
 ######### MANAGE ###########
 
+
+GET /_all/_settings
+
+GET /_nodes/settings
+
+GET /_cat/indices?v
+
+
 GET /_cat/indices
+
+#create repo (directory to hold snaps)
+PUT /_snapshot/orchid
+{
+    "type": "fs",
+    "settings": {
+        "location": "orchid"
+    }
+}
+
+PUT /_snapshot/foodflick/rests?wait_for_completion=true
+{
+  "indices": "orders",
+  "ignore_unavailable": true,
+  "include_global_state": false
+}
+
+#create snapshots
+PUT /_snapshot/foodflick/rests?wait_for_completion=true
+{
+  "indices": "rests",
+  "ignore_unavailable": true,
+  "include_global_state": false
+}
+
+GET /_snapshot/_all
+
 
 ############################
 
 ########### READ ###########
+
+
+GET /promos/_search?
+{
+    "query" : {
+        "match_all" : {}
+    }
+}
+
+GET /promos/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "stripeCouponId": "welcome10"
+              }
+            },
+            {
+              "term": {
+                "fullAddrWithPhoneKey": "100GreeneStjerseycity07302NJ6095138166"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+GET /promos/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": {
+            "bool": {
+              "must": [
+                {
+                  "term": {
+                    "stripeCouponId": "welcome10"
+                  }
+                },
+                {
+                  "term": {
+                    "fullAddrWithPhoneKey": "100GreeneStjerseycity07302NJ6095138166"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+GET /promos/_search?
+{
+  "query" : {
+    "bool": {
+      "filter": {
+
+            {
+              "term": {
+                "stripeCouponId": "welcome10"
+              }
+            },
+            {
+              "term": {
+                "fullAddrWithPhoneKey": "100GreeneStjerseycity07302NJ6095138166"
+              }
+            }
+      }
+    }
+  }
+}
 
 
 GET /orders/_search?
@@ -13,6 +130,25 @@ GET /orders/_search?
         "match_all" : {}
     }
 }
+
+GET /orders/_doc/Z8QbJHIBVgc8-HkCyfrO
+
+POST /orders/_update/Z8QbJHIBVgc8-HkCyfrO
+{
+  "script" : {
+    "source": """
+      ctx._source.stripeInvoiceId = null;
+      //ctx._source.invoiceDate = 1588125716000L;
+      ctx._source.deliveries[0].deliveryDate = 1589947200000L;
+      ctx._source.deliveries[0].status = "Open";
+      ctx._source.deliveries[1].deliveryDate = 1589947200000L;
+      ctx._source.deliveries[1].status = "Open";
+    """,
+    "lang": "painless"
+  }
+}
+
+
 
 GET /consumers/_search?
 {
@@ -181,14 +317,28 @@ GET /orders/_search?
 
 ######### UPDATE ###########
 
-
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      ctx._source.stripeInvoiceId = null;
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        ctx._source.deliveries[i].status = 'Open';
+      }    
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
 
 POST orders/_update/7U-sqnEB6wdrMHzP4nIs
 {
   "script" : {
     "source": """
       for (int i = 0; i < ctx._source.deliveries.length; i++) {
-        ctx._source.deliveries[i].status = 'Open';
+        ctx._source.deliveries[i].status = 'Confirmed';
       }    
     """,
     "lang": "painless"
@@ -235,9 +385,11 @@ POST orders/_update_by_query
 {
   "script" : {
     "source": """
-      for (int i = 0; i < ctx._source.deliveries.length; i++) {
-        ctx._source.deliveries[i].deliveryDate = ctx._source.deliveries[i].deliveryDate + 86399000
-      }
+      //for (int i = 0; i < ctx._source.deliveries.length; i++) {
+      //  ctx._source.deliveries[i].status = 'Open';
+      //  ctx._source.deliveries[i].deliveryDate = 1589775160000L;
+      //}
+      ctx._source.invoiceDate = 1589822088000L
     """,
     "lang": "painless"
   },
@@ -250,7 +402,7 @@ POST orders/_update_by_query
 POST orders/_update_by_query
 {
   "doc": {
-    "status": "Confirmed"
+    "invoiceDate": 1589822088000
   },
   "query": { 
     "match_all": {}
@@ -329,19 +481,14 @@ POST orders/_update_by_query
 }
 
 
-POST /orders/_update/VhIc3HEB_wcVsCnhQqvF 
+POST /orders/_update/aMQbJHIBVgc8-HkCy_pI
 {
   "script" : {
     "source": """
-      //ctx._source.stripeInvoiceId = null;
-      //ctx._source.invoiceDate = 1588125716000L;
-      //ctx._source.deliveries[1].deliveryDate = 1588708794000L;
-      //ctx._source.deliveries[2].deliveryDate = 1588697994000L;
-      ctx._source.deliveries[1].status = "Open";
-      ctx._source.deliveries[2].status = "Open";
-
-      for(int i = 0; i < ctx._source.deliveries.length - 1; i++) {
-      }
+      ctx._source.stripeInvoiceId = null;
+      ctx._source.invoiceDate = 1588125716000L;
+      ctx._source.deliveries[0].deliveryDate = 1588297268000L;
+      ctx._source.deliveries[0].status = "Open";
     """,
     "lang": "painless"
   }
@@ -360,6 +507,16 @@ POST /rests/_update/8SFhNnEBBGf1BFEfM0Uj
   }
 }
 
+
+POST /promos/_update/pApWOnIB3KWxSp5jXvXt
+{
+  "script" : {
+    "source": """
+      ctx._source.nextAllowedRedemptionDate = 1590116638419L
+    """,
+    "lang": "painless"
+  }
+}
 
 
 
@@ -451,6 +608,15 @@ POST rests/_update/lRACoHEB4E-MhTTB7Wtq
 DELETE rests
 DELETE orders
 DELETE consumers
+DELETE promos
+
+
+POST promos/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
 
 POST orders/_delete_by_query
 {
@@ -459,6 +625,12 @@ POST orders/_delete_by_query
   }
 }
 
+POST consumers/_delete_by_query
+{
+  "query": { 
+    "match_all": {}
+  }
+}
 
 
 DELETE orders/_doc/SomqunEB3mzlaF51TZZT
@@ -494,6 +666,9 @@ POST rests/_delete_by_query
   }
 }
 
+DELETE consumers/_doc/google-oauth2|100290693486600806765
+
+DELETE rests/_doc/0QqnQHIB3KWxSp5jnvVB
 
 POST orders/_delete_by_query
 {
@@ -504,33 +679,15 @@ POST orders/_delete_by_query
           "must": [
             {
               "term": {
-                "consumer.userId": "google-oauth2|101158809309420984617"
-              }
-            },
-            {
-              "bool": {
-                "should": [
-                  {
-                    "term": { "deliveries.status": "Open" }
-                  },
-                  {
-                    "term": { "deliveries.status": "Skipped" }
-                  }
-                ]
+                "consumer.userId": "google-oauth2|100290693486600806765"
               }
             }
-          ],
-          "must_not": {
-            "exists": {
-              "field": "stripeInvoiceId"
-            }
-          }
+          ]
         }
       }
     }
   }
 }
-
 
 ############################
 
@@ -626,6 +783,23 @@ PUT /rests2/
           "_id": {
             "type": "keyword"
           },
+          "addonGroups": {
+            "properties": {
+              "names": {
+                "type": "keyword"
+              },
+              "limit": {
+                "type": "integer"
+              }
+            }
+          },
+          "optionGroups": {
+            "properties": {
+              "names": {
+                "type": "keyword"
+              }
+            }
+          },
           "description": {
             "type": "text",
             "fields": {
@@ -688,6 +862,9 @@ PUT /rests2/
           },
           "planName": {
             "type": "keyword"
+          },
+          "canAutoPick": {
+            "type": "boolean"
           }
         }
       },
@@ -824,6 +1001,12 @@ PUT /orders/
               "mealId": {
                 "type": "keyword"
               },
+              "addons":  {
+                "type": "keyword"
+              },
+              "options": {
+                "type": "keyword"
+              }
               // probably add this down the line
               // "coupon": {
               //   "properties": {

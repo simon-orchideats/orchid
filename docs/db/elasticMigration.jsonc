@@ -15,12 +15,88 @@ PUT consumers/_mapping
 then make a referral code for each customer and attach it to them
 
 
+PUT rests/_mapping
+{
+  "properties": {
+    "menu": {
+      "properties": {
+        "addonGroups": {
+          "properties": {
+            "names": {
+              "type": "keyword"
+            },
+            "limit": {
+              "type": "integer"
+            }
+          }
+        },
+        "optionGroups": {
+          "properties": {
+            "names": {
+              "type": "keyword"
+            }
+          }
+        },
+        "canAutoPick": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.menu.length; i++) {
+        ctx._source.menu[i].addonGroups = new ArrayList();
+        ctx._source.menu[i].optionGroups = new ArrayList();
+        ctx._source.menu[i].canAutoPick = true;
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
 
 
+PUT orders/_mapping
+{
+  "properties": {
+    "menu": {
+      "properties": {
+        "addons":  {
+          "type": "keyword"
+        },
+        "options": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
 
 
-
-
+POST orders/_update_by_query
+{
+  "script" : {
+    "source": """
+      for (int i = 0; i < ctx._source.deliveries.length; i++) {
+        for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
+          ctx._source.deliveries[i].meals[j].addons = new ArrayList();
+          ctx._source.deliveries[i].meals[j].options = new ArrayList();
+        }
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
 
 
 

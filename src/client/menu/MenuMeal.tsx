@@ -112,7 +112,15 @@ const MenuMeal: React.FC<{
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   const onAddMeal = () => {
-    addMealToCart(meal.Id, new Meal(meal), restId, restName, taxRate);
+    addMealToCart(
+      meal.Id,
+      new Meal(meal),
+      //todo simonv fix this from []
+      [],
+      restId,
+      restName,
+      taxRate
+    );
   }
   const onRemoveMeal = () => {
     removeMealFromCart(restId, meal.Id);
