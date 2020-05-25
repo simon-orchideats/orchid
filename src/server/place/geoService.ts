@@ -10,6 +10,12 @@ export interface IGeoService {
     timezone: string,
   }>
 
+  getGeocodeByCity: (zip: string) => Promise<{
+    lat: string,
+    lon: string,
+    state: state,
+  } | null>
+
   getGeocodeByZip: (zip: string) => Promise<{
     lat: string,
     lon: string,
@@ -18,6 +24,7 @@ export interface IGeoService {
 }
 
 class GeoService implements IGeoService{
+
   async getGeocode(street: string, city: string, state: state, zip: string) {
     try {
       const query = `street=${querystring.escape(street)}`
@@ -54,6 +61,44 @@ class GeoService implements IGeoService{
       throw new Error(`Could not find coordinates for '${street} ${city} ${state}, ${zip}'`);
     } catch (e) {
       console.error('[GeoService] could not get geoCode', e.stack)
+      throw e;
+    }
+  }
+
+  async getGeocodeByCity(city: string): Promise<{
+    lat: string
+    lon: string,
+    state: state,
+  } | null> {
+    try {
+      const query = `city=${querystring.escape(city)}&api_key=${activeConfig.server.geo.key}`;
+      let jsonData;
+      try {
+        const res = await fetch(`https://api.geocod.io/v1.3/geocode?${query}`);
+        if (res.status != 200) throw new Error('Could not fetch geocode');
+        jsonData = await res.json();
+      } catch (e) {
+        throw new Error(`Could not fetch city, state for '${city}': ${e.stack}`);
+      }
+      if (jsonData.results && jsonData.results.length > 0) {
+        const {
+          address_components,
+          accuracy,
+          accuracy_type,
+          location,
+        } = jsonData.results[0];
+        if (accuracy === 1 && accuracy_type === 'place') {
+          return {
+            lat: location.lat,
+            lon: location.lng,
+            state: address_components.state,
+          }
+        }
+      }
+      console.warn(`[GeoService] Could not find lat, lon for '${city}'`);
+      return null;
+    } catch (e) {
+      console.error('[GeoService] could not get lat, lon', e.stack);
       throw e;
     }
   }

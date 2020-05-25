@@ -5,22 +5,22 @@ import { useQuery } from '@apollo/react-hooks';
 import { restFragment } from './restFragment';
 import { useMemo } from 'react';
 
-const useGetNearbyRests = (zip: string) => {
+const useGetNearbyRests = (cityOrZip: string) => {
   type res = {
     nearbyRests: IRest[]
   }
   const res = useQuery<res>(
     gql`
-      query nearbyRests($zip: String) {
-        nearbyRests(zip: $zip) {
+      query nearbyRests($cityOrZip: String) {
+        nearbyRests(cityOrZip: $cityOrZip) {
           ...restFragment
         }
       }
       ${restFragment}
     `, 
     {
-      variables: { zip },
-      skip: !zip,
+      variables: { cityOrZip },
+      skip: !cityOrZip,
     }
   );
 

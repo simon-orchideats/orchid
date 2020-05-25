@@ -18,7 +18,7 @@ const query = gql`
   type Query {
     availablePlans: [Plan!]!
     myUpcomingOrders: [Order!]!
-    nearbyRests(zip: String): [Rest!]!
+    nearbyRests(cityOrZip: String): [Rest!]!
     rest(restId: ID!): Rest!
     order(orderId: ID!): Order!
     myConsumer: Consumer
