@@ -1,7 +1,6 @@
 import { makeStyles, Typography, Grid, Button } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { Variant } from "@material-ui/core/styles/createTypography";
 
 const useStyles = makeStyles(theme => ({
   group: ({ img }: { img?: string }) => ({
@@ -27,17 +26,17 @@ const CartMealGroup: React.FC<{
   name: string,
   img?: string,
   quantity: number,
+  choices?: string[],
   onAddMeal?: () => void,
   onRemoveMeal?: () => void,
-  textSize?: Variant,
 }> = ({
   mealId,
   name,
   img,
+  choices,
   quantity,
   onAddMeal,
   onRemoveMeal,
-  textSize,
  }) => {
   const classes = useStyles({ img });
   const imgCol = 4;
@@ -85,8 +84,11 @@ const CartMealGroup: React.FC<{
         </Grid>
       }
       <Grid item sm={nameCol}>
-        <Typography variant={textSize || 'subtitle1'}>
+        <Typography variant='subtitle1'>
           {name.toUpperCase()}
+        </Typography>
+        <Typography variant='body1' color='textSecondary'>
+          {choices && choices.map((c, i) => i === 0 ? c : `, ${c}`)}
         </Typography>
       </Grid>
     </Grid>

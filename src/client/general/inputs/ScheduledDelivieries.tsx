@@ -168,6 +168,7 @@ const ScheduleDeliveries: React.FC<{
                     }
                     <CartMealGroup
                       mealId={m.MealId}
+                      choices={m.Choices}
                       name={m.Name}
                       img={m.Img}
                       quantity={m.Quantity}

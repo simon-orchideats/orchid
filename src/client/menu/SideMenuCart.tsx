@@ -57,12 +57,12 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                   onAddMeal={() => addMealToCart(
                     deliveryMeal.mealId,
                     deliveryMeal,
-                    //todo simonv fix this from []
-                    [],
+                    deliveryMeal.Choices,
                     restId,
                     deliveryMeal.RestName,
                     deliveryMeal.TaxRate
                   )}
+                  choices={deliveryMeal.Choices}
                   onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal.mealId)}
                   key={deliveryMeal.MealId}
                   mealId={deliveryMeal.MealId}

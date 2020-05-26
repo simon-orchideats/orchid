@@ -103,8 +103,7 @@ const MenuMiniCart: React.FC<{
                     onClick={() => addMealToCart(
                       deliveryMeal.mealId,
                       deliveryMeal,
-                      //todo simonv fix this from []
-                      [],
+                      deliveryMeal.Choices,
                       restId,
                       deliveryMeal.RestName,
                       deliveryMeal.TaxRate

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Meal } from "../../rest/mealModel";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import Counter from './Counter';
 import ShortTextIcon from '@material-ui/icons/ShortText';
 import AddBoxIcon from '@material-ui/icons/AddBox';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -81,6 +82,9 @@ const useStyles = makeStyles(theme => ({
   },
   detail: {
     fontSize: '1rem',
+  },
+  choiceLabel: {
+    fontSize: '1.5rem',
   }
 }));
 
@@ -101,26 +105,123 @@ const MenuMeal: React.FC<{
   const classes = useStyles({ meal });
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
+  const [choicesAnchor, setChoicesAnchor] = useState<null | HTMLElement>(null);
   const [desc, setDesc] = useState<string>();
+  const [optionGroupIndex, setOptionGroupIndex] = useState<number>(0);
+  const [addonGroupIndex, setAddonGroupIndex] = useState<number>(0);
+  type addonGroupsState = {
+    [name: string]: {
+      isChecked: boolean,
+      name: string,
+    },
+  }
+  const defaultOptions = {};
+  const [options, setOptions] = useState<{ [groupIndex: number]: string }>(defaultOptions);
+  const defaultAddons = meal.AddonGroups.reduce<addonGroupsState>((sum, ag, i) => ({
+    ...sum,
+    ...ag.Names.reduce<addonGroupsState>((innerSum, name) => {
+      innerSum[`${i}-${name}`] = {
+        isChecked: false,
+        name,
+      };
+      return innerSum;
+    }, {})
+  }), {});
+  const [addonCounts, setAddonCounts] = useState<{ [groupIndex: number]: number }>({});
+  const [addons, setAddons] = useState(defaultAddons);
+  const onClickAdd = (event: React.MouseEvent<HTMLElement>) => {
+    if (meal.OptionGroups.length === 0 && meal.AddonGroups.length === 0) {
+      addMealToCart(
+        meal.Id,
+        new Meal(meal),
+        [],
+        restId,
+        restName,
+        taxRate
+      );
+      setChoicesAnchor(null);
+    } else {
+      setChoicesAnchor(event.currentTarget);
+    }
+  };
   const onClickName = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
     if (!isMdAndUp) {
       setDescAnchor(descAnchor ? null : event.currentTarget);
       setDesc(mealDesc || 'No description')
     }
   };
-  const isDescOpen = Boolean(descAnchor);
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
-  const onAddMeal = () => {
-    addMealToCart(
-      meal.Id,
-      new Meal(meal),
-      //todo simonv fix this from []
-      [],
-      restId,
-      restName,
-      taxRate
-    );
+  const onClickOption = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedOption = (event.target as HTMLInputElement).value;
+    setOptions({
+      ...options,
+      [optionGroupIndex]: selectedOption,
+    });
+  }
+  const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
+    setAddons({
+      ...addons,
+      [`${addonGroupIndex}-${name}`]: {
+        isChecked,
+        name,
+      },
+    });
+    const currAddonCount = addonCounts[addonGroupIndex];
+    if (isChecked) {
+      setAddonCounts({
+        ...addonCounts,
+        [addonGroupIndex]: currAddonCount ? currAddonCount + 1 : 1,
+      })
+    } else {
+      setAddonCounts({
+        ...addonCounts,
+        [addonGroupIndex]: currAddonCount - 1,
+      })
+    }
+  }
+  const onClickNextAddon = () => {
+    const nextIndex = addonGroupIndex + 1;
+    if (nextIndex === meal.AddonGroups.length) {
+      addMealToCart(
+        meal.Id,
+        new Meal(meal),
+        [ ...Object.values(options), ...Object.values(addons).filter(a => a.isChecked).map(a => a.name)],
+        restId,
+        restName,
+        taxRate
+      );
+      onCloseChoices();
+    } else {
+      setAddonGroupIndex(nextIndex);
+    }
+  }
+  const onCloseChoices = () => {
+    setOptionGroupIndex(0);
+    setAddonGroupIndex(0);
+    setChoicesAnchor(null);
+    setOptions(defaultOptions);
+    setAddons(defaultAddons);
+  }
+  const onClickRadio = (selectedOption: string) => {
+    setOptions({
+      ...options,
+      [optionGroupIndex]: selectedOption,
+    });
+    const newGroupIndex = optionGroupIndex + 1;
+    if (newGroupIndex === meal.OptionGroups.length && meal.AddonGroups.length === 0) {
+      addMealToCart(
+        meal.Id,
+        new Meal(meal),
+        Object.values(options),
+        restId,
+        restName,
+        taxRate
+      );
+      onCloseChoices();
+    } else {
+      setOptionGroupIndex(newGroupIndex);
+    }
   }
   const onRemoveMeal = () => {
     removeMealFromCart(restId, meal.Id);
@@ -128,9 +229,115 @@ const MenuMeal: React.FC<{
   return (
     <Card elevation={0} className={classes.card}>
       <Popover
-        open={isDescOpen}
+        open={Boolean(choicesAnchor)}
+        anchorEl={choicesAnchor}
+        onClose={() => onCloseChoices()}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+      >
+        <Paper className={classes.popper}>
+          {
+            (optionGroupIndex > 0 || addonGroupIndex > 0) &&
+            <ArrowBackIcon onClick={() => {
+              if (addonGroupIndex > 0) {
+                setAddonGroupIndex(addonGroupIndex - 1);
+                return;
+              }
+              setOptionGroupIndex(optionGroupIndex - 1);
+            }}/>
+          }
+          {
+            optionGroupIndex < meal.OptionGroups.length &&
+            <FormControl>
+              <FormLabel focused={false} className={classes.choiceLabel}>
+                Pick one
+              </FormLabel>
+              {
+                meal.OptionGroups.map((og, i) => (
+                  i === optionGroupIndex &&
+                  <RadioGroup
+                    key={`og-${i}`}
+                    onChange={onClickOption}
+                    value={options[optionGroupIndex]}
+                  >
+                    {
+                      og.Names.map((name, j) =>
+                        <FormControlLabel
+                          key={`og-names-${j}`}
+                          value={name}
+                          control={<Radio color='primary' />}
+                          label={name}
+                          onClick={() => onClickRadio(name)}
+                        />
+                      )
+                    }
+                  </RadioGroup>
+                ))
+              }
+            </FormControl>
+          }
+          {
+            optionGroupIndex >= meal.OptionGroups.length && addonGroupIndex < meal.AddonGroups.length &&
+            <FormControl>
+              <FormLabel
+                focused={false}
+                className={classes.choiceLabel} 
+                onClick={() => setAddonGroupIndex(addonGroupIndex - 1)}
+              >
+                Pick {meal.AddonGroups[addonGroupIndex].Limit ? `max ${meal.AddonGroups[addonGroupIndex].Limit}` : 'any'}
+              </FormLabel>
+              {
+                meal.AddonGroups.map((ag, i) => (
+                  i === addonGroupIndex &&
+                  <FormGroup key={`ag-${i}`}>
+                    {
+                      ag.Names.map((name, j) =>
+                        <FormControlLabel
+                          key={`ag-names-${j}`}
+                          control={
+                            <Checkbox
+                              checked={addons[`${i}-${name}`].isChecked}
+                              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                onClickAddon(i, name, event.target.checked)
+                              }
+                              name={name}
+                              color='primary'
+                            />
+                          }
+                          label={name}
+                        />
+                      )
+                    }
+                    {
+                      ag.Limit && addonCounts[i] > ag.Limit ?
+                        <Typography color='error'>
+                          Can only pick {ag.Limit}
+                        </Typography>
+                      :
+                        <Button
+                          variant='outlined'
+                          onClick={onClickNextAddon}
+                        >
+                          Next
+                        </Button>
+                    }
+                  </FormGroup>
+                ))
+              }
+            </FormControl>
+          }
+        </Paper>
+      </Popover>
+      <Popover
+        open={Boolean(descAnchor)}
         anchorEl={descAnchor}
-        onClose={() => setDescAnchor(null)} 
+        onClose={() => setDescAnchor(null)}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',
@@ -146,20 +353,20 @@ const MenuMeal: React.FC<{
           </Typography>
         </Paper>
       </Popover>
-      <div className={classes.scaler} onClick={onAddMeal}>
+      <div className={classes.scaler} onClick={onClickAdd}>
         {
           meal.Img ?
-          <CardMedia
-            className={classes.img}
-            image={meal.Img}
-            title={meal.Img}
-          >
-            {!isMdAndUp && <AddBoxIcon className={classes.imgAdd} />}
-          </CardMedia>
-          :
-          <Typography>
-            No picture
-          </Typography>
+            <CardMedia
+              className={classes.img}
+              image={meal.Img}
+              title={meal.Img}
+            >
+              {!isMdAndUp && <AddBoxIcon className={classes.imgAdd} />}
+            </CardMedia>
+            :
+            <Typography>
+              No picture
+        </Typography>
         }
       </div>
       <CardContent className={classes.content}>
@@ -176,7 +383,7 @@ const MenuMeal: React.FC<{
               subractIcon={<RemoveIcon />}
               chipLabel={count}
               chipDisabled={!count}
-              onClickAdd={onAddMeal}
+              onClickAdd={onClickAdd}
               addIcon={<AddIcon />}
               addButtonProps={{
                 variant: 'contained',

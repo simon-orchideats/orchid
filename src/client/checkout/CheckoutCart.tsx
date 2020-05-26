@@ -146,6 +146,7 @@ const CheckoutCart: React.FC<props> = ({
                   restMeal.meals.map(m => 
                     <CartMealGroup
                       key={m.MealId}
+                      choices={m.Choices}
                       mealId={m.MealId}
                       name={m.Name}
                       img={m.Img}
