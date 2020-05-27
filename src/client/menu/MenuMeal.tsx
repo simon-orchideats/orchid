@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Meal } from "../../rest/mealModel";
-import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
+import { useAddMealToCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button } from "@material-ui/core";
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
-import Counter from './Counter';
 import ShortTextIcon from '@material-ui/icons/ShortText';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -35,6 +32,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: meal.Img ? '100%' : undefined,
     paddingTop: meal.Img ? undefined : '100%',
     position: 'relative',
+    cursor: 'pointer',
   }),
   img: {
     position: 'absolute',
@@ -43,19 +41,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'flex-end',
     justifyContent: 'flex-end'
-  },
-  actionBar: {
-    display: 'flex',
-    marginBottom: theme.spacing(1),
-  },
-  minusButton: {
-    backgroundColor: `${theme.palette.grey[600]}`,
-    '&:hover': {
-      backgroundColor: theme.palette.grey[800],
-    },
-    '&:disabled': {
-      backgroundColor: theme.palette.grey[300],
-    },
   },
   title: {
     lineHeight: 1.5
@@ -66,19 +51,9 @@ const useStyles = makeStyles(theme => ({
   button: {
     borderRadius: 10,
   },
-  chip: {
-    flex: 1,
-    fontSize: '1.2rem',
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    color: theme.palette.primary.main,
-  },
   popper: {
     width: 300,
     padding: theme.spacing(2),
-  },
-  disabledChip: {
-    color: theme.palette.text.disabled,
   },
   detail: {
     fontSize: '1rem',
@@ -89,13 +64,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
-  count: number,
   meal: Meal,
   restId: string,
   restName: string,
   taxRate: number,
 }> = ({
-  count,
   meal,
   restId,
   restName,
@@ -127,7 +100,8 @@ const MenuMeal: React.FC<{
       return innerSum;
     }, {})
   }), {});
-  const [addonCounts, setAddonCounts] = useState<{ [groupIndex: number]: number }>({});
+  const defaultAddonCounts = {};
+  const [addonCounts, setAddonCounts] = useState<{ [groupIndex: number]: number }>(defaultAddonCounts);
   const [addons, setAddons] = useState(defaultAddons);
   const onClickAdd = (event: React.MouseEvent<HTMLElement>) => {
     if (meal.OptionGroups.length === 0 && meal.AddonGroups.length === 0) {
@@ -151,7 +125,6 @@ const MenuMeal: React.FC<{
     }
   };
   const addMealToCart = useAddMealToCart();
-  const removeMealFromCart = useRemoveMealFromCart();
   const onClickOption = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedOption = (event.target as HTMLInputElement).value;
     setOptions({
@@ -172,7 +145,7 @@ const MenuMeal: React.FC<{
       setAddonCounts({
         ...addonCounts,
         [addonGroupIndex]: currAddonCount ? currAddonCount + 1 : 1,
-      })
+      });
     } else {
       setAddonCounts({
         ...addonCounts,
@@ -202,6 +175,7 @@ const MenuMeal: React.FC<{
     setChoicesAnchor(null);
     setOptions(defaultOptions);
     setAddons(defaultAddons);
+    setAddonCounts(defaultAddonCounts);
   }
   const onClickRadio = (selectedOption: string) => {
     setOptions({
@@ -222,9 +196,6 @@ const MenuMeal: React.FC<{
     } else {
       setOptionGroupIndex(newGroupIndex);
     }
-  }
-  const onRemoveMeal = () => {
-    removeMealFromCart(restId, meal.Id);
   }
   return (
     <Card elevation={0} className={classes.card}>
@@ -361,7 +332,7 @@ const MenuMeal: React.FC<{
               image={meal.Img}
               title={meal.Img}
             >
-              {!isMdAndUp && <AddBoxIcon className={classes.imgAdd} />}
+              <AddBoxIcon className={classes.imgAdd} />
             </CardMedia>
             :
             <Typography>
@@ -370,29 +341,6 @@ const MenuMeal: React.FC<{
         }
       </div>
       <CardContent className={classes.content}>
-        {
-          isMdAndUp &&
-          <div className={classes.actionBar}>
-            <Counter
-              subtractDisabled={!count}
-              onClickSubtract={onRemoveMeal}
-              subtractButtonProps={{
-                variant: 'contained',
-                className: `${classes.button} ${classes.minusButton}`
-              }}
-              subractIcon={<RemoveIcon />}
-              chipLabel={count}
-              chipDisabled={!count}
-              onClickAdd={onClickAdd}
-              addIcon={<AddIcon />}
-              addButtonProps={{
-                variant: 'contained',
-                color: 'primary',
-                className: classes.button
-              }}
-            />
-          </div>
-        }
         <Typography
           gutterBottom
           variant='subtitle1'

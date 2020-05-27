@@ -37,6 +37,7 @@ const orderFragment = gql`
         img
         name
         quantity
+        choices
         restId
         restName
         stripePlanId

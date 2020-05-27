@@ -8,6 +8,7 @@ import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/con
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
+import { isEqual } from 'lodash';
 
 export interface ICartInput {
   readonly paymentMethodId: string
@@ -93,7 +94,7 @@ export class Cart implements ICart {
   public static addMealsToExistingDeliveryMeals = (newMeals: IDeliveryMeal[], existingMeals: IDeliveryMeal[]) => {
     newMeals.forEach(newMeal => {
       for (let i = 0; i < existingMeals.length; i++) {
-        if (existingMeals[i].mealId === newMeal.mealId) {
+        if (DeliveryMeal.isSameMeal(existingMeals[i], newMeal)) {
           existingMeals[i] = new DeliveryMeal({
             ...newMeal,
             quantity: existingMeals[i].quantity + 1,
@@ -198,15 +199,14 @@ export class Cart implements ICart {
           mealCount: currMealPlans[currMealPlanIndex].MealCount + newMeal.quantity,
         })
       }
-      const index = restMeal.meals.findIndex(meal => meal.MealId === newMeal.mealId);
+      const index = restMeal.meals.findIndex(meal => DeliveryMeal.isSameMeal(newMeal, meal));
       if (index === -1) {
         restMeal.meals.push(new DeliveryMeal(newMeal));
       } else {
         restMeal.meals[index] = new DeliveryMeal({
           ...newMeal,
           quantity: restMeal.meals[index].Quantity + newMeal.quantity
-          
-        })
+        });
       }
     } else {
       restMeals[newMeal.restId] = {
@@ -229,9 +229,12 @@ export class Cart implements ICart {
     taxRate: number
   ) {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
+      // todo simonv this mealId comparison is used for autogeneration. so what we need to do is
+      // make sure if the meal has options/addons and if so then auto gen choices and use that as part of the
+      // comparison instead of just mealId
       const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
       if (groupIndex === -1) {
-        // todo simonv update this to use choices[]
+        // todo simonv update this to use choices[]. this is used for auto generation
         groupings.push(DeliveryMeal.getDeliveryMeal(
           meal._id,
           meal,
@@ -327,7 +330,7 @@ export class Cart implements ICart {
     Cart.addMealToRestMeals(newCart.RestMeals, deliveryMeal);
     if (newCart.Deliveries.length > 0) {
       const firstDelivery = newCart.Deliveries[0];
-      const newMealIndex = firstDelivery.meals.findIndex(m => m.MealId === mealId);
+      const newMealIndex = firstDelivery.meals.findIndex(m => m.MealId === mealId && isEqual(choices, m.Choices));
       if (newMealIndex === -1) {
         firstDelivery.Meals.push(
           DeliveryMeal.getDeliveryMeal(
@@ -414,7 +417,7 @@ export class Cart implements ICart {
   public moveMealToNewDelivery(meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) {
     const newCart = new Cart(this);
     const fromDeliveryMeals = newCart.Deliveries[fromDeliveryIndex].Meals
-    const fromMealIndex = fromDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    const fromMealIndex = fromDeliveryMeals.findIndex(m => DeliveryMeal.isSameMeal(m, meal));
     if (meal.Quantity > 1) {
       fromDeliveryMeals[fromMealIndex] = new DeliveryMeal({
         ...meal,
@@ -424,7 +427,7 @@ export class Cart implements ICart {
       fromDeliveryMeals.splice(fromMealIndex, 1);
     }
     const newDeliveryMeals = newCart.Deliveries[toDeliveryIndex].Meals;
-    const toMealIndex = newDeliveryMeals.findIndex(m => m.MealId === meal.MealId);
+    const toMealIndex = newDeliveryMeals.findIndex(m => DeliveryMeal.isSameMeal(m, meal));
     if (toMealIndex === -1) {
       newDeliveryMeals.push(new DeliveryMeal({
         ...meal,
@@ -439,12 +442,12 @@ export class Cart implements ICart {
     return newCart;
   }
 
-  public removeMeal(restId: string, mealId: string) {
+  public removeMeal(restId: string, removalMeal: IDeliveryMeal) {
     const newCart = new Cart(this);
     const restMeals = newCart.RestMeals[restId];
-    const index = restMeals.meals.findIndex(meal => meal.MealId === mealId);
+    const index = restMeals.meals.findIndex(meal => DeliveryMeal.isSameMeal(meal, removalMeal));
     if (index === -1) {
-      const err = new Error(`MealId '${mealId}' not found in cart`);
+      const err = new Error(`MealId '${removalMeal.mealId + removalMeal.choices.join(', ')}' not found in cart`);
       console.error(err.stack);
       throw err;
     }
@@ -484,7 +487,7 @@ export class Cart implements ICart {
     for (let i = 0; i < newCart.Deliveries.length; i++) {
       const meals = newCart.Deliveries[i].Meals;
       for (let j = 0; j < meals.length; j++) {
-        if (meals[j].MealId === mealId) {
+        if (DeliveryMeal.isSameMeal(meals[j], removalMeal)) {
           removedMealDeliveryIndex = i;
           removedMealMealsIndex = j;
           break;

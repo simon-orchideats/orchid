@@ -22,7 +22,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const CartMealGroup: React.FC<{
-  mealId: string,
   name: string,
   img?: string,
   quantity: number,
@@ -30,7 +29,6 @@ const CartMealGroup: React.FC<{
   onAddMeal?: () => void,
   onRemoveMeal?: () => void,
 }> = ({
-  mealId,
   name,
   img,
   choices,
@@ -42,7 +40,11 @@ const CartMealGroup: React.FC<{
   const imgCol = 4;
   const nameCol: 7 | 11 = img ? 7 as 7: 7 + imgCol as 7 | 11;
   return (
-    <Grid container key={mealId} className={classes.group} wrap='nowrap'>
+    <Grid
+      container
+      className={classes.group}
+      wrap='nowrap'
+    >
       <Grid
         item
         sm={1}
@@ -88,7 +90,7 @@ const CartMealGroup: React.FC<{
           {name.toUpperCase()}
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          {choices && choices.map((c, i) => i === 0 ? c : `, ${c}`)}
+          {choices && choices.join(', ')}
         </Typography>
       </Grid>
     </Grid>

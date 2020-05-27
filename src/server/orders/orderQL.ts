@@ -33,6 +33,7 @@ export const _OrderQL = gql`
     name: String!
     quantity: Int!
     restId: ID!
+    choices: [String!]!
     restName: String!
     stripePlanId: ID!
     planName: ID!
@@ -49,6 +50,7 @@ export const _OrderQL = gql`
     mealId: ID!
     img: String
     name: String!
+    choices: [String!]!
     quantity: Int!
     restId: ID!
     restName: String!

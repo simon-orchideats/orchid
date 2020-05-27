@@ -2,7 +2,6 @@ import React from 'react';
 import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
-import { DeliveryMeal } from '../../order/deliveryModel';
 import { CuisineType } from '../../consumer/consumerModel';
 import { Meal } from '../../rest/mealModel';
 
@@ -44,11 +43,9 @@ const isMealInFilter = (meal: Meal, cuisines: CuisineType[]) => {
 }
 
 const RestMenu: React.FC<{
-  cartMeals?: DeliveryMeal[],
   cuisinesFilter: CuisineType[],
   rest: Rest
 }> = ({
-  cartMeals,
   cuisinesFilter,
   rest
 }) => {
@@ -56,11 +53,6 @@ const RestMenu: React.FC<{
   const meals = rest.Menu.map(meal => {
     const isInFilter = isMealInFilter(meal, cuisinesFilter);
     if (!isInFilter) return null;
-    let count = 0;
-    if (cartMeals) {
-      const index = cartMeals.findIndex(cartMeal => cartMeal.MealId === meal.Id);
-      if (index >= 0) count = cartMeals[index].Quantity;
-    }
     return (
       <Grid
         item
@@ -72,7 +64,6 @@ const RestMenu: React.FC<{
           restId={rest.Id}
           restName={rest.Profile.Name}
           meal={meal} 
-          count={count}
           taxRate={rest.TaxRate}
         />
       </Grid>
@@ -107,29 +98,5 @@ export default React.memo(RestMenu, (prevProps, nextProps) => {
   const areEqual = prevRestMeals.length === nextRestMeals.length
     && prevRestMeals.every((mealId, index) => mealId === nextRestMeals[index]);
   if (!areEqual) return false;
-  const prevCartMeals = prevProps.cartMeals;
-  const nextCartMeals = nextProps.cartMeals;
-  if (!prevCartMeals && !nextCartMeals) return true;
-  if (!prevCartMeals && nextCartMeals) return false;
-  if (prevCartMeals && !nextCartMeals) return false;
-  // should not happen, but added to make typescript happy
-  if (!prevCartMeals || !nextCartMeals) return false;
-  for (let i = 0; i < prevCartMeals.length; i++) {
-    for (let j = 0; j < prevRestMeals.length; j++) {
-      const mealInNextCart = nextCartMeals.find(deliveryMeal => prevRestMeals.includes(deliveryMeal.MealId));
-      if (prevCartMeals[i].MealId === prevRestMeals[j]) {
-        if (!mealInNextCart || mealInNextCart.Quantity < prevCartMeals[i].Quantity || mealInNextCart.Quantity > prevCartMeals[i].Quantity) {
-          return false;
-        }
-      } else {
-        if (mealInNextCart) {
-          return false;
-        }
-      }
-    }
-  }
-  for (let i = 0; i < prevCartMeals.length; i++) {
-    if (!nextCartMeals.find(m => m.equals(prevCartMeals[i]))) return false;
-  }
   return true;
 });

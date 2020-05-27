@@ -27,7 +27,7 @@ const Counter: React.FC<{
   chipLabel: number,
   chipDisabled: boolean,
   addDisabled?: boolean,
-  onClickAdd: (event: React.MouseEvent<HTMLElement>) => void,
+  onClickAdd: () => void,
   addIcon: React.ReactNode,
   addButtonProps?: ButtonProps,
 }> = ({

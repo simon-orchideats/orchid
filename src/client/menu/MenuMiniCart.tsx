@@ -94,14 +94,14 @@ const MenuMiniCart: React.FC<{
         <div className={`${classes.bar} ${classes.scrollable}`}>
           {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
             restMeals.meals.map(deliveryMeal => (
-              <div className={classes.meals} key={deliveryMeal.mealId}>
+              <div className={classes.meals} key={deliveryMeal.IdKey}>
                 <div className={classes.bar}>
                   <Button
                     size='small'
                     variant='text'
                     color='primary'
                     onClick={() => addMealToCart(
-                      deliveryMeal.mealId,
+                      deliveryMeal.MealId,
                       deliveryMeal,
                       deliveryMeal.Choices,
                       restId,
@@ -117,7 +117,7 @@ const MenuMiniCart: React.FC<{
                   <Button
                     size='small'
                     variant='text'
-                    onClick={() => removeMealFromCart(restId, deliveryMeal.mealId)}
+                    onClick={() => removeMealFromCart(restId, deliveryMeal)}
                   >
                     <RemoveIcon />
                   </Button>

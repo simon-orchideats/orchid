@@ -1,6 +1,7 @@
 import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
 import { deliveryTime } from './../consumer/consumerModel';
+import { isEqual } from 'lodash';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';
  
@@ -68,6 +69,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get PlanName() { return this.planName }
   public get TaxRate() { return this.taxRate }
   public get Tags() { return this.tags }
+  public get IdKey() { return this.mealId + this.choices.join() }
 
   static getDeliveryMeal(
     mealId: string,
@@ -100,7 +102,12 @@ export class DeliveryMeal implements IDeliveryMeal {
     if (this.Quantity !== meal.Quantity) return false;
     if (this.RestId !== meal.RestId) return false;
     if (this.RestName !== meal.RestName) return false;
+    if (!isEqual(this.Choices, meal.Choices)) return false
     return true;
+  }
+
+  public static isSameMeal(m1: IDeliveryMeal, m2: IDeliveryMeal) {
+    return m1.mealId === m2.mealId && isEqual(m1.choices, m2.choices)
   }
 
   static getICopy(meal: IDeliveryMeal): IDeliveryMeal {

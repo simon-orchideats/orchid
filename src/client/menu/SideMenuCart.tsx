@@ -54,6 +54,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               </Typography>
               {restMeals.meals.map(deliveryMeal => (
                 <CartMealGroup
+                  key={deliveryMeal.IdKey}
                   onAddMeal={() => addMealToCart(
                     deliveryMeal.mealId,
                     deliveryMeal,
@@ -63,9 +64,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                     deliveryMeal.TaxRate
                   )}
                   choices={deliveryMeal.Choices}
-                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal.mealId)}
-                  key={deliveryMeal.MealId}
-                  mealId={deliveryMeal.MealId}
+                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal)}
                   name={deliveryMeal.Name}
                   img={deliveryMeal.Img}
                   quantity={deliveryMeal.Quantity}
@@ -76,7 +75,6 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           {
             donationCount > 0 &&
             <CartMealGroup
-              mealId='donations'
               name='Donation'
               img='/heartHand.png'
               quantity={donationCount}

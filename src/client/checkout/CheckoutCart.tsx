@@ -125,7 +125,6 @@ const CheckoutCart: React.FC<props> = ({
       {
         cart.DonationCount > 0 &&
         <CartMealGroup
-          mealId='donations'
           img='/heartHand.png'
           name='Donation'
           quantity={cart.DonationCount}
@@ -145,9 +144,8 @@ const CheckoutCart: React.FC<props> = ({
                 {
                   restMeal.meals.map(m => 
                     <CartMealGroup
-                      key={m.MealId}
+                      key={m.IdKey}
                       choices={m.Choices}
-                      mealId={m.MealId}
                       name={m.Name}
                       img={m.Img}
                       quantity={m.Quantity}

@@ -68,10 +68,7 @@ PUT orders/_mapping
   "properties": {
     "menu": {
       "properties": {
-        "addons":  {
-          "type": "keyword"
-        },
-        "options": {
+        "choices":  {
           "type": "keyword"
         }
       }

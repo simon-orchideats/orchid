@@ -78,7 +78,6 @@ const menu = () => {
     <RestMenu
       key={rest.Id}
       rest={rest}
-      cartMeals={cart?.RestMeals[rest.Id]?.meals}
       cuisinesFilter={cuisines}
     />
   )

@@ -159,7 +159,7 @@ const ScheduleDeliveries: React.FC<{
                   {restMeal.meals[0].RestName}
                 </Typography>
                 {restMeal.meals.map(m => (
-                  <div key={m.MealId} className={classes.row}>
+                  <div key={m.IdKey} className={classes.row}>
                     {
                       deliveryIndex !== 0 && movable &&
                       <IconButton onClick={() => moveMeal(m, deliveryIndex, deliveryIndex - 1)}>
@@ -167,7 +167,6 @@ const ScheduleDeliveries: React.FC<{
                       </IconButton>
                     }
                     <CartMealGroup
-                      mealId={m.MealId}
                       choices={m.Choices}
                       name={m.Name}
                       img={m.Img}

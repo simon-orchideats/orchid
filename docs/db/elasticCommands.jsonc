@@ -697,7 +697,7 @@ GET /rests/_mapping
 GET /orders/_mapping
 GET /consumers/_mapping
 
-PUT consumers/_mapping
+PUT orders/_mapping
 {
   "properties": {
     "costs": {
@@ -720,7 +720,7 @@ PUT consumers/_mapping
   }
 }
 
-PUT /rests2/
+PUT /rests/
 {
   "mappings": {
     "dynamic": false,
@@ -1001,12 +1001,9 @@ PUT /orders/
               "mealId": {
                 "type": "keyword"
               },
-              "addons":  {
+              "choices":  {
                 "type": "keyword"
               },
-              "options": {
-                "type": "keyword"
-              }
               // probably add this down the line
               // "coupon": {
               //   "properties": {
@@ -1349,1181 +1346,1218 @@ PUT /promos/
 ######### INSERTS ##########
 
 
-POST rests/_doc/
-{
+POST rest/_doc {
+  "taxRate" : 0.0625,
   "createdDate" : 1585714539021,
-  "location" : {
-    "address" : {
-      "address1" : "117 Tonelle Ave",
-      "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07306"
-    },
-    "geo" : {
-      "lat" : 40.735060,
-      "lon" : -74.067220
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers" : [ ],
-  "menu" : [
-    {
-      "_id" : "h7EoC8AH8w8vnQbGc9lTV",
-      "img" : "/menu/canteen-dhaba/butter-chicken.jpg",
-      "name" : "Butter Chicken w/ Keema Naan",
-      "description" : "classic boneless chicken in makhani gravy",
-      "originalPrice" : 119
-    },
-    {
-      "_id" : "3wxzopyL5fnFS-HHUxb6f",
-      "img" : "/menu/canteen-dhaba/lamb-rogan-josh.jpg",
-      "name" : "Lamb Rogan Josh w/ Jalapeno Naan",
-      "originalPrice" : 119,
-      "tags": [],
-      "description" : "classic North Indian dish in cardamom sauce"
-    },
-    {
-      "_id" : "8HWCCbo0MdLRggszhJEbF",
-      "img" : "/menu/canteen-dhaba/paneer-tikka-masala.jpg",
-      "name" : "Paneer Tikka Masala w/ Dahi Bhalla",
-      "originalPrice" : 119,
-      "tags": ["Vegetarian"],
-      "description" : "homemade cubed cottage cheese in herbed creamy tomato sauce & lentil dumplings filled w/ cumin seeds and nuts in yogurt sauce w/ chutneys and chat masala"
-    },
-    {
-      "_id" : "OrY0ZaR-y4NcER8pZIByG",
-      "img" : "/menu/canteen-dhaba/shrimp-tandoori.jpg",
-      "name" : "Tandoori Shrimp",
-      "originalPrice" : 1195,
-      "tags": [],
-      "description" : "shrimp marinated in authentic spiced yogurt & herbs in a charcoal oven"
-    },
-    {
-      "_id" : "R3R2E_khpEN57nXxvXCqn",
-      "img" : "/menu/canteen-dhaba/chicken-biryani.jpg",
-      "name" : "Chicken Biryani w/ Keema Naan",
-      "originalPrice" : 119,
-      "tags": [],
-      "description" : "basmati rice cooked with marinated chicken with Indian herbs spices & dry fruits"
-    },
-    {
-      "_id" : "AvvXsRFml8utI6icepmEK",
-      "img" : "/menu/canteen-dhaba/baigan-bartha.jpg",
-      "name" : "Baigan Bartha w/ Samosa Chat",
-      "tags": ["Vegan", "Vegetarian"],
-      "description" : "fresh roasted eggplant with sauteed ginger, garlic and red onions in vegetable oil & crispy turnovers with seasoned potatoes served with yogurt, chickpeas, & chutney",
-      "originalPrice" : 1190
-    }
-  ],
   "profile" : {
-    "name" : "Canteen Desi Dhaba",
     "phone" : "(201) 434-0007",
+    "name" : "Canteen Desi Dhaba",
     "tags" : [
       "Indian"
     ]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate" : 1585714539021,
+  },
   "location" : {
+    "geo" : {
+      "lon" : -74.06722,
+      "lat" : 40.73506
+    },
     "address" : {
+      "zip" : "07306",
+      "city" : "Jersey City",
       "address1" : "117 Tonelle Ave",
-      "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07306"
+      "state" : "NJ"
     },
-    "geo" : {
-      "lat" : 40.735060,
-      "lon" : -74.067220
-    },
-    "timezone": "America/New_York"
+    "timezone" : "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers" : [ ],
   "menu" : [
     {
-      "_id" : "LOeDflf4gWcqwstGKg3CN",
-      "img" : "/menu/china-spice/ginger-basil-chicken.jpg",
-      "name" : "Basil Ginger Chicken",
-      "description" : "boneless pieces of chicken breast stir-fried in ginger and basil sauce.",
-      "originalPrice" : 1200,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/chicken-tikka.jpg",
+      "originalPrice" : 995,
+      "name" : "Chicken Tikka Masala w/ Naan",
+      "description" : "chicken tikka cooked with fenugreek sauce with Indian spices",
+      "planName" : "Standard",
+      "_id" : "h7EoC8AH8w8vnQbGc9lTV",
+      "tags" : [
+        "Indian"
+      ]
     },
     {
-      "_id" : "zZ0HgS5QqD4qwedw40nEV",
-      "img" : "/menu/china-spice/thai-chicken.jpg",
-      "name" : "Thai Chicken Curry",
-      "originalPrice" : 1200,
-      "tags": [],
-      "description" : "a traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/lamb-rogan-josh.jpg",
+      "originalPrice" : 995,
+      "name" : "Lamb Rogan Josh",
+      "description" : "classic North Indian dish in cardamom sauce",
+      "planName" : "Standard",
+      "_id" : "3wxzopyL5fnFS-HHUxb6f",
+      "tags" : [
+        "Indian"
+      ]
     },
     {
-      "_id" : "77CogU3SlD_xG5y9aSAJW",
-      "img" : "/menu/china-spice/coriander-chicken.jpg",
-      "name" : "Coriander Garlic Chicken",
-      "originalPrice" : 1200,
-      "tags": [],
-      "description" : "wok-fried chicken with onions and green peppers in garlic coriander sauce"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/paneer-tikka-masala.jpg",
+      "originalPrice" : 990,
+      "name" : "Paneer Tikka Masala w/ Keema Naan",
+      "description" : "homemade cubed cottage cheese in herbed creamy tomato sauce",
+      "planName" : "Standard",
+      "_id" : "8HWCCbo0MdLRggszhJEbF",
+      "tags" : [
+        "Indian"
+      ]
     },
     {
-      "_id" : "ZlnsrAnkjppBwY64hCFWY",
-      "img" : "/menu/china-spice/curry-fried-rice.jpg",
-      "name" : "Vegetables Spicy Curry Fried Rice",
-      "originalPrice" : 12.00,
-      "tags": ["Vegetarian", "Vegan"],
-      "description" : "thai fried rice with onions, tomatoes, carrots, tofu, string beans & basil in light curry sauce"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/butter-chicken.jpg",
+      "originalPrice" : 995,
+      "name" : "Butter Chicken w/ Naan",
+      "description" : "classic boneless chicken in makhani gravy",
+      "planName" : "Standard",
+      "_id" : "OrY0ZaR-y4NcER8pZIByG",
+      "tags" : [
+        "Indian"
+      ]
     },
     {
-      "_id" : "EDjLDJejCNf75rYJj5NyW",
-      "img" : "/menu/china-spice/okra.jpg",
-      "name" : "Okra Pepper Salt Dry",
-      "originalPrice" : 1100,
-      "tags": ["Vegetarian", "Vegan"],
-      "description" : "lady fingers sauteed w/ chilli, garlic, scallions, ginger, celery, & black pepper in soy"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/chicken-biryani.jpg",
+      "originalPrice" : 995,
+      "name" : "Chicken Biryani w/ Naan",
+      "description" : "basmati rice cooked with marinated chicken with Indian herbs spices & dry fruits",
+      "planName" : "Standard",
+      "_id" : "R3R2E_khpEN57nXxvXCqn",
+      "tags" : [
+        "Indian"
+      ]
     },
     {
-      "_id" : "RSwsSOm96-aRXYgwVK0Z6",
-      "img" : "/menu/china-spice/cauliflower.jpg",
-      "name" : "Cauliflower Manchurian & Chili Paneer",
-      "tags": ["Vegetarian", "Vegan"],
-      "description" : "flower buds roasted to perfection in our famous manchurian sauce & cubes of cottage cheese sauteed with fresh chili, onions, in light soy sauce",
-      "originalPrice" : 1100
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/canteen-dhaba/baigan-bartha.jpg",
+      "originalPrice" : 990,
+      "name" : "Baigan Bartha w/ Vegetable Somasas",
+      "description" : "fresh roasted eggplant with sauteed ginger, garlic and red onions in vegetable oil & crispy turnovers with seasoned potatoes and green peas",
+      "planName" : "Standard",
+      "_id" : "AvvXsRFml8utI6icepmEK",
+      "tags" : [
+        "Vegan",
+        "Vegetarian",
+        "Indian"
+      ]
     }
   ],
+  "managers" : [ ]
+}
+POST rest/_doc {
+  "taxRate" : 0.06625,
+  "createdDate" : 1589136394878,
   "profile" : {
-    "name" : "China Spice",
-    "phone" : "(201) 653-7742",
+    "phone" : "(201) 878-4400",
+    "name" : "Rumba Cubana",
     "tags" : [
-      "Indian",
-      "Chinese"
+      "Mexican"
     ]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "236 Grove St",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.716210,
-      "lon": -74.044560
-    },
-    "timezone": "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "tags": [],
-      "_id": "eM4SzUFNlICy_v5yEb9Wq",
-      "img": "/menu/taqueria/carnitas-taco.png",
-      "name": "3x Carnitas (Pork) Tacos",
-      "originalPrice": 1125
-    },
-    {
-      "tags": [],
-      "_id": "O6_4TKaCEMVBFpB3-XR0P",
-      "img": "/menu/taqueria/pescado-taco.png",
-      "name": "3x Pescado (Fish) Tacos",
-      "originalPrice": 1125
-    },
-    {
-      "tags": [],
-      "_id": "IEt50RPjQqGPz7X5m5WaR",
-      "img": "/menu/taqueria/chorizo-taco.png",
-      "name": "3x Chorizo (Sausage) Tacos",
-      "originalPrice": 1125
-    },
-    {
-      "tags": [],
-      "_id": "c-67feK6I6Ad_dJRKTr6w",
-      "img": "/menu/taqueria/barbocoa-taco.png",
-      "name": "3x Barbacoa (Lamb) Tacos",
-      "originalPrice": 1125
-    },
-    {
-      "tags": [],
-      "_id": "DskCXQWchhxAo_KrLZiNh",
-      "img": "/menu/taqueria/flauta-plate.png",
-      "name": "Pollo Flauta Plate",
-      "originalPrice": 995,
-      "description": "3 rolled crispy tacos w/ lettuce, salsa, guacamole, cheese and crema and side of rice and beans"
-    },
-    {
-      "tags": [],
-      "_id": "pmuZPcloW76KRBWpOAkPe",
-      "img": "/menu/taqueria/roja-enchiladas.png",
-      "name": "Roja Enchiladas",
-      "originalPrice": 1150,
-      "description": "two chicken-rolled corn tortillas topped w/ red sauce and served w/ red Mexican rice and pinto beans"
-    }
-  ],
-  "profile": {
-    "name": "La Taqueria Downtown",
-    "phone": "(201) 333-3220",
-    "tags": ["Mexican"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "740 Washington St",
-      "city": "Hoboken",
-      "state": "NJ",
-      "zip": "07030"
-    },
-    "geo": {
-      "lat": 40.745980,
-      "lon": -74.028680
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "_id": "YBCvO0V2z3UDSfC6evRZe",
-      "img": "/menu/margheritas/fettucine-alfredo.png",
-      "name": "Fettuccine Alfredo",
-      "originalPrice": 1095,
-      "tags": [],
-      "discription": "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce"
-    },
-    {
-      "_id": "leM-xEuV4ucGVV2GdcM3x",
-      "img": "/menu/margheritas/penne-vodka.png",
-      "name": "Penne Vodka",
-      "originalPrice": 1095,
-      "tags": [],
-      "discription": "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka"
-    },
-    {
-      "_id": "umQoRB1zA7dpb2lZ_eta1",
-      "img": "/menu/margheritas/rigatoni-w-meat-sauce.png",
-      "name": "Rigatoni w/ Meat Sauce",
-      "originalPrice": 1095,
-      "tags": [],
-      "discription": "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese"
-    },
-    {
-      "_id": "zFSbyFbfXkD-pSI6p-ETG",
-      "img": "/menu/margheritas/chicken-cutlet.png",
-      "name": "Chicken Cutlet Sandwich",
-      "originalPrice": 995,
-      "tags": [],
-      "discription": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo"
-    },
-    {
-      "_id": "kmXktTAR0c0FA7aA9RwJj",
-      "img": "/menu/margheritas/sausage-n-peppers.png",
-      "originalPrice": 995,
-      "tags": [],
-      "name": "Sausage, Peppers, and Onions Sandwich"
-    },
-    {
-      "_id": "uxeKzlMF-24OF8GXTrhUm",
-      "img": "/menu/margheritas/fresh-mozz-and-roasted-peps-sandwhich.png",
-      "name": "Fresh Mozzarella & Roasted Red Peppers Sandwich",
-      "originalPrice": 995,
-      "tags": ["Vegan", "Vegetarian"],
-      "discription": "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia"
-    }
-  ],
-  "profile": {
-    "name": "Margherita's",
-    "phone": "(201) 222-2400",
-    "tags": ["Italian"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "128 Washington St",
-      "city": "Hoboken",
-      "state": "NJ",
-      "zip": "07030"
-    },
-    "geo": {
-      "lat": 40.738461,
-      "lon": -74.030937
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "_id": "EYfOpNG2KTRNhHVZSGHmm",
-      "img": "/menu/precious-chinese/beef-over-broccoli.jpg",
-      "name": "Beef w/ Broccoli",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    },
-    {
-      "_id": "XQNJ7ElD4zFmjmvdOiTdc",
-      "img": "/menu/precious-chinese/general-tsos-chicken.png",
-      "name": "General Tsos Chicken",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    },
-    {
-      "_id": "4T5aQ9FLI8lyoA3zoToKt",
-      "img": "/menu/precious-chinese/tangerine-chicken.png",
-      "name": "Tangerine Chicken",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    },
-    {
-      "_id": "Cl0wYEgZ3fg1kk7qzRQ45",
-      "img": "/menu/precious-chinese/pepper-steak-w-onions.png",
-      "name": "Pepper Steak w/ Onions",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    },
-    {
-      "_id": "4wogDeH4Kmasoz6fIDnny",
-      "img": "/menu/precious-chinese/chicken-w-broccoli.png",
-      "name": "Chicken w/ Broccoli",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    },
-    {
-      "_id": "kFRbIxYEWI7awVYQnFkkI",
-      "img": "/menu/precious-chinese/diced-chicken-w-hot-pepper-sauce-and-peanuts.png",
-      "name": "Diced Chicken w/ Hot Pepper Sauce and Peanuts",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "w/ rice and egg roll"
-    }
-  ],
-  "profile": {
-    "name": "Precious Chinese Cuisine",
-    "phone": "(201) 798-8827",
-    "tags": ["Chinese"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "257 14th St",
-      "city": "Hoboken",
-      "state": "NJ",
-      "zip": "07030"
-    },
-    "geo": {
-      "lat": 40.753580,
-      "lon": -74.029220
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "_id": "jvKgxB63mkjKYJPbZ6Xuq",
-      "img": "/menu/malibu-diner/western-omelette.png",
-      "name": "Western Omelette",
-      "originalPrice": 1050,
-      "tags": [],
-      "discription": "w/ diced ham, green peppers and onions. Served w/ home fries and toast"
-    },
-    {
-      "_id": "UBhDDFonMB9uV6oynwlzB",
-      "img": "/menu/malibu-diner/western-wrap.png",
-      "name": "Western Breakfast Wrap",
-      "originalPrice": 995,
-      "tags": [],
-      "discription": "w/ scrambled eggs, diced ham, onions, green Pepperp and Monterey Jack cheese. Served w/ home fries"
-    },
-    {
-      "_id": "TDorla9_Ha4r98yNoguFa",
-      "img": "/menu/malibu-diner/cheeseburger.png",
-      "name": "Cheeseburger on a Roll",
-      "originalPrice": 1150,
-      "tags": [],
-      "discription": "melted American, lettuce, tomato. Served w/ fries and coleslaw"
-    },
-    {
-      "_id": "FmoCjgnlAeKVBrt0CJlc8",
-      "img": "/menu/malibu-diner/pastrami.png",
-      "name": "Hot Pastrami Sandwich",
-      "originalPrice": 995,
-      "tags": [],
-      "discription": "served w/ potato salad and pickle"
-    },
-    {
-      "_id": "LDD-JA6VJcM-JaGy2xWeP",
-      "img": "/menu/malibu-diner/reuben-sandwhich.png",
-      "name": "Reuben Sandwich",
-      "originalPrice": 850,
-      "tags": [],
-      "discription": "served w/ fries and coleslaw"
-    },
-    {
-      "_id": "5vVHQdd2NzgVjKORYUUDA",
-      "img": "/menu/malibu-diner/chicken-fajita-panini.png",
-      "name": "Chicken Fajita Panini",
-      "originalPrice": 825,
-      "tags": [],
-      "discription": "grilled chicken with roasted peppers, caramelized onions, cheddar cheese and salsa. Served with french fries"
-    }
-  ],
-  "profile": {
-    "name": "Malibu Diner",
-    "phone": "(201) 656-7595",
-    "tags": ["American"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate" : 1585605623774,
   "location" : {
-    "address" : {
-      "address1" : "175 Sip Ave",
-      "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07306"
-    },
     "geo" : {
-      "lat" : 40.731100,
-      "lon" : -74.067660
+      "lon" : -74.04379,
+      "lat" : 40.72742
     },
-    "timezone": "America/New_York"
+    "address" : {
+      "zip" : "07302",
+      "city" : "Jersey City",
+      "address1" : "235 Pavonia Ave",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers" : [ ],
   "menu" : [
     {
-      "_id" : "5E8IO8p3N9HBTmXG16QLv",
-      "img" : "/menu/vip-diner/turkey-triple.jpg",
-      "name" : "Turkey & Bacon Triple Decker",
-      "description" : "w/ lettuce & tomato",
-      "tags": [],
-      "originalPrice" : 1065
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/ropa-vieja.jpg",
+      "originalPrice" : 9.95,
+      "name" : "Ropa Vieja",
+      "description" : "shredded Beef simmered w/ tomatoes, bell peppers, onions, & white rice",
+      "planName" : "Standard",
+      "_id" : "2IQknnKXWkLWF8XQTcAcz",
+      "tags" : [
+        "Mexican"
+      ]
     },
     {
-      "_id" : "SSZnRga_jPP8mHSK_eECe",
-      "img" : "/menu/vip-diner/penne-rigate-ala-vodka.jpg",
-      "name" : "Penne Rigate Ala Vodka",
-      "tags": [],
-      "originalPrice" : 115
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/el-rumberito-sampler.jpg",
+      "originalPrice" : 9.95,
+      "name" : "El Rumberito Sampler",
+      "description" : "combination of tapas, ham croquettes, corn tamale, beef empanada, corn fritters, stuffed potato & pork bites",
+      "planName" : "Standard",
+      "_id" : "FzcOW-9Rip491pjBf2-aO",
+      "tags" : [
+        "Mexican"
+      ]
     },
     {
-      "_id" : "FMHSwI21-jLwyGMeXnEK-",
-      "img" : "/menu/vip-diner/philly-cheesesteak.jpg",
-      "name" : "Philly Cheese Steak",
-      "tags": [],
-      "originalPrice" : 895,
-      "description" : "w/ fries, peppers, onions & american cheese on hero bread"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/vaca-frita.jpg",
+      "originalPrice" : 10.95,
+      "name" : "Vaca Frita",
+      "description" : "crispy shredded flank steak seared w/garlic, red onions, lime & mojo sauce",
+      "planName" : "Standard",
+      "_id" : "d_S_03LvmujJLfQ1y4ucq",
+      "tags" : [
+        "Mexican"
+      ]
     },
     {
-      "_id" : "BYNB7K5ovjFDkjA2026Ur",
-      "img" : "/menu/vip-diner/penne-with-broccoli.jpg",
-      "name" : "Penne Rigate with Broccoli",
-      "tags": [],
-      "originalPrice" : 1095
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/sandwich-cubano.jpg",
+      "originalPrice" : 7.95,
+      "name" : "Sandwich Cubano",
+      "description" : "pressed sandwich w/roasted pork, ham, pickles, swiss cheese on cuban bread w/ yuca fries",
+      "planName" : "Standard",
+      "_id" : "qsbhtszxardaGFq3OQNa8",
+      "tags" : [
+        "Mexican"
+      ]
     },
     {
-      "_id" : "-egup_S0NcSlZVcqATo1G",
-      "img" : "/menu/vip-diner/chopped-sirloin.jpg",
-      "name" : "Chopped Sirloin Steak",
-      "description" : "w/ mushroom sauce",
-      "tags": [],
-      "originalPrice" : 1295
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/ensalada-tropical-avocado.jpg",
+      "originalPrice" : 9.95,
+      "name" : "Ensalada Tropical & Avocado",
+      "description" : "mixed greens in honey garlic lime vinaigrette, pineapple, mango, avocado,tomatoes,red onions,sesame seeds w/yuca fries",
+      "planName" : "Standard",
+      "_id" : "IyHc1XSz6gF7nWADfKNp6",
+      "tags" : [
+        "Mexican"
+      ]
     },
     {
-      "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
-      "img" : "/menu/vip-diner/hero-chicken-parm.jpg",
-      "name" : "Hero Chicken Parmigiana",
-      "tags": [],
-      "description" : "on italian bread w/ fries",
-      "originalPrice" : 895
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/rumba-cubana/trio-de-empanadas.jpg",
+      "originalPrice" : 10.95,
+      "name" : "Trio de Empanadas",
+      "description" : "Ground beef, chicken, spinach & cheese empanadas w/ yuca fries",
+      "planName" : "Standard",
+      "_id" : "g9jBc3qPGN30XpR_FC46v",
+      "tags" : [
+        "Mexican"
+      ]
     }
   ],
-  "profile" : {
-    "name" : "Vip Diner",
-    "phone" : "(201) 792-1400",
-    "tags" : [
-      "American"
-    ]
-  }
-}
-
-POST rests/_doc/
-{
+  "managers" : [ ]
+},
+POST rest/_doc {
+  "taxRate" : 0.0625,
   "createdDate" : 1586452540236,
-  "location" : {
-    "address" : {
-      "address1" : "219 Washington St",
-      "city" : "Hoboken",
-      "state" : "NJ",
-      "zip" : "07030"
-    },
-    "geo" : {
-      "lat" : 40.739250,
-      "lon" : -74.029970
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers" : [ ],
-  "menu" : [
-    {
-      "_id" : "QkdAnotH_vlV3DS20s6QX",
-      "img" : "/menu/south-street/ahi-tuna-sushirito.jpeg",
-      "name" : "Ahi Tuna Sushirito",
-      "description" : "sushi burrito - ahi tuna, rice, masago, seaweed salad, cucumbers, lettuce, furikake, spicy mayo",
-      "tags": [],
-      "originalPrice" : 1100
-    },
-    {
-      "_id" : "CDjPVPS-aYryMw4IgOp-g",
-      "img" : "/menu/south-street/salmon-sushirito.jpeg",
-      "description" : "sushi burrito - salmon, rice, tamago, masago, seaweed salad, kimchi, furikake, spicy mayo",
-      "name" : "Salmon Sushirito",
-      "tags": [],
-      "originalPrice" : 1100
-    },
-    {
-      "_id" : "UEI91oRqzN8kelLOB0BVL",
-      "img" : "/menu/south-street/ahi-tuna-poke-bowl.jpg",
-      "name" : "Ahi Tuna Poke Bowl",
-      "tags": [],
-      "originalPrice" : 1100,
-      "description" : "ahi tuna, rice, masago, tamago, scallions, seaweed salad, tempura flakes, furikake, poke sauce"
-    },
-    {
-      "_id" : "Zy2J1W8CXgv72C38DbTJs",
-      "img" : "/menu/south-street/spicy-tuna-poke-bowl.jpg",
-      "name" : "Spicy Tuna Poke Bowl",
-      "tags": [],
-      "originalPrice" : 1100,
-      "description" : "spicy tuna, rice, masago, corn, kimchi, scallions, tempura flakes, furikake, spicy mayo"
-    },
-    {
-      "_id" : "2rnfQlMFn07eyJWTDebxE",
-      "img" : "/menu/south-street/salmon-tropical-poke-bowl.jpg",
-      "name" : "Salmon Tropical Poke Bowl",
-      "description" : "salmon, rice, tamago, corn, mango, guacamole, tempura flakes, furikake, spicy mayo",
-      "tags": [],
-      "originalPrice" : 1100
-    },
-    {
-      "_id" : "xWp3HOISfefgYVRJ8NWHE",
-      "img" : "/menu/south-street/ahi-tuna-tropical-salad.jpg",
-      "name" : "Ahi Tuna Tropical Salad",
-      "tags": [],
-      "description" : "spicy tuna, lettuce, edamame, guacamole, seaweed salad, cucumbers, tempura flakes, furikake, spicy mayo",
-      "originalPrice" : 1100
-    }
-  ],
   "profile" : {
-    "name" : "South Street Fish Co",
     "phone" : "(201) 683-9879",
+    "name" : "South Street Fish Co",
     "tags" : [
       "Japanese"
     ]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate" : 1586547901639,
-  "location" : {
-    "address" : {
-      "address1" : "187 Newark Ave",
-      "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07302"
-    },
-    "geo" : {
-      "lat" : 40.721200,
-      "lon" : -74.045770
-    },
-    "timezone": "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers" : [ ],
+  "location" : {
+    "geo" : {
+      "lon" : -74.02997,
+      "lat" : 40.73925
+    },
+    "address" : {
+      "zip" : "07030",
+      "city" : "Hoboken",
+      "address1" : "219 Washington St",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
+  },
   "menu" : [
     {
-      "_id" : "UozYT3u0kYJplEKysteo4",
-      "img" : "/menu/gypsy-grill/beef-kabob-box.jpeg",
-      "name" : "Beef Kabob Box",
-      "description" : "w/ rice, veggies & tahini sauce",
-      "tags": [],
-      "originalPrice" : 11.99
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/ahi-tuna-sushirito.jpeg",
+      "originalPrice" : 1100,
+      "name" : "Ahi Tuna Sushirito",
+      "description" : "sushi burrito - ahi tuna, rice, masago, seaweed salad, cucumbers, lettuce, furikake, spicy mayo",
+      "planName" : "Standard",
+      "_id" : "QkdAnotH_vlV3DS20s6QX",
+      "tags" : [
+        "Japanese"
+      ]
     },
     {
-      "_id" : "HMmpBH4ix9Qk7Fq8iX-lf",
-      "img" : "/menu/gypsy-grill/kofta-kabob-box.jpeg",
-      "description" : "w/ rice, veggies & tahini sauce",
-      "name" : "Kofta Kabob Box",
-      "tags": [],
-      "originalPrice" : 11.99
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/salmon-sushirito.jpeg",
+      "originalPrice" : 1100,
+      "name" : "Salmon Sushirito",
+      "description" : "sushi burrito - salmon, rice, tamago, masago, seaweed salad, kimchi, furikake, spicy mayo",
+      "planName" : "Standard",
+      "_id" : "CDjPVPS-aYryMw4IgOp-g",
+      "tags" : [
+        "Japanese"
+      ]
     },
     {
-      "_id" : "J1gVLaxJVKBsGjpowMnH5",
-      "img" : "/menu/gypsy-grill/lamb-and-beef-shawarma-box.jpeg",
-      "name" : "Lamb and Beef Shawarma Box",
-      "tags": [],
-      "originalPrice" : 11.99,
-      "description" : "w/ rice, veggies & tahini sauce"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/ahi-tuna-poke-bowl.jpg",
+      "originalPrice" : 1100,
+      "name" : "Ahi Tuna Poke Bowl",
+      "description" : "ahi tuna, rice, masago, tamago, scallions, seaweed salad, tempura flakes, furikake, poke sauce",
+      "planName" : "Standard",
+      "_id" : "UEI91oRqzN8kelLOB0BVL",
+      "tags" : [
+        "Japanese"
+      ]
     },
     {
-      "_id" : "CRC12VTuKnRJLEP4R0riB",
-      "img" : "/menu/gypsy-grill/chicken-shawafel-box.jpeg",
-      "name" : "Chicken Shawafel Box",
-      "tags": [],
-      "originalPrice" : 11.99,
-      "description" : "w/ rice, veggies & tahini sauce"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/spicy-tuna-poke-bowl.jpg",
+      "originalPrice" : 1100,
+      "name" : "Spicy Tuna Poke Bowl",
+      "description" : "spicy tuna, rice, masago, corn, kimchi, scallions, tempura flakes, furikake, spicy mayo",
+      "planName" : "Standard",
+      "_id" : "Zy2J1W8CXgv72C38DbTJs",
+      "tags" : [
+        "Japanese"
+      ]
     },
     {
-      "_id" : "7a7jbpcXVNvcUi7YIo3h0",
-      "img" : "/menu/gypsy-grill/chicken-kabob-box.jpeg",
-      "name" : "Chicken Kabob Box",
-      "description" : "w/ rice, veggies & tahini sauce",
-      "tags": [],
-      "originalPrice" : 10.99
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/salmon-tropical-poke-bowl.jpg",
+      "originalPrice" : 1100,
+      "name" : "Salmon Tropical Poke Bowl",
+      "description" : "salmon, rice, tamago, corn, mango, guacamole, tempura flakes, furikake, spicy mayo",
+      "planName" : "Standard",
+      "_id" : "2rnfQlMFn07eyJWTDebxE",
+      "tags" : [
+        "Japanese"
+      ]
     },
     {
-      "_id" : "KjN9jtg2ubJ2-dsLuUFf7",
-      "img" : "/menu/gypsy-grill/chicken-shawarma-box.jpeg",
-      "name" : "Chicken Shawarma Box",
-      "tags": [],
-      "description" : "w/ rice, veggies & tahini sauce",
-      "originalPrice" : 10.99
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/south-street/ahi-tuna-tropical-salad.jpg",
+      "originalPrice" : 1100,
+      "name" : "Ahi Tuna Tropical Salad",
+      "description" : "spicy tuna, lettuce, edamame, guacamole, seaweed salad, cucumbers, tempura flakes, furikake, spicy mayo",
+      "planName" : "Standard",
+      "_id" : "xWp3HOISfefgYVRJ8NWHE",
+      "tags" : [
+        "Japanese"
+      ]
     }
   ],
+  "managers" : [ ]
+},
+POST rest/_doc {
+  "taxRate" : 0.06625,
+  "createdDate" : 1589136394878,
   "profile" : {
-    "name" : "Gypsy Grill",
+    "phone" : "(201) 963-6056",
+    "name" : "Ahri's Kitchen",
+    "tags" : [
+      "Chinese",
+      "Japanese"
+    ]
+  },
+  "location" : {
+    "geo" : {
+      "lon" : -74.04379,
+      "lat" : 40.72591
+    },
+    "address" : {
+      "zip" : "07302",
+      "city" : "Jersey City",
+      "address1" : "227 7th St",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
+  },
+  "menu" : [
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/tofu-bibimbop.jpg",
+      "originalPrice" : 11.0,
+      "name" : "Tofu Bibimbop",
+      "description" : "mixed rice bowl with tofu, carrot, cucumber, mushroom, zucchini, spinach, bean sprout, & an egg sunnyside up w/ sesame seeds",
+      "planName" : "Standard",
+      "_id" : "w5SyfZHgV3fZNQXuOg3jA",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/bulgogi-tacos.jpg",
+      "originalPrice" : 8.0,
+      "name" : "Bulgogi Tacos",
+      "description" : "two tacos - bulgogi, corn tortilla, radish, scallion, w/spicy wasabi sauce",
+      "planName" : "Standard",
+      "_id" : "s8F2cB5bxCeTpj3yLVszA",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/tofu-tacos.jpg",
+      "originalPrice" : 8.0,
+      "name" : "Tofu Tacos",
+      "description" : "two tacos - tofu, corn tortilla, radish, scallion, w/ spicy wasabi sauce",
+      "planName" : "Standard",
+      "_id" : "O8W6YoKPYMgwHsYmLiyAI",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/spicy-pork-tacos.jpg",
+      "originalPrice" : 8.0,
+      "name" : "Spicy Pork Tacos",
+      "description" : "two tacos - spicy pork, corn tortilla, radish, scallion, w/ spicy wasabi sauce",
+      "planName" : "Standard",
+      "_id" : "WCdyS7jDQWLWGThLCr5vE",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/spicy-tuna-roll.jpg",
+      "originalPrice" : 11.0,
+      "name" : "Spicy Tuna Roll",
+      "description" : "fully cooked spicy tuna, seasoned cucumber, carrot, & pickled radish",
+      "planName" : "Standard",
+      "_id" : "6cEicgo4MLZPKVwqn9tO_",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/ahri-kitchen/vegetable-roll.jpg",
+      "originalPrice" : 10.0,
+      "name" : "Vegetable Roll",
+      "description" : "double seasoned cucumber, carrot, & pickled radish",
+      "planName" : "Standard",
+      "_id" : "L3uG4pfZTBmE88SUHwAzf",
+      "tags" : [
+        "Chinese",
+        "Japanese"
+      ]
+    }
+  ],
+  "managers" : [ ]
+},
+POST rest/_doc {
+  "taxRate" : 0.0625,
+  "createdDate" : 1586547901639,
+  "profile" : {
     "phone" : "(201) 839-5115",
+    "name" : "Gypsy Grill",
     "tags" : [
       "Mediterranean"
     ]
-  }
-}
-
-
-###############################
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "106 Hutton St",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07307"
-    },
-    "geo": {
-      "lat": 40.744920,
-      "lon": -74.050520
-    },
-    "timezone": "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "_id": "Uo9a1o0eHJEOKc2_PaBRH",
-      "img": "/menu/ozu/chicken-yasai-bowl.jpg",
-      "name": "Chicken-Yasai Bowl",
-      "description": "Yuan-yaki (cooked with yuzu, soy sauce and mirin) of chicken and vegetables over rice",
-      "tags": [],
-      "originalPrice": 9.00
-    },
-    {
-      "_id": "OGvDiIy5NCn2o6U21UI9d",
-      "img": "/menu/ozu/yaki-soba.jpg",
-      "name": "Yaki Soba",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 10.50,
-      "description": "Japanese stir-fried noodle"
-    },
-    {
-      "_id": "nAaGh-QQF36XuZBgIFwOL",
-      "img": "/menu/ozu/rainbow-roll.jpg",
-      "name": "Rainbow Roll",
-      "tags": [],
-      "originalPrice": 12.50,
-      "description": "sushi roll with salmon, tuna and avocado"
-    },
-    {
-      "_id": "aTTARK_fbw0jN73OYa0nU",
-      "img": "/menu/ozu/vegan-bowl.jpeg",
-      "name": "Vegan Bowl",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 10.50,
-      "description": "Ozu vegan selections over rice"
-    },
-    {
-      "_id": "0nG7D5vDhwZJfo2mWSetk",
-      "name": "Vegetarian Bento",
-      "img": "/menu/ozu/vegetarian-bento-box.png",
-      "tags": ["Vegan", "Vegetarian"],
-      "originalPrice": 11.75,
-      "description": "bento box w/ Ozu Vegan selections, Cucumber-Wakame salad, and 7-grain rice"
-    }
-  ],
-  "profile": {
-    "name": "Ozu Foods",
-    "phone": "(201) 205-2323",
-    "tags": ["Japanese", "Vegetarian"]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate" : 1585714539021,
   "location" : {
+    "geo" : {
+      "lon" : -74.04577,
+      "lat" : 40.7212
+    },
     "address" : {
-      "address1" : "101 Greene St",
+      "zip" : "07302",
       "city" : "Jersey City",
-      "state" : "NJ",
-      "zip" : "07302"
+      "address1" : "187 Newark Ave",
+      "state" : "NJ"
     },
-    "geo" : {
-      "lat" : 40.716130,
-      "lon" : -74.036100
-    },
-    "timezone": "America/New_York"
+    "timezone" : "America/New_York"
   },
-  "taxRate": 0.0625,
-  "managers" : [ ],
   "menu" : [
     {
-      "_id" : "Pk-Iv_F8bFO74LauepKrC",
-      "img" : "/menu/pizza-pie/linguine-puttanesca.jpg",
-      "name" : "Linguine Puttanesca",
-      "originalPrice": 11.95,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/shish-kabob-baklava.jpg",
+      "originalPrice" : 998,
+      "name" : "Shish Kabob Pita Sandwhich & Baklava",
+      "description" : "w/ salad & tahini sauce",
+      "planName" : "Standard",
+      "_id" : "UozYT3u0kYJplEKysteo4",
+      "tags" : [
+        "Mediterranean"
+      ]
     },
     {
-      "_id" : "-EvNC3R3J2-MrZoA16oJg",
-      "img" : "/menu/pizza-pie/penne-rustica.jpg",
-      "name" : "Penne Rustica",
-      "originalPrice": 11.95,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/chicken-kabob-pita-sandwhich.jpg",
+      "originalPrice" : 1024,
+      "name" : "Chicken Kabob Pita Sandwich & House Rice",
+      "description" : "w/ garlic sauce",
+      "planName" : "Standard",
+      "_id" : "HMmpBH4ix9Qk7Fq8iX-lf",
+      "tags" : [
+        "Mediterranean"
+      ]
     },
     {
-      "_id" : "9zGAyZCYF6nwh9duZpM44",
-      "img" : "/menu/pizza-pie/spaghetti-meatball.jpg",
-      "name" : "Spaghetti & Meatball",
-      "originalPrice": 11.95,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/chicken-shawarma-pita-sandwhich.jpg",
+      "originalPrice" : 1024,
+      "name" : "Chicken Shawarma Pita Sandwich & House Rice",
+      "description" : "w/ garlic sauce",
+      "planName" : "Standard",
+      "_id" : "J1gVLaxJVKBsGjpowMnH5",
+      "tags" : [
+        "Mediterranean"
+      ]
     },
     {
-      "_id" : "5cjC3_BU1N4xw5gvaIZUc",
-      "img" : "/menu/pizza-pie/chicken-francaise.jpg",
-      "name" : "Chicken Francaise",
-      "originalPrice": 12.95,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/gypsy-falafel-salad-roll.jpg",
+      "originalPrice" : 998,
+      "name" : "Gypsy Falafel w/ Salad & Spinach Feta Cheese Roll",
+      "description" : "falafel w/ pita and a small salad",
+      "planName" : "Standard",
+      "_id" : "CRC12VTuKnRJLEP4R0riB",
+      "tags" : [
+        "Mediterranean"
+      ]
     },
     {
-      "_id" : "iNnWeh0mn_PmlF_0eaIG9",
-      "img" : "/menu/pizza-pie/lasagna.jpg",
-      "name" : "Lasagna",
-      "originalPrice": 10.95,
-      "tags": []
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/kofta-kababob-pita-sandwhich.jpg",
+      "originalPrice" : 998,
+      "name" : "Shish Kabob Pita Sandwich & 4pc Falafel",
+      "description" : "w/ salad & tahini sauce",
+      "planName" : "Standard",
+      "_id" : "7a7jbpcXVNvcUi7YIo3h0",
+      "tags" : [
+        "Mediterranean"
+      ]
     },
     {
-      "_id" : "o4dj6mqZL5DqHF_GXW_mc",
-      "img" : "/menu/pizza-pie/ziti-pomodoro.jpg",
-      "name" : "Ziti Pomodoro Al Forno",
-      "tags": [],
-      "originalPrice": 10.95
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/gypsy-grill/lamb-kunafa.jpg",
+      "originalPrice" : 998,
+      "name" : "Lamb & Beef Shawarma Pita Sandwich & Kunafa",
+      "description" : "w/ salad & tahini sauce",
+      "planName" : "Standard",
+      "_id" : "KjN9jtg2ubJ2-dsLuUFf7",
+      "tags" : [
+        "Mediterranean"
+      ]
     }
   ],
+  "managers" : [ ]
+},
+POST rest/_doc {
+  "taxRate" : 0.0625,
+  "createdDate" : 1585605623774,
   "profile" : {
-    "name" : "Pizza Pie La Cantina Italiana",
-    "phone" : "(201) 360-2113",
-    "tags" : [
-      "Italian"
-    ]
-  }
-}
-
-POST rests/_doc/
-{
-  "createdDate": 1585605623774,
-  "location": {
-    "address": {
-      "address1": "293 1/2 Grove St",
-      "city": "Jersey City",
-      "state": "NJ",
-      "zip": "07302"
-    },
-    "geo": {
-      "lat": 40.718520,
-      "lon": -74.043920
-    },
-    "timezone": "America/New_York"
-  },
-  "taxRate": 0.0625,
-  "managers": [],
-  "menu": [
-    {
-      "_id": "_Kd1x3O4mEABkROx7qoYm",
-      "img": "/menu/shadman/kebab-rolls.png",
-      "name": "3x Chicken Kebab Rolls",
-      "originalPrice": 9.25,
-      "tags": [],
-      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
-    },
-    {
-      "_id": "pscX2KLhfmEMuIj_Xj1kL",
-      "img": "/menu/shadman/kebab-rolls.png",
-      "name": "3x Beef Kebab Rolls",
-      "originalPrice": 10.00,
-      "tags": [],
-      "discription": "kebabs wrapped in a fluffy naan, topped with salad and coriander yogurt"
-    },
-    {
-      "_id": "rKW6c14bAp9Ruelt4zQ5C",
-      "img": "/menu/shadman/chana-curry-pakora-platter.png",
-      "name": "Chana and Curry Pakora Platter",
-      "originalPrice": 8.00,
-      "tags": ["Vegetarian"],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "dJDbVkelvsJjy28slHRW0",
-      "img": "/menu/shadman/palak-paneer-curry-pakora-platter.png",
-      "name": "Palak Paneer and Curry Pakora Platter",
-      "originalPrice": 8.00,
-      "tags": ["Vegetarian"],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "vpsuG02HBkhEwhfTFm_kw",
-      "img": "/menu/shadman/chicken-masala-curry-platter.png",
-      "name": "Chicken Tikki Masala and Curry Pakora Platter",
-      "originalPrice": 9.00,
-      "tags": [],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    },
-    {
-      "_id": "cerbwhVozaWN00zTPggJm",
-      "img": "/menu/shadman/chicken-karahi-lamb-curry-platter.png",
-      "name": "Chicken Karahi and Lamb Curry Platter",
-      "originalPrice": 10.00,
-      "tags": [],
-      "discription": "w/ Basmati rice, salad, and coriander yogurt chutney"
-    }
-  ],
-  "profile": {
-    "name": "Shadman",
-    "phone": "(201) 200-0333",
-    "tags": ["Indian"]
-  }
-}
-
-POST rest/_doc/
-{
-  "createdDate" : 1580502754744,
-  "location" : {
-    "address" : {
-      "address1" : "263 1st St",
-      "city" : "Hoboken",
-      "state" : "NJ",
-      "zip" : "07030"
-    },
-    "geo" : {
-      "lat" : 40.715677,
-      "lon" : -74.035868
-    }
-  },
-  "managers" : [ ],
-  "menu" : [
-    {
-      "_id" : "Z8GgZteZfv2pvI-pV8J9W",
-      "img" : "menu/tony/7-wings.jpg",
-      "name" : "7 wings"
-    },
-    {
-      "_id" : "aLhdJA-gb2sZuwDxsGmPu",
-      "img" : "menu/tony/aloo-fries.jpg",
-      "name" : "Aloo Fries",
-      "originalPrice" : 10.5,
-      "description" : "Indian tikka masala, fried jalapeno, paneer, green chutney, and cilantro"
-    },
-    {
-      "_id" : "uddHQFUUbV2pmoESjer10",
-      "img" : "menu/tony/boken-boy-sub.jpg",
-      "name" : "Boken-boy Sub",
-      "originalPrice" : 13.0,
-      "description" : "chicken cutlet, garlic aioli, soppressata, baby arugula, fresh & smoked mutz, house dressing"
-    },
-    {
-      "_id" : "XBaVxyJDYOAndUnqdMuuJ",
-      "img" : "menu/tony/cacio-pepe-mac-balls.jpg",
-      "name" : "Cacio Pepe Mac Balls",
-      "originalPrice" : 10.0,
-      "description" : "3 homemade cheezy peppery smoked mozzarella psta balls w/ side of vodka sauce"
-    },
-    {
-      "_id" : "XIbyfNlr5xVqVLFj-vrFj",
-      "img" : "menu/tony/ducktown-melt-sub.jpg",
-      "name" : "Ducktown Melt Sub",
-      "description" : "shaved ribey, smoked bacon, garlic aioli, fresh mutz on garlic bread",
-      "originalPrice" : 13.0
-    },
-    {
-      "_id" : "LT1iQt_gmNikEpGEZhkB9",
-      "img" : "menu/tony/filthy-rich-pennybags-sub.jpg",
-      "name" : "Filthy Rich Pennybags Sub",
-      "description" : "don't pass go...chicken cutlet, salted ricotta, sage pesto, fresh mutz, honey balsamic",
-      "originalPrice" : 13.0
-    },
-    {
-      "_id" : "ykV_-LKycfchzeJTEODdb",
-      "img" : "menu/tony/greektown-salad.jpg",
-      "name" : "Greektown Salad",
-      "description" : "romaine, grilled halloumi, Kalamata olive, grape tomato, cucumber, parsley and creamy Greek dressing",
-      "originalPrice" : 13.0
-    },
-    {
-      "_id" : "f_zjVeag78JVvsZcX-tW6",
-      "img" : "menu/tony/jersey-jezebel-sub.jpg",
-      "name" : "Jersey Jezebel Sub",
-      "description" : "nashville chicken, purple slaw, sour dill pickle, smoked cheddar, dill aioli",
-      "originalPrice" : 13.0
-    },
-    {
-      "_id" : "iXA1-rkz64MdpsomiNMVF",
-      "img" : "menu/tony/original-pretzel-mozzarella-sticks.jpg",
-      "name" : "Original Pretzel Mozzarella Sticks",
-      "description" : "pennsylvania dutch pretzel crusted w/ super creamy homemade mozzarella, w/ marinara sauce",
-      "originalPrice" : 12.0
-    },
-    {
-      "_id" : "3z3-vTOaw7Or0t-Wp8tx_",
-      "img" : "menu/tony/pueblito-salad.jpg",
-      "name" : "Pueblito Salad",
-      "description" : "romaine, rosated corn, black been, grape tomato, string cheese, cilantro, tortilla chips, smashed avocado, pumpkin seeds, spicy mole sauce, picked jalapeno crema dressing",
-      "originalPrice" : 13.0
-    },
-    {
-      "_id" : "xXEHW1t-pbCVjQkh_QLET",
-      "img" : "menu/tony/three-piece-chicken-tenders-and-fries-10.jpg",
-      "name" : "3 Piece Chicken Tenders and Fries",
-      "description" : "3 chicken tenders with fries and honey mustard",
-      "originalPrice" : 10.0
-    },
-    {
-      "_id" : "aUvOb_cDftrkbMXgaSXgW",
-      "img" : "menu/tony/geppetto-sub.jpg",
-      "name" : "Geppetto Sub",
-      "description" : "house parm sub, salted ricotta, basil, and pecorino",
-      "originalPrice" : 13.0
-    }
-  ],
-  "profile" : {
-    "name" : "Tony Boloney's",
-    "phone" : "609-513-8166",
+    "phone" : "(201) 792-1400",
+    "name" : "Vip Diner",
     "tags" : [
       "American"
     ]
-  }
-}
-
-###############################
-
-
-POST _reindex
-{
-  "source": {
-    "index": "orders"
   },
-  "dest": {
-    "index": "orders2"
+  "location" : {
+    "geo" : {
+      "lon" : -74.06766,
+      "lat" : 40.7311
+    },
+    "address" : {
+      "zip" : "07306",
+      "city" : "Jersey City",
+      "address1" : "175 Sip Ave",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
   },
-  "script": {
-    "source": """
-      ctx._source.deliveries = [];
-      params.delivery.deliveryTime = ctx._source.deliveryTime;
-      params.delivery.deliveryDate = ctx._source.deliveryDate;
-      params.delivery.meals = ctx._source.rest.meals;
-      params.delivery.status = ctx._source.status;
-      for (int i = 0; i < params.delivery.meals.length; i++) {
-        params.delivery.meals[i].tags = [];
-        params.delivery.meals[i].restId = ctx._source.rest.restId;
-        params.delivery.meals[i].restName = "name";
-        params.delivery.meals[i].stripePlanId = "plan_H4mjyvjuE1fObC";
-        params.delivery.meals[i].planName = "Standard";
-      }
-      ctx._source.deliveries.add(params.delivery);
-      ctx._source.remove("status");
-      ctx._source.remove("rest");
-      ctx._source.remove("deliveryTime");
-      ctx._source.remove("deliveryDate");
-      ctx._source.costs.mealPlans = [];
-      params.mealPlan.mealPrice = ctx._source.costs.mealPrice;
-      ctx._source.costs.mealPlans.add(params.mealPlan);
-      ctx._source.remove("costs.mealPrice");
-    """,
-    "params": {
-      "delivery": {},
-      "mealPlan": {
-        "stripePlanId": "plan_H4mjyvjuE1fObC",
-        "planName": "Standard"
-      }
-    }
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-POST /orders/_doc
-{
-  "consumer" : {
-    "userId" : "google-oauth2|115801346721485756808",
-    "profile" : {
-      "name" : "simon vuong",
-      "email" : "simon.orchideats@gmail.com",
-      "phone" : "6095138166",
-      "card" : {
-        "last4" : "4242",
-        "expMonth" : 4,
-        "expYear" : 2024
-      },
-      "destination" : {
-        "address" : {
-          "address1" : "16 rainbow dr",
-          "city" : "mays landing",
-          "state" : "NJ",
-          "zip" : "08330"
-        },
-        "instructions" : ""
-      }
-    }
-  },
-  "stripeSubscriptionId" : "sub_HAnXi6Th5ibEs5",
-  "cartUpdatedDate" : 1587974655544,
-  "createdDate" : 1587974655544,
-  "invoiceDate" : 1589184255000,
-  "costs" : {
-    "tax" : 794,
-    "tip" : 0,
-    "mealPrices" : [
-      {
-        "stripePlanId" : "plan_HAP4XaO5a1ewwt",
-        "planName" : "Standard",
-        "mealPrice" : 999
-      }
-    ],
-    "percentFee" : 0,
-    "flatRateFee" : 0,
-    "deliveryFee" : 400
-  },
-  "deliveries" : [
+  "menu" : [
     {
-      "deliveryDate" : 1588230708308,
-      "deliveryTime" : "ThreePToFiveP",
-      "discount" : null,
-      "meals" : [
-        {
-          "mealId" : "Cl0wYEgZ3fg1kk7qzRQ45",
-          "img" : "/menu/precious-chinese/pepper-steak-w-onions.png",
-          "name" : "Pepper Steak w/ Onions",
-          "quantity" : 1,
-          "restId" : "9yFhNnEBBGf1BFEfX0UK",
-          "restName" : "Precious Chinese Cuisine",
-          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
-          "planName" : "Standard",
-          "taxRate" : 0.06625
-        },
-        {
-          "mealId" : "EYfOpNG2KTRNhHVZSGHmm",
-          "img" : "/menu/precious-chinese/beef-over-broccoli.jpg",
-          "name" : "Beef w/ Broccoli",
-          "quantity" : 1,
-          "restId" : "9yFhNnEBBGf1BFEfX0UK",
-          "restName" : "Precious Chinese Cuisine",
-          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
-          "planName" : "Standard",
-          "taxRate" : 0.06625
-        },
-        {
-          "mealId" : "4T5aQ9FLI8lyoA3zoToKt",
-          "img" : "/menu/precious-chinese/tangerine-chicken.png",
-          "name" : "Tangerine Chicken",
-          "quantity" : 1,
-          "restId" : "9yFhNnEBBGf1BFEfX0UK",
-          "restName" : "Precious Chinese Cuisine",
-          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
-          "planName" : "Standard",
-          "taxRate" : 0.06625
-        },
-        {
-          "mealId" : "XQNJ7ElD4zFmjmvdOiTdc",
-          "img" : "/menu/precious-chinese/general-tsos-chicken.png",
-          "name" : "General Tsos Chicken",
-          "quantity" : 1,
-          "restId" : "9yFhNnEBBGf1BFEfX0UK",
-          "restName" : "Precious Chinese Cuisine",
-          "stripePlanId" : "plan_HAP4XaO5a1ewwt",
-          "planName" : "Standard",
-          "taxRate" : 0.06625
-        }
-      ],
-      "status" : "Open"
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/turkey-triple.jpg",
+      "originalPrice" : 1065,
+      "name" : "Turkey & Bacon Triple Decker",
+      "description" : "w/ lettuce & tomato",
+      "planName" : "Standard",
+      "_id" : "5E8IO8p3N9HBTmXG16QLv",
+      "tags" : [
+        "American"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/penne-rigate-ala-vodka.jpg",
+      "originalPrice" : 1150,
+      "name" : "Penne Rigate Ala Vodka",
+      "planName" : "Standard",
+      "_id" : "SSZnRga_jPP8mHSK_eECe",
+      "tags" : [
+        "American"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/philly-cheesesteak.jpg",
+      "originalPrice" : 895,
+      "name" : "Philly Cheese Steak",
+      "description" : "w/ fries, peppers, onions & american cheese on hero bread",
+      "planName" : "Standard",
+      "_id" : "FMHSwI21-jLwyGMeXnEK-",
+      "tags" : [
+        "American"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/penne-with-broccoli.jpg",
+      "originalPrice" : 1095,
+      "name" : "Penne Rigate with Broccoli",
+      "planName" : "Standard",
+      "_id" : "BYNB7K5ovjFDkjA2026Ur",
+      "tags" : [
+        "American"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/chopped-sirloin.jpg",
+      "originalPrice" : 1295,
+      "name" : "Chopped Sirloin Steak",
+      "description" : "w/ mushroom sauce",
+      "planName" : "Standard",
+      "_id" : "-egup_S0NcSlZVcqATo1G",
+      "tags" : [
+        "American"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/vip-diner/hero-chicken-parm.jpg",
+      "originalPrice" : 895,
+      "name" : "Hero Chicken Parmigiana",
+      "description" : "on italian bread w/ fries",
+      "planName" : "Standard",
+      "_id" : "fq8x1-E_6rpgWm7Czr7Tz",
+      "tags" : [
+        "American"
+      ]
     }
   ],
-  "donationCount" : 0
+  "managers" : [ ]
+},
+POST rest/_doc {
+  "taxRate" : 0.0625,
+  "createdDate" : 1585605623774,
+  "profile" : {
+    "phone" : "(201) 222-2400",
+    "name" : "Margherita's",
+    "tags" : [
+      "Italian"
+    ]
+  },
+  "location" : {
+    "geo" : {
+      "lon" : -74.02868,
+      "lat" : 40.74598
+    },
+    "address" : {
+      "zip" : "07030",
+      "city" : "Hoboken",
+      "address1" : "740 Washington St",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
+  },
+  "menu" : [
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/fettucine-alfredo.png",
+      "discription" : "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
+      "originalPrice" : 1095,
+      "name" : "Fettuccine Alfredo",
+      "planName" : "Standard",
+      "_id" : "YBCvO0V2z3UDSfC6evRZe",
+      "tags" : [
+        "Italian"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/penne-vodka.png",
+      "discription" : "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka",
+      "originalPrice" : 1095,
+      "name" : "Penne Vodka",
+      "planName" : "Standard",
+      "_id" : "leM-xEuV4ucGVV2GdcM3x",
+      "tags" : [
+        "Italian"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/rigatoni-w-meat-sauce.png",
+      "discription" : "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese",
+      "originalPrice" : 1095,
+      "name" : "Rigatoni w/ Meat Sauce",
+      "planName" : "Standard",
+      "_id" : "umQoRB1zA7dpb2lZ_eta1",
+      "tags" : [
+        "Italian"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/chicken-cutlet.png",
+      "discription" : "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo",
+      "originalPrice" : 995,
+      "name" : "Chicken Cutlet Sandwich",
+      "planName" : "Standard",
+      "_id" : "zFSbyFbfXkD-pSI6p-ETG",
+      "tags" : [
+        "Italian"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/sausage-n-peppers.png",
+      "originalPrice" : 995,
+      "name" : "Sausage, Peppers, and Onions Sandwich",
+      "planName" : "Standard",
+      "_id" : "kmXktTAR0c0FA7aA9RwJj",
+      "tags" : [
+        "Italian"
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "img" : "/menu/margheritas/fresh-mozz-and-roasted-peps-sandwhich.png",
+      "discription" : "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia",
+      "originalPrice" : 995,
+      "name" : "Fresh Mozzarella & Roasted Red Peppers Sandwich",
+      "planName" : "Standard",
+      "_id" : "uxeKzlMF-24OF8GXTrhUm",
+      "tags" : [
+        "Vegan",
+        "Vegetarian",
+        "Italian"
+      ]
+    }
+  ],
+  "managers" : [ ]
+},
+POST rest/_doc {
+    "taxRate" : 0.06625,
+    "createdDate" : 1589136394878,
+    "profile" : {
+      "phone" : "(201) 918-6599",
+      "name" : "New Thanh Hoai",
+      "tags" : [
+        "Chinese"
+      ]
+    },
+    "location" : {
+      "geo" : {
+        "lon" : -74.04412,
+        "lat" : 40.72926
+      },
+      "address" : {
+        "zip" : "07302",
+        "city" : "Jersey City",
+        "address1" : "234 10th St",
+        "state" : "NJ"
+      },
+      "timezone" : "America/New_York"
+    },
+    "menu" : [
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/new-thanh-hoai/vegetable-noodle-beef-soup.jpg",
+        "originalPrice" : 10.5,
+        "name" : "Vegetable Noodles Beef Soup",
+        "planName" : "Standard",
+        "_id" : "Q1UvoDh0BATUGpyFlS3nV",
+        "tags" : [
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/new-thanh-hoai/viet-pork-spring-rolls.jpg",
+        "originalPrice" : 9.25,
+        "name" : "Viet Pork Spring Rolls",
+        "planName" : "Standard",
+        "_id" : "nf9k-IUTN5FCxnml6JZnK",
+        "tags" : [
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/new-thanh-hoai/beef-noodle-soup.jpg",
+        "originalPrice" : 11.0,
+        "name" : "Beef Noodle Soup",
+        "planName" : "Standard",
+        "_id" : "3DxtMJzovtVdKV5Aa9MBo",
+        "tags" : [
+          "Chinese"
+        ]
+      }
+    ],
+    "managers" : [ ]
+},
+POST rest/_doc {
+    "taxRate" : 0.0625,
+    "createdDate" : 1585605623774,
+    "profile" : {
+      "phone" : "(201) 656-1595",
+      "name" : "Malibu Diner",
+      "tags" : [
+        "American"
+      ]
+    },
+    "location" : {
+      "geo" : {
+        "lon" : -74.02922,
+        "lat" : 40.75358
+      },
+      "address" : {
+        "zip" : "07030",
+        "city" : "Hoboken",
+        "address1" : "257 14th St",
+        "state" : "NJ"
+      },
+      "timezone" : "America/New_York"
+    },
+    "menu" : [
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/western-omelette.png",
+        "discription" : "w/ diced ham, green peppers and onions. Served w/ home fries and toast",
+        "originalPrice" : 1050,
+        "name" : "Western Omelette",
+        "planName" : "Standard",
+        "_id" : "jvKgxB63mkjKYJPbZ6Xuq",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/western-wrap.png",
+        "discription" : "w/ scrambled eggs, diced ham, onions, green Pepperp and Monterey Jack cheese. Served w/ home fries",
+        "originalPrice" : 995,
+        "name" : "Western Breakfast Wrap",
+        "planName" : "Standard",
+        "_id" : "UBhDDFonMB9uV6oynwlzB",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/cheeseburger.png",
+        "discription" : "melted American, lettuce, tomato. Served w/ fries and coleslaw",
+        "originalPrice" : 1150,
+        "name" : "Cheeseburger on a Roll",
+        "planName" : "Standard",
+        "_id" : "TDorla9_Ha4r98yNoguFa",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/pastrami.png",
+        "discription" : "served w/ potato salad and pickle",
+        "originalPrice" : 995,
+        "name" : "Hot Pastrami Sandwich",
+        "planName" : "Standard",
+        "_id" : "FmoCjgnlAeKVBrt0CJlc8",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/reuben-sandwhich.png",
+        "discription" : "served w/ fries and coleslaw",
+        "originalPrice" : 850,
+        "name" : "Reuben Sandwich",
+        "planName" : "Standard",
+        "_id" : "LDD-JA6VJcM-JaGy2xWeP",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/malibu-diner/chicken-fajita-panini.png",
+        "discription" : "grilled chicken with roasted peppers, caramelized onions, cheddar cheese and salsa. Served with french fries",
+        "originalPrice" : 825,
+        "name" : "Chicken Fajita Panini",
+        "planName" : "Standard",
+        "_id" : "5vVHQdd2NzgVjKORYUUDA",
+        "tags" : [
+          "American"
+        ]
+      }
+    ],
+    "managers" : [ ]
+},
+POST rest/_doc {
+    "taxRate" : 0.0625,
+    "createdDate" : 1585714539021,
+    "profile" : {
+      "phone" : "(201) 653-7742",
+      "name" : "China Spice",
+      "tags" : [
+        "Indian",
+        "Chinese"
+      ]
+    },
+    "location" : {
+      "geo" : {
+        "lon" : -74.06722,
+        "lat" : 40.73506
+      },
+      "address" : {
+        "zip" : "07306",
+        "city" : "Jersey City",
+        "address1" : "117 Tonelle Ave",
+        "state" : "NJ"
+      },
+      "timezone" : "America/New_York"
+    },
+    "menu" : [
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/ginger-basil-chicken.jpg",
+        "originalPrice" : 1200,
+        "name" : "Basil Ginger Chicken w/ Rice",
+        "description" : "boneless pieces of chicken breast stir-fried in ginger and basil sauce.",
+        "planName" : "Standard",
+        "_id" : "LOeDflf4gWcqwstGKg3CN",
+        "tags" : [
+          "Indian",
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/thai-chicken.jpg",
+        "originalPrice" : 1200,
+        "name" : "Thai Chicken Curry w/ Rice",
+        "description" : "a traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce",
+        "planName" : "Standard",
+        "_id" : "zZ0HgS5QqD4qwedw40nEV",
+        "tags" : [
+          "Indian",
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/coriander-chicken.jpg",
+        "originalPrice" : 1200,
+        "name" : "Coriander Garlic Chicken w/ Rice",
+        "description" : "wok-fried chicken with onions and green peppers in garlic coriander sauce",
+        "planName" : "Standard",
+        "_id" : "77CogU3SlD_xG5y9aSAJW",
+        "tags" : [
+          "Indian",
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/curry-fried-rice.jpg",
+        "originalPrice" : 1200,
+        "name" : "Chicken Spicy Curry Fried Rice",
+        "description" : "thai fried rice with onions, tomatoes, carrots, tofu, string beans & basil in light curry sauce",
+        "planName" : "Standard",
+        "_id" : "ZlnsrAnkjppBwY64hCFWY",
+        "tags" : [
+          "Indian",
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/okra.jpg",
+        "originalPrice" : 1100,
+        "name" : "Okra Pepper Salt Dry",
+        "description" : "lady fingers sauteed w/ chilli, garlic, scallions, ginger, celery, & black pepper in soy",
+        "planName" : "Standard",
+        "_id" : "EDjLDJejCNf75rYJj5NyW",
+        "tags" : [
+          "Vegetarian",
+          "Vegan",
+          "Indian",
+          "Chinese"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/china-spice/cauliflower.jpg",
+        "originalPrice" : 1100,
+        "name" : "Cauliflower Manchurian & Chili Paneer",
+        "description" : "flower buds roasted to perfection in our famous manchurian sauce & cubes of cottage cheese sauteed with fresh chili, onions, in light soy sauce",
+        "planName" : "Standard",
+        "_id" : "RSwsSOm96-aRXYgwVK0Z6",
+        "tags" : [
+          "Vegetarian",
+          "Vegan",
+          "Indian",
+          "Chinese"
+        ]
+      }
+    ],
+    "managers" : [ ]
+},
+POST rest/_doc {
+    "taxRate" : 0.0625,
+    "createdDate" : 1585605623774,
+    "profile" : {
+      "phone" : "(201) 333-3220",
+      "name" : "La Taqueria Downtown",
+      "tags" : [
+        "Mexican"
+      ]
+    },
+    "location" : {
+      "geo" : {
+        "lon" : -74.04456,
+        "lat" : 40.71621
+      },
+      "address" : {
+        "zip" : "07302",
+        "city" : "Jersey City",
+        "address1" : "236 Grove St",
+        "state" : "NJ"
+      },
+      "timezone" : "America/New_York"
+    },
+    "menu" : [
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/carnitas-taco.png",
+        "originalPrice" : 1125,
+        "name" : "Carnitas (Pork) Tacos x3",
+        "planName" : "Standard",
+        "_id" : "eM4SzUFNlICy_v5yEb9Wq",
+        "tags" : [
+          "Mexican"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/pescado-taco.png",
+        "originalPrice" : 1125,
+        "name" : "Pescado (Fish) Tacos x3",
+        "planName" : "Standard",
+        "_id" : "O6_4TKaCEMVBFpB3-XR0P",
+        "tags" : [
+          "Mexican"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/chorizo-taco.png",
+        "originalPrice" : 1125,
+        "name" : "Chorizo (Sausage) Tacos x3",
+        "planName" : "Standard",
+        "_id" : "IEt50RPjQqGPz7X5m5WaR",
+        "tags" : [
+          "Mexican"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/barbocoa-taco.png",
+        "originalPrice" : 1125,
+        "name" : "Barbacoa (Lamb) Tacos x3",
+        "planName" : "Standard",
+        "_id" : "c-67feK6I6Ad_dJRKTr6w",
+        "tags" : [
+          "Mexican"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/flauta-plate.png",
+        "originalPrice" : 995,
+        "name" : "Pollo Flauta Plate",
+        "description" : "3 rolled crispy tacos w/ lettuce, salsa, guacamole, cheese and crema and side of rice and beans",
+        "planName" : "Standard",
+        "_id" : "DskCXQWchhxAo_KrLZiNh",
+        "tags" : [
+          "Mexican"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/taqueria/roja-enchiladas.png",
+        "originalPrice" : 1150,
+        "name" : "Roja Enchiladas",
+        "description" : "two chicken-rolled corn tortillas topped w/ red sauce and served w/ red Mexican rice and pinto beans",
+        "planName" : "Standard",
+        "_id" : "pmuZPcloW76KRBWpOAkPe",
+        "tags" : [
+          "Mexican"
+        ]
+      }
+    ],
+    "managers" : [ ]
+},
+POST rest/_doc {
+    "taxRate" : 0.0625,
+    "createdDate" : 1590219853261,
+    "profile" : {
+      "phone" : "(201) 479-8396",
+      "name" : "Würstbar",
+      "tags" : [
+        "American"
+      ]
+    },
+    "location" : {
+      "geo" : {
+        "lon" : -74.046577,
+        "lat" : 40.720348
+      },
+      "address" : {
+        "zip" : "07302",
+        "city" : "Jersey City",
+        "address1" : "516 Jersey Ave",
+        "state" : "NJ"
+      },
+      "timezone" : "America/New_York"
+    },
+    "menu" : [
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/bacon-mac.jpg",
+        "originalPrice" : 10,
+        "name" : "Bacon Mac Wurst",
+        "description" : "beef frank, haus mac n' cheese, bacon on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "fDW0GVJlNFp3MON__23lz",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/rancho-grande.jpg",
+        "originalPrice" : 10,
+        "name" : "Rancho Grande",
+        "description" : "chorizo, haus guac, queso fresco, picked red onions, chili lime mayo on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "ZLJCA8jJjfTi8wOwX5uuj",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/duck-tales.jpg",
+        "originalPrice" : 12,
+        "name" : "Ducktales",
+        "description" : "duck wurst, fig mustard, arugula, goat cheese, drizzled honey on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "U6ZI-HDHpIzYGz_LiNbvK",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/el-cubano.jpg",
+        "originalPrice" : 11,
+        "name" : "El Cubano",
+        "description" : "kielbasa, roasted pork, mojo mayo, swiss, haus dill pickle, haus mustard, on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "wIgbPKHPc3H9BtRlJatt5",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/firebird.jpg",
+        "originalPrice" : 10,
+        "name" : "Firebird",
+        "description" : "Chicken sausage, dill pickles, spicy fried chicken skins, hot honey on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "pvzw1d8de94gElZv2_xK8",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/haus-poutine.jpg",
+        "originalPrice" : 10,
+        "name" : "Haus Poutine",
+        "description" : "haus cut fries, cheese curds, gravy",
+        "planName" : "Standard",
+        "_id" : "c7pvPqTAndm8JJCAtd2lw",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/haus-kielbasa.jpg",
+        "originalPrice" : 8,
+        "name" : "Haus Kielbasa",
+        "description" : "w/ kraut, mustard, picked red onions and relish on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "A-rzXn5SwE8q72IL31Q1i",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/maui-bow-wowie.jpg",
+        "originalPrice" : 8,
+        "name" : "Maui Bow Wowie",
+        "description" : "beef frank, bacon, pineapple relish, chipotle mayo, cilantro on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "XS_QNOQSwZmFy6zw0kQNW",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/new-delhi.jpg",
+        "originalPrice" : 10,
+        "name" : "New Delhi",
+        "description" : "kielbasa, masala curry, mango, chutney, cashews, cilantro on a sweel roll",
+        "planName" : "Standard",
+        "_id" : "QHhIMdAqyMobGvQmNZFho",
+        "tags" : [
+          "American"
+        ]
+      },
+      {
+        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "img" : "/menu/wurstbar/halal-kart.jpg",
+        "originalPrice" : 12,
+        "name" : "Halal Kart",
+        "description" : "lamb wurst, lettuce, tomatos, mint creamt sauce, haus hot sauce on a sweet roll",
+        "planName" : "Standard",
+        "_id" : "cT2SRRPEV9SHIAPmhX9c9",
+        "tags" : [
+          "American"
+        ]
+      }
+    ],
+    "managers" : [ ]
 }
 
 
-
-
-
-
-GET /orders/_doc/YIntyXEB3mzlaF51oZa3
-
-
-
-
-
-
-
-
-
-
-
+###############################
