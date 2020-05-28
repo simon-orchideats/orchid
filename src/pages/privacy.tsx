@@ -37,7 +37,7 @@ const Privacy = () => {
           Your personal information may be shared with reputable third-party associates of Orchid that work with us to provide products and services to our customers. We may use this information for marketing campaigns in order to market products and services [to you directly, unless you have asked us not to]. We may also disclose your information to third parties if the law requires it or to protect the rights or property of Orchid.
           <br />
           <br />
-          If you do not want us to share your contact information with other companies or organizations, or do not want to receive additional promotions from us, please let us know by emailing us at emily@orchideats.com. If you opt-out of promotional or newsletter emails from Orchid, we may continue to send you certain transactional communications, such as service announcements and administrative messages relating to Orchid that are necessary for our relationship with you.
+          If you do not want us to share your contact information with other companies or organizations, or do not want to receive additional promotions from us, please let us know by emailing us at alvin@orchideats.com. If you opt-out of promotional or newsletter emails from Orchid, we may continue to send you certain transactional communications, such as service announcements and administrative messages relating to Orchid that are necessary for our relationship with you.
           <br />
           <br />
           We collect your mobile phone number to assist in shipping your order to you. You may also choose to receive SMS text updates from us regarding your order status. You may opt out of receiving text messages at any time by texting STOP to the sender. For more information about text messages, see our Terms and Conditions.
@@ -130,7 +130,7 @@ const Privacy = () => {
           Orchid may also provide aggregate statistics about our customers, sales, traffic patterns, and related site information to reputable third-party vendors.
           <br />
           <br />
-          In addition, from time to time, we may make customer e-mail addresses and postal addresses available to other reputable business associates whose products or services might be of value to you. If you do not want us to share your information with other companies or organizations, please let us know by emailing us at emily@orchideats.com. If you opt-out of promotional or newsletter emails from Orchid, we may continue to send you certain communications, such as service announcements and administrative messages, relating to Orchid that are necessary to our relationship with you.
+          In addition, from time to time, we may make customer e-mail addresses and postal addresses available to other reputable business associates whose products or services might be of value to you. If you do not want us to share your information with other companies or organizations, please let us know by emailing us at alvin@orchideats.com. If you opt-out of promotional or newsletter emails from Orchid, we may continue to send you certain communications, such as service announcements and administrative messages, relating to Orchid that are necessary to our relationship with you.
           <br />
           <br />
           Orchid may also disclose your personal information to third parties in certain limited circumstances, as follows (1) as necessary if we believe that there has been a violation of our Terms and Conditions, of the law, of our rights or of any third party; (2) to respond to judicial process and provide information to law enforcement agencies or in connection with an investigation on matters related to public safety, as permitted by law, or otherwise as required by law; and (3) if you have given permission for us to share your account information with other members of your household.
@@ -162,7 +162,7 @@ const Privacy = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          California’s “Shine the Light” law, Civil Code section 1798.83, requires certain businesses to respond to requests from California customers asking about the businesses’ practices related to disclosing personal information to third parties for the third parties’ direct marketing purposes. Alternately, such businesses may have in place a policy not to disclose personal information of customers to third parties for the third parties’ direct marketing purposes if the customer has exercised an option to opt-out of such information-sharing. We have such a policy in place. As discussed above, if you wish to opt-out of our sharing of your information with third parties for the third parties’ direct marketing purposes or to find out more about your opt-out rights, please contact us at emily@orchideats.com.
+          California’s “Shine the Light” law, Civil Code section 1798.83, requires certain businesses to respond to requests from California customers asking about the businesses’ practices related to disclosing personal information to third parties for the third parties’ direct marketing purposes. Alternately, such businesses may have in place a policy not to disclose personal information of customers to third parties for the third parties’ direct marketing purposes if the customer has exercised an option to opt-out of such information-sharing. We have such a policy in place. As discussed above, if you wish to opt-out of our sharing of your information with third parties for the third parties’ direct marketing purposes or to find out more about your opt-out rights, please contact us at alvin@orchideats.com.
           <br />
           <br />
           In addition, pursuant to Cal. Civ. Code §§ 1798.110 and 1798.115, you have the right to request once every 12 months, free of charge, the disclosure of the categories of personal information collected by us, the categories of sources from which your personal information is collected, the business or commercial purpose for collecting or selling such information, the categories of third parties with whom we share your information, the specific information we have collected about you, and the personal information that was sold, if any, to third parties in the preceding 12 months. If you want to review, verify or correct your personal information, please contact us as discussed below. However, please note, there are instances where applicable law or regulatory requirements do not allow us to provide all of the information that we hold about you and/or such information may have already been destroyed, erased or made anonymous in accordance with our record retention obligations and practices.
@@ -176,7 +176,7 @@ const Privacy = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          By using our Site, telephone consultation, or mailing in requests for information you consent to the collection and use of your information by Orchid . If at some point in the future, there is a material change to our information usage practices that affect your personally identifiable information, we will notify you by e-mail. At the time of this message, you will be able to opt-out of the new information usage by sending a message to the following e-mail: emily@orchideats.com. You should check this posted privacy statement for changes.
+          By using our Site, telephone consultation, or mailing in requests for information you consent to the collection and use of your information by Orchid . If at some point in the future, there is a material change to our information usage practices that affect your personally identifiable information, we will notify you by e-mail. At the time of this message, you will be able to opt-out of the new information usage by sending a message to the following e-mail: alvin@orchideats.com. You should check this posted privacy statement for changes.
           <br />
           <br />
           NEWSLETTER
@@ -190,7 +190,7 @@ const Privacy = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          To make changes to any of your personal information, including name, username, password, shipping address, and telephone number, click on the My profile section of the Orchid web site. Household members may not make changes to your account information, or cancel or renew your account without your permission. If you have not already indicated your permission for household members to access your account at the time you placed your first order, please email Orchid at emily@orchideats.com.
+          To make changes to any of your personal information, including name, username, password, shipping address, and telephone number, click on the My profile section of the Orchid web site. Household members may not make changes to your account information, or cancel or renew your account without your permission. If you have not already indicated your permission for household members to access your account at the time you placed your first order, please email Orchid at alvin@orchideats.com.
         </Typography>
         <br />
         <Typography variant='subtitle1'>
@@ -206,7 +206,7 @@ const Privacy = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          Orchid welcomes your questions and comments about privacy and/or this policy. Please contact us at emily@orchideats.com.
+          Orchid welcomes your questions and comments about privacy and/or this policy. Please contact us at alvin@orchideats.com.
           <br />
           <br />
           foodflick inc.
