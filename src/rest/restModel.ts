@@ -1,16 +1,17 @@
 import { RestProfile, IRestProfile } from './restProfileModel';
-import { IMeal, Meal } from './mealModel';
+import { IMeal, EMeal, Meal } from './mealModel';
 import { ILocation, Location } from '../place/locationModel';
 
 export interface ERest {
   readonly location: ILocation;
-  readonly menu: IMeal[];
+  readonly menu: EMeal[];
   readonly profile: IRestProfile;
   readonly taxRate: number;
 }
 
-export interface IRest extends ERest {
+export interface IRest extends Omit<ERest, 'menu'> {
   readonly _id: string;
+  readonly menu: IMeal[];
 }
 
 export class Rest implements IRest {

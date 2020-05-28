@@ -7,7 +7,7 @@ import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
-import { IMeal } from './../../rest/mealModel';
+import { IMeal, EMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
@@ -22,6 +22,7 @@ import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import moment from 'moment-timezone';
 import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput } from '../../order/deliveryModel';
+import { getItemChooser } from '../../utils/utils';
 
 const ORDER_INDEX = 'orders';
 const PROMO_INDEX = 'promos';
@@ -31,38 +32,21 @@ export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, da
 export const adjustmentDateFormat = 'M/D/YY';
 
 const chooseRandomMeals = (
-  menu: IMeal[],
+  menu: EMeal[],
   mealCount: number,
   restId: string,
   restName: string,
   taxRate: number
 ): IDeliveryMeal[] => {
-  const chooseRandomly = getItemChooser<IMeal>(menu);
+  const chooseRandomly = getItemChooser<EMeal>(menu, m => m.canAutoPick);
   const meals: IMeal[] = [];
-  for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly())
+  for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
   return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
 }
 
 // place this fn in here instead of in Promo model so that it stays serverside and client cannot see how we
 // check for dupe promo redemptions
 const getPromoKey = (phone: string, fullAddr: string) => (fullAddr + phone.replace(/\D/g, '')).replace(/\s/g, '')
-
-/**
- * Returns a fn, Chooser, that returns a random element in arr. Chooser always returns unique elements until all uniques
- * are returned at which point the chooser "resets". Upon a reset, Chooser returns another cycle of unique elements.
- * Therefore repeat values only occur from mulitple cycles.
- * @param arr the array which contains items to be chosen
- */
-const getItemChooser = <T>(arr: T[]) => {
-  let copy = arr.slice(0);
-  return () => {
-    if (copy.length < 1) {
-      copy = arr.slice(0);
-    }
-    const index = Math.floor(Math.random() * copy.length);
-    return copy.splice(index, 1)[0];
-  };
-}
 
 const validatePhone = (phone: string) => {
   if (!phone) {
@@ -637,9 +621,10 @@ class OrderService {
       if (!consumer.profile.destination) throw new Error (`Consumer '${consumerId}' missing destination`);
       const cuisines = consumer.plan.cuisines;
       const plan = consumer.plan;
-      const rests = await this.restService.getNearbyRests(
+      const rests = await this.restService.getNearbyERests(
         consumer.profile.destination.address.zip,
         cuisines,
+        true,
         ['menu', 'profile', 'location', 'taxRate']
       );
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
@@ -650,25 +635,27 @@ class OrderService {
       const mealsPerDelivery = Math.floor(totalMeals / numDeliveries);
       const chooseRandomRest = getItemChooser(rests);
       for (let i = 0; i < numDeliveries; i++) {
-        let firstRest;
         const meals: IDeliveryMeal[] = []
         for (let j = 0; j < mealsPerDelivery; j++) {
-          const rest = chooseRandomRest();
-          if (!firstRest) firstRest = rest;
+          const randomRest = chooseRandomRest();
+          const eRest = randomRest.rest;
           Cart.addMealsToExistingDeliveryMeals(
             chooseRandomMeals(
-              rest.menu,
+              eRest.menu,
               1,
-              rest._id,
-              rest.profile.name,
-              rest.taxRate,
+              randomRest._id,
+              eRest.profile.name,
+              eRest.taxRate,
             ),
             meals,
           )
         }
-        if (!firstRest) throw new Error('Missing first rest');
         deliveries.push({
-          deliveryDate: getNextDeliveryDate(schedule[i].day, undefined, firstRest.location.timezone).add(addedWeeks, 'w').valueOf(),
+          deliveryDate: getNextDeliveryDate(
+            schedule[i].day,
+            undefined,
+            consumer.profile.destination.timezone
+          ).add(addedWeeks, 'w').valueOf(),
           deliveryTime: schedule[i].time,
           discount: null,
           meals,
@@ -678,14 +665,14 @@ class OrderService {
       const numRemainingMeals= totalMeals % numDeliveries;
       const remainingMeals: IDeliveryMeal[] = [];
       for (let i = 0; i < numRemainingMeals; i++) {
-        const rest = chooseRandomRest();
+        const randomRest = chooseRandomRest();
         Cart.addMealsToExistingDeliveryMeals(
           chooseRandomMeals(
-            rest.menu,
+            randomRest.rest.menu,
             1,
-            rest._id,
-            rest.profile.name,
-            rest.taxRate,
+            randomRest._id,
+            randomRest.rest.profile.name,
+            randomRest.rest.taxRate,
           ),
           remainingMeals,
         )

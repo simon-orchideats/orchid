@@ -247,6 +247,8 @@ export interface EConsumerPlan extends IConsumerPlan {
   readonly mealPlans: EMealPlan[]
 }
 
+export interface IConsumerPlanInput extends Omit<IConsumerPlan, 'referralCode'> {}
+
 export class ConsumerPlan implements IConsumerPlan {
   readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
@@ -321,6 +323,15 @@ export class ConsumerPlan implements IConsumerPlan {
           stripeSubscriptionItemId: subItem.id,
         }
       }),
+    }
+  }
+
+  static getIConsumerPlanInputFromConsumerPlan(plan: ConsumerPlan) {
+    const copy = ConsumerPlan.getICopy(plan);
+    return {
+      mealPlans: copy.mealPlans,
+      cuisines: copy.cuisines,
+      schedules: copy.schedules,
     }
   }
 }

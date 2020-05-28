@@ -1346,7 +1346,8 @@ PUT /promos/
 ######### INSERTS ##########
 
 
-POST rest/_doc {
+POST rests/_doc/
+{
   "taxRate" : 0.0625,
   "createdDate" : 1585714539021,
   "profile" : {
@@ -1371,7 +1372,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/chicken-tikka.jpg",
       "originalPrice" : 995,
       "name" : "Chicken Tikka Masala w/ Naan",
@@ -1383,7 +1384,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/lamb-rogan-josh.jpg",
       "originalPrice" : 995,
       "name" : "Lamb Rogan Josh",
@@ -1395,7 +1396,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/paneer-tikka-masala.jpg",
       "originalPrice" : 990,
       "name" : "Paneer Tikka Masala w/ Keema Naan",
@@ -1407,7 +1408,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/butter-chicken.jpg",
       "originalPrice" : 995,
       "name" : "Butter Chicken w/ Naan",
@@ -1419,7 +1420,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/chicken-biryani.jpg",
       "originalPrice" : 995,
       "name" : "Chicken Biryani w/ Naan",
@@ -1431,7 +1432,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/canteen-dhaba/baigan-bartha.jpg",
       "originalPrice" : 990,
       "name" : "Baigan Bartha w/ Vegetable Somasas",
@@ -1447,7 +1448,8 @@ POST rest/_doc {
   ],
   "managers" : [ ]
 }
-POST rest/_doc {
+POST rests/_doc/
+{
   "taxRate" : 0.06625,
   "createdDate" : 1589136394878,
   "profile" : {
@@ -1472,7 +1474,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/ropa-vieja.jpg",
       "originalPrice" : 9.95,
       "name" : "Ropa Vieja",
@@ -1484,7 +1486,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/el-rumberito-sampler.jpg",
       "originalPrice" : 9.95,
       "name" : "El Rumberito Sampler",
@@ -1496,7 +1498,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/vaca-frita.jpg",
       "originalPrice" : 10.95,
       "name" : "Vaca Frita",
@@ -1508,7 +1510,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/sandwich-cubano.jpg",
       "originalPrice" : 7.95,
       "name" : "Sandwich Cubano",
@@ -1520,7 +1522,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/ensalada-tropical-avocado.jpg",
       "originalPrice" : 9.95,
       "name" : "Ensalada Tropical & Avocado",
@@ -1532,7 +1534,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/rumba-cubana/trio-de-empanadas.jpg",
       "originalPrice" : 10.95,
       "name" : "Trio de Empanadas",
@@ -1545,8 +1547,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
   "taxRate" : 0.0625,
   "createdDate" : 1586452540236,
   "profile" : {
@@ -1571,7 +1574,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/ahi-tuna-sushirito.jpeg",
       "originalPrice" : 1100,
       "name" : "Ahi Tuna Sushirito",
@@ -1583,7 +1586,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/salmon-sushirito.jpeg",
       "originalPrice" : 1100,
       "name" : "Salmon Sushirito",
@@ -1595,7 +1598,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/ahi-tuna-poke-bowl.jpg",
       "originalPrice" : 1100,
       "name" : "Ahi Tuna Poke Bowl",
@@ -1607,7 +1610,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/spicy-tuna-poke-bowl.jpg",
       "originalPrice" : 1100,
       "name" : "Spicy Tuna Poke Bowl",
@@ -1619,7 +1622,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/salmon-tropical-poke-bowl.jpg",
       "originalPrice" : 1100,
       "name" : "Salmon Tropical Poke Bowl",
@@ -1631,7 +1634,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/south-street/ahi-tuna-tropical-salad.jpg",
       "originalPrice" : 1100,
       "name" : "Ahi Tuna Tropical Salad",
@@ -1644,8 +1647,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
   "taxRate" : 0.06625,
   "createdDate" : 1589136394878,
   "profile" : {
@@ -1671,7 +1675,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/tofu-bibimbop.jpg",
       "originalPrice" : 11.0,
       "name" : "Tofu Bibimbop",
@@ -1684,7 +1688,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/bulgogi-tacos.jpg",
       "originalPrice" : 8.0,
       "name" : "Bulgogi Tacos",
@@ -1697,7 +1701,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/tofu-tacos.jpg",
       "originalPrice" : 8.0,
       "name" : "Tofu Tacos",
@@ -1710,7 +1714,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/spicy-pork-tacos.jpg",
       "originalPrice" : 8.0,
       "name" : "Spicy Pork Tacos",
@@ -1723,7 +1727,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/spicy-tuna-roll.jpg",
       "originalPrice" : 11.0,
       "name" : "Spicy Tuna Roll",
@@ -1736,7 +1740,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/ahri-kitchen/vegetable-roll.jpg",
       "originalPrice" : 10.0,
       "name" : "Vegetable Roll",
@@ -1750,8 +1754,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
   "taxRate" : 0.0625,
   "createdDate" : 1586547901639,
   "profile" : {
@@ -1776,7 +1781,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/shish-kabob-baklava.jpg",
       "originalPrice" : 998,
       "name" : "Shish Kabob Pita Sandwhich & Baklava",
@@ -1788,7 +1793,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/chicken-kabob-pita-sandwhich.jpg",
       "originalPrice" : 1024,
       "name" : "Chicken Kabob Pita Sandwich & House Rice",
@@ -1800,7 +1805,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/chicken-shawarma-pita-sandwhich.jpg",
       "originalPrice" : 1024,
       "name" : "Chicken Shawarma Pita Sandwich & House Rice",
@@ -1812,7 +1817,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/gypsy-falafel-salad-roll.jpg",
       "originalPrice" : 998,
       "name" : "Gypsy Falafel w/ Salad & Spinach Feta Cheese Roll",
@@ -1824,7 +1829,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/kofta-kababob-pita-sandwhich.jpg",
       "originalPrice" : 998,
       "name" : "Shish Kabob Pita Sandwich & 4pc Falafel",
@@ -1836,7 +1841,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/gypsy-grill/lamb-kunafa.jpg",
       "originalPrice" : 998,
       "name" : "Lamb & Beef Shawarma Pita Sandwich & Kunafa",
@@ -1849,8 +1854,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
   "taxRate" : 0.0625,
   "createdDate" : 1585605623774,
   "profile" : {
@@ -1875,7 +1881,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/turkey-triple.jpg",
       "originalPrice" : 1065,
       "name" : "Turkey & Bacon Triple Decker",
@@ -1887,7 +1893,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/penne-rigate-ala-vodka.jpg",
       "originalPrice" : 1150,
       "name" : "Penne Rigate Ala Vodka",
@@ -1898,7 +1904,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/philly-cheesesteak.jpg",
       "originalPrice" : 895,
       "name" : "Philly Cheese Steak",
@@ -1910,7 +1916,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/penne-with-broccoli.jpg",
       "originalPrice" : 1095,
       "name" : "Penne Rigate with Broccoli",
@@ -1921,7 +1927,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/chopped-sirloin.jpg",
       "originalPrice" : 1295,
       "name" : "Chopped Sirloin Steak",
@@ -1933,7 +1939,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/vip-diner/hero-chicken-parm.jpg",
       "originalPrice" : 895,
       "name" : "Hero Chicken Parmigiana",
@@ -1946,8 +1952,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
   "taxRate" : 0.0625,
   "createdDate" : 1585605623774,
   "profile" : {
@@ -1972,7 +1979,7 @@ POST rest/_doc {
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/fettucine-alfredo.png",
       "discription" : "fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
       "originalPrice" : 1095,
@@ -1984,7 +1991,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/penne-vodka.png",
       "discription" : "fresh homemade penne pasta in a light tomato cream sauce w/ capers, shallots & a hint of vodka",
       "originalPrice" : 1095,
@@ -1996,7 +2003,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/rigatoni-w-meat-sauce.png",
       "discription" : "fresh homemade rigatoni pasta w/ meat sauce topped w/ ricotta cheese",
       "originalPrice" : 1095,
@@ -2008,7 +2015,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/chicken-cutlet.png",
       "discription" : "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo",
       "originalPrice" : 995,
@@ -2020,7 +2027,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/sausage-n-peppers.png",
       "originalPrice" : 995,
       "name" : "Sausage, Peppers, and Onions Sandwich",
@@ -2031,7 +2038,7 @@ POST rest/_doc {
       ]
     },
     {
-      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
       "img" : "/menu/margheritas/fresh-mozz-and-roasted-peps-sandwhich.png",
       "discription" : "homemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia",
       "originalPrice" : 995,
@@ -2046,8 +2053,9 @@ POST rest/_doc {
     }
   ],
   "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
     "taxRate" : 0.06625,
     "createdDate" : 1589136394878,
     "profile" : {
@@ -2072,7 +2080,7 @@ POST rest/_doc {
     },
     "menu" : [
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/new-thanh-hoai/vegetable-noodle-beef-soup.jpg",
         "originalPrice" : 10.5,
         "name" : "Vegetable Noodles Beef Soup",
@@ -2083,7 +2091,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/new-thanh-hoai/viet-pork-spring-rolls.jpg",
         "originalPrice" : 9.25,
         "name" : "Viet Pork Spring Rolls",
@@ -2094,7 +2102,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/new-thanh-hoai/beef-noodle-soup.jpg",
         "originalPrice" : 11.0,
         "name" : "Beef Noodle Soup",
@@ -2106,8 +2114,9 @@ POST rest/_doc {
       }
     ],
     "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
     "taxRate" : 0.0625,
     "createdDate" : 1585605623774,
     "profile" : {
@@ -2132,7 +2141,7 @@ POST rest/_doc {
     },
     "menu" : [
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/western-omelette.png",
         "discription" : "w/ diced ham, green peppers and onions. Served w/ home fries and toast",
         "originalPrice" : 1050,
@@ -2144,7 +2153,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/western-wrap.png",
         "discription" : "w/ scrambled eggs, diced ham, onions, green Pepperp and Monterey Jack cheese. Served w/ home fries",
         "originalPrice" : 995,
@@ -2156,7 +2165,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/cheeseburger.png",
         "discription" : "melted American, lettuce, tomato. Served w/ fries and coleslaw",
         "originalPrice" : 1150,
@@ -2168,7 +2177,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/pastrami.png",
         "discription" : "served w/ potato salad and pickle",
         "originalPrice" : 995,
@@ -2180,7 +2189,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/reuben-sandwhich.png",
         "discription" : "served w/ fries and coleslaw",
         "originalPrice" : 850,
@@ -2192,7 +2201,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/malibu-diner/chicken-fajita-panini.png",
         "discription" : "grilled chicken with roasted peppers, caramelized onions, cheddar cheese and salsa. Served with french fries",
         "originalPrice" : 825,
@@ -2205,8 +2214,9 @@ POST rest/_doc {
       }
     ],
     "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
     "taxRate" : 0.0625,
     "createdDate" : 1585714539021,
     "profile" : {
@@ -2232,7 +2242,7 @@ POST rest/_doc {
     },
     "menu" : [
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/ginger-basil-chicken.jpg",
         "originalPrice" : 1200,
         "name" : "Basil Ginger Chicken w/ Rice",
@@ -2245,7 +2255,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/thai-chicken.jpg",
         "originalPrice" : 1200,
         "name" : "Thai Chicken Curry w/ Rice",
@@ -2258,7 +2268,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/coriander-chicken.jpg",
         "originalPrice" : 1200,
         "name" : "Coriander Garlic Chicken w/ Rice",
@@ -2271,7 +2281,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/curry-fried-rice.jpg",
         "originalPrice" : 1200,
         "name" : "Chicken Spicy Curry Fried Rice",
@@ -2284,7 +2294,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/okra.jpg",
         "originalPrice" : 1100,
         "name" : "Okra Pepper Salt Dry",
@@ -2299,7 +2309,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/china-spice/cauliflower.jpg",
         "originalPrice" : 1100,
         "name" : "Cauliflower Manchurian & Chili Paneer",
@@ -2315,8 +2325,9 @@ POST rest/_doc {
       }
     ],
     "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
     "taxRate" : 0.0625,
     "createdDate" : 1585605623774,
     "profile" : {
@@ -2341,7 +2352,7 @@ POST rest/_doc {
     },
     "menu" : [
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/carnitas-taco.png",
         "originalPrice" : 1125,
         "name" : "Carnitas (Pork) Tacos x3",
@@ -2352,7 +2363,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/pescado-taco.png",
         "originalPrice" : 1125,
         "name" : "Pescado (Fish) Tacos x3",
@@ -2363,7 +2374,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/chorizo-taco.png",
         "originalPrice" : 1125,
         "name" : "Chorizo (Sausage) Tacos x3",
@@ -2374,7 +2385,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/barbocoa-taco.png",
         "originalPrice" : 1125,
         "name" : "Barbacoa (Lamb) Tacos x3",
@@ -2385,7 +2396,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/flauta-plate.png",
         "originalPrice" : 995,
         "name" : "Pollo Flauta Plate",
@@ -2397,7 +2408,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/taqueria/roja-enchiladas.png",
         "originalPrice" : 1150,
         "name" : "Roja Enchiladas",
@@ -2410,8 +2421,9 @@ POST rest/_doc {
       }
     ],
     "managers" : [ ]
-},
-POST rest/_doc {
+}
+POST rests/_doc/
+{
     "taxRate" : 0.0625,
     "createdDate" : 1590219853261,
     "profile" : {
@@ -2436,7 +2448,7 @@ POST rest/_doc {
     },
     "menu" : [
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/bacon-mac.jpg",
         "originalPrice" : 10,
         "name" : "Bacon Mac Wurst",
@@ -2448,7 +2460,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/rancho-grande.jpg",
         "originalPrice" : 10,
         "name" : "Rancho Grande",
@@ -2460,7 +2472,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/duck-tales.jpg",
         "originalPrice" : 12,
         "name" : "Ducktales",
@@ -2472,7 +2484,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/el-cubano.jpg",
         "originalPrice" : 11,
         "name" : "El Cubano",
@@ -2484,7 +2496,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/firebird.jpg",
         "originalPrice" : 10,
         "name" : "Firebird",
@@ -2496,7 +2508,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/haus-poutine.jpg",
         "originalPrice" : 10,
         "name" : "Haus Poutine",
@@ -2508,7 +2520,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/haus-kielbasa.jpg",
         "originalPrice" : 8,
         "name" : "Haus Kielbasa",
@@ -2520,7 +2532,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/maui-bow-wowie.jpg",
         "originalPrice" : 8,
         "name" : "Maui Bow Wowie",
@@ -2532,7 +2544,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/new-delhi.jpg",
         "originalPrice" : 10,
         "name" : "New Delhi",
@@ -2544,7 +2556,7 @@ POST rest/_doc {
         ]
       },
       {
-        "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+        "stripePlanId" : "plan_HDGgkmXFCPQTlq",
         "img" : "/menu/wurstbar/halal-kart.jpg",
         "originalPrice" : 12,
         "name" : "Halal Kart",

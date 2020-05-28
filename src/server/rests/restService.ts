@@ -7,6 +7,15 @@ import { ERest, IRest } from './../../rest/restModel';
 const REST_INDEX = 'rests';
 
 export interface IRestService {
+  getNearbyERests: (
+    zip: string,
+    cuisines?: CuisineType[],
+    canAutoPick?: boolean,
+    fields?: string[]
+  ) => Promise<{
+    _id: string,
+    rest: ERest
+  }[]>
   getNearbyRests: (zip: string, cuisines?: CuisineType[], fields?: string[]) => Promise<IRest[]>
   getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
 }
@@ -23,7 +32,15 @@ class RestService implements IRestService {
     this.geoService = geoService;
   }
 
-  async getNearbyRests(zip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
+  public async getNearbyERests(
+    zip: string,
+    cuisines?: CuisineType[],
+    canAutoPick?: boolean,
+    fields?: string[]
+  ): Promise<{
+    _id: string,
+    rest: ERest
+  }[]> {
     try {
       if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getGeocodeByZip(zip);
@@ -59,6 +76,13 @@ class RestService implements IRestService {
           }
         }
       }
+      if (canAutoPick) {
+        options.body.query.bool.filter.bool.must.push({
+          term: {
+            'menu.canAutoPick': true
+          }
+        })
+      }
       if (cuisines) {
         options.body.query.bool.filter.bool.must.push({
           terms: {
@@ -69,7 +93,20 @@ class RestService implements IRestService {
       if (fields) options._source = fields;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
       return res.body.hits.hits.map(({ _id, _source }) => ({
-        ..._source,
+        rest: _source,
+        _id,
+      }))
+    } catch (e) {
+      console.error(`[RestService] could not get nearby ERests for '${zip}' and cuisines '${JSON.stringify(cuisines)}' and canAutoPick '${canAutoPick}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async getNearbyRests(zip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
+    try {
+      const eRests = await this.getNearbyERests(zip, cuisines, undefined, fields);
+      return eRests.map(({ _id, rest }) => ({
+        ...rest,
         _id,
       }))
     } catch (e) {

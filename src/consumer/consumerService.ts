@@ -369,7 +369,7 @@ export const useUpdateMyPlan = (): [
     if (ConsumerPlan.equals(plan, currConsumer.Plan)) return;
     mutate({ 
       variables: {
-        plan,
+        plan: ConsumerPlan.getIConsumerPlanInputFromConsumerPlan(plan),
       },
       optimisticResponse: {
         updateMyPlan: {

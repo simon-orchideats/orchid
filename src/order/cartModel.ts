@@ -9,6 +9,9 @@ import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
 import { isEqual } from 'lodash';
+import { getItemChooser } from '../utils/utils';
+
+const AUTO_ADDON_LIMIT = 3;
 
 export interface ICartInput {
   readonly paymentMethodId: string
@@ -229,20 +232,28 @@ export class Cart implements ICart {
     taxRate: number
   ) {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
-      // todo simonv this mealId comparison is used for autogeneration. so what we need to do is
-      // make sure if the meal has options/addons and if so then auto gen choices and use that as part of the
-      // comparison instead of just mealId
-      const groupIndex = groupings.findIndex(group => group.MealId === meal._id);
+      const choices: string[] = [];
+      meal.optionGroups.forEach(og => choices.push(
+        og.names[Math.floor(Math.random() * og.names.length)]
+      ));
+      meal.addonGroups.forEach(ag => {
+        const limit = ag.limit || Math.min(AUTO_ADDON_LIMIT, ag.names.length);
+        const chooseRandomly = getItemChooser<string>(ag.names);
+        for (let i = 0; i < limit; i++) {
+          choices.push(chooseRandomly());
+        }
+      })
+      const deliveryMeal = DeliveryMeal.getDeliveryMeal(
+        meal._id,
+        meal,
+        choices,
+        restId,
+        restName,
+        taxRate
+      );
+      const groupIndex = groupings.findIndex(group => DeliveryMeal.isSameMeal(group, deliveryMeal));
       if (groupIndex === -1) {
-        // todo simonv update this to use choices[]. this is used for auto generation
-        groupings.push(DeliveryMeal.getDeliveryMeal(
-          meal._id,
-          meal,
-          [],
-          restId,
-          restName,
-          taxRate
-        ));
+        groupings.push(deliveryMeal);
       } else {
         groupings[groupIndex] = new DeliveryMeal({
           ...groupings[groupIndex],
