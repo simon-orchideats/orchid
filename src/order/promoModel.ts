@@ -3,6 +3,7 @@ export const welcomePromoAmount = 500;
 export const referralFriendAmount = 750;
 export const referralSelfAmount = 500;
 export const referralMonthDuration = 1;
+export const autoPickPromoAmount = 750;
 
 export interface EPromo {
   readonly _id: string

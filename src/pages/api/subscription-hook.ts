@@ -1,5 +1,5 @@
 import { IDiscount, WeeklyDiscount } from './../../order/discountModel';
-import { IPromo } from './../../order/promoModel';
+import { IPromo, autoPickPromoAmount } from './../../order/promoModel';
 import { getPlanService } from './../../server/plans/planService';
 import moment from 'moment';
 import { getOrderService } from './../../server/orders/orderService';
@@ -111,6 +111,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       // this is possible when a subscription is canceled and today's order had no confirmed deliveries
       // so it was deleted upon cancelation
       if (!todaysOrder) return;
+      const discount = invoice.discount;
+      const secondsIn2Weeks = 1210000;
+      if (
+        discount
+        && discount.end !== null
+        && (discount.end - Math.round(Date.now() / 1000) <= secondsIn2Weeks)
+        && todaysOrder.order.createdDate === todaysOrder.order.cartUpdatedDate
+      ) {
+        stripe.invoiceItems.create({
+          amount: -autoPickPromoAmount,
+          invoice: invoice.id,
+          currency: 'usd',
+          customer: stripeCustomerId,
+          description: 'Promo for using orchid picks',
+        }).catch(e => {
+          console.error(`[SubscriptionHook] Failed to add Orchid pick invoice item discount for stripe customer '${stripeCustomerId}' and invoiceId '${invoice.id}'`, e.stack);
+        });
+      }
       getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id)
         .catch(e => {
           console.error(`[SubscriptionHook] failed set order '${todaysOrder._id}' stripeInvoiceId '${invoice.id}'`, e.stack);
