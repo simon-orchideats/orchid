@@ -79,7 +79,7 @@ const redirectedSignIn = async (
     }
     let consumer;
     try {
-      consumer = await getConsumerService().getConsumer(decodedToken.sub)
+      consumer = await getConsumerService().getIConsumer(decodedToken.sub)
     } catch (e) {
       console.error(`Error in getting Consumer: ${e.stack}`);
       throw e;

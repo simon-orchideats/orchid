@@ -1,8 +1,8 @@
+import { IWeeklyDiscount, WeeklyDiscount } from './../order/discountModel';
 import { PlanName } from './../plan/planModel';
 import { IDestination, Destination, EDestination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 import moment from 'moment';
-import Stripe from 'stripe';
 
 export const MIN_DAYS_AHEAD = 1;
 
@@ -241,37 +241,49 @@ export interface IConsumerPlan {
   readonly cuisines: CuisineType[]
   readonly schedules: ISchedule[]
   readonly referralCode: string
+  readonly weeklyDiscounts: IWeeklyDiscount[]
+}
+
+export interface IConsumerPlanSettings {
+  readonly mealPlans: IMealPlan[]
+  readonly cuisines: CuisineType[]
+  readonly schedules: ISchedule[]
+  readonly weeklyDiscounts: IWeeklyDiscount[]
 }
 
 export interface EConsumerPlan extends IConsumerPlan {
   readonly mealPlans: EMealPlan[]
 }
 
-export interface IConsumerPlanInput extends Omit<IConsumerPlan, 'referralCode'> {}
+export interface IConsumerPlanInput extends Omit<IConsumerPlan, 'referralCode' | 'weeklyDiscounts'> {}
 
 export class ConsumerPlan implements IConsumerPlan {
   readonly mealPlans: MealPlan[]
   readonly cuisines: CuisineType[]
   readonly schedules: Schedule[]
   readonly referralCode: string
+  readonly weeklyDiscounts: WeeklyDiscount[]
 
   constructor(consumerPlan: IConsumerPlan) {
     this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
     this.cuisines = consumerPlan.cuisines.map(c => c);
     this.schedules = consumerPlan.schedules.map(s => new Schedule(s));
     this.referralCode = consumerPlan.referralCode;
+    this.weeklyDiscounts = consumerPlan.weeklyDiscounts.map(wd => new WeeklyDiscount(wd));
   }
 
   public get Cuisines() { return this.cuisines }
   public get MealPlans() { return this.mealPlans }
   public get ReferralCode() { return this.referralCode }
   public get Schedules() { return this.schedules }
+  public get WeeklyDiscounts() { return this.weeklyDiscounts }
 
   static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
       mealPlans: plan.mealPlans.map(p => MealPlan.getICopy(p)),
       schedules: plan.schedules.map(s => Schedule.getICopy(s)),
       cuisines: plan.cuisines.map(c => c),
+      weeklyDiscounts: plan.weeklyDiscounts.map(wd => WeeklyDiscount.getICopy(wd)),
       referralCode: plan.referralCode
     }
   }
@@ -308,22 +320,23 @@ export class ConsumerPlan implements IConsumerPlan {
     return true;
   }
 
-  static getEConsumerPlanFromIConsumerPlan(plan: IConsumerPlan, subscription: Stripe.Subscription): EConsumerPlan {
+  static getEConsumerPlanFromIConsumerPlanInput(
+    plan: IConsumerPlanInput,
+    referralPromoId: string,
+    weeklyDiscounts: IWeeklyDiscount[],
+    planToSubscriptionItemIdMapping: {
+      [key: string]: string,
+    }
+  ): EConsumerPlan {
     return {
       ...plan,
-      mealPlans: plan.mealPlans.map(p => {
-        const subItem = subscription.items.data.find(item => item.plan.id === p.stripePlanId);
-        if (!subItem) {
-          const err = new Error(`Missing subscription item id for plan ${p.stripePlanId}`);
-          console.error(err.stack);
-          throw err;
-        }
-        return {
-          ...p,
-          stripeSubscriptionItemId: subItem.id,
-        }
-      }),
-    }
+      referralCode: referralPromoId,
+      weeklyDiscounts,
+      mealPlans: plan.mealPlans.map(p => ({
+        ...p,
+        stripeSubscriptionItemId: planToSubscriptionItemIdMapping[p.stripePlanId],
+      }))
+    };
   }
 
   static getIConsumerPlanInputFromConsumerPlan(plan: ConsumerPlan) {
@@ -378,13 +391,13 @@ export class Consumer implements IConsumer {
     return true;
   }
 
-  static getIConsumerFromEConsumer(_id: string, econsumer: EConsumer): IConsumer {
+  static getIConsumerFromEConsumer(_id: string, eConsumer: EConsumer): IConsumer {
     return {
       _id,
-      plan: econsumer.plan,
-      profile: econsumer.profile,
-      stripeCustomerId: econsumer.stripeCustomerId,
-      stripeSubscriptionId: econsumer.stripeSubscriptionId,
+      plan: eConsumer.plan,
+      profile: eConsumer.profile,
+      stripeCustomerId: eConsumer.stripeCustomerId,
+      stripeSubscriptionId: eConsumer.stripeSubscriptionId,
     }
   }
 

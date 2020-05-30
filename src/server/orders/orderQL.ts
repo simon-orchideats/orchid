@@ -46,6 +46,14 @@ export const _OrderQL = gql`
     donationCount: Int!
   }
 
+  type Discount {
+    description: String!
+    amountOff: Int
+    percentOff: Int
+    reason: String!
+    referredUserId: String
+  }
+
   type DeliveryMeal {
     mealId: ID!
     img: String
@@ -84,7 +92,8 @@ export const _OrderQL = gql`
     tax: Float!
     tip: Float!
     mealPrices: [MealPrice!]!
-    promos: [Promo]
+    promos: [Promo!]!
+    discounts: [Discount!]!
     percentFee: Float
     flatRateFee: Float
     deliveryFee: Float!

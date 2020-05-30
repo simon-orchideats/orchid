@@ -1,7 +1,8 @@
-
-export const welcomePromoAmount = 1000;
-export const referralFriendAmmount = 1100;
-export const referralSelfAmount = 1100;
+export const welcomePromoCouponId = 'welcome35';
+export const welcomePromoAmount = 500;
+export const referralFriendAmount = 750;
+export const referralSelfAmount = 500;
+export const referralMonthDuration = 1;
 
 export interface EPromo {
   readonly _id: string
@@ -18,7 +19,7 @@ export interface IPromo {
 }
 
 export type ReferralSource = {
-  readonly stripeCustomerId: string
+  readonly userId: string
   readonly amountOff: number | null
   readonly percentOff: number | null
 }

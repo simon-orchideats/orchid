@@ -1152,6 +1152,24 @@ PUT /orders/
               },
             }
           },
+          "discounts": {
+            "reason": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "keyword",
+              "ignore_above": 25
+            },
+            "percentOff": {
+              "type": "integer"
+            },
+            "amountOff": {
+              "type": "integer"
+            },
+            "referredUserId": {
+              "type": "keyword"
+            }
+          },
           "mealPrices": {
             "properties": {
               "stripePlanId": {
@@ -1310,6 +1328,30 @@ PUT /consumers/
           "referralCode": {
             "type": "keyword"
           },
+          "weeklyDiscounts": {
+            "properties": {
+              "discounts": {
+                "properties": {
+                  "reason": {
+                    "type": "keyword"
+                  },
+                  "description": {
+                    "type": "keyword",
+                    "ignore_above": 25
+                  },
+                  "amountOff": {
+                    "type": "integer"
+                  },
+                  "percentOff": {
+                    "type": "integer"
+                  },
+                  "referredUserId": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

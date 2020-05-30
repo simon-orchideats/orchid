@@ -13,7 +13,7 @@ import EmailInput from '../client/general/inputs/EmailInput';
 import { useAddMarketingEmail, useGetConsumer } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
-import { referralFriendAmmount, referralSelfAmount, welcomePromoAmount } from '../order/promoModel';
+import { referralFriendAmount, referralSelfAmount, welcomePromoAmount } from '../order/promoModel';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -560,7 +560,7 @@ const Referral = withClientApollo(() => {
           </ClickAwayListener>
         </Typography>
         <Typography variant='h4'>
-          Get ${(referralSelfAmount / 100).toFixed(2)} off and they get ${(referralFriendAmmount / 100).toFixed(2)} off
+          Get ${(referralSelfAmount / 100).toFixed(2)} off and they get ${(referralFriendAmount / 100).toFixed(2)} off
         </Typography>
       </div>
     </div>

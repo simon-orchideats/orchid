@@ -102,14 +102,13 @@ export class DeliveryMeal implements IDeliveryMeal {
     if (this.Quantity !== meal.Quantity) return false;
     if (this.RestId !== meal.RestId) return false;
     if (this.RestName !== meal.RestName) return false;
-    if (difference(this.Choices, meal.Choices).length > 0 && difference(meal.Choices, this.Choices).length) return false
+    if (difference(this.Choices, meal.Choices).length > 0 || difference(meal.Choices, this.Choices).length > 0) return false
     return true;
   }
 
   public static isSameMeal(m1: IDeliveryMeal, m2: IDeliveryMeal) {
-    return m1.mealId === m2.mealId
-      && difference(m1.choices, m2.choices).length
-      && difference(m2.choices, m1.choices).length === 0;
+    return m1.mealId === m2.mealId &&
+      (difference(m1.choices, m2.choices).length === 0 || difference(m2.choices, m1.choices).length === 0);
   }
 
   static getICopy(meal: IDeliveryMeal): IDeliveryMeal {

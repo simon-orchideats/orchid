@@ -22,8 +22,9 @@ import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
-import { referralFriendAmmount, referralSelfAmount } from "../../order/promoModel";
+import { referralFriendAmount, referralSelfAmount } from "../../order/promoModel";
 import OrderOverview from "../../client/consumer/OrderOverview";
+import { activeConfig } from "../../config";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -237,10 +238,13 @@ const UpcomingDeliveries = () => {
     <Paper className={`${classes.padding} ${classes.marginBottom}`}>
       <Typography variant='h6' className={classes.marginBottom}>
         Refer a friend. You get ${(referralSelfAmount / 100).toFixed(2)} off and they get
-        ${(referralFriendAmmount / 100).toFixed(2)} off
+        ${(referralFriendAmount / 100).toFixed(2)} off
       </Typography>
       <Typography variant='h6' className={classes.marginBottom}>
-        When they checkout with your promo code <b>{consumerData.Plan?.ReferralCode}</b>
+        When they checkout with your link&nbsp;
+        <b>
+          {activeConfig.client.app.url.replace('https://', '')}?p={consumerData.Plan?.ReferralCode}&a={referralFriendAmount}
+        </b>
       </Typography>
     </Paper>
   );

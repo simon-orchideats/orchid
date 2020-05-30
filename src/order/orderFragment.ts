@@ -26,6 +26,13 @@ const orderFragment = gql`
         percentOff
         amountOff
       }
+      discounts {
+        description
+        amountOff
+        percentOff
+        reason
+        referredUserId
+      }
       tax
       deliveryFee
     }

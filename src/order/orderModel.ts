@@ -1,3 +1,4 @@
+import { IDiscount } from './discountModel';
 import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
 import { IDelivery, Delivery, IDeliveryInput, EDelivery } from './deliveryModel';
 import moment from 'moment';
@@ -244,7 +245,8 @@ export class Order implements IOrder{
     donationCount: number,
     invoiceDate: number,
     mealPrices: IMealPrice[],
-    promos?: IPromo[],
+    promos: IPromo[],
+    discounts: IDiscount[],
     createdDate?: number,
     updatedDate?: number,
   ): EOrder {
@@ -274,6 +276,7 @@ export class Order implements IOrder{
         tip: 0,
         mealPrices,
         promos,
+        discounts,
         percentFee: 0,
         flatRateFee: 0,
         deliveryFee: Cost.getDeliveryFee(deliveries),

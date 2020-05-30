@@ -30,22 +30,22 @@ class MyApp extends App {
       // which is why we try again inside the routeChangeComplete
       // also important that we keep using the query.{value} instead of storing it in a variable, otherwise the logic
       // doesn't work
-      let prevPromo: string | false = this.props.router.query.promo as string;
-      let prevAmountOff: string | false = this.props.router.query.amountOff as string;
+      let prevPromo: string | false = this.props.router.query.p as string;
+      let prevAmountOff: string | false = this.props.router.query.a as string;
       Router.events.on('routeChangeComplete', url => {
         if (prevAmountOff === undefined) {
-          prevAmountOff = this.props.router.query.amountOff as string || false;
+          prevAmountOff = this.props.router.query.a as string || false;
         }
         if (prevPromo === undefined) {
-          prevPromo = this.props.router.query.promo as string || false;
+          prevPromo = this.props.router.query.p as string || false;
         }
         if (
           prevPromo
-          && !this.props.router.query.promo 
+          && !this.props.router.query.p 
           && prevAmountOff 
-          && !this.props.router.query.amountOff
+          && !this.props.router.query.a
         ) {
-          this.props.router.replace(`${url}?promo=${prevPromo}&amountOff=${prevAmountOff}`);
+          this.props.router.replace(`${url}?p=${prevPromo}&a=${prevAmountOff}`);
         };
         window.scroll({
           top: 0,

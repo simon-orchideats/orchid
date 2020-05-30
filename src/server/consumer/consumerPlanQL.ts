@@ -51,6 +51,10 @@ const _ConsumerPlanQL = gql`
     time: DeliveryTime!
   }
 
+  type WeeklyDiscount {
+    discounts: [Discount!]!
+  }
+
   type MealPlan {
     stripePlanId: ID!
     planName: ID!
@@ -62,6 +66,7 @@ const _ConsumerPlanQL = gql`
     schedules: [Schedule!]!
     cuisines: [CuisineType!]!
     referralCode: String!
+    weeklyDiscounts: [WeeklyDiscount!]!
   }
 `
 

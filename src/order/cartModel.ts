@@ -17,7 +17,7 @@ export interface ICartInput {
   readonly paymentMethodId: string
   readonly card: ICard
   readonly promo?: string
-  readonly consumerPlan: Omit<IConsumerPlan, 'referralCode'>
+  readonly consumerPlan: Omit<IConsumerPlan, 'referralCode' | 'weeklyDiscounts'>
   readonly donationCount: number
   readonly phone: string
   readonly destination: IDestination

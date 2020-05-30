@@ -91,10 +91,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const plans = useGetAvailablePlans();
 
   useEffect(() => {
-    if (router.query.amountOff !== undefined) {
-      setAmountOff(parseFloat(router.query.amountOff as string));
+    if (router.query.a !== undefined) {
+      setAmountOff(parseFloat(router.query.a as string));
     }
-  }, [router.query.amountOff]);
+  }, [router.query.a]);
 
   useMutationResponseHandler(applyPromoRes, () => {
     if (!applyPromoRes.data?.res?.AmountOff) {
@@ -409,7 +409,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     ),
     loading: didPlaceOrder,
     promoRef: promoInputRef,
-    defaultPromo: router.query.promo as string,
+    defaultPromo: router.query.p as string,
     onApplyPromo,
     onChangePromo: () => {
       if (amountOff !== 0) setAmountOff(0);

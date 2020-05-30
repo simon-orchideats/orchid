@@ -1,3 +1,4 @@
+import { IWeeklyDiscount } from './../../order/discountModel';
 import { IAddress } from './../../place/addressModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
@@ -7,7 +8,7 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile, EConsumerPlan, ConsumerPlan } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile, EConsumerPlan, ConsumerPlan, IConsumerPlanInput } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -21,8 +22,14 @@ import { Delivery } from '../../order/deliveryModel';
 
 const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
+  attachDiscountsToPlan: (
+    _id: string,
+    discounts: IWeeklyDiscount[],
+    replace:  boolean,
+    consumer?: EConsumer
+  ) => Promise<void>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
-  getConsumer: (_id: string) => Promise<IConsumer | null>
+  getIConsumer: (_id: string) => Promise<IConsumer | null>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
@@ -53,6 +60,29 @@ class ConsumerService implements IConsumerService {
 
   public setGeoService(geoService: IGeoService) {
     this.geoService = geoService;
+  }
+
+  private async getEConsumer(userId: string): Promise<{
+    _id: string,
+    consumer: EConsumer,
+  } | null> {
+    try {
+      const consumer: ApiResponse<EConsumer> = await this.elastic.getSource(
+        {
+          index: CONSUMER_INDEX,
+          id: userId,
+        },
+        { ignore: [404] }
+      );
+      if (consumer.statusCode === 404) return null;
+      return {
+        _id: userId,
+        consumer: consumer.body
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to get EConsumer ${userId}: ${e.stack}`)
+      return null;
+    }
   }
 
   public async upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes> {
@@ -153,13 +183,22 @@ class ConsumerService implements IConsumerService {
         console.error(`Failed to delete upcoming orders with unconfirmed deliveries for ${signedInUser._id}`, e.stack);
         throw e;
       });
-      
+
+      const eConsumer = await this.getEConsumer(signedInUser._id);
+      const plan = eConsumer?.consumer.plan;
+      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
+      this.stripe.coupons.del(plan.referralCode)
+        .catch(e => {
+          console.error(`Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
+          throw e;
+        })
+
       const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
         stripeSubscriptionId: null,
         plan: null,
       }
 
-      const p4 = this.elastic.update({
+      const p5 = this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         body: {
@@ -171,7 +210,7 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      await Promise.all([p1, p2, p3, p4]);
+      await Promise.all([p1, p2, p3, p5]);
       return {
         res: true,
         error: null,
@@ -179,6 +218,46 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] couldn't cancel subscription for user '${JSON.stringify(signedInUser)}'`, e.stack);
       throw new Error('Internal Server Error');
+    }
+  }
+
+  public async attachDiscountsToPlan(_id: string, weeklyDiscounts: IWeeklyDiscount[], replace: boolean, eConsumer?: EConsumer) {
+    try {
+      let consumer = eConsumer;
+      if (!consumer) {
+        const res = await this.getEConsumer(_id);
+        if (!res) throw new Error(`Missing eConsumer for '${_id}'`);
+        consumer = res.consumer;
+      }
+      const currPlan = consumer.plan;
+      if (!currPlan) throw new Error(`EConsumer '${_id}' missing plan`);
+      
+      const newWeeklyDiscounts = replace ? weeklyDiscounts : [
+        ...currPlan.weeklyDiscounts,
+        ...weeklyDiscounts
+      ];
+      const plan: EConsumerPlan = {
+        ...currPlan,
+        weeklyDiscounts: newWeeklyDiscounts
+      };
+      const doc: Pick<EConsumer, 'plan'> = {
+        plan,
+      }
+      try {
+        await this.elastic.update({
+          index: CONSUMER_INDEX,
+          id: _id,
+          body: {
+            doc
+          }
+        })
+      } catch (e) {
+        console.error(`Failed to update plan for consumer ${_id}`, e.stack);
+        throw e;
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to attachDiscountsToPlan for consumer ${_id}`, e.stack);
+      throw e;
     }
   }
 
@@ -230,22 +309,16 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async getConsumer(_id: string): Promise<IConsumer | null> {
+  async getIConsumer(_id: string): Promise<IConsumer | null> {
     try {
-      const consumer: ApiResponse<EConsumer> = await this.elastic.getSource(
-        {
-          index: CONSUMER_INDEX,
-          id: _id,
-        },
-        { ignore: [404] }
-      );
-      if (consumer.statusCode === 404) return null;
+      const res = await this.getEConsumer(_id);
+      if (!res) return null;
       return {
         _id,
-        stripeCustomerId: consumer.body.stripeCustomerId,
-        stripeSubscriptionId: consumer.body.stripeSubscriptionId,
-        profile: consumer.body.profile,
-        plan: consumer.body.plan
+        stripeCustomerId: res.consumer.stripeCustomerId,
+        stripeSubscriptionId: res.consumer.stripeSubscriptionId,
+        profile: res.consumer.profile,
+        plan: res.consumer.plan
       }
     } catch (e) {
       console.error(`[ConsumerService] Failed to get consumer ${_id}: ${e.stack}`)
@@ -419,15 +492,26 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlanInput): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
       let plan: EConsumerPlan;
       try {
-        const res = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
-        plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlan(newPlan, res);
+        const res = await this.getEConsumer(signedInUser._id);
+        if (!res) throw new Error(`Failed to get EConsumer '${signedInUser._id}'`);
+        const currPlan = res.consumer.plan;
+        if (!currPlan) throw new Error(`EConsumer '${signedInUser._id}' missing plan`);
+        plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
+          newPlan,
+          currPlan.referralCode,
+          currPlan.weeklyDiscounts,
+          currPlan.mealPlans.reduce<{ [key: string]: string }>((sum, mp) => {
+            sum[mp.stripePlanId] = mp.stripeSubscriptionItemId;
+            return sum;
+          }, {}),
+        );
       } catch (e) {
         console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
         throw e;

@@ -17,6 +17,15 @@ export const consumerFragment = gql`
       }
       cuisines
       referralCode
+      weeklyDiscounts {
+        discounts {
+          description
+          amountOff
+          percentOff
+          reason
+          referredUserId
+        }
+      }
     }
     profile {
       name

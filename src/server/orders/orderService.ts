@@ -1,5 +1,6 @@
-import { referralFriendAmmount, referralSelfAmount, ReferralSource, ReferralPromo } from './../../order/promoModel';
-import { MutationPromoRes, IPromo, EPromo, welcomePromoSubscriptionMetaKey } from '../../order/promoModel';
+import { IDiscount, IWeeklyDiscount, WeeklyDiscount } from './../../order/discountModel';
+import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration } from './../../order/promoModel';
+import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
 import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
@@ -23,6 +24,7 @@ import { activeConfig } from '../../config';
 import moment from 'moment-timezone';
 import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput } from '../../order/deliveryModel';
 import { getItemChooser } from '../../utils/utils';
+import { DiscountReasons } from '../../order/discountModel';
 
 const ORDER_INDEX = 'orders';
 const PROMO_INDEX = 'promos';
@@ -80,8 +82,13 @@ const getUpcomingOrdersQuery = (signedInUserId: string) => ({
             term: {
               'consumer.userId': signedInUserId
             }
+          },
+        ],
+        must_not: {
+          exists: {
+            field: 'stripeInvoiceId'
           }
-        ]
+        }
       }
     }
   }
@@ -123,9 +130,10 @@ export interface IOrderService {
     addedWeeks: number,
     consumer: EConsumer,
     invoiceDate: number,
-    mealPrices: IMealPrice[]
+    mealPrices: IMealPrice[],
+    promos: IPromo[],
+    discounts: IDiscount[],
   ): Promise<void>
-  applyPromo(code: string, subscriptionId: string): Promise<void>
   deleteCurrentOrderUnconfirmedDeliveries: (userId: string) => Promise<Pick<IOrder, '_id' | 'deliveries'> | null>
   deleteUnpaidOrdersWithUnconfirmedDeliveries(userId: string): Promise<void>
   placeOrder(
@@ -139,11 +147,11 @@ export interface IOrderService {
     order: EOrder,
   } | null>
   getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]>
-  getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]>
+  getUpcomingEOrders(userId: string): Promise<{ _id: string, order: EOrder }[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getPromo(promo: string, phone: string, addrStr: string): Promise<MutationPromoRes>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
-  processTaxesAndFees(
+  processTaxesAndFeesAndDiscounts(
     stripeCustomerId: string,
     invoiceId: string,
     costs: ICost,
@@ -221,6 +229,52 @@ class OrderService {
       }
     } catch (e) {
       console.error(`[OrderService] Failed to get current order for '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  private async addWeeklyDiscountsToUpcomingOrders(
+    userId: string,
+    weeklyDiscounts: IWeeklyDiscount[],
+  ): Promise<IWeeklyDiscount[]> {
+    try {
+      const res = await this.getUpcomingEOrders(userId);
+      const copyWeeklyDiscounts = weeklyDiscounts.map(wd => WeeklyDiscount.getICopy(wd));
+
+      const newOrders: {
+        _id: string;
+        order: EOrder;
+      }[] = res.map(o => {
+        const newDiscounts = [
+          ...o.order.costs.discounts,
+          ...WeeklyDiscount.removeFirstDiscounts(copyWeeklyDiscounts),
+        ];
+        return {
+          _id: o._id,
+          order: {
+            ...o.order,
+            costs: {
+              ...o.order.costs,
+              discounts: newDiscounts
+            }
+          }
+        }
+      });
+      
+      newOrders.forEach(order => 
+        this.elastic.update({
+          index: ORDER_INDEX,
+          id: order._id,
+          body: {
+            doc: order.order,
+          }
+        }).catch(e => {
+          console.error(`Failed to update order ${order._id} with new order containing discount`, e.stack);
+          throw e;
+        }))
+      return copyWeeklyDiscounts.filter(wd => wd.discounts.length > 0);
+    } catch (e) {
+      console.error(`Failed to add weekly discounts to upcoming orders for '${userId}' with weeklyDiscounts ${JSON.stringify(weeklyDiscounts)}`, e.stack)
       throw e;
     }
   }
@@ -322,7 +376,6 @@ class OrderService {
         console.error(`Failed to get promo '${code}' with key '${key}'`, e.stack);
         throw e;
       }
-
       const iPromo: IPromo = {
         stripeCouponId: promo.id,
         amountOff: promo.amount_off,
@@ -332,7 +385,7 @@ class OrderService {
       const meta = {
         ...promo.metadata
       } as Partial<ReferralSource>
-      if (meta.stripeCustomerId) {
+      if (meta.userId) {
         referralPromo = {
           ...iPromo,
           referralSource: meta as ReferralSource
@@ -599,20 +652,14 @@ class OrderService {
     }
   }
 
-  public async applyPromo(promoCode: string, subscriptionId: string) {
-    this.stripe.subscriptions.update(subscriptionId, {
-      coupon: promoCode
-    }).catch(e => {
-      console.error(`[OrderService] Failed to update subscription '${subscriptionId}' with promo code '${promoCode}'`, e.stack)
-    });
-  }
-
   public async addAutomaticOrder(
     consumerId: string,
     addedWeeks: number,
     consumer: EConsumer,
     invoiceDate: number,
-    mealPrices: IMealPrice[]
+    mealPrices: IMealPrice[],
+    promos: IPromo[],
+    discounts: IDiscount[],
   ) {
     try {
       if (!consumer.plan) throw new Error(`Missing consumer plan for consumer '${consumerId}'`);
@@ -690,6 +737,8 @@ class OrderService {
         0,
         invoiceDate,
         mealPrices,
+        promos,
+        discounts, 
       );
       await this.elastic.index({
         index: ORDER_INDEX,
@@ -796,7 +845,7 @@ class OrderService {
     }
   }
 
-  public async processTaxesAndFees(
+  public async processTaxesAndFeesAndDiscounts(
     stripeCustomerId: string,
     invoiceId: string,
     costs: ICost,
@@ -810,7 +859,7 @@ class OrderService {
         customer: stripeCustomerId,
         description: 'Taxes',
       }).catch(e => {
-        console.error(`Failed to create taxes invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`);
+        console.error(`Failed to create taxes invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`, e.stack);
         throw e;
       });
       const p2 = this.stripe.invoiceItems.create({
@@ -820,10 +869,23 @@ class OrderService {
         customer: stripeCustomerId,
         description: `${numExtraDeliveries} extra deliveries`,
       }).catch(e => {
-        console.error(`Failed to create delivery fee invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`);
+        console.error(`Failed to create delivery fee invoice item for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`, e.stack);
         throw e;
       });
-      await Promise.all([p1, p2]);
+      const p3 = Promise.all(costs.discounts.map(d => {
+        if (!d.amountOff) throw new Error(`[OrderService] Missing amount off for adding discount for customer '${stripeCustomerId}' to invoice '${invoiceId}'`);
+        return this.stripe.invoiceItems.create({
+          amount: -d.amountOff,
+          invoice: invoiceId,
+          currency: 'usd',
+          customer: stripeCustomerId,
+          description: d.description,
+        }).catch(e => {
+          console.error(`Failed to create discount for stripe customer '${stripeCustomerId}' and invoiceId '${invoiceId}'`, e.stack);
+          throw e;
+        })
+      }))
+      await Promise.all([p1, p2, p3]);
       return;
     } catch (e) {
       console.error(`[OrderService] failed to process taxes and fees for order with invoiceId'${invoiceId}'`, e.stack);
@@ -926,9 +988,7 @@ class OrderService {
           // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
           billing_cycle_anchor: billingStartDateSeconds,
           customer: stripeCustomerId,
-          metadata: {
-            [welcomePromoSubscriptionMetaKey]: iPromo?.stripeCouponId || null,
-          },
+          coupon: iPromo?.stripeCouponId,
           items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
         });
       } catch (e) {
@@ -949,11 +1009,12 @@ class OrderService {
       try {
         newReferralPromo = await this.stripe.coupons.create({
           name: signedInUser.profile.name + ' Referral',
-          amount_off: referralFriendAmmount,
-          duration: 'once',
+          amount_off: referralFriendAmount,
+          duration: 'repeating',
+          duration_in_months: referralMonthDuration,
           currency: 'usd',
           metadata: {
-            stripeCustomerId,
+            userId: signedInUser._id,
             amountOff: referralSelfAmount,
             percentOff: null,
           } as ReferralSource
@@ -968,14 +1029,18 @@ class OrderService {
         createdDate: Date.now(),
         stripeCustomerId,
         stripeSubscriptionId: subscription.id,
-        plan: ConsumerPlan.getEConsumerPlanFromIConsumerPlan(
+        plan: ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
           {
             mealPlans,
             schedules,
             cuisines,
-            referralCode: newReferralPromo.id,
           },
-          subscription,
+          newReferralPromo.id,
+          [],
+          subscription.items.data.reduce<{ [key: string]: string }>((sum, subItem) => {
+            sum[subItem.plan.id] = subItem.id;
+            return sum;
+          }, {}),
         ),
         profile: {
           name: signedInUser.profile.name,
@@ -992,6 +1057,7 @@ class OrderService {
           },
         }
       };
+      const newOrderPromos = iPromo ? [ iPromo ] : [];
       const order = Order.getNewOrder(
         signedInUser._id,
         consumer,
@@ -999,19 +1065,26 @@ class OrderService {
         cart.donationCount,
         moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
         mealPrices,
-        iPromo ? [ iPromo ] : undefined,
+        newOrderPromos,
+        [],
         // make updated date 5 seconds past created date to indicate
         // non auto generated order. this is a hack
         moment().valueOf(),
         moment().add(5, 's').valueOf(),
       );
-
+      console.log('first order', JSON.stringify(order));
+      const indexer = this.elastic.index({
+        index: ORDER_INDEX,
+        body: order
+      })
       this.addAutomaticOrder(
         signedInUser._id,
         1,
         consumer,
         moment(billingStartDateSeconds * 1000).add(2, 'w').valueOf(),
         mealPrices,
+        newOrderPromos,
+        [],
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
       });
@@ -1022,25 +1095,46 @@ class OrderService {
       ).catch(e => {
         console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
       });
-      const indexer = this.elastic.index({
-        index: ORDER_INDEX,
-        body: order
-      })
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
 
       if (referralPromo) {
         const source = referralPromo.referralSource;
+        const discount: IDiscount = {
+          description: `Thanks for inviting ${signedInUser.profile.name.split(' ')[0]}`,
+          amountOff: source.amountOff,
+          percentOff: source.percentOff,
+          reason: DiscountReasons.ReferredAFriend,
+          referredUserId: signedInUser._id,
+        };
         if (source.amountOff) {
-          this.stripe.invoiceItems.create({
-            customer: source.stripeCustomerId,
-            amount: -source.amountOff,
-            currency: 'usd',
-            description: `Discount for referring ${signedInUser.profile.name}`
-          }).catch(e => {
-            console.error(`[OrderService] failed to create referral discount invoiceItem for stripeCustomer '${source.stripeCustomerId}'`, e.stack);
-          });
+          const weeklyDiscounts: IWeeklyDiscount[] = [
+            {
+              discounts: [
+                discount,
+                discount,
+                discount,
+                discount,
+              ]
+            }
+          ];
+          this.addWeeklyDiscountsToUpcomingOrders(source.userId, weeklyDiscounts)
+            .then(remainingWeeklyOrders => {
+              if (!this.consumerService) {
+                const err = new Error ('ConsumerService not set');
+                console.error(err.stack);
+                throw err;
+              };
+              return this.consumerService.attachDiscountsToPlan(
+                source.userId,
+                remainingWeeklyOrders,
+                false,
+              );
+            })
+            .catch(e => {
+              console.error(`Failed to add discounts to upcoming orders and consumer plan for '${source.userId}'`, e.stack);
+            });
         } else {
           console.error(`[OrderService] referralPromo '${referralPromo.stripeCouponId}' missing amount off`);
         }
@@ -1057,14 +1151,13 @@ class OrderService {
     }
   }
 
-  async getMyUpcomingEOrders(signedInUser: SignedInUser): Promise<{ _id: string, order: EOrder }[]> {
-    if (!signedInUser) throw getNotSignedInErr()
+  async getUpcomingEOrders(userId: string): Promise<{ _id: string, order: EOrder }[]> {
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
         index: ORDER_INDEX,
         size: 1000,
         body: {
-          query: getUpcomingOrdersQuery(signedInUser._id),
+          query: getUpcomingOrdersQuery(userId),
           sort: [
             {
               invoiceDate: {
@@ -1086,7 +1179,7 @@ class OrderService {
         }
       });
     } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
+      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${userId}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }
@@ -1094,12 +1187,41 @@ class OrderService {
   async getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
     if (!signedInUser) throw getNotSignedInErr()
     try {
-      const res = await this.getMyUpcomingEOrders(signedInUser);
+      const res = await this.getUpcomingEOrders(signedInUser._id);
       return res.map(({ _id, order }) => Order.getIOrderFromEOrder(_id, order))
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
+  }
+
+  async removeDiscounts(order: { _id: string, order: EOrder }) {
+    const doc: Omit<
+      EOrder, 
+      'stripeSubscriptionId'
+      | 'createdDate'
+      | 'invoiceDate'
+      | 'consumer'
+      | 'deliveries'
+      | 'plans'
+      | 'cartUpdatedDate'
+      | 'donationCount'
+    > = {
+      costs: {
+        ...order.order.costs,
+        discounts: [],
+      },
+    }
+    this.elastic.update({
+      index: ORDER_INDEX,
+      id: order._id,
+      body: {
+        doc,
+      }
+    }).catch(e => {
+      console.error(`[OrderService] Failed to remove discounts for order '${order._id}'`, e.stack);
+      throw e;
+    })
   }
   
   async removeDonations(

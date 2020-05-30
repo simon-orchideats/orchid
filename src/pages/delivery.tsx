@@ -18,6 +18,7 @@ import moment from "moment";
 import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/delivery/deliveryMetrics";
 import { useGetAvailablePlans } from "../plan/planService";
 import SyncAltIcon from '@material-ui/icons/SyncAlt';
+import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -82,10 +83,10 @@ const delivery = () => {
     const pushing = {
       pathname: checkoutRoute
     } as any;
-    if (!router.query.promo) {
+    if (!router.query.p) {
       pushing.query = {
-        promo: 'welcome10',
-        amountOff: 1000,
+        p: welcomePromoCouponId,
+        a: welcomePromoAmount,
       }
     }
     Router.push(pushing);

@@ -6,6 +6,30 @@ PUT consumers/_mapping
       "properties": {
         "referralCode": {
           "type": "keyword"
+        },
+        "weeklyDiscounts": {
+          "properties": {
+            "discounts": {
+              "properties": {
+                "reason": {
+                  "type": "keyword"
+                },
+                "description": {
+                  "type": "keyword",
+                  "ignore_above": 25
+                },
+                "amountOff": {
+                  "type": "integer"
+                },
+                "percentOff": {
+                  "type": "integer"
+                },
+                "referredUserId": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -13,6 +37,37 @@ PUT consumers/_mapping
 }
 
 then make a referral code for each customer and attach it to them
+
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      ctx._source.plan.weeklyDiscounts = new ArrayList();
+      if (alma)
+
+      if (brandon)
+
+      if (josh)...
+      ctx._source.plan.referralCode = 
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "exits": {
+                "field": "plan"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 
 
 PUT rests/_mapping
@@ -66,10 +121,38 @@ POST rests/_update_by_query
 PUT orders/_mapping
 {
   "properties": {
-    "menu": {
+    "deliveries": {
       "properties": {
-        "choices":  {
-          "type": "keyword"
+        "meals": {
+          "properties": {
+            "choices":  {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    },
+    "costs": {
+      "properties": {
+        "discounts": {
+          "properties": {
+            "reason": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "keyword",
+              "ignore_above": 25
+            },
+            "percentOff": {
+              "type": "integer"
+            },
+            "amountOff": {
+              "type": "integer"
+            },
+            "referredUserId": {
+              "type": "keyword"
+            }
+          }
         }
       }
     }
@@ -83,10 +166,11 @@ POST orders/_update_by_query
     "source": """
       for (int i = 0; i < ctx._source.deliveries.length; i++) {
         for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-          ctx._source.deliveries[i].meals[j].addons = new ArrayList();
-          ctx._source.deliveries[i].meals[j].options = new ArrayList();
+          ctx._source.deliveries[i].meals[j].choices = new ArrayList();
         }
       }
+      ctx._source.costs.promos = new ArrayList();
+      ctx._source.costs.discounts = new ArrayList();
     """,
     "lang": "painless"
   },

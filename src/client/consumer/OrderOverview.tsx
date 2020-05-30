@@ -24,6 +24,10 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  referralRow: {
+    display: 'flex',
+    alignItems: 'center'
+  },
   deliverTo: {
     display: 'flex',
   },
@@ -155,13 +159,6 @@ const OrderOverview: React.FC<{
             <Typography variant='body1'>
               Delivery
             </Typography>
-            { 
-              order.Costs.Promos && order.Costs.Promos.length === 1 &&
-              <Typography variant='body1' color='primary'>
-                <b>{order.Costs.Promos[0].AmountOff && `$${(order.Costs.Promos[0].AmountOff / 100).toFixed(2)} discount applied`}</b>
-                <b>{order.Costs.Promos[0].PercentOff && `$${(order.Costs.Promos[0].PercentOff).toFixed(2)} discount applied`}</b>
-              </Typography>
-            }
           </Grid>
           <Grid item xs={6}>
             <Typography variant='body1' className={classes.cost}>
@@ -180,6 +177,32 @@ const OrderOverview: React.FC<{
             <Typography variant='body1' className={classes.cost}>
               ${(order.Costs.DeliveryFee / 100).toFixed(2)}
             </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            {
+              (order.Costs.Promos.length === 1 || order.Costs.Discounts.length > 0) &&
+              <Typography variant='body1' color='primary'>
+                <b>Applied discounts</b>
+              </Typography>
+            }
+            {
+              order.Costs.Promos.length === 1 &&
+              <Typography variant='body1' color='primary'>
+                -{order.Costs.Promos[0].AmountOff && `$${(order.Costs.Promos[0].AmountOff / 100).toFixed(2)}`}
+              </Typography>
+            }
+            { 
+              order.Costs.Discounts.map((d, i) => (
+                <div className={classes.referralRow} key={i}>
+                  <Typography variant='body1' color='primary'>
+                    -{d.AmountOff && `$${(d.AmountOff / 100).toFixed(2)}`}&nbsp;
+                  </Typography>
+                  <Typography variant='body2' color='textSecondary'>
+                    ({d.Description})
+                  </Typography>
+                </div>
+              ))
+            }
           </Grid>
         </Grid>
         {

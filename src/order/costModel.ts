@@ -1,3 +1,4 @@
+import { IDiscount, Discount } from './discountModel';
 import { IMealPrice, MealPrice } from './orderModel';
 import { IDeliveryInput } from './deliveryModel';
 import { IPromo, Promo } from './promoModel';
@@ -5,7 +6,8 @@ export interface ICost {
   readonly tax: number
   readonly tip: number
   readonly mealPrices: IMealPrice[]
-  readonly promos?: IPromo[]
+  readonly promos: IPromo[]
+  readonly discounts: IDiscount[]
   readonly percentFee: number
   readonly flatRateFee: number
   readonly deliveryFee: number
@@ -14,8 +16,9 @@ export interface ICost {
 export class Cost implements ICost {
   readonly tax: number
   readonly tip: number
+  readonly discounts: Discount[]
   readonly mealPrices: MealPrice[]
-  readonly promos?: Promo[]
+  readonly promos: Promo[]
   readonly percentFee: number
   readonly flatRateFee: number
   readonly deliveryFee: number
@@ -23,15 +26,17 @@ export class Cost implements ICost {
   constructor(cost: ICost) {
     this.tax = cost.tax;
     this.tip = cost.tip;
+    this.discounts = cost.discounts.map(d => new Discount(d));
     this.mealPrices = cost.mealPrices.map(mp => new MealPrice(mp));
     this.percentFee = cost.percentFee;
     this.flatRateFee = cost.flatRateFee;
     this.deliveryFee = cost.deliveryFee;
-    this.promos = cost.promos && cost.promos.map(p => new Promo(p));
+    this.promos = cost.promos.map(p => new Promo(p));
   }
 
   public get Tax() { return this.tax }
   public get Tip() { return this.tip }
+  public get Discounts() { return this.discounts }
   public get MealPrices() { return this.mealPrices }
   public get PercentFee() { return this.percentFee }
   public get FlatRateFee() { return this.flatRateFee }
@@ -42,7 +47,8 @@ export class Cost implements ICost {
     return {
       ...c,
       mealPrices: c.mealPrices.map(mp => MealPrice.getICopy(mp)),
-      promos: c.promos && c.promos.map(p => Promo.getICopy(p)),
+      promos: c.promos.map(p => Promo.getICopy(p)),
+      discounts: c.discounts.map(d => Discount.getICopy(d)),
     }
   }
 

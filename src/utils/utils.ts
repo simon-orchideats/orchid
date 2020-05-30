@@ -8,7 +8,7 @@ export const getItemChooser = <T>(
   arr: T[],
   filter: (t: T) => boolean = () => true
 ) => {
-  let copy = arr.slice(0).filter(filter); //simonv filter verified
+  let copy = arr.slice(0).filter(filter);
   return () => {
     if (copy.length < 1) {
       copy = arr.slice(0);
