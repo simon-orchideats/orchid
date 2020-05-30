@@ -202,6 +202,14 @@ export class Order implements IOrder{
       //@ts-ignore
       mp.__typename = 'MealPrice';
     });
+    order.costs.discounts.forEach(d => {
+      //@ts-ignore
+      d.__typename = 'Discount';
+    });
+    order.costs.promos.forEach(p => {
+      //@ts-ignore
+      p.__typename = 'Promo';
+    });
     //@ts-ignore
     order.__typename = 'Order';
     return order;

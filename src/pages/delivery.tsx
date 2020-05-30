@@ -113,7 +113,8 @@ const delivery = () => {
       {
         deliveries: cart.Deliveries,
         donationCount: cart.DonationCount ? cart.DonationCount : 0 
-      }
+      },
+      plans.data,
     ) 
   }
   const addSchedule = () => {

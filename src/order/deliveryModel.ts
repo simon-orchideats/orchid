@@ -4,6 +4,22 @@ import { deliveryTime } from './../consumer/consumerModel';
 import { difference } from 'lodash';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';
+
+export const DeliveryStatuses: {
+  Complete: 'Complete'
+  Confirmed: 'Confirmed'
+  Open: 'Open'
+  Returned: 'Returned'
+  Skipped: 'Skipped'
+  Canceled: 'Canceled'
+} = {
+  Complete: 'Complete',
+  Confirmed: 'Confirmed',
+  Open: 'Open',
+  Returned: 'Returned',
+  Skipped: 'Skipped',
+  Canceled: 'Canceled'
+}
  
 export interface IDeliveryMeal extends Omit<
   IMeal,
