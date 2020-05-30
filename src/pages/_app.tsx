@@ -39,6 +39,10 @@ class MyApp extends App {
         if (prevPromo === undefined) {
           prevPromo = this.props.router.query.p as string || false;
         }
+        if (this.props.router.query.clear === 'true') {
+          prevPromo = false;
+          prevAmountOff = false;
+        }
         if (
           prevPromo
           && !this.props.router.query.p 

@@ -195,7 +195,7 @@ const OrderOverview: React.FC<{
               order.Costs.Discounts.map((d, i) => (
                 <div className={classes.referralRow} key={i}>
                   <Typography variant='body1' color='primary'>
-                    -{d.AmountOff && `$${(d.AmountOff / 100).toFixed(2)}`}&nbsp;
+                    -{d.AmountOff !== null && `$${(d.AmountOff / 100).toFixed(2)}`}&nbsp;
                   </Typography>
                   <Typography variant='body2' color='textSecondary'>
                     ({d.Description})

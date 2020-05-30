@@ -118,7 +118,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       } else {
         Router.push({
           pathname: upcomingDeliveriesRoute,
-          query: { confirmation: 'true' },
+          query: {
+            confirmation: 'true',
+            clear: 'true',
+          },
         })
       }
     }

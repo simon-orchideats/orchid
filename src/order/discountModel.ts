@@ -1,10 +1,13 @@
 export type DiscountReason =
 'Referred a friend'
+| 'Referral canceled'
 
 export const DiscountReasons: {
   ReferredAFriend: 'Referred a friend',
+  ReferralCanceled: 'Referral canceled',
 } = {
   ReferredAFriend: 'Referred a friend',
+  ReferralCanceled: 'Referral canceled',
 }
 
 export interface IDiscount {

@@ -163,6 +163,9 @@ export interface IOrderService {
     signedInUser: SignedInUser,
     orderId: string
   ): Promise<MutationBoolRes>
+  removeReferredDiscounts(
+    SignedInUser: SignedInUser,
+  ): Promise<MutationBoolRes>
   skipDelivery(
     signedInUser: SignedInUser,
     orderId: string,
@@ -1072,7 +1075,6 @@ class OrderService {
         moment().valueOf(),
         moment().add(5, 's').valueOf(),
       );
-      console.log('first order', JSON.stringify(order));
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
         body: order
@@ -1378,6 +1380,61 @@ class OrderService {
       })
     } catch (e) {
       console.error(`[OrderService] Failed to delete orders with unconfirmed deliveries for '${userId}'`, e.stack);
+      throw e;
+    }
+  }
+
+  
+  async removeReferredDiscounts(signedInUser: SignedInUser): Promise<MutationBoolRes> {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      await this.elastic.updateByQuery({
+        index: ORDER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: {
+                    term: {
+                      'costs.discounts.referredUserId': signedInUser._id
+                    }
+                  },
+                  must_not: {
+                    exists: {
+                      field: 'stripeInvoiceId'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          script: {
+            source: `
+              for (int i = 0; i < ctx._source.costs.discounts.length; i++) {
+                def discount = ctx._source.costs.discounts[i];
+                if (discount.referredUserId.equals(params.referredUserId)) {
+                  discount.amountOff = 0;
+                  discount.description = params.referredUserName + " canceled";
+                  discount.reason = params.reason;
+                }
+              }
+            `,
+            lang: 'painless',
+            params: {
+              referredUserId: signedInUser._id,
+              referredUserName: signedInUser.profile.name.split(' ')[0],
+              reason: DiscountReasons.ReferralCanceled,
+            }
+          },
+        }
+      });
+      return {
+        res: true,
+        error: null
+      }
+    } catch (e) {
+      console.error(`[OrderService] couldn't removeReferredDiscounts with referredUserId ${signedInUser?._id}'`, e.stack);
       throw e;
     }
   }

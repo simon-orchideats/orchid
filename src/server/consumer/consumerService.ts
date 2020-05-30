@@ -157,13 +157,7 @@ class ConsumerService implements IConsumerService {
         }));
       }
 
-      const p1 = this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
-        const msg = `Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });
-
-      const p2 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
+      const p1 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
         headers: await getAuth0Header(),
         method: 'PATCH',
         body: JSON.stringify({
@@ -179,26 +173,16 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      const p3 = this.orderService.deleteUnpaidOrdersWithUnconfirmedDeliveries(signedInUser._id).catch(e => {
+      const p2 = this.orderService.deleteUnpaidOrdersWithUnconfirmedDeliveries(signedInUser._id).catch(e => {
         console.error(`Failed to delete upcoming orders with unconfirmed deliveries for ${signedInUser._id}`, e.stack);
         throw e;
       });
-
-      const eConsumer = await this.getEConsumer(signedInUser._id);
-      const plan = eConsumer?.consumer.plan;
-      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
-      this.stripe.coupons.del(plan.referralCode)
-        .catch(e => {
-          console.error(`Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
-          throw e;
-        })
 
       const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
         stripeSubscriptionId: null,
         plan: null,
       }
-
-      const p5 = this.elastic.update({
+      const p3 = this.elastic.update({
         index: CONSUMER_INDEX,
         id: signedInUser._id,
         body: {
@@ -210,7 +194,60 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
-      await Promise.all([p1, p2, p3, p5]);
+      const eConsumer = await this.getEConsumer(signedInUser._id);
+      const plan = eConsumer?.consumer.plan;
+      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
+      this.stripe.coupons.del(plan.referralCode)
+        .catch(e => {
+          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
+          throw e;
+        })
+      this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
+        const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+      this.orderService.removeReferredDiscounts(signedInUser).catch(e => {
+        console.error(`[ConsumerService] Failed to removeReferredDiscounts with userId '${signedInUser._id}'`, e.stack)
+        throw e;
+      })
+      this.elastic.updateByQuery({
+        index: CONSUMER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: {
+                    term: {
+                      'plan.weeklyDiscounts.discounts.referredUserId': signedInUser._id
+                    }
+                  }
+                }
+              }
+            }
+          },
+          script: {
+            source: `
+              def weeklyDiscounts = ctx._source.plan.weeklyDiscounts;
+              for (int i = 0; i < weeklyDiscounts.length; i++) {
+                def discounts = weeklyDiscounts[i].discounts;
+                discounts.removeIf(d -> d.referredUserId.equals(params.referredUserId));
+              }
+              weeklyDiscounts.removeIf(wd -> wd.discounts.length == 0);
+            `,
+            lang: 'painless',
+            params: {
+              referredUserId: signedInUser._id,
+            }
+          },
+        }
+      }).catch(e => {
+        console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${signedInUser._id}'`, e.stack)
+        throw e;
+      });
+
+      await Promise.all([p1, p2, p3]);
       return {
         res: true,
         error: null,
