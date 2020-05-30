@@ -22,9 +22,10 @@ import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
-import { referralFriendAmount, referralSelfAmount } from "../../order/promoModel";
+import { referralFriendAmount, referralSelfAmount, referralMonthDuration, autoPickPromoAmount } from "../../order/promoModel";
 import OrderOverview from "../../client/consumer/OrderOverview";
 import { activeConfig } from "../../config";
+import WithClickToCopy from "../../client/general/WithClickToCopy";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -234,18 +235,32 @@ const UpcomingDeliveries = () => {
     console.error('No consumer data', consumer.error);
     return <Typography>Error</Typography>
   }
+  const referralLink = `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan?.ReferralCode}&a=${referralFriendAmount}`
+  const friendAmount = referralFriendAmount * 4 * referralMonthDuration;
   const referral = (
     <Paper className={`${classes.padding} ${classes.marginBottom}`}>
       <Typography variant='h6' className={classes.marginBottom}>
-        Refer a friend. You get ${(referralSelfAmount / 100).toFixed(2)} off and they get
-        ${(referralFriendAmount / 100).toFixed(2)} off
+        Refer a friend. You Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get
+        ${(friendAmount / 100).toFixed(2)} off
       </Typography>
       <Typography variant='h6' className={classes.marginBottom}>
-        When they checkout with your link&nbsp;
-        <b>
-          {activeConfig.client.app.url.replace('https://', '')}?p={consumerData.Plan?.ReferralCode}&a={referralFriendAmount}
-        </b>
+        Friends get another ${(2 * autoPickPromoAmount / 100).toFixed(2)} on the last 2 weeks when they
+        let Orchid pick their meals
       </Typography>
+      <WithClickToCopy 
+        render={onCopy =>
+          <Typography
+            variant='h6'
+            className={classes.marginBottom}
+            onClick={() => onCopy(referralLink)}
+          >
+            When they checkout with your link&nbsp;
+            <b>
+              {referralLink}
+            </b>
+          </Typography>
+        }
+      />
     </Paper>
   );
   if (needsCart) {

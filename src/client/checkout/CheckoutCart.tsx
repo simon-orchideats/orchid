@@ -197,7 +197,7 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <div className={classes.row}>
           <Typography variant='body1'>
-            Promo
+            Promo (for 4 weeks)
           </Typography>
           <Typography variant='body1' color='primary'>
             <b>-${(amountOff / 100).toFixed(2)}</b>

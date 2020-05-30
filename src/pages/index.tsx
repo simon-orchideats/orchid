@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden, ClickAwayListener, Tooltip } from '@material-ui/core';
+import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden, useMediaQuery, Theme, useTheme } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -13,7 +13,9 @@ import EmailInput from '../client/general/inputs/EmailInput';
 import { useAddMarketingEmail, useGetConsumer } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
-import { referralFriendAmount, referralSelfAmount, welcomePromoAmount } from '../order/promoModel';
+import { referralFriendAmount, referralSelfAmount, welcomePromoAmount, autoPickPromoAmount, referralMonthDuration } from '../order/promoModel';
+import { activeConfig } from '../config';
+import WithClickToCopy from '../client/general/WithClickToCopy';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -58,6 +60,9 @@ const useStyles = makeStyles(theme => ({
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
+  },
+  topMargin: {
+    marginTop: theme.spacing(1),
   },
   mediumVerticalMargin: {
     marginTop: theme.spacing(3),
@@ -515,7 +520,18 @@ const Promotion = withClientApollo(() => {
         Limited time promotion
       </Typography>
       <Typography variant='h4' className={classes.bold}>
-        ${(welcomePromoAmount / 100).toFixed(2)} off your first order, auto applied at checkout! 
+        ${((welcomePromoAmount * 4 * referralMonthDuration) / 100).toFixed(2)} off your first month, auto applied at checkout! 
+      </Typography>
+      <Typography variant='h5' className={classes.topMargin}>
+        Another ${(2 * autoPickPromoAmount / 100).toFixed(2)} off on the last 2 weeks when you let Orchid pick your meals
+      </Typography>
+      <Typography
+        variant='body1'
+        className={classes.topMargin}
+        align='left'
+      >
+        *Discount applied in weekly increments over 1 month. Skipping orders or canceling subscriptions will terminate
+        discounts
       </Typography>
     </div>
   );
@@ -523,44 +539,46 @@ const Promotion = withClientApollo(() => {
 
 const Referral = withClientApollo(() => {
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
   const consumer = useGetConsumer();
+  const theme = useTheme<Theme>();
   const consumerData = consumer.data;
+  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   if (!consumerData || !consumerData.Plan) return null;
+  const referralLink = `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan.ReferralCode}&a=${referralFriendAmount}`
+  const friendAmount = referralFriendAmount * 4 * referralMonthDuration;
   return (
     <div className={`${classes.friends} ${classes.centered}`}>
       <div className={`${classes.welcomeText} ${classes.referralText}`}>
-        <Typography variant='h2' className={classes.welcomeTitle}>
+        <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
           Refer a friend 
         </Typography>
-        <Typography variant='h4'>
-          When they checkout with your promo code
+        <Typography  variant={isSmAndDown ? 'h6' : 'h4'}>
+          When they checkout with your link
         </Typography>
-        <Typography variant='h4' className={classes.mediumVerticalMargin} onClick={() => {
-          const input = document.createElement('input');
-          document.body.appendChild(input)
-          input.value = consumerData.Plan!.ReferralCode
-          input.select();
-          document.execCommand('copy', false);
-          input.remove();
-        }}>
-          <ClickAwayListener onClickAway={() => setOpen(false)}>
-            <Tooltip
-              disableFocusListener
-              disableHoverListener
-              disableTouchListener
-              open={open}
-              onClose={() => setOpen(false)}
-              title='Copied'
-            >
-              <b onClick={() => setOpen(true)}>
-                {consumerData.Plan.ReferralCode}
+        <WithClickToCopy
+          render={onCopy => 
+            <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.mediumVerticalMargin} onClick={() => onCopy(referralLink)}>
+              <b>
+                {referralLink}
               </b>
-            </Tooltip>
-          </ClickAwayListener>
+            </Typography>
+          }
+        />
+        <Typography variant={isSmAndDown ? 'h6' : 'h4'}>
+          Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get ${(friendAmount / 100).toFixed(2)} off
         </Typography>
-        <Typography variant='h4'>
-          Get ${(referralSelfAmount / 100).toFixed(2)} off and they get ${(referralFriendAmount / 100).toFixed(2)} off
+        <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.topMargin}>
+          Friends get another ${(2 * autoPickPromoAmount / 100).toFixed(2)} on the last 2 weeks when they
+          let Orchid pick their meals
+        </Typography>
+        <Typography
+          variant='body2'
+          className={classes.topMargin}
+          color='textSecondary'
+          align='left'
+        >
+          Discount applied in weekly increments over 1 month. Skipping orders or canceling subscriptions will terminate
+          discounts
         </Typography>
       </div>
     </div>
