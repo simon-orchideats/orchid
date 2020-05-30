@@ -512,17 +512,16 @@ const Benefits = () => {
 const Promotion = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
+  const theme = useTheme<Theme>();
+  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   const consumerData = consumer.data;
   if (consumerData && consumerData.Plan) return null;
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
-      <Typography variant='h4' className={classes.bold}>
-        Limited time promotion
-      </Typography>
-      <Typography variant='h4' className={classes.bold}>
+      <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
         ${((welcomePromoAmount * 4 * referralMonthDuration) / 100).toFixed(2)} off your first month, auto applied at checkout! 
       </Typography>
-      <Typography variant='h5' className={classes.topMargin}>
+      <Typography variant={isSmAndDown ? 'h5' : 'h4'}className={classes.topMargin}>
         Another ${(2 * autoPickPromoAmount / 100).toFixed(2)} off on the last 2 weeks when you let Orchid pick your meals
       </Typography>
       <Typography
