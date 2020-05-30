@@ -33,7 +33,7 @@ class RestService implements IRestService {
   }
 
   public async getNearbyERests(
-    zip: string,
+    cityOrZip: string,
     cuisines?: CuisineType[],
     canAutoPick?: boolean,
     fields?: string[]
@@ -43,7 +43,13 @@ class RestService implements IRestService {
   }[]> {
     try {
       if (!this.geoService) throw new Error('GeoService not set');
-      const geo = await this.geoService.getGeocodeByZip(zip);
+      let geo;
+      const isCity = isNaN(parseFloat(cityOrZip));
+      if (isCity) {
+        geo = await this.geoService.getGeocodeByCity(cityOrZip);
+      } else {
+        geo = await this.geoService.getGeocodeByZip(cityOrZip);
+      }
       if (!geo) return [];
       const { lat, lon, state } = geo;
       const options: any = {
@@ -97,20 +103,20 @@ class RestService implements IRestService {
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby ERests for '${zip}' and cuisines '${JSON.stringify(cuisines)}' and canAutoPick '${canAutoPick}'`, e.stack);
+      console.error(`[RestService] could not get nearby ERests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}' and canAutoPick '${canAutoPick}'`, e.stack);
       throw e;
     }
   }
 
-  async getNearbyRests(zip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
+  async getNearbyRests(cityOrZip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
     try {
-      const eRests = await this.getNearbyERests(zip, cuisines, undefined, fields);
+      const eRests = await this.getNearbyERests(cityOrZip, cuisines, undefined, fields);
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby rests for '${zip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
+      console.error(`[RestService] could not get nearby rests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }

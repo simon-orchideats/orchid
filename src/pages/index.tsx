@@ -254,7 +254,7 @@ const HowItWorks = () => {
         <Grid item xs={12} sm={1} md={1} />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
-        Questions or Comments? Email us at emily@orchideats.com to learn more.
+        Questions or Comments? Email us at alvin@orchideats.com to learn more.
       </Typography>
       <Link href={howItWorksRoute}>
         <Button variant='outlined' color='primary'>Learn More</Button>

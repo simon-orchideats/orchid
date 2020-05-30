@@ -53,7 +53,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const invoice = event.data.object as Stripe.Invoice
   // important to do this before looking up consumerByStripeId since if we just created the account,
   // the consumer may not exist in our system yet
-  if (invoice.billing_reason === 'subscription_create') return;
+  if (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'manual') return;
 
   const stripeCustomerId = invoice.customer as string;
   const consumerRes = await getConsumerService().getConsumerByStripeId(stripeCustomerId);

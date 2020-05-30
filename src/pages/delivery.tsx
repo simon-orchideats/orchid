@@ -130,11 +130,11 @@ const delivery = () => {
   const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     if (isExpanded) setExpanded(panel);
     if (panel === 'assignments') {
-      setScheduleAndAutoDeliveries(schedules, start);
+      setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     }
   };
   const setDates = () => {
-    setScheduleAndAutoDeliveries(schedules, start);
+    setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     setExpanded('assignments');
   }
   if (!cart) {

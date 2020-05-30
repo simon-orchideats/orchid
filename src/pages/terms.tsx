@@ -73,13 +73,13 @@ const Terms = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          Following your Plan selection and placement and receipt of your first weekly order, you may cancel or modify a subscription to a Plan at any time online by managing your account at orchideats.com, or by emailing us at emily@orchideats.com.
+          Following your Plan selection and placement and receipt of your first weekly order, you may cancel or modify a subscription to a Plan at any time online by managing your account at orchideats.com, or by emailing us at alvin@orchideats.com.
           <br />
           <br/>
           To avoid being charged for placed orders that you no longer wish to receive in the event of a subscription cancellation, you must cancel 2 days prior to the date of your next delivery, which is displayed on Upcoming Deliveries.
           <br />
           <br/>
-          If you cancel a subscription to a Plan before receiving your first order, your first order may or may not be cancelled and related amounts paid may or may not be refunded to you, depending on factors including the status of your meals in our production process, and any promotions applied. You will be notified at the time of cancel if any of your charged orders will be cancelled and refunded, To confirm, email us at emily@orchideats.com
+          If you cancel a subscription to a Plan before receiving your first order, your first order may or may not be cancelled and related amounts paid may or may not be refunded to you, depending on factors including the status of your meals in our production process, and any promotions applied. You will be notified at the time of cancel if any of your charged orders will be cancelled and refunded, To confirm, email us at alvin@orchideats.com
         </Typography>
         <br/>
         <Typography variant='h5'>
@@ -129,7 +129,7 @@ const Terms = () => {
           You are solely responsible for anything you may post on the Interactive Services. Orchid will not be responsible, or liable to any third party, for the content or accuracy of any content posted by you or any other user of the Interactive Services.
           <br />
           <br/>
-          Orchid is not responsible for, and does not endorse, content in any posting made by other users on the Interactive Services. You are solely responsible for your reliance on anything posted by another user on the Interactive Services. Under no circumstances will Orchid be held liable, directly or indirectly, for any loss or damage caused or alleged to have been caused to you or any third party in connection with the use of or reliance of any content posted by a third party on the Interactive Services. If you become aware of any misuse of the Sites by any person, please contact Orchid at emily@orchideats.com.
+          Orchid is not responsible for, and does not endorse, content in any posting made by other users on the Interactive Services. You are solely responsible for your reliance on anything posted by another user on the Interactive Services. Under no circumstances will Orchid be held liable, directly or indirectly, for any loss or damage caused or alleged to have been caused to you or any third party in connection with the use of or reliance of any content posted by a third party on the Interactive Services. If you become aware of any misuse of the Sites by any person, please contact Orchid at alvin@orchideats.com.
           <br />
           <br/>
           If you feel threatened or believe someone else is in danger, you should contact your local law enforcement agency immediately. Orchid has the right to remove any user contributions from the Interactive Services for any or no reason. Orchid reserves the right to take necessary legal action against users.
@@ -287,7 +287,7 @@ const Terms = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          Most customer concerns can be resolved quickly and to the customer’s satisfaction BY emailing our customer service department at emily@orchideats.com. IF Orchid's customer service department is unable to resolve a complaint you may have to your satisfaction (or if Orchid has not been able to resolve a dispute it has with you after attempting to do so informally), we each agree to resolve those disputes through binding arbitration or small claims court instead of in courts of general jurisdiction.
+          Most customer concerns can be resolved quickly and to the customer’s satisfaction BY emailing our customer service department at alvin@orchideats.com. IF Orchid's customer service department is unable to resolve a complaint you may have to your satisfaction (or if Orchid has not been able to resolve a dispute it has with you after attempting to do so informally), we each agree to resolve those disputes through binding arbitration or small claims court instead of in courts of general jurisdiction.
           <br />
           <br/>
           All disputes or claims that arise under or related to this Agreement (whether in contract, tort or otherwise, whether past, pre-existing, or future, and including statutory, consumer protection, common law, intentional tort, injunctive, and equitable claims) will be resolved either in small claims court or by individual arbitration in accordance with the rules of the American Arbitration Association ("AAA"). Unless you and Orchid agree otherwise, any arbitration hearings will take place in the county (or parish) of your billing address. The AAA Rules are available online at adr.org, by calling the AAA at 1-800-778-7879.
