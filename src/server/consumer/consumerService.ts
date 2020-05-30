@@ -21,6 +21,21 @@ import { refetchAccessToken } from '../../utils/auth';
 import { Delivery } from '../../order/deliveryModel';
 
 const CONSUMER_INDEX = 'consumers';
+
+const getReferredDiscountConsumers = (signedInUserId: string) => ({
+  bool: {
+    filter: {
+      bool: {
+        must: {
+          term: {
+            'plan.weeklyDiscounts.discounts.referredUserId': signedInUserId
+          }
+        }
+      }
+    }
+  }
+})
+
 export interface IConsumerService {
   attachDiscountsToPlan: (
     _id: string,
@@ -30,6 +45,7 @@ export interface IConsumerService {
   ) => Promise<void>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   getIConsumer: (_id: string) => Promise<IConsumer | null>
+  removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
@@ -211,40 +227,8 @@ class ConsumerService implements IConsumerService {
         console.error(`[ConsumerService] Failed to removeReferredDiscounts with userId '${signedInUser._id}'`, e.stack)
         throw e;
       })
-      this.elastic.updateByQuery({
-        index: CONSUMER_INDEX,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: {
-                    term: {
-                      'plan.weeklyDiscounts.discounts.referredUserId': signedInUser._id
-                    }
-                  }
-                }
-              }
-            }
-          },
-          script: {
-            source: `
-              def weeklyDiscounts = ctx._source.plan.weeklyDiscounts;
-              for (int i = 0; i < weeklyDiscounts.length; i++) {
-                def discounts = weeklyDiscounts[i].discounts;
-                discounts.removeIf(d -> d.referredUserId.equals(params.referredUserId));
-              }
-              weeklyDiscounts.removeIf(wd -> wd.discounts.length == 0);
-            `,
-            lang: 'painless',
-            params: {
-              referredUserId: signedInUser._id,
-            }
-          },
-        }
-      }).catch(e => {
+      this.removeReferredWeeklyDiscount(signedInUser._id).catch(e => {
         console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${signedInUser._id}'`, e.stack)
-        throw e;
       });
 
       await Promise.all([p1, p2, p3]);
@@ -432,6 +416,32 @@ class ConsumerService implements IConsumerService {
     }).catch(e => {
       const msg = `[ConsumerService] couldn't add stripeSubscriptionId for user '${userId}'`
       console.error(msg, e.stack);
+      throw e;
+    });
+  }
+
+  public async removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>> {
+    return this.elastic.updateByQuery({
+      index: CONSUMER_INDEX,
+      body: {
+        query: getReferredDiscountConsumers(referredUserId),
+        script: {
+          source: `
+            def weeklyDiscounts = ctx._source.plan.weeklyDiscounts;
+            for (int i = 0; i < weeklyDiscounts.length; i++) {
+              def discounts = weeklyDiscounts[i].discounts;
+              discounts.removeIf(d -> d.referredUserId.equals(params.referredUserId));
+            }
+            weeklyDiscounts.removeIf(wd -> wd.discounts.length == 0);
+          `,
+          lang: 'painless',
+          params: {
+            referredUserId: referredUserId,
+          }
+        },
+      }
+    }).catch(e => {
+      console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${referredUserId}'`, e.stack)
       throw e;
     });
   }

@@ -92,6 +92,25 @@ const getUpcomingOrdersQuery = (signedInUserId: string) => ({
       }
     }
   }
+});
+
+const getOrdersWithReferredDiscounts = (signedInUserId: string) => ({
+  bool: {
+    filter: {
+      bool: {
+        must: {
+          term: {
+            'costs.discounts.referredUserId': signedInUserId
+          }
+        },
+        must_not: {
+          exists: {
+            field: 'stripeInvoiceId'
+          }
+        }
+      }
+    }
+  }
 })
 
 const myUnpaidOrdersQuery = (signedInUserId: string) => ({
@@ -384,9 +403,11 @@ class OrderService {
         amountOff: promo.amount_off,
         percentOff: promo.percent_off,
       }
-      let referralPromo: ReferralPromo | null = null;;
+      let referralPromo: ReferralPromo | null = null;
       const meta = {
-        ...promo.metadata
+        userId: promo.metadata.userId,
+        amountOff: (promo.metadata.amountOff === null || promo.metadata.amountOff === undefined) ? null : parseInt(promo.metadata.amountOff),
+        percentOff: (promo.metadata.percentOff === null || promo.metadata.percentOff === undefined) ? null : parseInt(promo.metadata.percentOff),
       } as Partial<ReferralSource>
       if (meta.userId) {
         referralPromo = {
@@ -1383,7 +1404,6 @@ class OrderService {
       throw e;
     }
   }
-
   
   async removeReferredDiscounts(signedInUser: SignedInUser): Promise<MutationBoolRes> {
     try {
@@ -1391,31 +1411,14 @@ class OrderService {
       await this.elastic.updateByQuery({
         index: ORDER_INDEX,
         body: {
-          query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: {
-                    term: {
-                      'costs.discounts.referredUserId': signedInUser._id
-                    }
-                  },
-                  must_not: {
-                    exists: {
-                      field: 'stripeInvoiceId'
-                    }
-                  }
-                }
-              }
-            }
-          },
+          query: getOrdersWithReferredDiscounts(signedInUser._id),
           script: {
             source: `
               for (int i = 0; i < ctx._source.costs.discounts.length; i++) {
                 def discount = ctx._source.costs.discounts[i];
                 if (discount.referredUserId.equals(params.referredUserId)) {
                   discount.amountOff = 0;
-                  discount.description = params.referredUserName + " canceled";
+                  discount.description = params.referredUserName + " canceled/skipped";
                   discount.reason = params.reason;
                 }
               }
@@ -1479,6 +1482,8 @@ class OrderService {
     deliveryIndex: number,
   ): Promise<MutationBoolRes> {
     try {
+      if (!signedInUser) throw 'No signed in user';
+      if (!this.consumerService) throw new Error ('ConsumerService not set');
       if (!this.planService) throw new Error ('PlanService not set');
       const res = await this.validateOrderUpdate(orderId, signedInUser);
       if (res.error) {
@@ -1493,6 +1498,16 @@ class OrderService {
       const totalCount = targetOrder.deliveries.reduce((counts, d) =>
         d.meals.reduce((counts, m) => counts += m.quantity, counts)
       , 0);
+
+      if (totalCount === 0) {
+        this.removeReferredDiscounts(signedInUser).catch(e => {
+          console.error(`[OrderService] failed to removeReferredDiscounts for orders for ${signedInUser._id} on delivery skip`, e.stack)
+        });
+        this.consumerService.removeReferredWeeklyDiscount(signedInUser._id).catch(e => {
+          console.error(`[OrderService] failed to removeReferredWeeklyDiscount for plans for  ${signedInUser._id} on delivery skip`, e.stack)
+        });
+      }
+
       if (totalCount === 0  && (targetOrder.donationCount >= 1 && targetOrder.donationCount < MIN_MEALS)) {
         const msg = `Donations must be at least ${MIN_MEALS} before skipping this delivery`;
         console.warn(
