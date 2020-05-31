@@ -765,6 +765,9 @@ PUT /rests/
           }
         }
       },
+      "status": {
+        "type": "keyword"
+      },
       "managers": {
         "properties": {
           "firstName": {
@@ -792,6 +795,12 @@ PUT /rests/
                 "type": "integer"
               }
             }
+          },
+          "canAutoPick": {
+            "type": "boolean"
+          },
+          "isActive": :{
+            "type": "boolean"
           },
           "optionGroups": {
             "properties": {
@@ -1018,6 +1027,26 @@ PUT /orders/
               //     }
               //   }
               // },
+              "discounts": {
+                "properties": {
+                  "reason": {
+                    "type": "keyword"
+                  },
+                  "description": {
+                    "type": "keyword",
+                    "ignore_above": 25
+                  },
+                  "percentOff": {
+                    "type": "integer"
+                  },
+                  "amountOff": {
+                    "type": "integer"
+                  },
+                  "referredUserId": {
+                    "type": "keyword"
+                  }
+                }
+              },
               "img": {
                 "type": "keyword"
               },

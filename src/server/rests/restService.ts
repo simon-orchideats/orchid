@@ -72,6 +72,11 @@ class RestService implements IRestService {
                     },
                     {
                       term: {
+                        'menu.isActive': true
+                      }
+                    },
+                    {
+                      term: {
                         'location.address.state': state
                       }
                     },
@@ -90,10 +95,44 @@ class RestService implements IRestService {
         })
       }
       if (cuisines) {
+        const bool = {
+          bool: {
+            must: [
+              {
+                terms: {
+                  'menu.tags': cuisines
+                }
+              },
+              {
+                terms: {
+                  'menu.isActive': true
+                }
+              }
+            ],
+          },
+        } as any;
+        if (canAutoPick) {
+          bool.bool.must.push({
+            term: {
+              'menu.canAutoPick': true
+            }
+          })
+        }
         options.body.query.bool.filter.bool.must.push({
-          terms: {
-            'profile.tags.keyword': cuisines
-          }
+          bool: {
+            must: [
+              {
+                terms: {
+                  'menu.tags': cuisines
+                }
+              },
+              {
+                terms: {
+                  'menu.isActive': true
+                }
+              }
+            ],
+          },
         });
       }
       if (fields) options._source = fields;

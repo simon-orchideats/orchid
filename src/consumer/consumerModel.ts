@@ -51,42 +51,60 @@ export class ConsumerProfile implements IConsumerProfile {
 }
 
 export type CuisineType =
-  'American'
+    'American'
   // | 'Bbq'
   | 'Chinese'
+  | 'Cuban'
   | 'Indian'
   | 'Italian'
   | 'Japanese'
+  | 'Korean'
   | 'Mediterranean'
   | 'Mexican'
+  | 'Pescatarian'
+  | 'Pizza'
+  | 'Protein'
+  | 'Seafood'
   // | 'Thai'
-  // | 'Vegan'
-  // | 'Vegetarian'
+  | 'Vegan'
+  | 'Vegetarian'
 
 export const CuisineTypes: {
   American: 'American',
   // Bbq: 'Bbq',
   Chinese: 'Chinese',
+  Cuban: 'Cuban',
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
+  Korean: 'Korean'
   Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
+  Pescatarian: 'Pescatarian'
+  Pizza: 'Pizza'
+  Protein: 'Protein'
+  Seafood: 'Seafood'
   // Thai: 'Thai',
-  // Vegan: 'Vegan',
-  // Vegetarian: 'Vegetarian'
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
 } = {
   American: 'American',
   // Bbq: 'Bbq',
   Chinese: 'Chinese',
+  Cuban: 'Cuban',
   Indian: 'Indian',
   Italian: 'Italian',
   Japanese: 'Japanese',
+  Korean: 'Korean',
   Mediterranean: 'Mediterranean',
   Mexican: 'Mexican',
+  Pescatarian: 'Pescatarian',
+  Pizza: 'Pizza',
+  Protein: 'Protein',
+  Seafood: 'Seafood',
   // Thai: 'Thai',
-  // Vegan: 'Vegan',
-  // Vegetarian: 'Vegetarian'
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
 }
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;

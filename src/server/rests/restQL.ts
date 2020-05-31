@@ -1,5 +1,27 @@
 import { gql } from 'apollo-server';
 
+const CuisineTypeQL = gql`
+  enum CuisineType {
+    American
+    # Bbq
+    Chinese
+    Cuban
+    Indian
+    Italian
+    Japanese
+    Korean
+    Mediterranean
+    Mexican
+    Pescatarian
+    Pizza
+    Protein
+    Seafood
+    # Thai
+    Vegan
+    Vegetarian
+  }
+`
+
 const MealQL = gql`
   type OptionGroup {
     names: [String!]!
@@ -44,6 +66,7 @@ const _RestQL = gql`
 export const RestQL = () => [
   _RestQL,
   MealQL,
+  CuisineTypeQL,
   RestProfileQL,
 ]
 

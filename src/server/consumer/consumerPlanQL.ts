@@ -1,21 +1,5 @@
 import gql from 'graphql-tag';
 
-const CuisineTypeQL = gql`
-  enum CuisineType {
-    American
-    # Bbq
-    Chinese
-    Indian
-    Italian
-    Japanese
-    Mediterranean
-    Mexican
-    # Thai
-    # Vegan
-    # Vegetarian
-  }
-`
-
 const DeliveryTimeQL = gql`
   enum DeliveryTime {
     TenAToTwelveP
@@ -72,6 +56,5 @@ const _ConsumerPlanQL = gql`
 
 export const ConsumerPlanQL = () => [
   _ConsumerPlanQL,
-  CuisineTypeQL,
   DeliveryTimeQL,
 ]

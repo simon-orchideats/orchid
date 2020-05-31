@@ -116,7 +116,7 @@ const ZipModal: React.FC<{
                       defaultValue={defaultZip}
                       onChange={e => setZip(e.target.value)}
                       margin='none'
-                      placeholder='Your zip'
+                      placeholder='Your zip or city'
                     />
                   </Grid>
                   <Grid item xs={12} sm={12} md={6}>

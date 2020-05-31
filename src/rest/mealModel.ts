@@ -57,6 +57,7 @@ export interface IMeal {
 
 export interface EMeal extends IMeal {
   readonly canAutoPick: boolean
+  readonly isActive: boolean,
 }
 
 export class Meal implements IMeal {

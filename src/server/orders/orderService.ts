@@ -10,7 +10,7 @@ import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal, EMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan, CuisineType } from './../../consumer/consumerModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';
@@ -33,14 +33,22 @@ export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, da
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
+const doesMealContainCuisines = (meal: EMeal, cuisines: CuisineType[]) => {
+  for (let i = 0; i < cuisines.length; i++) {
+    if (meal.tags.includes(cuisines[i])) return true;
+  }
+  return false;
+}
+
 const chooseRandomMeals = (
   menu: EMeal[],
   mealCount: number,
   restId: string,
   restName: string,
-  taxRate: number
+  taxRate: number,
+  cuisines: CuisineType[]
 ): IDeliveryMeal[] => {
-  const chooseRandomly = getItemChooser<EMeal>(menu, m => m.canAutoPick);
+  const chooseRandomly = getItemChooser<EMeal>(menu, m => m.canAutoPick && m.isActive && doesMealContainCuisines(m, cuisines));
   const meals: IMeal[] = [];
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
   return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
@@ -717,6 +725,7 @@ class OrderService {
               randomRest._id,
               eRest.profile.name,
               eRest.taxRate,
+              cuisines,
             ),
             meals,
           )
@@ -744,6 +753,7 @@ class OrderService {
             randomRest._id,
             randomRest.rest.profile.name,
             randomRest.rest.taxRate,
+            cuisines,
           ),
           remainingMeals,
         )
