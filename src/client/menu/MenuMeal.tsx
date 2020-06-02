@@ -125,13 +125,6 @@ const MenuMeal: React.FC<{
     }
   };
   const addMealToCart = useAddMealToCart();
-  const onClickOption = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedOption = (event.target as HTMLInputElement).value;
-    setOptions({
-      ...options,
-      [optionGroupIndex]: selectedOption,
-    });
-  }
   const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
     setAddons({
       ...addons,
@@ -178,22 +171,22 @@ const MenuMeal: React.FC<{
     setAddonCounts(defaultAddonCounts);
   }
   const onClickRadio = (selectedOption: string) => {
-    setOptions({
-      ...options,
-      [optionGroupIndex]: selectedOption,
-    });
     const newGroupIndex = optionGroupIndex + 1;
     if (newGroupIndex === meal.OptionGroups.length && meal.AddonGroups.length === 0) {
       addMealToCart(
         meal.Id,
         new Meal(meal),
-        Object.values(options),
+        [...Object.values(options), selectedOption],
         restId,
         restName,
         taxRate
       );
       onCloseChoices();
     } else {
+      setOptions({
+        ...options,
+        [optionGroupIndex]: selectedOption,
+      });
       setOptionGroupIndex(newGroupIndex);
     }
   }
@@ -232,11 +225,7 @@ const MenuMeal: React.FC<{
               {
                 meal.OptionGroups.map((og, i) => (
                   i === optionGroupIndex &&
-                  <RadioGroup
-                    key={`og-${i}`}
-                    onChange={onClickOption}
-                    value={options[optionGroupIndex]}
-                  >
+                  <RadioGroup key={`og-${i}`} value={options[optionGroupIndex] || false}>
                     {
                       og.Names.map((name, j) =>
                         <FormControlLabel

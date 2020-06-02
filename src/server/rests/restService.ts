@@ -100,7 +100,7 @@ class RestService implements IRestService {
         })
       }
       if (cuisines) {
-        const bool = {
+        const newBool = {
           bool: {
             must: [
               {
@@ -109,7 +109,7 @@ class RestService implements IRestService {
                 }
               },
               {
-                terms: {
+                term: {
                   'menu.isActive': true
                 }
               }
@@ -117,31 +117,16 @@ class RestService implements IRestService {
           },
         } as any;
         if (canAutoPick) {
-          bool.bool.must.push({
+          newBool.bool.must.push({
             term: {
               'menu.canAutoPick': true
             }
           })
         }
-        options.body.query.bool.filter.bool.must.push({
-          bool: {
-            must: [
-              {
-                terms: {
-                  'menu.tags': cuisines
-                }
-              },
-              {
-                terms: {
-                  'menu.isActive': true
-                }
-              }
-            ],
-          },
-        });
+        options.body.query.bool.filter.bool.must.push(newBool);
       }
       if (fields) options._source = fields;
-      console.log(options);
+      console.log(JSON.stringify(options));
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
       return res.body.hits.hits.map(({ _id, _source }) => ({
         rest: _source,
@@ -153,11 +138,9 @@ class RestService implements IRestService {
     }
   }
 
-  // left off here
   async getNearbyRests(cityOrZip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
     try {
       const eRests = await this.getNearbyERests(cityOrZip, cuisines, undefined, fields);
-      eRests.forEach(e => e.rest.menu.forEach(m => console.log(m.name, m.optionGroups)));
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,

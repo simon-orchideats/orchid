@@ -1,4 +1,4 @@
-export const welcomePromoCouponId = 'welcome20';
+export const welcomePromoCouponId = 'welcome35';
 export const welcomePromoAmount = 500;
 export const referralFriendAmount = 750;
 export const referralSelfAmount = 500;
