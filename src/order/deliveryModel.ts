@@ -29,6 +29,7 @@ export interface IDeliveryMeal extends Omit<
   | 'canAutoPick'
   | 'addonGroups'
   | 'optionGroups'
+  | 'isActive'
   > {
   readonly mealId: string
   readonly choices: string[]

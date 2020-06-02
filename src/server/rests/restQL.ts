@@ -36,6 +36,7 @@ const MealQL = gql`
     _id: ID!
     img: String
     name: String!
+    isActive: Boolean!
     description: String
     originalPrice: Float
     optionGroups: [OptionGroup!]!

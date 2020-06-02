@@ -80,6 +80,11 @@ class RestService implements IRestService {
                         'location.address.state': state
                       }
                     },
+                    {
+                      term: {
+                        'status': 'Open',
+                      }
+                    }
                   ]
                 }
               }
@@ -136,6 +141,7 @@ class RestService implements IRestService {
         });
       }
       if (fields) options._source = fields;
+      console.log(options);
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
       return res.body.hits.hits.map(({ _id, _source }) => ({
         rest: _source,
@@ -147,9 +153,11 @@ class RestService implements IRestService {
     }
   }
 
+  // left off here
   async getNearbyRests(cityOrZip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
     try {
       const eRests = await this.getNearbyERests(cityOrZip, cuisines, undefined, fields);
+      eRests.forEach(e => e.rest.menu.forEach(m => console.log(m.name, m.optionGroups)));
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,

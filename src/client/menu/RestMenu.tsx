@@ -53,6 +53,7 @@ const RestMenu: React.FC<{
   const meals = rest.Menu.map(meal => {
     const isInFilter = isMealInFilter(meal, cuisinesFilter);
     if (!isInFilter) return null;
+    if (!meal.isActive) return null;
     return (
       <Grid
         item

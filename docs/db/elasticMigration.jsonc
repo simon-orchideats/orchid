@@ -70,65 +70,65 @@
 // }
 
 
-// PUT rests/_mapping
-// {
-//   "properties": {
-//     "status": {
-//       "type": "keyword"
-//     },
-//     "menu": {
-//       "properties": {
-//         "addonGroups": {
-//           "properties": {
-//             "names": {
-//               "type": "keyword"
-//             },
-//             "limit": {
-//               "type": "integer"
-//             }
-//           }
-//         },
-//         "orderNames": {
-//           "type": {
-//             "type": "keyword"
-//           }
-//         },
-//         "optionGroups": {
-//           "properties": {
-//             "names": {
-//               "type": "keyword"
-//             }
-//           }
-//         },
-//         "canAutoPick": {
-//           "type": "boolean"
-//         },
-//         "isActive": :{
-//           "type": "boolean"
-//         },
-//       }
-//     }
-//   }
-// }
+PUT rests/_mapping
+{
+  "properties": {
+    "status": {
+      "type": "keyword"
+    },
+    "menu": {
+      "properties": {
+        "addonGroups": {
+          "properties": {
+            "names": {
+              "type": "keyword"
+            },
+            "limit": {
+              "type": "integer"
+            }
+          }
+        },
+        "orderNames": {
+          "type": {
+            "type": "keyword"
+          }
+        },
+        "optionGroups": {
+          "properties": {
+            "names": {
+              "type": "keyword"
+            }
+          }
+        },
+        "canAutoPick": {
+          "type": "boolean"
+        },
+        "isActive": :{
+          "type": "boolean"
+        },
+      }
+    }
+  }
+}
 
-// POST rests/_update_by_query
-// {
-//   "script" : {
-//     "source": """
-//       ctx._source.status = "Open"
-//       for (int i = 0; i < ctx._source.menu.length; i++) {
-//         ctx._source.menu[i].addonGroups = new ArrayList();
-//         ctx._source.menu[i].optionGroups = new ArrayList();
-//         ctx._source.menu[i].canAutoPick = true;
-//         ctx._source.menu[i].isActive = true;
-//       }
-//     """,
-//     "lang": "painless"
-//   },
-//   "query": { 
-//     "match_all": {}
-//   }
-// }
+  POST rests/_update_by_query
+  {
+    "script" : {
+      "source": """
+        ctx._source.status = "Open"
+        for (int i = 0; i < ctx._source.menu.length; i++) {
+          ctx._source.menu[i].addonGroups = new ArrayList();
+          ctx._source.menu[i].optionGroups = new ArrayList();
+          ctx._source.menu[i].canAutoPick = true;
+          ctx._source.menu[i].isActive = true;
+        }
+      """,
+      "lang": "painless"
+    },
+    "query": { 
+      "match_all": {}
+    }
+  }
 
 
 // PUT orders/_mapping
@@ -222,9 +222,7 @@
 
 
 
-
-
-
+POST rests/_update_by_query?conflicts=proceed
 
 
 POST rests/_update_by_query
@@ -234,6 +232,9 @@ POST rests/_update_by_query
       String name = ctx._source.profile.name;
       ctx._source.status = "Open";
       def menu = ctx._source.menu;
+      if (name.equals("Malibu Diner")) {
+        ctx._source.status = "Closed";
+      }
       if (name.equals("Canteen Desi Dhaba")) {
         for (int i = 0; i < menu.length; i++) {
           if (menu[i].name.equals("Chicken Tikka Masala w/ Naan")) {
@@ -305,6 +306,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Makhani Naan, Lasooni Naan, Jalapeno Naan, Kashmiri Naan (4 Total)"
           ],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Assorted mix of naan: lasooni (garlic), makhani (creamy), jalapeno, and khasmiri (fruit)",
@@ -322,6 +325,8 @@ POST rests/_update_by_query
           "img": "/menu/canteen-dhaba/fish-goan.jpg",
           "originalPrice": 1095,
           "orderNames": [],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Filet of fresh fish with ginger, garlic, mustard seed, curry leaf and coconut milk and Jeera Rice",
@@ -338,6 +343,8 @@ POST rests/_update_by_query
           "img": "/menu/canteen-dhaba/goat-handi.jpg",
           "originalPrice": 1095,
           "orderNames": [],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Classic brown gravy with goat, herbs, and spices and Jeera Rice",
@@ -397,7 +404,7 @@ POST rests/_update_by_query
             menu[i].tags = new ArrayList();
             menu[i].tags.add("Cuban");
           }
-          if (menu[i].name.equals("Sandwhich Cubano")) {
+          if (menu[i].name.equals("Sandwich Cubano")) {
             menu[i].isActive = false;
           }
         }
@@ -411,6 +418,8 @@ POST rests/_update_by_query
           ],
           "isActive": true,
           "canAutoPick": true,
+          "addonGroups": [],
+          "optionGroups": [],
           "description": "Flavorful churrasco steak, fried sweet plantains, and melted swiss cheese topped on hot-pressed cuban bread & Yuca fries",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
@@ -428,6 +437,8 @@ POST rests/_update_by_query
             "Chorizo Salteado",
             "Chicharroncitos De Puerco"
           ],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Sauteed spanish sausage with onions, peppers, and garlic with plantain chips & Crunchy pork belly skin bites",
@@ -447,6 +458,8 @@ POST rests/_update_by_query
             "Filete De Pescado",
             "Yuca Fries"
           ],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Lightly breaded filet of fish dressed all the way with lettuce, tomatoes, onions and tartar sauce",
@@ -468,6 +481,8 @@ POST rests/_update_by_query
             "Frita Cubana Original",
             "Frita Cubana Original"
           ],
+          "addonGroups": [],
+          "optionGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Two Cuban–style burgers made with ground beef, onions, potato sticks",
@@ -595,10 +610,9 @@ POST rests/_update_by_query
               ]
             ]
           ]),
-          "description": [],
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "pRHPk0xWPoEjfgFablZrh",
+          "_id": "DWEjVwMadIUNU-dzr2CLT",
           "tags": [
             "Japanese"
           ]
@@ -673,7 +687,6 @@ POST rests/_update_by_query
               ]
             ]
           ]),
-          "description": [],
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "kUhGDS_75by2-BDmDXR9U",
@@ -751,7 +764,6 @@ POST rests/_update_by_query
               ]
             ]
           ]),
-          "description": [],
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "BYGwDLkaCJfL0lXlXSZFM",
@@ -769,6 +781,8 @@ POST rests/_update_by_query
           "name": "Tofu Bibimbop",
           "img": "/menu/ahri-kitchen/tofu-bibimbop.jpg",
           "originalPrice": 1100,
+          "optionGroups": [],
+          "addonGroups": [],
           "orderNames": [],
           "isActive": true,
           "canAutoPick": true,
@@ -786,6 +800,8 @@ POST rests/_update_by_query
           "img": "/menu/ahri-kitchen/bulgogi-tacos.jpg",
           "originalPrice": 800,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Two tacos - Bulgogi, corn tortilla, radish, scallion, with spicy wasabi sauce",
@@ -801,6 +817,8 @@ POST rests/_update_by_query
           "img": "/menu/ahri-kitchen/tofu-tacos.jpg",
           "originalPrice": 800,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Two tacos - Tofu, corn tortilla, radish, scallion, with spicy wasabi sauce",
@@ -817,6 +835,8 @@ POST rests/_update_by_query
           "img": "/menu/ahri-kitchen/spicy-pork-tacos.jpg",
           "originalPrice": 800,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Two tacos - Spicy pork, corn tortilla, radish, scallion, with spicy wasabi sauce",
@@ -832,6 +852,8 @@ POST rests/_update_by_query
           "img": "/menu/ahri-kitchen/spicy-tuna-roll.jpg",
           "originalPrice": 1100,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Cooked spicy tuna, seasoned cucumber, carrot, & pickled radish",
@@ -847,6 +869,8 @@ POST rests/_update_by_query
           "img": "/menu/ahri-kitchen/vegetable-roll.jpg",
           "originalPrice": 1000,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Double seasoned cucumber, carrot, & pickled radish",
@@ -866,6 +890,8 @@ POST rests/_update_by_query
             "Vegetable Dumplings",
             "Fried Egg + Extra Bowl Of White Rice"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Pan fried 6 dumplings with spinach, tofu, kale, onion, carrot, egg and vermicelli & Rice topped with fried egg",
@@ -885,6 +911,8 @@ POST rests/_update_by_query
             "Japchae",
             "Extra Bowl Of White Rice"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Sweet and savory, stir-fried korean noodles and vegetables & Rice",
@@ -904,6 +932,8 @@ POST rests/_update_by_query
             "Grandma's Pork Dumplings",
             "Extra Bowl Of White Rice"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Pan fried 6 dumplings with pork, tofu, scallion, egg and vermicelli & Rice",
@@ -919,12 +949,14 @@ POST rests/_update_by_query
         ctx._source.menu = new ArrayList();
         ctx._source.menu.add([
           "name": "Shish Kabob Sandwich & Baklava",
-          "img": "/menu/gypsy-grill/shish-kabob-sandwhich.jpg",
+          "img": "/menu/gypsy-grill/shish-kabob-sandwich.jpg",
           "originalPrice": 949,
           "orderNames": [
             "Shish Kabab Sandwich",
             "Baklava (2pc)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Grilled beef with salad and tahini sauce in pita & Sweet pastry layered with nuts and syrup",
@@ -943,6 +975,8 @@ POST rests/_update_by_query
             "Kofta Kabob Sandwich",
             "Falafel (4pc)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Grilled ground lamb and beef with salad and tahini sauce in pita & Fresh falafel",
@@ -961,6 +995,8 @@ POST rests/_update_by_query
             "Chicken Kabob Sandwich",
             "Falafel (4pc)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Grilled chicken with salad and garlic sauce & Fresh falafel",
@@ -979,6 +1015,8 @@ POST rests/_update_by_query
             "Feta Salad",
             "Baklava (2pc)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Feta cheese, tomato, cucumber, lettuce, olives & crispy pita & Sweet pastry layered with nuts and syrup",
@@ -998,6 +1036,8 @@ POST rests/_update_by_query
             "Fattoush Salad",
             "Baklava (2pc)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Crispy pita, lettuce, cucumber, red onions & tomatoes, spicy sumac, olive oil & lemon & Sweet pastry layered with nuts and syrup",
@@ -1016,10 +1056,12 @@ POST rests/_update_by_query
           "orderNames": [],
           "isActive": false,
           "canAutoPick": true,
+          "optionGroups": [],
+          "addonGroups": [],
           "description": "Chicken shawarma, rice, pita bread, hot sauces, garlic sauce",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "HMmpBH4ix9Qk7Fq8iX-lf",
+          "_id": "4FuWZfWDiIhAVNwen1Hnr",
           "tags": [
             "Mediterranean"
           ]
@@ -1031,12 +1073,14 @@ POST rests/_update_by_query
           "orderNames": [
             "Falafel With Rice & Salad"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Falafel platter with rice, salad, pita bread, tahini, and hot sauce",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "HMmpBH4ix9Qk7Fq8iX-lf",
+          "_id": "F9eV5oCafbh4_GRL2MjGf",
           "tags": [
             "Mediterranean",
             "Vegetarian"
@@ -1050,12 +1094,14 @@ POST rests/_update_by_query
             "7 Pcs. Falafel & Salad",
             "Spinach & Feta Cheese Roll"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": false,
           "canAutoPick": true,
           "description": "Falafel, salad, tahini, and hot sauce & spinach and feta cheese in fillo dough fried served with taziki sauce",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "HMmpBH4ix9Qk7Fq8iX-lf",
+          "_id": "cwpYwn45WSh9PKWovFSGq",
           "tags": [
             "Mediterranean",
             "Vegetarian"
@@ -1068,6 +1114,8 @@ POST rests/_update_by_query
           "name": "Philly Cheese Steak",
           "img": "/menu/vip-diner/philly-cheesesteak.jpg",
           "originalPrice": 895,
+          "optionGroups": [],
+          "addonGroups": [],
           "orderNames": [],
           "isActive": true,
           "canAutoPick": true,
@@ -1086,6 +1134,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Vip Grilled Chicken Wrap (Herb Garlic Tortilla)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "With lettuce, tomato, honey mustard on a herb garlic wrap & French fries,",
@@ -1103,6 +1153,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Pastrami Omelette W/ American Cheese"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "With pastrami, american cheese & Potatoes and toast",
@@ -1120,6 +1172,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Bacon Western Omelette W/ Bacon"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "With diced pepper, bacon, ham, onion , monterey jack & Potatoes and toast",
@@ -1138,6 +1192,8 @@ POST rests/_update_by_query
             "Our Own Special Pancakes",
             "Two Large Eggs, Sunnyside"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Homemade pancakes, eggs, potatoes (any style), and toast",
@@ -1156,6 +1212,8 @@ POST rests/_update_by_query
             "Waffle Special (2 bacon, 1 sausage, 2 eggs - sunnyside)",
             "Cinnamon Toast"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Homemade waffles, bacon, sausage, eggs, and Cinanamon toast",
@@ -1166,10 +1224,6 @@ POST rests/_update_by_query
             "American"
           ]
         ]);
-        ctx._source.menu.add([
-        ]);
-        ctx._source.menu.add([
-        ]);
       }
       if (name.equals("Margherita's")) {
         ctx._source.menu = new ArrayList();
@@ -1178,6 +1232,8 @@ POST rests/_update_by_query
           "img": "/menu/margheritas/fettucine-alfredo.jpg",
           "originalPrice": 1095,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
@@ -1194,6 +1250,8 @@ POST rests/_update_by_query
           "originalPrice": 1095,
           "orderNames": [],
           "isActive": true,
+          "optionGroups": [],
+          "addonGroups": [],
           "canAutoPick": true,
           "description": "Fresh homemade penne pasta in a light tomato cream sauce with capers, shallots & a hint of vodka",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
@@ -1210,6 +1268,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Rigatoni With Meat Sauce"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Fresh homemade rigatoni pasta with meat sauce topped with ricotta cheese",
@@ -1227,6 +1287,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Cavatelli And Broccoli"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": false,
           "canAutoPick": true,
           "description": "Fresh homemade pasta served with crisp broccoli, olive oil, tomatoes, fresh garlic & romano cheese",
@@ -1242,6 +1304,8 @@ POST rests/_update_by_query
           "img": "/menu/margheritas/ravioli.jpg",
           "originalPrice": 995,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Cheese filled ravioli, topped with marinara sauce and reggiano",
@@ -1258,6 +1322,8 @@ POST rests/_update_by_query
           "originalPrice": 995,
           "orderNames": [],
           "isActive": true,
+          "optionGroups": [],
+          "addonGroups": [],
           "canAutoPick": true,
           "description": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
@@ -1269,11 +1335,13 @@ POST rests/_update_by_query
         ]);
         ctx._source.menu.add([
           "name": "Sausage & Peppers Sandwich",
-          "img": "/menu/margheritas/chicken-cutlet.jpg",
+          "img": "/menu/margheritas/sausage-peppers.jpg",
           "originalPrice": 995,
           "orderNames": [
             "Sausage, Peppers, And Onions Sandwich"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Sausage, peppers, and onions on a roll",
@@ -1291,6 +1359,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Fresh Mozzarella & Roasted Red Peppers Sandwich"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Housemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia",
@@ -1306,6 +1376,8 @@ POST rests/_update_by_query
           "img": "/menu/margheritas/meatball-parm.jpg",
           "originalPrice": 995,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
@@ -1321,6 +1393,8 @@ POST rests/_update_by_query
           "img": "/menu/margheritas/eggplant-parm.jpg",
           "originalPrice": 895,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
@@ -1339,6 +1413,8 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/basil-ginger.jpg",
           "originalPrice": 1200,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Chicken breast stir-fried in ginger and basil sauce & Jeera Rice",
@@ -1357,6 +1433,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Thai Chicken Curry (Red)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce & Jeera rice",
@@ -1373,6 +1451,8 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/coriander-chicken.jpg",
           "originalPrice": 1200,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Wok-fried chicken with onions and green peppers in garlic coriander sauce & Jeera rice",
@@ -1391,6 +1471,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Vegetables Spicy Curry Fried Rice"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Thai fried rice with onions, tomatoes, carrots, tofu, string beans & basil in light curry sauce",
@@ -1407,6 +1489,8 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/cauliflower.jpg",
           "originalPrice": 1100,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Cauliflower buds roasted to perfection in our famous manchurian sauce",
@@ -1427,12 +1511,14 @@ POST rests/_update_by_query
           "orderNames": [
             "Thai Vegetable Curry (Green)"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "A traditionally prepared spicy vegetable curry with coconut milk and spices  & Jeera rice",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "RSwsSOm96-aRXYgwVK0Z6",
+          "_id": "ZfU4VLmL89V6s6-qc_P0v",
           "tags": [
             "Vegetarian",
             "Vegan",
@@ -1445,12 +1531,14 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/szechwan.jpg",
           "originalPrice": 1200,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Chicken in spicy szechwan sauce  & Jeera rice",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "RSwsSOm96-aRXYgwVK0Z6",
+          "_id": "sUtBkPoQo7f2lxOcb6tSo",
           "tags": [
             "Indian",
             "Chinese"
@@ -1461,12 +1549,14 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/sweet-sour.jpg",
           "originalPrice": 1200,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Tender pieces of boneless chicken, green peppers, and onions in sweet and sour sauce  & Jeera rice",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "RSwsSOm96-aRXYgwVK0Z6",
+          "_id": "CX0J7UNESyjuyagwfT6X_",
           "tags": [
             "Indian",
             "Chinese"
@@ -1477,12 +1567,14 @@ POST rests/_update_by_query
           "img": "/menu/china-spice/hot-garlic.jpg",
           "originalPrice": 1200,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Chicken stir fried in hot garlic sauce & Jeera rice",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
-          "_id": "RSwsSOm96-aRXYgwVK0Z6",
+          "_id": "-wgeXplabL5WO9y5u3xZP",
           "tags": [
             "Indian",
             "Chinese"
@@ -1498,6 +1590,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Chorizo, El Rancho"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Chorizo sausage, haus guac, queso fresco, picked red onions, chili lime mayo on a roll",
@@ -1515,6 +1609,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Kielbasa, King Marcus"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Kielbasa, fried onions, BBQ sauce, tangy coleslaw on a roll",
@@ -1532,6 +1628,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Beef Frank, Field Day"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Beef frank, chopped bacon, cheese sauce, chives, fried onions on a roll",
@@ -1549,6 +1647,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Sweet Italian, The Crew"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Italian sausage, peppers & onions, ricotta cheese, pesto mayo on a roll",
@@ -1566,6 +1666,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Bratwurst, Haus"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Bratwurst, kraut, mustard, picked red onions, relish on a roll",
@@ -1583,6 +1685,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Beef Frank, Blue Nose"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Beef frank, bacon, truffle ailoli, blue cheese sauce, caramelized onions on a roll",
@@ -1600,6 +1704,8 @@ POST rests/_update_by_query
           "orderNames": [
             "Wurstbar Sausage Sandwich - Bratwurst, King Marcus"
           ],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Bratwurst, BBQ sauce, fried onions, tangy coleslaw on a roll",
@@ -1634,6 +1740,7 @@ POST rests/_update_by_query
               "limit": 2
             ]
           ]),
+          "optionGroups": [],
           "description": "Huge platter of haus cut fries with 2 dipping sauces of your choice",
           "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
@@ -1647,6 +1754,8 @@ POST rests/_update_by_query
           "img": "/menu/wurstbar/haus-poutine.jpg",
           "originalPrice": 1000,
           "orderNames": [],
+          "optionGroups": [],
+          "addonGroups": [],
           "isActive": true,
           "canAutoPick": true,
           "description": "Haus cut fries, cheese curds, gravy",
@@ -1699,6 +1808,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Tikka Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Homemade Indian tikka masala coconut curry, hand pressed paneer cheese, jalapenos, fresh cilantro, green chutney. Two slices of pizza",
@@ -1717,6 +1828,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Mex-Corn Husker Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Jersey-roasted corn, hand-pulled queso oaxaca, pickled jalapeno crema, fresh cilantro, dusted w/ chillies. Two slices of pizza",
@@ -1735,6 +1848,8 @@ POST rests/_doc/
       "orderNames": [
         "2x General Khan Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Mongolian style general tso's spicy sweet & sour peanut sauce, asian fried chicken, toasted sesame seeds, mozzarella, scallions. Two slices of pizza",
@@ -1753,6 +1868,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Bangkok Boardwalk (Fried Chicken) Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Fried chicken, spicy thai sauce, jalapenos, cilantro, honey-roasted peanuts, black toasted sesame seeds. Two slices of pizza",
@@ -1771,6 +1888,8 @@ POST rests/_doc/
       "orderNames": [
         "2x S#itfaced Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Beer-battered chicken breast, homemade honey stout BBQ sauce, mozzarella, cheddar... the best... umm... sober pizza. Two slices of pizza",
@@ -1789,6 +1908,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Winger Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Buttermilk fried chicken, sweet & spicy buffalo sauce, fresh mozzarella, blue cheese, a side of celery... TOUCHDOWN! Two slices of pizza",
@@ -1807,6 +1928,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Pancho Franco Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Grilled chicken, fresh avocado, chopped cilantro, pickled jalapeno crema, hand-pulled queso oaxaca, jalapeno potato chips. Two slices of pizza",
@@ -1825,6 +1948,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Ducktown Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Sirloin steak, smoked bacon, fresh mozzarella, garlic, herbs. Two slices of pizza",
@@ -1843,6 +1968,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Casino Carnivore Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Meat lovers unite! 10 meats ravaged by mozzarella... Two slices of pizza",
@@ -1861,6 +1988,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Hawaiian Flush Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Hawaiian pie- ham, pineapple, w/ smoked bacon & maybe a nice lil' hula chick if your lucky.... Two slices of pizza",
@@ -1879,6 +2008,8 @@ POST rests/_doc/
       "orderNames": [
         "2x Magic Mushroom Slices"
       ],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Black truffle sauce, breadcrumb crust, crimini mushroom, whipped ricotta, fresh mutz, parsley. Two slices of pizza",
@@ -1895,6 +2026,8 @@ POST rests/_doc/
       "img": "/menu/tony-boloneys/winger-fries.jpg",
       "originalPrice": 950,
       "orderNames": [],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Crispy signature fries with melted mozzarella, sweet & spicy buffalo sauce, blue cheese, chopped celery",
@@ -1911,6 +2044,8 @@ POST rests/_doc/
       "img": "/menu/tony-boloneys/aloo-fries.jpg",
       "originalPrice": 950,
       "orderNames": [],
+      "optionGroups": [],
+      "addonGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Crispy signature fries with Indian tikka masala, homemade paneer cheese, fresh cilantro and jalapenos",
@@ -1928,6 +2063,8 @@ POST rests/_doc/
       "originalPrice": 1050,
       "orderNames": [],
       "isActive": true,
+      "optionGroups": [],
+      "addonGroups": [],
       "canAutoPick": true,
       "description": "Crispy signature fries with black truffle sauce, fresh mutz, and parsley",
       "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
@@ -1939,7 +2076,8 @@ POST rests/_doc/
       ]
     }
   ],
-  "managers": []
+  "managers": [],
+  "status": "Open"
 }
 
 POST rests/_doc/
@@ -1978,8 +2116,8 @@ POST rests/_doc/
       ],
       "isActive": true,
       "canAutoPick": true,
-      "optionGroups": new ArrayList([
-        [
+      "optionGroups": [
+        {
           "names": [
             "Mild Sauce",
             "X-Hot Sauce",
@@ -1992,8 +2130,9 @@ POST rests/_doc/
             "Caribbean Jerk Sauce",
             "Asian Fusion Sauce"
           ]
-        ]
-      ]),
+        }
+      ],
+      "addonGroups": [],
       "description": "Served with celery and bleu cheese",
       "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
@@ -2011,8 +2150,8 @@ POST rests/_doc/
       ],
       "isActive": true,
       "canAutoPick": true,
-      "optionGroups": new ArrayList([
-        [
+      "optionGroups": [
+        {
           "names": [
             "Mild Sauce",
             "X-Hot Sauce",
@@ -2025,9 +2164,11 @@ POST rests/_doc/
             "Caribbean Jerk Sauce",
             "Asian Fusion Sauce"
           ]
-        ]
-      ]),
+        }
+      ],
+      "addonGroups": [],
       "description": "Served with celery and bleu cheese",
+      "planName": "Standard",
       "stripePlanId": "plan_HE1O8fPf3",
       "_id": "JhobLSQqKIq9A0hyZWZkq",
       "tags": [
@@ -2043,8 +2184,8 @@ POST rests/_doc/
       ],
       "isActive": true,
       "canAutoPick": true,
-      "optionGroups": new ArrayList([
-        [
+      "optionGroups": [
+        {
           "names": [
             "Mild Sauce",
             "X-Hot Sauce",
@@ -2057,11 +2198,13 @@ POST rests/_doc/
             "Caribbean Jerk Sauce",
             "Asian Fusion Sauce"
           ]
-        ]
-      ]),
+        }
+      ],
+      "addonGroups": [],
       "description": "Served with celery and bleu cheese",
       "stripePlanId": "plan_HE1O8fPf3",
       "_id": "UGImV6ZoBEs93lFHcEMB7",
+      "planName": "Standard",
       "tags": [
         "American"
       ]
@@ -2073,6 +2216,8 @@ POST rests/_doc/
       "orderNames": [
         "Plain Cheese Pizza - Small 12 in."
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Personal 12 in. pizza pie made with fresh cheeses",
@@ -2091,6 +2236,8 @@ POST rests/_doc/
       "orderNames": [
         "Sicilian Pizza - Small 12 in."
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": false,
       "canAutoPick": true,
       "description": "Personal 12 in. pizza pie with thicker crust and extra sauce",
@@ -2109,6 +2256,8 @@ POST rests/_doc/
       "orderNames": [
         "Original Napolitano Pizza - Small 12 in."
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Personal 12 in. pizza pie with  tomatoes, olive oil, fresh garlic and basil",
@@ -2128,6 +2277,8 @@ POST rests/_doc/
         "Mozzarella Sticks - 6pc",
         "Seasoned French Fries"
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Mozzarella Sticks (6) & Seasoned fresh, french fries",
@@ -2146,6 +2297,8 @@ POST rests/_doc/
         "Jalapeno Poppers - 6pc",
         "Seasoned French Fries"
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Jalapeno Poppers (6) & Seasoned fresh, french fries",
@@ -2163,6 +2316,8 @@ POST rests/_doc/
       "orderNames": [
         "Fiesta Chicken Salad W/ Creamy Italian Dressing"
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Chicken, lettuce, tomato, shredded cheese, salsa, jalapeno, corn, black beans with creamy italian dressing",
@@ -2180,6 +2335,8 @@ POST rests/_doc/
       "orderNames": [
         "Buffalo Chicken Salad (Fried) W/ Ranch Dressing"
       ],
+      "addonGroups": [],
+      "optionGroups": [],
       "isActive": true,
       "canAutoPick": true,
       "description": "Fried chicken tossed in mild sauce and lettuce, served with your choice of ranch dressing",

@@ -48,6 +48,7 @@ export interface IMeal {
   readonly name: string,
   readonly addonGroups: IAddonGroup[],
   readonly optionGroups: IOptionGroup[],
+  readonly isActive: boolean
   readonly description: string
   readonly originalPrice: number
   readonly stripePlanId: string
@@ -57,12 +58,12 @@ export interface IMeal {
 
 export interface EMeal extends IMeal {
   readonly canAutoPick: boolean
-  readonly isActive: boolean,
 }
 
 export class Meal implements IMeal {
   readonly _id: string;
   readonly img?: string;
+  readonly isActive: boolean
   readonly addonGroups: AddonGroup[]
   readonly optionGroups: OptionGroup[]
   readonly name: string;
@@ -74,6 +75,7 @@ export class Meal implements IMeal {
 
   constructor(meal: IMeal) {
     this._id = meal._id;
+    this.isActive = meal.isActive;
     this.addonGroups = meal.addonGroups.map(ag => new AddonGroup(ag))
     this.img = meal.img;
     this.name = meal.name;
@@ -86,6 +88,7 @@ export class Meal implements IMeal {
   }
 
   public get Id() { return this._id }
+  public get IsActive() { return this.isActive }
   public get AddonGroups() { return this.addonGroups }
   public get Img() { return this.img }
   public get Name() { return this.name }

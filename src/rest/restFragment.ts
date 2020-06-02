@@ -21,6 +21,7 @@ const restFragment = gql`
       stripePlanId
       planName
       tags
+      isActive
       addonGroups {
         names
         limit
