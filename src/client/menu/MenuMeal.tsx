@@ -170,7 +170,10 @@ const MenuMeal: React.FC<{
     setAddons(defaultAddons);
     setAddonCounts(defaultAddonCounts);
   }
-  const onClickRadio = (selectedOption: string) => {
+
+  const onClickRadio = (e: React.MouseEvent<HTMLLabelElement, MouseEvent>, selectedOption: string) => {
+    // prevenDefault so the event doesn't bubble up and trigger a second event callback
+    e.preventDefault();
     const newGroupIndex = optionGroupIndex + 1;
     if (newGroupIndex === meal.OptionGroups.length && meal.AddonGroups.length === 0) {
       addMealToCart(
@@ -233,7 +236,7 @@ const MenuMeal: React.FC<{
                           value={name}
                           control={<Radio color='primary' />}
                           label={name}
-                          onClick={() => onClickRadio(name)}
+                          onClick={e => onClickRadio(e, name)}
                         />
                       )
                     }
