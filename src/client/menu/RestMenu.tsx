@@ -2,8 +2,7 @@ import React from 'react';
 import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
-import { CuisineType } from '../../consumer/consumerModel';
-import { Meal } from '../../rest/mealModel';
+import { Meal, CuisineType } from '../../rest/mealModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {

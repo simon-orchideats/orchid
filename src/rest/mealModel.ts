@@ -1,5 +1,63 @@
 import { PlanName } from './../plan/planModel';
 
+export type CuisineType =
+    'American'
+  // | 'Bbq'
+  | 'Chinese'
+  | 'Cuban'
+  | 'Indian'
+  | 'Italian'
+  | 'Japanese'
+  | 'Korean'
+  | 'Mediterranean'
+  | 'Mexican'
+  | 'Pescatarian'
+  | 'Pizza'
+  | 'Protein'
+  | 'Seafood'
+  // | 'Thai'
+  | 'Vegan'
+  | 'Vegetarian'
+
+export const CuisineTypes: {
+  American: 'American',
+  // Bbq: 'Bbq',
+  Chinese: 'Chinese',
+  Cuban: 'Cuban',
+  Indian: 'Indian',
+  Italian: 'Italian',
+  Japanese: 'Japanese',
+  Korean: 'Korean'
+  Mediterranean: 'Mediterranean',
+  Mexican: 'Mexican',
+  Pescatarian: 'Pescatarian'
+  Pizza: 'Pizza'
+  Protein: 'Protein'
+  Seafood: 'Seafood'
+  // Thai: 'Thai',
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
+} = {
+  American: 'American',
+  // Bbq: 'Bbq',
+  Chinese: 'Chinese',
+  Cuban: 'Cuban',
+  Indian: 'Indian',
+  Italian: 'Italian',
+  Japanese: 'Japanese',
+  Korean: 'Korean',
+  Mediterranean: 'Mediterranean',
+  Mexican: 'Mexican',
+  Pescatarian: 'Pescatarian',
+  Pizza: 'Pizza',
+  Protein: 'Protein',
+  Seafood: 'Seafood',
+  // Thai: 'Thai',
+  Vegan: 'Vegan',
+  Vegetarian: 'Vegetarian'
+}
+  
+
 export interface IOptionGroup {
   readonly names: string[]
 }

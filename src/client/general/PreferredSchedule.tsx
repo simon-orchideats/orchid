@@ -1,5 +1,5 @@
 import { makeStyles, Button, Typography } from "@material-ui/core";
-import { deliveryDay, deliveryTime, Schedule } from "../../consumer/consumerModel";
+import { deliveryDay, deliveryTime, Schedule } from "../../consumer/consumerPlanModel";
 import withClientApollo from '../utils/withClientApollo';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { MIN_MEALS } from '../../plan/planModel';

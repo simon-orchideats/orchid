@@ -1,4 +1,5 @@
-import { IConsumerPlan, IConsumerProfile } from './../../consumer/consumerModel';
+import { IConsumerProfile } from './../../consumer/consumerModel';
+import { IConsumerPlan } from './../../consumer/consumerPlanModel';
 import { ServerResolovers } from './../../utils/apolloUtils';
 import { getConsumerService } from './consumerService';
 

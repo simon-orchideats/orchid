@@ -6,7 +6,7 @@ import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "../client/global/state/cartState";
 import { useState, useMemo } from "react";
-import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerModel";
+import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerPlanModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";

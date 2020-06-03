@@ -1,5 +1,5 @@
 import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
-import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerModel';
+import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerPlanModel';
 import { ApolloCache } from 'apollo-cache';
 import { Meal } from '../../../rest/mealModel';
 import { Cart, RestMeals } from '../../../order/cartModel';

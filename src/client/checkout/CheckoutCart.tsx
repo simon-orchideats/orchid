@@ -5,7 +5,7 @@ import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Tier, PlanNames } from "../../plan/planModel";
 import moment from "moment";
-import { Schedule } from "../../consumer/consumerModel";
+import { Schedule } from "../../consumer/consumerPlanModel";
 import { Cost } from "../../order/costModel";
 import { Cart } from "../../order/cartModel";
 import { MealPrice } from "../../order/orderModel";

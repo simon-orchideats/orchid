@@ -5,7 +5,8 @@ import { AmplitudeClient } from 'amplitude-js';
 import Router from 'next/router'
 import { Cart } from '../../order/cartModel';
 import { IPlan, Tier, PlanNames } from '../../plan/planModel';
-import { Schedule, MealPlan, CuisineType } from '../../consumer/consumerModel';
+import { Schedule, MealPlan } from '../../consumer/consumerPlanModel';
+import { CuisineType } from '../../rest/mealModel';
 import { Order } from '../../order/orderModel';
 import moment from 'moment';
 

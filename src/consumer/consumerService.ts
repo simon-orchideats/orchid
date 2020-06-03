@@ -2,7 +2,8 @@ import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer, IConsumer, ConsumerPlan, IConsumerProfile } from './consumerModel';
+import { Consumer, IConsumer, IConsumerProfile } from './consumerModel';
+import { ConsumerPlan } from './consumerPlanModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -55,6 +56,31 @@ export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.read
   query: MY_CONSUMER_QUERY
 });
 
+
+// const MY_ACCOUNT_QUERY = gql`
+//   query myAccount {
+//     myAccount {
+//       profile {
+//         name
+//         email
+//       }
+//       permissions
+//     }
+//   }
+// `
+// type myAccountRes = { myAccount: IUser | null }
+
+// export const useGetMyAccount = () => {
+//   const res = useQuery<myAccountRes>(MY_ACCOUNT_QUERY);
+//   const user = useMemo<User | null>(() => (
+//     res.data && res.data.myAccount ? new User(res.data.myAccount) : null
+//   ), [res.data]);
+//   return {
+//     loading: res.loading,
+//     error: res.error,
+//     data: user
+//   }
+// }
 
 export const useAddMarketingEmail = (): [
   (email: string) => void,
@@ -283,7 +309,7 @@ export const useRequireConsumer = (url: string) => {
 export const useSignIn = () =>
   (url: string = '/') => window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
 
-export const useSignUp = (): [
+export const useConsumerSignUp = (): [
   (email: string, name: string, pass: string) => void,
   {
     error?: ApolloError 

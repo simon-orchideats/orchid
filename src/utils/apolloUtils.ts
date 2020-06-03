@@ -9,6 +9,7 @@ import { IncomingMessage, OutgoingMessage } from "http"
 import jwt from 'jsonwebtoken';
 import { activeConfig } from '../config'
 import cookie from 'cookie'
+import { Permission } from '../consumer/consumerModel';
 
 export type Context = {
   signedInUser: SignedInUser,
@@ -41,7 +42,8 @@ export type SignedInUser = {
   profile: {
     name: string
     email: string
-  }
+  },
+  permissions: Permission[]
 } | null
 
 export const decodeToSignedInUser = (access: string): SignedInUser => {
@@ -54,7 +56,8 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
       profile: {
         name: decoded[`${activeConfig.server.auth.audience}/name`],
         email: decoded[`${activeConfig.server.auth.audience}/email`]
-      }   
+      },
+      permissions: decoded.permissions as Permission[]
     };
   } catch (e) {
     if (e.name === 'TokenExpiredError') return null;

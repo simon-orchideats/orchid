@@ -8,9 +8,10 @@ import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
-import { IMeal, EMeal } from './../../rest/mealModel';
+import { IMeal, EMeal, CuisineType } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, MealPlan, Consumer, MIN_DAYS_AHEAD, ConsumerPlan, CuisineType } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, Consumer } from './../../consumer/consumerModel';
+import { MealPlan, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerPlanModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput, Cart } from './../../order/cartModel';

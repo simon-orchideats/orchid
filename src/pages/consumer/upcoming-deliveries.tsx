@@ -19,6 +19,7 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import moment from "moment";
 import { Consumer, MIN_DAYS_AHEAD } from "../../consumer/consumerModel";
+import { MIN_DAYS_AHEAD } from "../../consumer/consumerPlanModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";

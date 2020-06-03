@@ -1,11 +1,10 @@
-import { MealPlan, defaultDeliveryDay } from './../consumer/consumerModel';
 import { MIN_MEALS, PlanNames } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { IConsumerPlan, ISchedule, CuisineType, Schedule } from '../consumer/consumerModel';
-import { IMeal, Meal } from '../rest/mealModel';
+import { IConsumerPlan, ISchedule, Schedule, MealPlan, defaultDeliveryDay } from '../consumer/consumerPlanModel';
+import { IMeal, Meal, CuisineType } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
 import { isEqual } from 'lodash';

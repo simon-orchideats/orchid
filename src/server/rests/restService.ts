@@ -1,8 +1,8 @@
 import { getGeoService, IGeoService } from './../place/geoService';
-import { CuisineType } from './../../consumer/consumerModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest } from './../../rest/restModel';
+import { CuisineType } from './../../rest/mealModel';
 
 const REST_INDEX = 'rests';
 

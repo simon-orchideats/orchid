@@ -1,6 +1,6 @@
 import { IPlan } from './../../plan/planModel';
 import { AnalyticsService } from './../utils/analyticsService';
-import { Schedule } from '../../consumer/consumerModel';
+import { Schedule } from '../../consumer/consumerPlanModel';
 import { Order } from '../../order/orderModel';
 import { Cart } from '../../order/cartModel';
 

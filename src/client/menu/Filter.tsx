@@ -1,5 +1,5 @@
 import { makeStyles, FormControl, FormLabel, FormGroup, Checkbox, FormControlLabel, Popover, Paper, Button } from "@material-ui/core";
-import { CuisineType, CuisineTypes } from "../../consumer/consumerModel";
+import { CuisineType, CuisineTypes } from "../../rest/mealModel";
 import { useState } from "react";
 
 const useStyles = makeStyles(theme => ({

@@ -1,6 +1,7 @@
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
-import { CuisineType, ConsumerPlan, deliveryDay, deliveryTime, Schedule, MealPlan } from '../../consumer/consumerModel';
+import { ConsumerPlan, deliveryDay, deliveryTime, Schedule, MealPlan } from '../../consumer/consumerPlanModel';
+import { CuisineType } from '../../rest/mealModel';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";

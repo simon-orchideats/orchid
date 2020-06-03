@@ -1,4 +1,4 @@
-import { deliveryDay, MIN_DAYS_AHEAD } from './../consumer/consumerModel';
+import { deliveryDay, MIN_DAYS_AHEAD } from './../consumer/consumerPlanModel';
 import moment from 'moment';
 
 export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, timezone?: string) => {

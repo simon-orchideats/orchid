@@ -4,7 +4,7 @@ import CartMealGroup from "../../order/CartMealGroup";
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import React from "react";
-import { Schedule } from "../../../consumer/consumerModel";
+import { Schedule } from "../../../consumer/consumerPlanModel";
 import { useMoveMealToNewDeliveryInCart } from "../../global/state/cartState";
 import { Cart } from "../../../order/cartModel";
 import { MIN_MEALS } from "../../../plan/planModel";

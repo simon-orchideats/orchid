@@ -1,6 +1,6 @@
 import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
-import { deliveryTime } from './../consumer/consumerModel';
+import { deliveryTime } from './../consumer/consumerPlanModel';
 import { difference } from 'lodash';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';

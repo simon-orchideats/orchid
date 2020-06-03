@@ -1,6 +1,6 @@
 import { AnalyticsService } from './../utils/analyticsService';
-import { Schedule, MealPlan } from './../../consumer/consumerModel';
-import { CuisineType } from '../../consumer/consumerModel';
+import { Schedule, MealPlan } from './../../consumer/consumerPlanModel';
+import { CuisineType } from '../../rest/mealModel';
 import { IPlan } from '../../plan/planModel';
 
 export const sendCancelSubscriptionMetrics = (oldMealPlans: MealPlan[], plans: IPlan[]) => {

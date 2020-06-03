@@ -1,5 +1,5 @@
 
-import { CuisineTypes, CuisineType } from "../../consumer/consumerModel";
+import { CuisineTypes, CuisineType } from "../../rest/mealModel";
 import { Typography, makeStyles, Grid, Button } from "@material-ui/core";
 import { useState} from "react";
 

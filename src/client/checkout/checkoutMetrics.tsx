@@ -1,6 +1,6 @@
 import { Cart } from '../../order/cartModel';
 import { AnalyticsService } from "../utils/analyticsService";
-import { CuisineType } from '../../consumer/consumerModel';
+import { CuisineType } from '../../rest/mealModel';
 import { IPlan } from '../../plan/planModel';
 
 export const sendCheckoutMetrics = (

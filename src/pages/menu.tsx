@@ -11,7 +11,7 @@ import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-import { CuisineType, CuisineTypes } from "../consumer/consumerModel";
+import { CuisineType, CuisineTypes } from "../rest/mealModel";
 import Filter from "../client/menu/Filter";
 
 const useStyles = makeStyles(theme => ({

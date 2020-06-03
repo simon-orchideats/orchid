@@ -8,7 +8,8 @@ import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, IConsumerPlan, Consumer, IConsumerProfile, EConsumerPlan, ConsumerPlan, IConsumerPlanInput } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
+import { IConsumerPlan, EConsumerPlan, ConsumerPlan, IConsumerPlanInput } from './../../consumer/consumerPlanModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -330,6 +331,21 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+    // left off here. replace myConsumer with a better version of this. the game plan is this...
+  /**
+   * anyone who logs in can do everyting form the same site. they'll hvae the same signedInUser obj.
+   * 
+   * consumer - has conusmer data
+   * rest owner - has just user data - but can do stuf. ex this person will have update rests so they can
+   * // will show own rest page which calls myRest which will do db query.
+   * rest manage r- has just user data - but can do stuff
+   * admin - has just user data - but can do stuff
+   * marketer - has just user data - but can do stuff
+   * 
+   * all these people can do consumer stuff... so the plan is to getConsumer for ALL users.
+   * and getConsumer will always return permissions. just gotta rename getConsuemr to getUser since
+   * obv not all users are gonna be consumers, BUT they can be.
+   */
   async getIConsumer(_id: string): Promise<IConsumer | null> {
     try {
       const res = await this.getEConsumer(_id);

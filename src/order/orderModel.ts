@@ -3,7 +3,8 @@ import { PlanName, PlanNames, IPlan, Tier } from './../plan/planModel';
 import { IDelivery, Delivery, IDeliveryInput, EDelivery } from './deliveryModel';
 import moment from 'moment';
 import { IDestination, Destination } from './../place/destinationModel';
-import { EConsumerProfile, EConsumer, IMealPlan, EMealPlan } from './../consumer/consumerModel';
+import { EConsumerProfile, EConsumer } from './../consumer/consumerModel';
+import { IMealPlan, EMealPlan } from './../consumer/consumerPlanModel';
 import { ICost, Cost } from './costModel';
 import { IPromo } from './promoModel';
 
