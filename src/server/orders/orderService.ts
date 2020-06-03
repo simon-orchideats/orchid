@@ -1,5 +1,5 @@
 import { IDiscount, IWeeklyDiscount, WeeklyDiscount } from './../../order/discountModel';
-import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration } from './../../order/promoModel';
+import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration, oncePromoKey } from './../../order/promoModel';
 import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
 import { Cost, ICost } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
@@ -152,6 +152,7 @@ const myUnpaidOrdersQuery = (signedInUserId: string) => ({
 })
 
 export interface IOrderService {
+  applyOncePromo(code: string, subscriptionId: string): Promise<void>
   addAutomaticOrder(
     userId: string,
     addedWeeks: number,
@@ -373,6 +374,14 @@ class OrderService {
         console.error(`Failed to get stripe coupon with code '${code}`, e.stack);
         throw e;
       }
+      if (!promo.valid) {
+        return {
+          ePromo: null,
+          iPromo: null,
+          referralPromo: null,
+          error: `Promo code "${code}" expired`
+        }
+      }
       const key = getPromoKey(phone, fullAddr);
       let res: ApiResponse<SearchResponse<EPromo>>;
       try {
@@ -410,6 +419,7 @@ class OrderService {
         stripeCouponId: promo.id,
         amountOff: promo.amount_off,
         percentOff: promo.percent_off,
+        duration: promo.duration,
       }
       let referralPromo: ReferralPromo | null = null;
       const meta = {
@@ -682,6 +692,14 @@ class OrderService {
       console.error(`[OrderService]: Failed to redeem promo '${promoCode}' for phone '${phone}' and addr '${addrStr}'`, e.stack);
       throw e;
     }
+  }
+
+  public async applyOncePromo(code: string, subscriptionId: string): Promise<void> {
+    this.stripe.subscriptions.update(subscriptionId, {
+      coupon: code
+    }).catch(e => {
+      console.error(`[OrderService] Failed to update subscription '${subscriptionId}' with promo code '${code}'`, e.stack)
+    });
   }
 
   public async addAutomaticOrder(
@@ -1014,17 +1032,26 @@ class OrderService {
       );
       // - 60 seconds for extra buffer
       const billingStartDateSeconds = Math.floor(moment().tz(geo.timezone).endOf('d').valueOf() / 1000) - 60;
+      const newSub: Stripe.SubscriptionCreateParams = {
+        proration_behavior: 'none',
+        // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
+        // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
+        // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
+        billing_cycle_anchor: billingStartDateSeconds,
+        customer: stripeCustomerId,
+        items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
+      }
+      if (iPromo) {
+        if (iPromo.duration === 'once') {
+          newSub.metadata = {
+            [oncePromoKey]: iPromo.stripeCouponId
+          };
+        } else {
+          newSub.coupon = iPromo.stripeCouponId;
+        }
+      }
       try {
-        subscription = await this.stripe.subscriptions.create({
-          proration_behavior: 'none',
-          // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
-          // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
-          // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
-          billing_cycle_anchor: billingStartDateSeconds,
-          customer: stripeCustomerId,
-          coupon: iPromo?.stripeCouponId,
-          items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
-        });
+        subscription = await this.stripe.subscriptions.create(newSub);
       } catch (e) {
         console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
                       + `with stripe customerId '${stripeCustomerId}'`, e.stack);
@@ -1116,7 +1143,7 @@ class OrderService {
         consumer,
         moment(billingStartDateSeconds * 1000).add(2, 'w').valueOf(),
         mealPrices,
-        newOrderPromos,
+        (iPromo && iPromo.duration !== 'once') ? newOrderPromos : [],
         [],
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)

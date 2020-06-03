@@ -41,6 +41,7 @@ export const useGetPromo = (): [
           stripeCouponId
           percentOff
           amountOff
+          duration
         }
         error
       }

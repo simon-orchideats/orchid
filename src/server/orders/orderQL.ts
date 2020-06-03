@@ -86,6 +86,7 @@ export const _OrderQL = gql`
     stripeCouponId: ID!
     percentOff: Int
     amountOff: Int
+    duration: String
   }
 
   type Costs {

@@ -28,6 +28,7 @@ import { useSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "
 import { useGetAvailablePlans } from "../plan/planService";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
+import { promoDurations } from "../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -74,6 +75,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [applyPromo, applyPromoRes] = useGetPromo();
   const promoInputRef = createRef<HTMLInputElement>();
   const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
+  const [promoDuration, setPromoDuration] = useState<promoDurations>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
   const [cuisines, setCuisines] = useState<CuisineType[]>(Object.values(CuisineTypes));
   const [accountName, setAccountName] = useState<string>('');
@@ -104,6 +106,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
     notify('Promo applied', NotificationType.success, true);
     setAmountOff(applyPromoRes.data.res.AmountOff);
+    setPromoDuration(applyPromoRes.data.res.Duration);
   });
 
   useEffect(() => {
@@ -401,6 +404,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   }
   const checkoutCartProps = {
     amountOff: amountOff ?? 0,
+    promoDuration,
     onPlaceOrder: () => onClickPlaceOrder(
       emailInputRef.current?.value,
       addr1InputRef.current?.value,

@@ -126,7 +126,6 @@ class RestService implements IRestService {
         options.body.query.bool.filter.bool.must.push(newBool);
       }
       if (fields) options._source = fields;
-      console.log(JSON.stringify(options));
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
       return res.body.hits.hits.map(({ _id, _source }) => ({
         rest: _source,

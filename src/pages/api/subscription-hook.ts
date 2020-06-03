@@ -42,13 +42,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
 
-  if (event.type !== 'invoice.upcoming' && event.type !== 'invoice.created') {
+  if (event.type !== 'invoice.upcoming' && event.type !== 'invoice.created' && event.type !== 'customer.subscription.updated') {
     console.warn(`[SubscriptionHook] Unhandled event type: ${event.type}`)
     res.json({ received: true });
     return;
   }
 
   res.json({ received: true });
+
+  if (event.type === 'customer.subscription.updated') {
+    const sub = event.data.object as Stripe.Subscription;
+    const promo = sub.metadata.oncePromo;
+    if (sub.billing_cycle_anchor === sub.current_period_start && promo) {
+      getOrderService().applyOncePromo(promo, sub.id).catch(e => {
+        console.error(`Failed to apply promo '${promo}' to subscription '${sub.id}'`, e.stack);
+      });
+    }
+    return;
+  } 
 
   const invoice = event.data.object as Stripe.Invoice
   // important to do this before looking up consumerByStripeId since if we just created the account,
@@ -75,6 +86,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         stripeCouponId: coupon.id,
         amountOff: coupon.amount_off,
         percentOff: coupon.percent_off,
+        duration: coupon.duration,
       }
       const discounts: IDiscount[] = WeeklyDiscount.removeFirstDiscounts(consumer.plan.weeklyDiscounts);
       getOrderService().addAutomaticOrder(
@@ -85,7 +97,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         // 3 weeks because 2 week would be nextnext order
         moment().add(3, 'w').valueOf(),
         mealPrices,
-        promo ? [promo] : [],
+        promo && promo.duration !== 'once' ? [promo] : [],
         discounts ? discounts : [],
       ).catch(e => {
         console.error('[SubscriptionHook] failed to add automatic order', e.stack);

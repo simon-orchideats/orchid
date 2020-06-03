@@ -12,6 +12,7 @@ import { MealPrice } from "../../order/orderModel";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import BaseInput from "../general/inputs/BaseInput";
 import { RefObject } from "react";
+import { promoDurations } from "../../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -40,6 +41,7 @@ const useStyles = makeStyles(theme => ({
 
 type props = {
   amountOff: number
+  promoDuration?: promoDurations
   buttonBottom?: boolean
   defaultPromo?: string
   loading: boolean,
@@ -58,6 +60,7 @@ const CheckoutCart: React.FC<props> = ({
   onChangePromo,
   onPlaceOrder,
   promoRef,
+  promoDuration,
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
@@ -197,7 +200,7 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <div className={classes.row}>
           <Typography variant='body1'>
-            Promo (for 4 weeks)
+            Promo {promoDuration !== 'once' && 'for 4 weeks'}
           </Typography>
           <Typography variant='body1' color='primary'>
             <b>-${(amountOff / 100).toFixed(2)}</b>
