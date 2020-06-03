@@ -65,6 +65,7 @@ export interface IConsumer extends Omit<EConsumer, 'createdDate' | 'profile' | '
   readonly _id: string
   readonly profile: IConsumerProfile
   readonly plan: IConsumerPlan | null
+  readonly permissions: Permission[]
 }
 
 export class Consumer implements IConsumer {
@@ -73,6 +74,7 @@ export class Consumer implements IConsumer {
   readonly stripeSubscriptionId: string | null
   readonly profile: ConsumerProfile
   readonly plan: ConsumerPlan | null
+  readonly permissions: Permission[]
 
   constructor(consumer: IConsumer) {
     this._id = consumer._id
@@ -80,11 +82,13 @@ export class Consumer implements IConsumer {
     this.stripeSubscriptionId = consumer.stripeSubscriptionId;
     this.profile = new ConsumerProfile(consumer.profile);
     this.plan = consumer.plan && new ConsumerPlan(consumer.plan);
+    this.permissions = consumer.permissions.map(p => p);
   }
 
   public get StripeSubscriptionId() { return this.stripeSubscriptionId }
   public get StripeCustomerId() { return this.stripeCustomerId }
   public get Id() { return this._id }
+  public get Permissions() { return this.permissions }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
 
@@ -95,13 +99,14 @@ export class Consumer implements IConsumer {
     return true;
   }
 
-  static getIConsumerFromEConsumer(_id: string, eConsumer: EConsumer): IConsumer {
+  static getIConsumerFromEConsumer(_id: string, permissions: Permission[], eConsumer: EConsumer): IConsumer {
     return {
       _id,
       plan: eConsumer.plan,
       profile: eConsumer.profile,
       stripeCustomerId: eConsumer.stripeCustomerId,
       stripeSubscriptionId: eConsumer.stripeSubscriptionId,
+      permissions: permissions.map(p => p),
     }
   }
 
@@ -112,6 +117,7 @@ export class Consumer implements IConsumer {
       stripeSubscriptionId: consumer.stripeSubscriptionId,
       profile: ConsumerProfile.getICopy(consumer.profile),
       plan: consumer.plan && ConsumerPlan.getICopy(consumer.plan),
+      permissions: consumer.permissions.map(p => p),
     }
   }
 

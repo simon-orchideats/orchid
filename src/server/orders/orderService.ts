@@ -1156,7 +1156,7 @@ class OrderService {
       ).catch(e => {
         console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
       });
-      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, consumer);
+      const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, signedInUser.permissions, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
 
@@ -1203,7 +1203,7 @@ class OrderService {
       // refresh access token so client can pick up new fields in token
       if (req && res) await refetchAccessToken(req, res);
       return {
-        res: Consumer.getIConsumerFromEConsumer(signedInUser._id, consumer),
+        res: Consumer.getIConsumerFromEConsumer(signedInUser._id, signedInUser.permissions, consumer),
         error: null
       };
     } catch (e) {

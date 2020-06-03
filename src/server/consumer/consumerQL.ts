@@ -11,6 +11,7 @@ const _ConsumerQL = gql`
     profile: ConsumerProfile!
     stripeCustomerId: ID
     stripeSubscriptionId: ID
+    permissions: [String!]!
   }
   type ConsumerProfile {
     name: String!

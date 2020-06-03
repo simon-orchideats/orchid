@@ -47,5 +47,6 @@ export const consumerFragment = gql`
         }
       }
     }
+    permissions
   }
 `

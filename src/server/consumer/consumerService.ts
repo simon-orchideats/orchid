@@ -2,18 +2,17 @@ import { IWeeklyDiscount } from './../../order/discountModel';
 import { IAddress } from './../../place/addressModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
-import { MutationConsumerRes } from './../../utils/apolloUtils';
 import { getAuth0Header } from './../auth/auth0Management';
 import fetch, { Response } from 'node-fetch';
 import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
-import { EConsumer, IConsumer, Consumer, IConsumerProfile } from './../../consumer/consumerModel';
+import { EConsumer, IConsumer, Consumer, IConsumerProfile, Permission } from './../../consumer/consumerModel';
 import { IConsumerPlan, EConsumerPlan, ConsumerPlan, IConsumerPlanInput } from './../../consumer/consumerPlanModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
-import { SignedInUser, MutationBoolRes } from '../../utils/apolloUtils';
+import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
@@ -45,11 +44,11 @@ export interface IConsumerService {
     consumer?: EConsumer
   ) => Promise<void>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
-  getIConsumer: (_id: string) => Promise<IConsumer | null>
+  getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
   removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
-  upsertConsumer: (userId: string, consumer: EConsumer) => Promise<IConsumer>
+  upsertConsumer(_id: string, permissions: Permission[], consumer: EConsumer): Promise<IConsumer>
   upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
@@ -283,7 +282,12 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async insertConsumer(_id: string, name: string, email: string): Promise<IConsumer> {
+  public async insertConsumer(
+    _id: string,
+    name: string,
+    email: string,
+    permissions: Permission[],
+  ): Promise<IConsumer> {
     try {
       if (!this.planService) throw new Error('PlanService not set');
       let res: ApiResponse<SearchResponse<any>>
@@ -324,7 +328,7 @@ class ConsumerService implements IConsumerService {
         refresh: 'true', 
         body
       });
-      return Consumer.getIConsumerFromEConsumer(_id, body);
+      return Consumer.getIConsumerFromEConsumer(_id, permissions, body);
     } catch (e) {
       console.error(`[ConsumerService] couldn't insert consumer '${_id}'`, e.stack);
       throw e;
@@ -346,19 +350,21 @@ class ConsumerService implements IConsumerService {
    * and getConsumer will always return permissions. just gotta rename getConsuemr to getUser since
    * obv not all users are gonna be consumers, BUT they can be.
    */
-  async getIConsumer(_id: string): Promise<IConsumer | null> {
+  async getIConsumer(signedInUser: SignedInUser): Promise<IConsumer | null> {
     try {
-      const res = await this.getEConsumer(_id);
+      if (!signedInUser) throw 'No signed in user';
+      const res = await this.getEConsumer(signedInUser._id);
       if (!res) return null;
       return {
-        _id,
+        _id: signedInUser._id,
         stripeCustomerId: res.consumer.stripeCustomerId,
         stripeSubscriptionId: res.consumer.stripeSubscriptionId,
         profile: res.consumer.profile,
-        plan: res.consumer.plan
+        plan: res.consumer.plan,
+        permissions: signedInUser.permissions,
       }
     } catch (e) {
-      console.error(`[ConsumerService] Failed to get consumer ${_id}: ${e.stack}`)
+      console.error(`[ConsumerService] Failed to get consumer ${signedInUser?._id}: ${e.stack}`)
       return null;
     }
   }
@@ -405,7 +411,12 @@ class ConsumerService implements IConsumerService {
           error: signedUp.error,
         }
       }
-      const consumer = await this.insertConsumer(signedUp.res._id, signedUp.res.profile.name,  signedUp.res.profile.email)
+      const consumer = await this.insertConsumer(
+        signedUp.res._id,
+        signedUp.res.profile.name,
+        signedUp.res.profile.email,
+        signedUp.res.permissions,
+      )
       this.upsertMarketingEmail(email, name).catch(e => {
         console.error(`[ConsumerService] failed to upsert marketing email '${email}' with name '${name}'`, e.stack);
       });
@@ -462,7 +473,7 @@ class ConsumerService implements IConsumerService {
     });
   }
 
-  async upsertConsumer(_id: string, consumer: EConsumer): Promise<IConsumer> {
+  async upsertConsumer(_id: string, permissions: Permission[], consumer: EConsumer): Promise<IConsumer> {
     // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
     // dupe entries.
     try {
@@ -472,8 +483,9 @@ class ConsumerService implements IConsumerService {
         body: consumer
       });
       return {
+        ...consumer,
         _id,
-        ...consumer
+        permissions,
       }
     } catch (e) {
       console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);

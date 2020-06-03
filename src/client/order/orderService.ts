@@ -144,7 +144,8 @@ export const usePlaceOrder = (): [
               ...cart.consumerPlan,
               referralCode: '', // empty string with the intention that it populates later
               weeklyDiscounts: [] // empty so it populates later
-            }
+            },
+            permissions: [] // empty so it populates later
           }),
           error: null,
           //@ts-ignore

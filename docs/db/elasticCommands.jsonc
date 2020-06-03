@@ -1382,6 +1382,9 @@ PUT /consumers/
             }
           }
         }
+      },
+      "permissions": {
+        "type": "key"
       }
     }
   }

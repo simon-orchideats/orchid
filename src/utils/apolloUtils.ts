@@ -57,7 +57,7 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
         name: decoded[`${activeConfig.server.auth.audience}/name`],
         email: decoded[`${activeConfig.server.auth.audience}/email`]
       },
-      permissions: decoded.permissions as Permission[]
+      permissions: decoded.permissions as Permission[] 
     };
   } catch (e) {
     if (e.name === 'TokenExpiredError') return null;

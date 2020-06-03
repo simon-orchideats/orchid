@@ -6,7 +6,6 @@ import { randomString } from './utils';
 import express from 'express';
 import { activeConfig } from '../../config';
 import fetch from 'node-fetch';
-import jwt from 'jsonwebtoken';
 
 export const handleLoginRoute = (req: express.Request, res: express.Response) => {
   try {
@@ -70,32 +69,32 @@ const redirectedSignIn = async (
       throw new Error(msg)
     }
     
-    let decodedToken: any;
+    let user;
     try {
-      decodedToken = await jwt.verify(data.access_token, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] });
+      user = decodeToSignedInUser(data.access_token);
+      if (!user) throw new Error('No signed in user for token');
     } catch (e) {
       console.error(`Error in verifying accessToken: ${e.stack}`)
       throw e
     }
     let consumer;
     try {
-      consumer = await getConsumerService().getIConsumer(decodedToken.sub)
+      consumer = await getConsumerService().getIConsumer(user)
     } catch (e) {
       console.error(`Error in getting Consumer: ${e.stack}`);
       throw e;
     }
 
     if (!consumer) {
-      const email = decodedToken[`${activeConfig.server.auth.audience}/email`];
-      const name = decodedToken[`${activeConfig.server.auth.audience}/name`];
       getConsumerService().insertConsumer(
-        decodedToken.sub,
-        name,
-        email
+        user._id,
+        user.profile.name,
+        user.profile.email,
+        user.permissions
       ).catch(e => {
         console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
       });
-      getConsumerService().upsertMarketingEmail(email, name);
+      getConsumerService().upsertMarketingEmail(user.profile.email, name);
     };
     
     setCookie(res, [

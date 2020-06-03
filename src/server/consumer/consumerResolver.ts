@@ -5,7 +5,7 @@ import { getConsumerService } from './consumerService';
 
 export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, { signedInUser }) => {
-    return signedInUser && await getConsumerService().getIConsumer(signedInUser._id)  
+    return signedInUser && await getConsumerService().getIConsumer(signedInUser)  
   }
 }
 
