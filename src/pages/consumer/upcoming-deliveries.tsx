@@ -2,7 +2,7 @@ import { makeStyles, Typography, Container, Paper, useTheme, useMediaQuery, Them
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useRef, useEffect } from "react";
-import { useGetUpcomingOrders, useSkipDelivery } from "../../client/order/orderService";
+import { useGetMyUpcomingOrders, useSkipDelivery } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
 import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
@@ -177,7 +177,6 @@ const UpcomingDeliveryOverview: React.FC<{
     <>
       <Notifier />
       <OrderOverview
-        consumer={consumer}
         order={order}
         action={action}
         scheduleDeliveries={
@@ -199,7 +198,7 @@ const UpcomingDeliveries = () => {
   const updatingParam = useRouter().query.updating;
   const [showCart] = useState(true);
   const cart = useGetCart();
-  const orders = useGetUpcomingOrders();
+  const orders = useGetMyUpcomingOrders();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const consumer = useRequireConsumer(upcomingDeliveriesRoute);

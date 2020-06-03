@@ -94,7 +94,7 @@ const redirectedSignIn = async (
       ).catch(e => {
         console.error(`[Authenticate] Error in inserting Consumer: ${e.stack}`);
       });
-      getConsumerService().upsertMarketingEmail(user.profile.email, name);
+      getConsumerService().upsertMarketingEmail(user.profile.email, user.profile.name);
     };
     
     setCookie(res, [

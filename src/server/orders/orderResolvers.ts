@@ -4,6 +4,24 @@ import { getOrderService } from './orderService';
 import { IUpdateDeliveryInput } from '../../order/deliveryModel';
 
 export const OrderQueryResolvers: ServerResolovers = {
+  allUpcomingOrders: async(_root, _args, { signedInUser }) => {
+    try {
+      return await getOrderService().getAllUpcomingIOrders(signedInUser);
+    } catch (e) {
+      console.error(`[OrderResolver] Failed to get allUpcomingOrders '${signedInUser?._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
+  
+  allPaidOrders: async(_root, _args, { signedInUser }) => {
+    try {
+      return await getOrderService().getAllPaidIOrders(signedInUser);
+    } catch (e) {
+      console.error(`[OrderResolver] Failed to get allUpcomingOrders '${signedInUser?._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
+
   myUpcomingOrders: async(_root, _args, { signedInUser }) => {
     return await getOrderService().getMyUpcomingIOrders(signedInUser);
   },

@@ -22,6 +22,15 @@ const MY_UPCOMING_ORDERS_QUERY = gql`
   ${orderFragment}
 `
 
+const ALL_UPCOMING_ORDERS_QUERY = gql`
+  query allUpcomingOrders {
+    allUpcomingOrders {
+      ...orderFragment
+    }
+  }
+  ${orderFragment}
+`
+
 export const useGetPromo = (): [
   (promoCode: string, phone: string, fullAddr: string) => void,
   {
@@ -207,7 +216,7 @@ export const useSkipDelivery = (): [
       },
       update: (cache, { data }) => {
         if (!data || !data.skipDelivery.res) return;
-        const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
         if (!upcomingOrders) {
           const err = new Error('Failed to get upcoming orders for cache update');
           console.error(err.stack);
@@ -293,7 +302,7 @@ export const useUpdateDeliveries = (): [
       },
       update: (cache, { data }) => {
         if (!data || !data.updateDeliveries.res) return;
-        const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
         if (!upcomingOrders) {
           const err = new Error('Failed to get upcoming orders for cache update');
           console.error(err.stack);
@@ -378,7 +387,7 @@ export const useRemoveDonations = (): [
       },
       update: (cache, { data }) => {
         if (!data || !data.removeDonations.res) return;
-        const upcomingOrders = cache.readQuery<upcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
+        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
         if (!upcomingOrders) {
           const err = new Error('Failed to get upcoming orders for cache update');
           console.error(err.stack);
@@ -421,9 +430,9 @@ export const useRemoveDonations = (): [
   ], [mutation]);
 }
 
-type upcomingOrdersRes = { myUpcomingOrders: IOrder[] }
-export const useGetUpcomingOrders = () => {
-  const res = useQuery<upcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
+type myUpcomingOrdersRes = { myUpcomingOrders: IOrder[] }
+export const useGetMyUpcomingOrders = () => {
+  const res = useQuery<myUpcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
   ), [res.data]);
@@ -434,7 +443,7 @@ export const useGetUpcomingOrders = () => {
   }
 }
 
-export const useGetPaidOrders = () => {
+export const useGetMyPaidOrders = () => {
   const res = useQuery<{ myPaidOrders: IOrder[] }>(gql`
     query myPaidOrders {
       myPaidOrders {
@@ -446,6 +455,39 @@ export const useGetPaidOrders = () => {
   );
   const orders = useMemo<Order[] | undefined>(() => (
     res.data ? res.data.myPaidOrders.map(order => new Order(order)) : res.data
+  ), [res.data]);
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: orders
+  }
+}
+
+type allUpcomingOrdersRes = { allUpcomingOrders: IOrder[] }
+export const useGetAllUpcomingOrders = () => {
+  const res = useQuery<allUpcomingOrdersRes>(ALL_UPCOMING_ORDERS_QUERY);
+  const orders = useMemo<Order[] | undefined>(() => (
+    res.data ? res.data.allUpcomingOrders.map(order => new Order(order)) : res.data
+  ), [res.data]);
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: orders
+  }
+}
+
+export const useGetAllPaidOrders = () => {
+  const res = useQuery<{ allPaidOrders: IOrder[] }>(gql`
+    query allPaidOrders {
+      allPaidOrders {
+          ...orderFragment
+        }
+      }
+      ${orderFragment}
+    `
+  );
+  const orders = useMemo<Order[] | undefined>(() => (
+    res.data ? res.data.allPaidOrders.map(order => new Order(order)) : res.data
   ), [res.data]);
   return {
     loading: res.loading,

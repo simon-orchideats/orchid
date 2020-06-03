@@ -6,8 +6,20 @@ import { CuisineTypes } from '../rest/mealModel';
 export type Permission = 
   'update:allOrders'
   | 'read:allOrders'
-  | 'update:rests	'
-  | 'create:rests	'
+  | 'update:rests'
+  | 'create:rests'
+
+export const Permissions: {
+  updateAllOrders: 'update:allOrders'
+  readAllOrders: 'read:allOrders'
+  updateRests: 'update:rests'
+  createRests: 'create:rests'
+} = {
+  updateAllOrders: 'update:allOrders',
+  readAllOrders: 'read:allOrders',
+  updateRests: 'update:rests',
+  createRests: 'create:rests'
+}
 
 export interface IConsumerProfile {
   readonly name: string

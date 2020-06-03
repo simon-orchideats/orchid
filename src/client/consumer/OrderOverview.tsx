@@ -4,7 +4,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { Order } from "../../order/orderModel";
 import { Destination } from "../../place/destinationModel";
 import moment from "moment";
-import { Consumer } from "../../consumer/consumerModel";
 
 const useStyles = makeStyles(theme => ({
   paddingTop: {
@@ -99,12 +98,10 @@ const DestinationPopper: React.FC<{
 }
 
 const OrderOverview: React.FC<{
-  consumer: Consumer,
   order: Order,
   action: React.ReactNode,
   scheduleDeliveries: React.ReactNode,
 }> = ({
-  consumer,
   order,
   action,
   scheduleDeliveries,
@@ -123,7 +120,7 @@ const OrderOverview: React.FC<{
         open={open}
         onClose={() => setAnchorEl(null)}
         anchorEl={anchorEl}
-        name={consumer.Profile.Name}
+        name={order.Name}
       />
       <Grid
         container
@@ -232,7 +229,7 @@ const OrderOverview: React.FC<{
               </Typography>
               <div className={`${classes.deliverTo} ${classes.link}`} onClick={onClickDestination}>
                 <Typography variant='body1'>
-                  {consumer.Profile.Name}
+                  {order.Name}
                 </Typography>
                 <ExpandMoreIcon />
               </div>

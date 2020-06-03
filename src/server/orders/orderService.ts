@@ -10,7 +10,7 @@ import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
 import { IMeal, EMeal, CuisineType } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { EConsumer, IConsumerProfile, Consumer } from './../../consumer/consumerModel';
+import { EConsumer, IConsumerProfile, Consumer, Permissions } from './../../consumer/consumerModel';
 import { MealPlan, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerPlanModel';
 import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
@@ -75,33 +75,38 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
   }
 }
 
-const getUpcomingOrdersQuery = (signedInUserId: string) => ({
-  bool: {
-    filter: {
-      bool: {
-        must: [
-          {
-            range: {
-              invoiceDate: {
-                gte: 'now',
-              }
+const getUpcomingOrdersQuery = (signedInUserId?: string) => {
+  const query: any = {
+    bool: {
+      filter: {
+        bool: {
+          must: [
+            {
+              range: {
+                invoiceDate: {
+                  gte: 'now',
+                }
+              },
             },
-          },
-          {
-            term: {
-              'consumer.userId': signedInUserId
+          ],
+          must_not: {
+            exists: {
+              field: 'stripeInvoiceId'
             }
-          },
-        ],
-        must_not: {
-          exists: {
-            field: 'stripeInvoiceId'
           }
         }
       }
     }
   }
-});
+  if (signedInUserId) {
+    query.bool.filter.bool.must.push({
+      term: {
+        'consumer.userId': signedInUserId
+      }
+    });
+  }
+  return query;
+}
 
 const getOrdersWithReferredDiscounts = (signedInUserId: string) => ({
   bool: {
@@ -175,8 +180,10 @@ export interface IOrderService {
     _id: string,
     order: EOrder,
   } | null>
+  getAllPaidIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getUpcomingEOrders(userId: string): Promise<{ _id: string, order: EOrder }[]>
+  getAllUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getPromo(promo: string, phone: string, addrStr: string): Promise<MutationPromoRes>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
@@ -1212,7 +1219,7 @@ class OrderService {
     }
   }
 
-  async getUpcomingEOrders(userId: string): Promise<{ _id: string, order: EOrder }[]> {
+  async getUpcomingEOrders(userId?: string): Promise<{ _id: string, order: EOrder }[]> {
     try {
       const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
         index: ORDER_INDEX,
@@ -1241,6 +1248,68 @@ class OrderService {
       });
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${userId}'. '${e.stack}'`);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getAllPaidIOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      if (!signedInUser.permissions.includes(Permissions.readAllOrders)) throw new Error('Not allowed');
+      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      exists: {
+                        field: 'stripeInvoiceId'
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          sort: [
+            {
+              invoiceDate: {
+                order: 'desc',
+              }
+            }
+          ],
+        }
+      });
+      return res.body.hits.hits.map(({ _id, _source }) => {
+        _source.deliveries.sort((d1, d2) => {
+          if (d1.deliveryDate > d2.deliveryDate) return 1;
+          if (d1.deliveryDate < d2.deliveryDate) return -1;
+          return 0;
+        });
+        return Order.getIOrderFromEOrder(_id, _source)
+      });
+    } catch (e) {
+      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser?._id}'`, e.stack);
+      throw e;
+    }
+  }
+
+  async getAllUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
+    if (!signedInUser) throw getNotSignedInErr();
+    if (!signedInUser.permissions.includes(Permissions.readAllOrders)) throw new Error('Not allowed');
+    try {
+      const res = await this.getUpcomingEOrders();
+      return res.map(({ _id, order }) => Order.getIOrderFromEOrder(_id, order)).sort((o1, o2) => {
+        if (o1.name === o2.name) return 0;
+        if (o1.name > o2.name) return 1;
+        return -1;
+      });
+    } catch (e) {
+      console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
       throw new Error('Internal Server Error');
     }
   }

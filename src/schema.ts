@@ -17,6 +17,8 @@ import { OrderQL } from './server/orders/orderQL';
 const query = gql`
   type Query {
     availablePlans: [Plan!]!
+    allPaidOrders: [Order!]!
+    allUpcomingOrders: [Order!]!
     myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
     nearbyRests(cityOrZip: String): [Rest!]!

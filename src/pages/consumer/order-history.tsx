@@ -3,9 +3,8 @@ import { Order } from "../../order/orderModel";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
-import { Consumer } from "../../consumer/consumerModel";
 import OrderOverview from "../../client/consumer/OrderOverview";
-import { useGetPaidOrders } from "../../client/order/orderService";
+import { useGetMyPaidOrders } from "../../client/order/orderService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -17,38 +16,14 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const HistoryDeliveryOverview: React.FC<{
-  consumer: Consumer,
   order: Order,
 }> = ({
-  consumer,
   order,
 }) => {
-  // todowhen you click feedback, it automatically replaces the schedule with a list of meals.
-  // for each meal, show when it was delivered (day of week only and time) and if it was 2 deliveries,
-  // then just label it as both
-  // but then under hte meal there is an input box for feedback
-  // then at the bottom there is a general feedback
-  // then beneath, send feedback button
-  // replace "leave feedback" with cancel
   return (
     <OrderOverview
-      consumer={consumer}
       order={order}
       action={null}
-      // action={
-      //   <Button
-      //     variant='contained'
-      //     color='primary'
-      //     onClick={() => Router.push({
-      //       pathname: feedbackRoute,
-      //       query: {
-      //         orderId: order.Id
-      //       },
-      //     })}
-      //   >
-      //     Leave feedback
-      //   </Button>
-      // }
       scheduleDeliveries={<ScheduleDeliveries deliveries={order.Deliveries} />}
     />
   )
@@ -56,7 +31,7 @@ const HistoryDeliveryOverview: React.FC<{
 
 const OrderHistory = () => {
   const classes = useStyles();
-  const orders = useGetPaidOrders();
+  const orders = useGetMyPaidOrders();
   const consumer = useRequireConsumer(orderHistoryRoute);
   const consumerData = consumer.data;
   let OrderOverviews;
@@ -69,7 +44,6 @@ const OrderHistory = () => {
       <HistoryDeliveryOverview
         key={order.Id}
         order={order}
-        consumer={consumerData}
       />
     )
   }
