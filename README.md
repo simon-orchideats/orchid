@@ -12,7 +12,7 @@ If you would like to dockerize the environment... that would be fantastic too
 
 ## Environment varaibles
 
-Ask a developer friend for the `.env` file
+Ask a developer friend for the environment variables
 
 ## Running
 
@@ -31,24 +31,4 @@ npm run dev
 
 ## Database population
 
-Run the mapping + insert commands in `elasticCommands.jsonc`
-
-then run
-```
-POST rests/_update_by_query
-{
-  "script" : {
-    "source": """
-      for (int i = 0; i < ctx._source.menu.length; i++) {
-        ctx._source.menu[i].addonGroups = new ArrayList();
-        ctx._source.menu[i].optionGroups = new ArrayList();
-        ctx._source.menu[i].canAutoPick = true;
-      }
-    """,
-    "lang": "painless"
-  },
-  "query": { 
-    "match_all": {}
-  }
-}
-```
+Run the put mapping + insert commands in `elasticCommands.jsonc`
