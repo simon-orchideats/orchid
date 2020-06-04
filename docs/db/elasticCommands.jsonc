@@ -796,7 +796,7 @@ PUT /rests/
               }
             }
           },
-          "isActive": :{
+          "isActive": {
             "type": "boolean"
           },
           "optionGroups": {
@@ -981,7 +981,6 @@ PUT /rests/
     }
   }
 }
-
 PUT /orders/
 {
   "mappings": {
@@ -1175,25 +1174,27 @@ PUT /orders/
               },
               "amountOff": {
                 "type": "integer"
-              },
+              }
             }
           },
           "discounts": {
-            "reason": {
-              "type": "keyword"
-            },
-            "description": {
-              "type": "keyword",
-              "ignore_above": 25
-            },
-            "percentOff": {
-              "type": "integer"
-            },
-            "amountOff": {
-              "type": "integer"
-            },
-            "referredUserId": {
-              "type": "keyword"
+            "properties": {
+              "reason": {
+                "type": "keyword"
+              },
+              "description": {
+                "type": "keyword",
+                "ignore_above": 25
+              },
+              "percentOff": {
+                "type": "integer"
+              },
+              "amountOff": {
+                "type": "integer"
+              },
+              "referredUserId": {
+                "type": "keyword"
+              }
             }
           },
           "mealPrices": {
@@ -1403,7 +1404,7 @@ PUT /promos/
       "nextAllowedRedemptionDate": {
         "type": "date",
         "format": "epoch_millis"
-      },
+      }
     }
   }
 }
@@ -2966,7 +2967,7 @@ POST rests/_doc/
   "managers" : [ ],
   "status" : "Closed"
 }
-
+POST rests/_doc/
 {
   "taxRate" : 0.0625,
   "createdDate" : 1585714539021,
