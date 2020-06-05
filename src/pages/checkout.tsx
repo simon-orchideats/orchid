@@ -1,11 +1,11 @@
-import { Typography, makeStyles, Grid, Container, TextField, useMediaQuery, Theme, Button } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, TextField, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
-import { useState, useEffect, useRef, createRef } from "react";
+import React, { useState, useEffect, useRef, createRef } from "react";
 import { state, Address } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
@@ -29,6 +29,7 @@ import { useGetAvailablePlans } from "../plan/planService";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -49,6 +50,11 @@ const useStyles = makeStyles(theme => ({
   subtitle: {
     marginTop: -theme.spacing(2),
     fontWeight: 'bold',
+  },
+  row: {
+    display: 'flex',
+    marginTop: -theme.spacing(1),
+    paddingBottom: theme.spacing(2),
   },
 }));
 
@@ -489,6 +495,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 onChange={e => setDliveryInstructions(e.target.value)}
               />
             </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                label='I agree to receives delivery update texts'
+                control={<Checkbox checked disabled />}
+              />
+            </Grid>
           </Grid>
           <Typography
             variant='h6'
@@ -576,6 +588,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           >
             Payment
           </Typography>
+          <div className={classes.row}>
+            <LockOutlinedIcon />
+            <a href='https://stripe.com/' target='_blank'>
+              <img src='/checkout/stripe.png' alt='stripe' />
+            </a>
+          </div>
           <CardForm />
           <RenewalChooser
             cuisines={cuisines}
