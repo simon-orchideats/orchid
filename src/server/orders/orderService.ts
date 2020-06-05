@@ -1302,8 +1302,51 @@ class OrderService {
     if (!signedInUser) throw getNotSignedInErr();
     if (!signedInUser.permissions.includes(Permissions.readAllOrders)) throw new Error('Not allowed');
     try {
-      const res = await this.getUpcomingEOrders();
-      return res.map(({ _id, order }) => Order.getIOrderFromEOrder(_id, order)).sort((o1, o2) => {
+      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      range: {
+                        'deliveries.deliveryDate': {
+                          gte: 'now',
+                          lt: moment().add(9, 'd').valueOf(),
+                        }
+                      },
+                    },
+                  ],
+                  must_not: {
+                    exists: {
+                      field: 'stripeInvoiceId'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          sort: [
+            {
+              invoiceDate: {
+                order: 'asc',
+              }
+            }
+          ],
+        }
+      });
+      const orders = res.body.hits.hits.map(({ _id, _source }) => {
+        _source.deliveries.sort((d1, d2) => {
+          if (d1.deliveryDate > d2.deliveryDate) return 1;
+          if (d1.deliveryDate < d2.deliveryDate) return -1;
+          return 0;
+        });
+        return Order.getIOrderFromEOrder(_id, _source);
+      });
+      return orders.sort((o1, o2) => {
         if (o1.name === o2.name) return 0;
         if (o1.name > o2.name) return 1;
         return -1;
