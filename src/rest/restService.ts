@@ -1,9 +1,42 @@
 import { ApolloCache, DataProxy } from 'apollo-cache';
-import { IRest, Rest } from './restModel';
+import { IRest, Rest, IRestInput } from './restModel';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { restFragment } from './restFragment';
 import { useMemo } from 'react';
+import { MutationBoolRes } from '../utils/apolloUtils';
+import { ApolloError } from 'apollo-client';
+
+export const useAddRest = (): [
+  (rest: IRestInput) => void,
+  {
+    data?: MutationBoolRes
+    error?: ApolloError 
+  }
+] => {
+  type res = { addRest: MutationBoolRes };
+  const [mutate, mutation] = useMutation<res>(gql`
+    mutation addRest($rest: RestInput!) {
+      addRest(rest: $rest) {
+        res
+        error
+      }
+    }
+  `);
+  const addRest = (rest: IRestInput) => {
+    mutate({ 
+      variables: { rest }
+    })
+  }
+  return useMemo(() => [
+    addRest,
+    {
+      error: mutation.error,
+      data: mutation.data ? mutation.data.addRest : undefined,
+    }
+  ], [mutation]);
+}
+
 
 const useGetNearbyRests = (cityOrZip: string) => {
   type res = {

@@ -23,6 +23,16 @@ const CuisineTypeQL = gql`
 `
 
 const MealQL = gql`
+
+  input OptionGroupInput {
+    names: [String!]!
+  }
+
+  input AddonGroupInput {
+    names: [String!]!
+    limit: Int
+  }
+
   type OptionGroup {
     names: [String!]!
   }
@@ -30,6 +40,17 @@ const MealQL = gql`
   type AddonGroup {
     names: [String!]!
     limit: Int
+  }
+
+  input MealInput {
+    img: String!
+    name: String!
+    isActive: Boolean!
+    description: String
+    originalPrice: Float
+    optionGroups: [OptionGroupInput!]!
+    addonGroups: [AddonGroupInput!]!
+    tags: [String!]!
   }
 
   type Meal {
@@ -48,6 +69,11 @@ const MealQL = gql`
 `
 
 const RestProfileQL = gql`
+  input RestProfileInput {
+    name: String!
+    phone: String!
+  }
+
   type RestProfile {
     name: String!
     phone: String!
@@ -55,6 +81,13 @@ const RestProfileQL = gql`
 `
 
 const _RestQL = gql`
+  
+  input RestInput {
+    address: AddressInput!
+    menu: [MealInput!]!
+    profile: RestProfileInput!
+  }
+
   type Rest {
     _id: ID!
     location: Location!

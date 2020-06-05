@@ -1,11 +1,19 @@
-import { makeStyles, Typography, Container, Paper, FormControlLabel, Checkbox, Button} from "@material-ui/core";
-import { useRef, useState, createRef, RefObject } from 'react';
+import { makeStyles, Typography, Container, Paper, FormControlLabel, Checkbox, Button, Divider} from "@material-ui/core";
+import React, { useRef, useState, createRef, RefObject } from 'react';
 import { state } from "../../place/addressModel";
 import AddressForm from "../../client/general/inputs/AddressForm";
 import PhoneInput from "../../client/general/inputs/PhoneInput";
 import BaseInput from "../../client/general/inputs/BaseInput";
 import withClientApollo from "../../client/utils/withClientApollo";
-import AddCircleIcon from '@material-ui/icons/AddCircle';
+import RenewalChooser from "../../client/general/RenewalChooser";
+import { CuisineType } from "../../rest/mealModel";
+import { useAddRest } from "../../rest/restService";
+import { useMutationResponseHandler } from "../../utils/apolloUtils";
+import { useNotify } from "../../client/global/state/notificationState";
+import Notifier from "../../client/notification/Notifier";
+import { NotificationType } from "../../client/notification/notificationModel";
+import DeleteIcon from '@material-ui/icons/Delete';
+import { nanoid } from 'nanoid/non-secure'
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -19,6 +27,10 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(2),
     paddingTop: theme.spacing(2),
   },
+  largeVerticalPadding: {
+    paddingBottom: theme.spacing(4),
+    paddingTop: theme.spacing(4),
+  },
   paperContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -28,79 +40,33 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),
   },
-  addMenuItem: {
-    marginTop: theme.spacing(3),
+  verticalMargin: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  row: {
+    display: 'flex',
   },
 }));
 
-const OptionGroupInput: React.FC<{
-  groupIndex: number
-  nameInputRefs: RefObject<HTMLInputElement>[]
-  onClickAdd: () => void
-}> = ({
-  groupIndex,
-  nameInputRefs,
-  onClickAdd,
-}) => {
-  return (
-    <>
-      <Typography>
-        Option Group {groupIndex}
-      </Typography>
-      <Button onClick={onClickAdd} variant='outlined'>Add name</Button>
-      {
-        nameInputRefs.map((ref, i) => (
-          <BaseInput
-            key={`og-name-${i}`}
-            label='Option name'
-            inputRef={ref}
-          />
-        ))
-      }
-    </>
-  )
-}
-
-const AddonGroupInput: React.FC<{
-  groupIndex: number
-  limitInputRef: RefObject<HTMLInputElement>
-  nameInputRefs: RefObject<HTMLInputElement>[]
-  onClickAdd: () => void
-}> = ({
-  groupIndex,
-  limitInputRef,
-  nameInputRefs,
-  onClickAdd,
-}) => {
-  return (
-    <>
-      <Typography>
-        Addon Group {groupIndex}
-      </Typography>
-      <Button onClick={onClickAdd} variant='outlined'>Add name</Button>
-      <BaseInput label='limit' inputRef={limitInputRef} />
-      {
-        nameInputRefs.map((ref, i) => (
-          <BaseInput
-            key={`ag-name-${i}`}
-            label='Addon name'
-            inputRef={ref}
-          />
-        ))
-      }
-    </>
-  )
+type name = {
+  key: string
+  name: RefObject<HTMLInputElement>
 }
 
 type OptionGroupInputState = {
-  names: RefObject<HTMLInputElement>[]
+  key: string
+  names: name[]
 }
 type AddonGroupInputState = {
+  key: string
   limit: RefObject<HTMLInputElement>
-  names: RefObject<HTMLInputElement>[]
+  names: name[]
 }
 
 type MenuInput = {
+  key: string
+  cuisines: CuisineType[],
   nameInputRef: RefObject<HTMLInputElement>,
   descriptionInputRef: RefObject<HTMLInputElement>,
   imgInputRef: RefObject<HTMLInputElement>,
@@ -110,15 +76,103 @@ type MenuInput = {
   addonGroups: AddonGroupInputState[],
 }
 
+const OptionGroupInput: React.FC<{
+  groupIndex: number
+  names: name[]
+  onClickAdd: () => void
+  onRemoveGroup: () => void
+  onRemoveName: (nameIndex: number) => void
+}> = ({
+  groupIndex,
+  names,
+  onClickAdd,
+  onRemoveGroup,
+  onRemoveName,
+}) => {
+  const classes = useStyles();
+  return (
+    <>
+      <div className={classes.row}>
+        <Typography>
+          Option Group {groupIndex + 1}
+        </Typography>
+        <DeleteIcon onClick={onRemoveGroup} />
+      </div>
+      <Button onClick={onClickAdd} variant='outlined'>Add name</Button>
+      {
+        names.map((name, i) => (
+          <div className={classes.row} key={name.key}>
+            <BaseInput
+              className={classes.verticalMargin}
+              label='Option name'
+              inputRef={name.name}
+            />
+            <DeleteIcon onClick={() => onRemoveName(i)} />
+          </div>
+        ))
+      }
+    </>
+  )
+}
+
+const AddonGroupInput: React.FC<{
+  groupIndex: number
+  limitInputRef: RefObject<HTMLInputElement>
+  names: name[]
+  onClickAdd: () => void
+  onRemoveGroup: () => void
+  onRemoveName: (nameIndex: number) => void
+}> = ({
+  groupIndex,
+  limitInputRef,
+  names,
+  onClickAdd,
+  onRemoveGroup,
+  onRemoveName,
+}) => {
+  const classes = useStyles();
+  return (
+    <>
+      <div className={classes.row}>
+        <Typography>
+          Addon Group {groupIndex}
+        </Typography>
+        <DeleteIcon onClick={onRemoveGroup} />
+      </div>
+      <Button onClick={onClickAdd} variant='outlined'>Add name</Button>
+      <BaseInput label='limit' inputRef={limitInputRef} />
+      {
+        names.map((name, i) => (
+          <div className={classes.row} key={name.key}>
+            <BaseInput
+              className={classes.verticalMargin}
+              label='Addon name'
+              inputRef={name.name}
+            />
+            <DeleteIcon onClick={() => onRemoveName(i)} />
+          </div>
+        ))
+      }
+    </>
+  )
+}
+
 const MenuItem: React.FC<
-  MenuInput
+  Omit<MenuInput, 'key'>
   & {
+    onCuisineChange: (cuisines: CuisineType[]) => void,
     onAddOptionGroup: () => void,
     onAddOptionName: (groupIndex: number) => void,
     onAddAddonGroup: () => void,
     onAddAddonName: (groupIndex: number) => void,
+    onRemoveMeal: () => void,
+    onRemoveOptionGroup: (groupIndex: number) => void,
+    onRemoveAddonGroup: (groupIndex: number) => void,
+    onRemoveOptionName: (groupIndex: number, nameIndex: number) => void,
+    onRemoveAddonName: (groupIndex: number, nameIndex: number) => void,
   }
 > = ({
+  cuisines,
   nameInputRef,
   descriptionInputRef,
   imgInputRef,
@@ -126,64 +180,89 @@ const MenuItem: React.FC<
   optionGroups,
   isActiveRef,
   addonGroups,
+  onCuisineChange,
   onAddOptionGroup,
   onAddOptionName,
   onAddAddonGroup,
-  onAddAddonName
+  onAddAddonName,
+  onRemoveMeal,
+  onRemoveOptionGroup,
+  onRemoveAddonGroup,
+  onRemoveOptionName,
+  onRemoveAddonName,
 }) => {
   const classes = useStyles();
   return (
-    <div className={classes.verticalPadding}>
+    <div className={classes.largeVerticalPadding}>
+      <Button variant='outlined' onClick={onRemoveMeal}>
+        Remove {nameInputRef.current?.value}
+      </Button>
       <BaseInput
         label='Name'
+        className={classes.verticalMargin}
         inputRef={nameInputRef}
       />
       <BaseInput
         label='Description'
+        className={classes.verticalMargin}
         inputRef={descriptionInputRef}
       />
       <BaseInput
         label='Img path'
+        className={classes.verticalMargin}
         inputRef={imgInputRef}
       />
       <BaseInput
         label='Original price'
+        className={classes.verticalMargin}
         inputRef={originalPriceInputRef}
       />
       <FormControlLabel
-      control={
-        <Checkbox
-          inputRef={isActiveRef}
-          color='primary'
-        />
-      }
-      label='isActive'
+        control={
+          <Checkbox
+            inputRef={isActiveRef}
+            color='primary'
+          />
+        }
+        label='isActive'
       />
       <Typography variant='h6'>Option groups</Typography>
       <Button onClick={onAddOptionGroup} variant='outlined'>Add option group </Button>
       {
         optionGroups.map((og, i) =>
-          <OptionGroupInput
-            key={`og-${i}`}
-            groupIndex={i}
-            nameInputRefs={og.names}
-            onClickAdd={() => onAddOptionName(i)}
-          />
+          <div className={classes.verticalPadding} key={og.key}>
+            <OptionGroupInput
+              groupIndex={i}
+              names={og.names}
+              onClickAdd={() => onAddOptionName(i)}
+              onRemoveGroup={() => onRemoveOptionGroup(i)}
+              onRemoveName={nameIndex => onRemoveOptionName(i, nameIndex)}
+            />
+          </div>
         )
       }
       <Typography variant='h6'>Addon groups</Typography>
       <Button onClick={onAddAddonGroup} variant='outlined'>Add addon group</Button>
       {
         addonGroups.map((ag, i) =>
-          <AddonGroupInput
-            key={`ag-${i}`}
-            groupIndex={i}
-            limitInputRef={ag.limit}
-            nameInputRefs={ag.names}
-            onClickAdd={() => onAddAddonName(i)}
-          />
+          <div className={classes.verticalPadding} key={ag.key}>
+            <AddonGroupInput
+              key={`ag-${i}`}
+              groupIndex={i}
+              limitInputRef={ag.limit}
+              names={ag.names}
+              onClickAdd={() => onAddAddonName(i)}
+              onRemoveGroup={() => onRemoveAddonGroup(i)}
+              onRemoveName={nameIndex => onRemoveAddonName(i, nameIndex)}
+            />
+          </div>
         )
       }
+      <RenewalChooser
+        cuisines={cuisines}
+        validateCuisineRef={() => {}}
+        onCuisineChange={onCuisineChange}
+      />
     </div>
   )
 }
@@ -200,11 +279,19 @@ const AddPartner = () => {
   const phoneInputRef = createRef<HTMLInputElement>();
   const nameInputRef = createRef<HTMLInputElement>();
   const [nameError, setNameError] = useState('');
+  const [addRest, addRestRes] = useAddRest();
+  const [clickedAdd, setClickedAdd] = useState<boolean>(false);
+  const notify = useNotify();
+  useMutationResponseHandler(addRestRes, () => {
+    notify('Added. Refresh page to add another', NotificationType.success, true);
+  });
   const getNewMenuItem = () => ({
+    key: nanoid(5),
     nameInputRef: createRef<HTMLInputElement>(),
     descriptionInputRef: createRef<HTMLInputElement>(),
     imgInputRef: createRef<HTMLInputElement>(),
     isActiveRef: createRef<HTMLInputElement>(),
+    cuisines: [] as CuisineType[],
     originalPriceInputRef: createRef<HTMLInputElement>(),
     optionGroups: [] as OptionGroupInputState[],
     addonGroups: [] as AddonGroupInputState[],
@@ -219,30 +306,92 @@ const AddPartner = () => {
   const addOptionGroup = (menuIndex: number) => {
     const copy = [ ...menuInputs ];
     copy[menuIndex].optionGroups.push({
+      key: nanoid(5),
       // start with 2 because user would pick from at least 2
-      names: [ createRef<HTMLInputElement>(), createRef<HTMLInputElement>()]
+      names: [
+        {
+          key: nanoid(5),
+          name: createRef<HTMLInputElement>(),
+        },
+        {
+          key: nanoid(5),
+          name: createRef<HTMLInputElement>()
+        }
+      ]
     })
     setMenuInputs(copy);
   }
   const addOptionName = (menuIndex: number) => {
     const copy = [ ...menuInputs ];
     return (groupIndex: number) => {
-      copy[menuIndex].optionGroups[groupIndex].names.push(createRef<HTMLInputElement>());
+      copy[menuIndex].optionGroups[groupIndex].names.push({
+        key: nanoid(5),
+        name: createRef<HTMLInputElement>()
+      });
       setMenuInputs(copy);
     }
   }
   const addAddonGroup = (menuIndex: number) => {
     const copy = [ ...menuInputs ];
     copy[menuIndex].addonGroups.push({
+      key: nanoid(5),
       limit: createRef<HTMLInputElement>(),
-      names: [ createRef<HTMLInputElement>() ]
+      names: [ 
+        {
+          key: nanoid(5),
+          name: createRef<HTMLInputElement>()
+        }
+      ]
     })
     setMenuInputs(copy);
   }
   const addAddonName = (menuIndex: number) => {
     const copy = [ ...menuInputs ];
     return (groupIndex: number) => {
-      copy[menuIndex].addonGroups[groupIndex].names.push(createRef<HTMLInputElement>());
+      copy[menuIndex].addonGroups[groupIndex].names.push({
+        key: nanoid(5),
+        name: createRef<HTMLInputElement>()
+      });
+      setMenuInputs(copy);
+    }
+  };
+  const changeCuisine = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    return (cuisines: CuisineType[]) => {
+      copy[menuIndex].cuisines = cuisines;
+      setMenuInputs(copy);
+    }
+  }
+  const onRemoveMeal = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    copy.splice(menuIndex, 1);
+    setMenuInputs(copy);
+  }
+  const onRemoveOptionGroup = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    return (groupIndex: number) => {
+      copy[menuIndex].optionGroups.splice(groupIndex, 1);
+      setMenuInputs(copy);
+    }
+  };
+  const onRemoveAddonGroup = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    return (groupIndex: number) => {
+      copy[menuIndex].addonGroups.splice(groupIndex, 1);
+      setMenuInputs(copy);
+    }
+  };
+  const onRemoveOptionName = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    return (groupIndex: number, nameIndex: number) => {
+      copy[menuIndex].optionGroups[groupIndex].names.splice(nameIndex, 1);
+      setMenuInputs(copy);
+    }
+  };
+  const onRemoveAddonName = (menuIndex: number) => {
+    const copy = [ ...menuInputs ];
+    return (groupIndex: number, nameIndex: number) => {
+      copy[menuIndex].addonGroups[groupIndex].names.splice(nameIndex, 1);
       setMenuInputs(copy);
     }
   };
@@ -254,30 +403,39 @@ const AddPartner = () => {
     return true;
   };
   const onAddPartner = () => {
-    console.log(addr1InputRef?.current?.value);
-    console.log(addr2InputRef?.current?.value);
-    console.log(cityInputRef?.current?.value);
-    console.log(zipInputRef?.current?.value);
-    console.log(state);
-    console.log(phoneInputRef?.current?.value);
-    console.log(nameInputRef?.current?.value);
-    menuInputs.forEach(mi => {
-      console.log(mi.nameInputRef?.current?.value);
-      console.log(mi.descriptionInputRef?.current?.value);
-      console.log(mi.imgInputRef?.current?.value);
-      console.log(mi.originalPriceInputRef?.current?.value);
-      console.log(mi.isActiveRef?.current?.checked);
-      mi.optionGroups.forEach(og => {
-        og.names.forEach(n => console.log(n.current?.value));
-      });
-      mi.addonGroups.forEach(ag => {
-        console.log(ag.limit?.current?.value);
-        ag.names.forEach(n => console.log(n.current?.value));
-      });
+    setClickedAdd(true);
+    addRest({
+      address: {
+        address1: addr1InputRef?.current!.value,
+        address2: addr2InputRef.current?.value,
+        city: cityInputRef.current!.value,
+        state: state as state,
+        zip: zipInputRef?.current!.value
+      },
+      profile: {
+        name: nameInputRef?.current!.value,
+        phone: phoneInputRef?.current!.value
+      },
+      menu: menuInputs.map(mi => ({
+        name: mi.nameInputRef?.current!.value,
+        img: mi.imgInputRef?.current!.value,
+        isActive: mi.isActiveRef?.current!.checked,
+        description: mi.descriptionInputRef?.current!.value,
+        originalPrice: parseFloat(mi.originalPriceInputRef?.current!.value),
+        optionGroups: mi.optionGroups.map(og => ({
+          names: og.names.map(n => n.name.current!.value)
+        })),
+        addonGroups: mi.addonGroups.map(ag => ({
+          limit: ag.limit.current?.value ? parseFloat(ag.limit.current?.value) : undefined,
+          names: ag.names.map(n => n.name.current!.value)
+        })),
+        tags: mi.cuisines.map(t => t)
+      }))
     });
   }
   return (
     <Container maxWidth='lg' className={classes.container}>
+      <Notifier />
       <Typography variant='h3'>
         Add a Partner
       </Typography>
@@ -310,6 +468,7 @@ const AddPartner = () => {
         <BaseInput
           label='Name'
           error={!!nameError}
+          className={classes.verticalMargin}
           helperText={nameError}
           onBlur={validateName}
           inputRef={nameInputRef}
@@ -319,6 +478,7 @@ const AddPartner = () => {
         />
         <PhoneInput
           inputRef={phoneInputRef}
+          className={classes.verticalMargin}
           setValidator={(validator: () => boolean) => {
             validatePhoneRef.current = validator;
           }}
@@ -330,23 +490,39 @@ const AddPartner = () => {
         >
           Menu
         </Typography>
-        <AddCircleIcon onClick={addMenuItem} />
         {
           menuInputs.map((menu, i) =>
-            <MenuItem 
-              key={`menu-${i}`}
-              {...menu}
-              onAddOptionGroup={() => addOptionGroup(i)}
-              onAddAddonGroup={() => addAddonGroup(i)}
-              onAddOptionName={addOptionName(i)}
-              onAddAddonName={addAddonName(i)}
-            />
+            <React.Fragment key={menu.key}>
+              <MenuItem 
+                {...menu}
+                onCuisineChange={changeCuisine(i)}
+                onAddOptionGroup={() => addOptionGroup(i)}
+                onAddAddonGroup={() => addAddonGroup(i)}
+                onAddOptionName={addOptionName(i)}
+                onAddAddonName={addAddonName(i)}
+                onRemoveMeal={() => onRemoveMeal(i)}
+                onRemoveOptionGroup={onRemoveOptionGroup(i)}
+                onRemoveAddonGroup={onRemoveAddonGroup(i)}
+                onRemoveOptionName={onRemoveOptionName(i)}
+                onRemoveAddonName={onRemoveAddonName(i)}
+              />
+              <Divider />
+            </React.Fragment>
           )
         }
+        <Button
+          onClick={addMenuItem}
+          color='primary'
+          variant='outlined'
+          className={classes.verticalMargin}
+        >
+          Add meal
+        </Button>
         <Button
           variant='contained'
           color='primary'
           onClick={onAddPartner}
+          disabled={clickedAdd}
         >
           Add
         </Button>

@@ -1,12 +1,17 @@
+import { PlanNames } from './../../plan/planModel';
+import { IPlanService, getPlanService } from './../plans/planService';
+import { Permissions } from './../../consumer/consumerModel';
+import { MutationBoolRes, SignedInUser } from './../../utils/apolloUtils';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { ERest, IRest } from './../../rest/restModel';
+import { ERest, IRest, IRestInput, Rest } from './../../rest/restModel';
 import { CuisineType } from './../../rest/mealModel';
 
 const REST_INDEX = 'rests';
 
 export interface IRestService {
+  addRest: (signedInUser: SignedInUser, rest: IRestInput) => Promise<MutationBoolRes>
   getNearbyERests: (
     zip: string,
     cuisines?: CuisineType[],
@@ -23,6 +28,7 @@ export interface IRestService {
 class RestService implements IRestService {
   private readonly elastic: Client
   private geoService?: IGeoService
+  private  planService?: IPlanService
 
   public constructor(elastic: Client) {
     this.elastic = elastic;
@@ -30,6 +36,52 @@ class RestService implements IRestService {
 
   public setGeoService(geoService: IGeoService) {
     this.geoService = geoService;
+  }
+
+  public setPlanService(planService: IPlanService) {
+    this.planService = planService;
+  }
+
+  public async addRest(signedInUser: SignedInUser, rest: IRestInput) {
+    try {
+      if (!signedInUser) throw new Error('No signed in user');
+      if (!signedInUser.permissions.includes(Permissions.createRests)) throw new Error (`'${signedInUser._id}' Unauthorized to add rest`);
+      if (!this.geoService) throw new Error('GeoService not set');
+      if (!this.planService) throw new Error('PlanService not set');
+      const {
+        address1,
+        city,
+        state,
+        zip,
+      } = rest.address
+      const geo = await this.geoService.getGeocode(address1, city, state, zip);
+      const plans = await this.planService.getAvailablePlans();
+      const plan = plans.filter(p => p.name === PlanNames.Standard);
+      if (plan.length === 0) throw new Error(`Missing ${PlanNames.Standard} plan`);
+      const eRest: ERest = Rest.getERestFromRestInput(
+        rest,
+        geo,
+        0.06625,
+        plan[0].name,
+        plan[0].stripePlanId,
+      );
+      try {
+        await this.elastic.index({
+          index: REST_INDEX,
+          body: eRest,
+        });
+        return {
+          res: true,
+          error: null,
+        }
+      } catch (e) {
+        console.error(`Failed to index rest, '${rest.profile.name}' for '${signedInUser._id}'`, e.stack);
+        throw e;
+      }
+    } catch (e) {
+      console.error(`Failed to add rest, '${rest.profile.name}' for '${signedInUser?._id}'`, e.stack);
+      throw e;
+    }
   }
 
   public async getNearbyERests(
@@ -179,6 +231,7 @@ export const initRestService = (elastic: Client) => {
 export const getRestService = () => {
   if (restService) return restService;
   initRestService(initElastic());
-  restService!.setGeoService(getGeoService())
+  restService!.setGeoService(getGeoService());
+  restService!.setPlanService(getPlanService());
   return restService;
 }
