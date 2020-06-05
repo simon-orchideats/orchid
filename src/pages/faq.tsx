@@ -79,7 +79,7 @@ const faqs = () => {
             q='What is Orchid?'
             a="Orchid lets you mix-and-match meals from different restaurants every week. You just pick the meals and the
             delivery time. We'll pick up the meals for you and deliver to your doorstep at your scheduled time. Skip
-            any week or let us pick meals for you. With Orchid you don't have to worry about what's for dinner anymore."
+            any week or let us pick meals for you. With Orchid you don't have to think about food anymore."
           />
           <Qa
             q='What makes Orchid different from other delivery websites?'
