@@ -1315,7 +1315,7 @@ class OrderService {
                       range: {
                         'deliveries.deliveryDate': {
                           gte: 'now',
-                          lt: moment().add(10, 'd').valueOf(),
+                          lt: moment().add(9, 'd').valueOf(),
                         }
                       },
                     },
