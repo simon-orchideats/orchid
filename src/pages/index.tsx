@@ -516,21 +516,20 @@ const Promotion = withClientApollo(() => {
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   const consumerData = consumer.data;
   if (consumerData && consumerData.Plan) return null;
+  const autoAmount = (2 * autoPickPromoAmount / 100);
+  const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
+  const promoAmount = basePromoAmount + autoAmount;
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${((welcomePromoAmount * 4 * referralMonthDuration) / 100).toFixed(2)} off your first month, auto applied at checkout! 
+        ${promoAmount} off your first month, auto applied at checkout! 
       </Typography>
-      <Typography variant={isSmAndDown ? 'h5' : 'h4'}className={classes.topMargin}>
-        Another ${(2 * autoPickPromoAmount / 100).toFixed(2)} off on the last 2 weeks when you let Orchid pick your meals
+      <Typography variant='body2' className={classes.topMargin}>
+        *${(welcomePromoAmount / 100)} off 4 weeks. ${autoAmount} applied on weeks 3 & 4 when you
+        let Orchid pick your meals.
       </Typography>
-      <Typography
-        variant='body1'
-        className={classes.topMargin}
-        align='left'
-      >
-        *Discount applied in weekly increments over 1 month. Skipping orders or canceling subscriptions will terminate
-        discounts
+      <Typography variant='body2' className={classes.topMargin}>
+        Skipping or canceling terminates discounts
       </Typography>
     </div>
   );

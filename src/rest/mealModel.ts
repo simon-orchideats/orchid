@@ -114,6 +114,8 @@ export interface IMeal {
   readonly tags: string[]
 }
 
+export interface IMealInput extends Omit<IMeal, 'planName' | 'stripePlanId' | '_id'> {}
+
 export interface EMeal extends IMeal {
   readonly canAutoPick: boolean
 }

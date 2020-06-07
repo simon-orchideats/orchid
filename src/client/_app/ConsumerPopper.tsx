@@ -18,6 +18,8 @@ import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import { useGetConsumer } from '../../consumer/consumerService';
 import { Permissions } from '../../consumer/consumerModel';
 import withClientApollo from '../utils/withClientApollo';
+import { addPartnerRoute } from '../../pages/consumer/add-partner';
+import StorefrontIcon from '@material-ui/icons/Storefront';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -121,6 +123,18 @@ const ConsumerPopper: React.FC<{
               </Typography>
             </div>
           </>
+        }
+        {
+          consumer && consumer.Permissions.includes(Permissions.createRests) &&
+          <div className={classes.row} onClick={() => {
+            Router.push(addPartnerRoute);
+            onClose();
+          }}>
+            <StorefrontIcon fontSize='large' />
+            <Typography variant='h6'>
+              Add a partner
+            </Typography>
+          </div>
         }
         <div className={classes.row} onClick={() => {
           window.location.assign('/api/logout');

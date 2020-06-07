@@ -124,6 +124,7 @@ const start = async () => {
   const orderService = initOrderService(elastic, stripe);
 
   restService.setGeoService(geoService);
+  restService.setPlanService(planService);
   consumerService.setOrderService(orderService);
   consumerService.setPlanService(planService);
   consumerService.setGeoService(geoService);

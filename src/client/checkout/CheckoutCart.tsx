@@ -78,7 +78,7 @@ const CheckoutCart: React.FC<props> = ({
       onClick={onPlaceOrder}
       className={classes.button}
     >
-      {loading ? <CircularProgress size={25} /> : 'Place order'}
+      {loading ? <CircularProgress size={25} /> : 'Secure checkout'}
     </Button>
   );
   const applyPromoButton = (

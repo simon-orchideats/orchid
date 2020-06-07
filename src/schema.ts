@@ -4,7 +4,7 @@ import { DestinationQL } from './server/place/destinationQL';
 import { AddressQL } from './server/place/addressQL';
 import { CardQL } from './server/card/cardQL';
 import { LocationQL } from './server/place/locationQL';
-import { RestQueryResolvers } from './server/rests/restResolvers';
+import { RestQueryResolvers, RestMutationResolvers } from './server/rests/restResolvers';
 import { RestQL } from './server/rests/restQL';
 import { PlanQueryResolvers } from './server/plans/planResolvers';
 import { merge } from 'lodash';
@@ -34,6 +34,7 @@ const mutation = gql`
     error: String
   }
   type Mutation {
+    addRest(rest: RestInput!): BoolRes!
     cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
     getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
@@ -78,7 +79,8 @@ const resolvers = {
   ),
   Mutation: merge(
     OrderMutationResolvers,
-    ConsumerMutationResolvers
+    ConsumerMutationResolvers,
+    RestMutationResolvers,
   ),
 };
 
