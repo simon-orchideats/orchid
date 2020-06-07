@@ -720,6 +720,22 @@ PUT orders/_mapping
   }
 }
 
+
+PUT /tags/
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "type": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+
 PUT /rests/
 {
   "mappings": {
@@ -728,6 +744,19 @@ PUT /rests/
       "banking": {
         "properties": {
           "stripeId": {
+            "type": "keyword"
+          }
+        }
+      },
+      "hours": {
+        "properties": {
+          "day": {
+            "type": "integer"
+          },
+          "open": {
+            "type": "keyword"
+          },
+          "close": {
             "type": "keyword"
           }
         }
@@ -858,7 +887,34 @@ PUT /rests/
             }
           },
           "tags": {
-            "type": "keyword"
+            "properties": {
+              "type": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  },
+                  "suggest": {
+                    "type": "completion",
+                    "analyzer": "simple",
+                    "preserve_separators": true,
+                    "preserve_position_increments": true,
+                    "max_input_length": 50,
+                    "contexts": [
+                      {
+                        "name": "location",
+                        "type": "GEO",
+                        "precision": 6,
+                        "path": "location.geo"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           },
           "originalPrice": {
             "type": "integer"
@@ -868,9 +924,6 @@ PUT /rests/
           },
           "planName": {
             "type": "keyword"
-          },
-          "canAutoPick": {
-            "type": "boolean"
           }
         }
       },
@@ -943,30 +996,6 @@ PUT /rests/
               "keyword": {
                 "type": "keyword",
                 "ignore_above": 256
-              }
-            }
-          },
-          "tags": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              },
-              "suggest": {
-                "type": "completion",
-                "analyzer": "simple",
-                "preserve_separators": true,
-                "preserve_position_increments": true,
-                "max_input_length": 50,
-                "contexts": [
-                  {
-                    "name": "location",
-                    "type": "GEO",
-                    "precision": 6,
-                    "path": "location.geo"
-                  }
-                ]
               }
             }
           }
@@ -1054,7 +1083,14 @@ PUT /orders/
                 "type": "integer"
               },
               "tags": {
-                "type": "keyword"
+                "properties": {
+                  "type": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "keyword"
+                  }
+                }
               },
               "restId": {
                 "type": "keyword"
@@ -1179,21 +1215,23 @@ PUT /orders/
             }
           },
           "discounts": {
-            "reason": {
-              "type": "keyword"
-            },
-            "description": {
-              "type": "keyword",
-              "ignore_above": 25
-            },
-            "percentOff": {
-              "type": "integer"
-            },
-            "amountOff": {
-              "type": "integer"
-            },
-            "referredUserId": {
-              "type": "keyword"
+            "properties": {
+              "reason": {
+                "type": "keyword"
+              },
+              "description": {
+                "type": "keyword",
+                "ignore_above": 25
+              },
+              "percentOff": {
+                "type": "integer"
+              },
+              "amountOff": {
+                "type": "integer"
+              },
+              "referredUserId": {
+                "type": "keyword"
+              }
             }
           },
           "mealPrices": {
@@ -1348,8 +1386,15 @@ PUT /consumers/
               }
             }
           },
-          "cuisines": {
-            "type": "keyword"
+          "tags": {
+            "properties": {
+              "type": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "keyword"
+              }
+            }
           },
           "referralCode": {
             "type": "keyword"
@@ -1412,6 +1457,51 @@ PUT /promos/
 
 
 ######### INSERTS ##########
+
+
+POST _bulk
+{ "index" : { "_index" : "tags" } }
+{ "name" : "American", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Chinese", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Cuban", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Indian", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Italian", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Japanese", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Korean", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Mediterranean", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Mexican", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Thai", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vietnamese", "type": "cuisine" }
+
+
+POST _bulk
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Keto", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Low Cal", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Low Carb", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Pescatarian", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Protein", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Seafood", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vegan", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vegetarian", "type": "diet" }
+
 
 POST rests/_doc/
 {

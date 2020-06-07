@@ -1,3 +1,4 @@
+import { Tag } from './../rest/tagModel';
 import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
 import { deliveryTime } from './../consumer/consumerPlanModel';
@@ -59,7 +60,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly stripePlanId: string;
   readonly planName: PlanName;
   readonly taxRate: number
-  readonly tags: string[];
+  readonly tags: Tag[];
 
   constructor(meal: IDeliveryMeal) {
     this.mealId = meal.mealId;
@@ -71,7 +72,7 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.stripePlanId = meal.stripePlanId;
     this.planName = meal.planName;
     this.taxRate = meal.taxRate;
-    this.tags = meal.tags;
+    this.tags = meal.tags.map(t => new Tag(t));
     this.choices = [ ...meal.choices ]
   }
 
@@ -130,7 +131,9 @@ export class DeliveryMeal implements IDeliveryMeal {
 
   static getICopy(meal: IDeliveryMeal): IDeliveryMeal {
     return {
-      ...meal
+      ...meal,
+      choices: meal.choices.map(c => c),
+      tags: meal.tags.map(t => Tag.getICopy(t))
     }
   }
 }

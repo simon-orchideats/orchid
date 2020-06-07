@@ -1,7 +1,7 @@
+import { Tag, ITag } from './../rest/tagModel';
 import { IWeeklyDiscount, WeeklyDiscount } from './../order/discountModel';
 import { PlanName } from './../plan/planModel';
 import moment from 'moment';
-import { CuisineType } from '../rest/mealModel';
 
 export const MIN_DAYS_AHEAD = 1;
 
@@ -152,18 +152,15 @@ export class MealPlan implements IMealPlan {
   }
 }
 
-export interface IConsumerPlan {
+
+export interface IConsumerPlanInput {
   readonly mealPlans: IMealPlan[]
-  readonly cuisines: CuisineType[]
+  readonly tags: ITag[]
   readonly schedules: ISchedule[]
-  readonly referralCode: string
-  readonly weeklyDiscounts: IWeeklyDiscount[]
 }
 
-export interface IConsumerPlanSettings {
-  readonly mealPlans: IMealPlan[]
-  readonly cuisines: CuisineType[]
-  readonly schedules: ISchedule[]
+export interface IConsumerPlan extends IConsumerPlanInput{
+  readonly referralCode: string
   readonly weeklyDiscounts: IWeeklyDiscount[]
 }
 
@@ -171,24 +168,22 @@ export interface EConsumerPlan extends IConsumerPlan {
   readonly mealPlans: EMealPlan[]
 }
 
-export interface IConsumerPlanInput extends Omit<IConsumerPlan, 'referralCode' | 'weeklyDiscounts'> {}
-
 export class ConsumerPlan implements IConsumerPlan {
   readonly mealPlans: MealPlan[]
-  readonly cuisines: CuisineType[]
+  readonly tags: Tag[]
   readonly schedules: Schedule[]
   readonly referralCode: string
   readonly weeklyDiscounts: WeeklyDiscount[]
 
   constructor(consumerPlan: IConsumerPlan) {
     this.mealPlans = consumerPlan.mealPlans.map(p => new MealPlan(p));
-    this.cuisines = consumerPlan.cuisines.map(c => c);
+    this.tags = consumerPlan.tags.map(t => new Tag(t));
     this.schedules = consumerPlan.schedules.map(s => new Schedule(s));
     this.referralCode = consumerPlan.referralCode;
     this.weeklyDiscounts = consumerPlan.weeklyDiscounts.map(wd => new WeeklyDiscount(wd));
   }
 
-  public get Cuisines() { return this.cuisines }
+  public get Tags() { return this.tags }
   public get MealPlans() { return this.mealPlans }
   public get ReferralCode() { return this.referralCode }
   public get Schedules() { return this.schedules }
@@ -198,7 +193,7 @@ export class ConsumerPlan implements IConsumerPlan {
     return {
       mealPlans: plan.mealPlans.map(p => MealPlan.getICopy(p)),
       schedules: plan.schedules.map(s => Schedule.getICopy(s)),
-      cuisines: plan.cuisines.map(c => c),
+      tags: plan.tags.map(t => Tag.getICopy(t)),
       weeklyDiscounts: plan.weeklyDiscounts.map(wd => WeeklyDiscount.getICopy(wd)),
       referralCode: plan.referralCode
     }
@@ -212,26 +207,9 @@ export class ConsumerPlan implements IConsumerPlan {
     return 'SixPToEightP';
   }
 
-  static areCuisinesEqual(c1: CuisineType[], c2: CuisineType[]) {
-    if (c1.length !== c2.length) return false;
-    const c1Copy = [...c1];
-    const c2Copy = [...c2];
-    for (let i = 0; i < c1.length; i++) {
-      const findIndex = c2Copy.findIndex(c => c1[i] === c);
-      if (findIndex === -1) return false;
-      c2Copy.slice(findIndex, 1);
-    }
-    for (let i = 0; i < c2.length; i++) {
-      const findIndex = c1Copy.findIndex(c => c2[i] === c);
-      if (findIndex === -1) return false;
-      c1Copy.slice(findIndex, 1);
-    }
-    return true;
-  }
-
   static equals(plan1: ConsumerPlan, plan2: ConsumerPlan) {
     if (!Schedule.equalsLists(plan1.Schedules, plan2.Schedules)) return false;
-    if (!ConsumerPlan.areCuisinesEqual(plan1.Cuisines, plan2.Cuisines)) return false;
+    if (!Tag.areTagsEqual(plan1.Tags, plan2.Tags)) return false;
     if (!MealPlan.equalsLists(plan1.MealPlans, plan2.MealPlans)) return false;
     return true;
   }
@@ -255,11 +233,11 @@ export class ConsumerPlan implements IConsumerPlan {
     };
   }
 
-  static getIConsumerPlanInputFromConsumerPlan(plan: ConsumerPlan) {
+  static getIConsumerPlanInputFromConsumerPlan(plan: ConsumerPlan): IConsumerPlanInput {
     const copy = ConsumerPlan.getICopy(plan);
     return {
       mealPlans: copy.mealPlans,
-      cuisines: copy.cuisines,
+      tags: copy.tags,
       schedules: copy.schedules,
     }
   }

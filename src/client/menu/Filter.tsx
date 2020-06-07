@@ -1,5 +1,4 @@
 import { makeStyles, FormControl, FormLabel, FormGroup, Checkbox, FormControlLabel, Popover, Paper, Button } from "@material-ui/core";
-import { CuisineType, CuisineTypes } from "../../rest/mealModel";
 import { useState } from "react";
 
 const useStyles = makeStyles(theme => ({
@@ -18,16 +17,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Filter: React.FC<{
+  allCuisines: string[]
   zip?: React.ReactNode,
-  cuisines: CuisineType[],
-  onClickCuisine: (cuisines: CuisineType[]) => void
+  cuisines: string[],
+  onClickCuisine: (cuisines: string[]) => void
 }> = ({
+  allCuisines,
   zip,
   cuisines,
   onClickCuisine
 }) => {
   const classes = useStyles();
-  const allCuisines = Object.values<CuisineType>(CuisineTypes);
   const [anchorEl, setMoreAnchor] = useState<null | HTMLElement>(null);
   const onClickFilter = (event: React.MouseEvent<HTMLElement>) => {
     setMoreAnchor(anchorEl ? null : event.currentTarget);

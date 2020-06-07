@@ -1,7 +1,6 @@
 import { IDestination, Destination, EDestination } from './../place/destinationModel';
 import { ICard, Card } from './../card/cardModel';
 import { EConsumerPlan, ConsumerPlan, IConsumerPlan, deliveryDay } from './consumerPlanModel';
-import { CuisineTypes } from '../rest/mealModel';
 
 export type Permission = 
   'update:allOrders'
@@ -103,13 +102,6 @@ export class Consumer implements IConsumer {
   public get Permissions() { return this.permissions }
   public get Profile() { return this.profile }
   public get Plan() { return this.plan }
-
-  static areCuisinesValid(cuisines: string[]) {
-    for (let i = 0; i < cuisines.length; i++) {
-      if (!Object.values<string>(CuisineTypes).includes(cuisines[i])) return false;
-    }
-    return true;
-  }
 
   static getIConsumerFromEConsumer(_id: string, permissions: Permission[], eConsumer: EConsumer): IConsumer {
     return {

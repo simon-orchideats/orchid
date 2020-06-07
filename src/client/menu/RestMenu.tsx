@@ -2,7 +2,8 @@ import React from 'react';
 import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
-import { Meal, CuisineType } from '../../rest/mealModel';
+import { Meal } from '../../rest/mealModel';
+import { TagTypes } from '../../rest/tagModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -25,11 +26,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const isMealInFilter = (meal: Meal, cuisines: CuisineType[]) => {
+const isMealInFilter = (meal: Meal, cuisines: string[]) => {
   let mealIsInCuisineFilter = false;
   for (let i = 0; i < cuisines.length; i++) {
     for (let j = 0; j < meal.Tags.length; j++) {
-      if (meal.Tags[j] === cuisines[i]) {
+      const tag = meal.Tags[j];
+      if (tag.Type === TagTypes.Cuisine && tag.Name === cuisines[i]) {
         mealIsInCuisineFilter = true;
         break;
       }
@@ -42,7 +44,7 @@ const isMealInFilter = (meal: Meal, cuisines: CuisineType[]) => {
 }
 
 const RestMenu: React.FC<{
-  cuisinesFilter: CuisineType[],
+  cuisinesFilter: string[],
   rest: Rest
 }> = ({
   cuisinesFilter,

@@ -19,6 +19,7 @@ const query = gql`
     availablePlans: [Plan!]!
     allPaidOrders: [Order!]!
     allUpcomingOrders: [Order!]!
+    allTags: [Tag!]! 
     myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
     nearbyRests(cityOrZip: String): [Rest!]!

@@ -4,11 +4,12 @@ import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './de
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
 import { IConsumerPlan, ISchedule, Schedule, MealPlan, defaultDeliveryDay } from '../consumer/consumerPlanModel';
-import { IMeal, Meal, CuisineType } from '../rest/mealModel';
+import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
 import { isEqual } from 'lodash';
 import { getItemChooser } from '../utils/utils';
+import { Tag } from '../rest/tagModel';
 
 const AUTO_ADDON_LIMIT = 3;
 
@@ -372,7 +373,7 @@ export class Cart implements ICart {
     card: ICard,
     paymentMethodId: string,
     instructions: string,
-    cuisines: CuisineType[],
+    tags: Tag[],
     promo?: string,
   ): ICartInput {
     const mealPlans = Object.values(this.restMeals).reduce<MealPlan[]>((plans, restMeal) => {
@@ -408,7 +409,7 @@ export class Cart implements ICart {
       consumerPlan: {
         mealPlans,
         schedules: this.Schedules,
-        cuisines,
+        tags,
       },
       destination: {
         address: {

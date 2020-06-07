@@ -1,3 +1,4 @@
+import { TagTypes, Tag } from './../../rest/tagModel';
 import { IDiscount, IWeeklyDiscount, WeeklyDiscount } from './../../order/discountModel';
 import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration, oncePromoKey } from './../../order/promoModel';
 import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
@@ -8,7 +9,7 @@ import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
-import { IMeal, EMeal, CuisineType } from './../../rest/mealModel';
+import { IMeal, EMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, IConsumerProfile, Consumer, Permissions } from './../../consumer/consumerModel';
 import { MealPlan, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerPlanModel';
@@ -34,9 +35,9 @@ export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, da
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
-const doesMealContainCuisines = (meal: EMeal, cuisines: CuisineType[]) => {
+const doesMealContainCuisines = (meal: EMeal, cuisines: string[]) => {
   for (let i = 0; i < cuisines.length; i++) {
-    if (meal.tags.includes(cuisines[i])) return true;
+    if (meal.tags.find(t => t.type === TagTypes.Cuisine && t.name === cuisines[i])) return true;
   }
   return false;
 }
@@ -47,7 +48,7 @@ const chooseRandomMeals = (
   restId: string,
   restName: string,
   taxRate: number,
-  cuisines: CuisineType[]
+  cuisines: string[]
 ): IDeliveryMeal[] => {
   const chooseRandomly = getItemChooser<EMeal>(menu, m => m.canAutoPick && m.isActive && doesMealContainCuisines(m, cuisines));
   const meals: IMeal[] = [];
@@ -529,7 +530,7 @@ class OrderService {
     //   });
     // }));
 
-    if (cart.consumerPlan.cuisines.length === 0) {
+    if (cart.consumerPlan.tags.length === 0) {
       const msg = 'Cuisines cannot be empty';
       console.warn('[OrderService]', msg);
       return msg;
@@ -724,12 +725,11 @@ class OrderService {
       if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumerId}'`);
       if (!this.restService) throw new Error('Missing RestService');
       if (!consumer.profile.destination) throw new Error (`Consumer '${consumerId}' missing destination`);
-      const cuisines = consumer.plan.cuisines;
+      const cuisines = Tag.getCuisines(consumer.plan.tags);
       const plan = consumer.plan;
       const rests = await this.restService.getNearbyERests(
         consumer.profile.destination.address.zip,
         cuisines,
-        true,
         ['menu', 'profile', 'location', 'taxRate']
       );
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
@@ -1000,7 +1000,7 @@ class OrderService {
       }
 
       const {
-        cuisines,
+        tags,
         schedules,
         mealPlans
       } = cart.consumerPlan;
@@ -1102,7 +1102,7 @@ class OrderService {
           {
             mealPlans,
             schedules,
-            cuisines,
+            tags,
           },
           newReferralPromo.id,
           [],

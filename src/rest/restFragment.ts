@@ -20,7 +20,10 @@ const restFragment = gql`
       originalPrice
       stripePlanId
       planName
-      tags
+      tags {
+        type
+        name
+      }
       isActive
       addonGroups {
         names

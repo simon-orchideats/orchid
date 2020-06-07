@@ -1,3 +1,4 @@
+import { ECuisine, ITag } from './../../rest/tagModel';
 import { PlanNames } from './../../plan/planModel';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { Permissions } from './../../consumer/consumerModel';
@@ -6,22 +7,22 @@ import { getGeoService, IGeoService } from './../place/geoService';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest, IRestInput, Rest } from './../../rest/restModel';
-import { CuisineType } from './../../rest/mealModel';
 
 const REST_INDEX = 'rests';
+const TAG_INDEX = 'tags';
 
 export interface IRestService {
   addRest: (signedInUser: SignedInUser, rest: IRestInput) => Promise<MutationBoolRes>
+  getAllTags: () => Promise<ITag[]>
   getNearbyERests: (
     zip: string,
-    cuisines?: CuisineType[],
-    canAutoPick?: boolean,
+    cuisines?: string[],
     fields?: string[]
   ) => Promise<{
     _id: string,
     rest: ERest
   }[]>
-  getNearbyRests: (zip: string, cuisines?: CuisineType[], fields?: string[]) => Promise<IRest[]>
+  getNearbyRests: (zip: string, cuisines?: string[], fields?: string[]) => Promise<IRest[]>
   getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
 }
 
@@ -84,10 +85,22 @@ class RestService implements IRestService {
     }
   }
 
+  public async getAllTags() {
+    try {
+      const res: ApiResponse<SearchResponse<ECuisine>> = await this.elastic.search({
+        index: TAG_INDEX,
+        size: 1000, // todo handle case when results > 1000
+      });
+      return res.body.hits.hits.map(({ _source }) => _source)
+    } catch (e) {
+      console.error(`[RestService] could not get cuisines`, e.stack);
+      throw e;
+    }
+  }
+
   public async getNearbyERests(
     cityOrZip: string,
-    cuisines?: CuisineType[],
-    canAutoPick?: boolean,
+    cuisines?: string[],
     fields?: string[]
   ): Promise<{
     _id: string,
@@ -144,20 +157,13 @@ class RestService implements IRestService {
           }
         }
       }
-      if (canAutoPick) {
-        options.body.query.bool.filter.bool.must.push({
-          term: {
-            'menu.canAutoPick': true
-          }
-        })
-      }
       if (cuisines) {
-        const newBool = {
+        options.body.query.bool.filter.bool.must.push({
           bool: {
             must: [
               {
                 terms: {
-                  'menu.tags': cuisines
+                  'menu.tags.name.keyword': cuisines
                 }
               },
               {
@@ -167,15 +173,7 @@ class RestService implements IRestService {
               }
             ],
           },
-        } as any;
-        if (canAutoPick) {
-          newBool.bool.must.push({
-            term: {
-              'menu.canAutoPick': true
-            }
-          })
-        }
-        options.body.query.bool.filter.bool.must.push(newBool);
+        });
       }
       if (fields) options._source = fields;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
@@ -184,14 +182,14 @@ class RestService implements IRestService {
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby ERests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}' and canAutoPick '${canAutoPick}'`, e.stack);
+      console.error(`[RestService] could not get nearby ERests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw e;
     }
   }
 
-  async getNearbyRests(cityOrZip: string, cuisines?: CuisineType[], fields?: string[]): Promise<IRest[]> {
+  async getNearbyRests(cityOrZip: string, cuisines?: string[], fields?: string[]): Promise<IRest[]> {
     try {
-      const eRests = await this.getNearbyERests(cityOrZip, cuisines, undefined, fields);
+      const eRests = await this.getNearbyERests(cityOrZip, cuisines, fields);
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,

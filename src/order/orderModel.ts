@@ -194,8 +194,14 @@ export class Order implements IOrder{
     order.deliveries.forEach(d => {
       //@ts-ignore
       d.__typename = 'Delivery';
-      //@ts-ignore
-      d.meals.forEach(m => m.__typename = 'DeliveryMeal');
+      d.meals.forEach(m => {
+        //@ts-ignore
+        m.__typename = 'DeliveryMeal';
+        m.tags.forEach(t => {
+          //@ts-ignore
+          t.__typename = 'Tag'
+        })
+      });
     });
     // @ts-ignore
     order.costs.__typename = 'Costs';

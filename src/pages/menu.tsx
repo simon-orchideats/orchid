@@ -2,17 +2,17 @@ import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Pa
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
-import { useGetNearbyRests } from "../rest/restService";
+import { useGetNearbyRests, useGetTags } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
 import SideMenuCart from "../client/menu/SideMenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
 import { useGetCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-import { CuisineType, CuisineTypes } from "../rest/mealModel";
 import Filter from "../client/menu/Filter";
+import { Tag } from "../rest/tagModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -69,11 +69,20 @@ const menu = () => {
   const cart = useGetCart();
   const zip = cart && cart.Zip ? cart.Zip : '';
   const [open, setOpen] = useState(zip ? false : true);
-  const [cuisines, setCuisines] = useState(Object.values<CuisineType>(CuisineTypes));
+  const allTags = useGetTags();
+  const [cuisines, setCuisines] = useState<string[]>([]);
   const rests = useGetNearbyRests(zip);
-  const onFilterCuisines = (cuisines: CuisineType[]) => {
+  const onFilterCuisines = (cuisines: string[]) => {
     setCuisines(cuisines);
   };
+  const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
+  
+  useEffect(() => {
+    if (cuisines.length === 0) {
+      setCuisines(allCuisines)
+    }
+  }, [allCuisines])  
+
   const RestMenus = rests.data && rests.data.map(rest => 
     <RestMenu
       key={rest.Id}
@@ -124,13 +133,18 @@ const menu = () => {
               isMdAndUp ?
               <div className={classes.row}>
                 {zipButton}
-                <Filter cuisines={cuisines} onClickCuisine={onFilterCuisines} />
+                <Filter 
+                  allCuisines={allCuisines}
+                  cuisines={cuisines}
+                  onClickCuisine={onFilterCuisines}
+                />
               </div>
             :
               rests.data &&
               <MenuMiniCart
                 filter={
                   <Filter
+                    allCuisines={allCuisines}
                     cuisines={cuisines}
                     onClickCuisine={onFilterCuisines}
                     zip={zipButton}

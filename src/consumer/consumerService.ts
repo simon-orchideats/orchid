@@ -36,6 +36,10 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
       //@ts-ignore
       mp.__typename = 'MealPlan';
     });
+    newConsumer.plan.tags.forEach(t => {
+      // @ts-ignore
+      t.__typename = 'Tag'
+    })
   }
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';
@@ -55,32 +59,6 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
 export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.readQuery<myConsumerRes>({
   query: MY_CONSUMER_QUERY
 });
-
-
-// const MY_ACCOUNT_QUERY = gql`
-//   query myAccount {
-//     myAccount {
-//       profile {
-//         name
-//         email
-//       }
-//       permissions
-//     }
-//   }
-// `
-// type myAccountRes = { myAccount: IUser | null }
-
-// export const useGetMyAccount = () => {
-//   const res = useQuery<myAccountRes>(MY_ACCOUNT_QUERY);
-//   const user = useMemo<User | null>(() => (
-//     res.data && res.data.myAccount ? new User(res.data.myAccount) : null
-//   ), [res.data]);
-//   return {
-//     loading: res.loading,
-//     error: res.error,
-//     data: user
-//   }
-// }
 
 export const useAddMarketingEmail = (): [
   (email: string) => void,

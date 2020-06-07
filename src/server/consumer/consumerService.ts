@@ -601,11 +601,12 @@ class ConsumerService implements IConsumerService {
         body: {
           doc
         }
-      })
+      });
 
       const newConsumer: IConsumer = {
+        ...updatedConsumer.body.get._source,
         _id: signedInUser._id,
-        ...updatedConsumer.body.get._source
+        permissions: signedInUser.permissions,
       };
       return {
         res: newConsumer,

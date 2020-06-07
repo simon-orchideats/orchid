@@ -1,62 +1,5 @@
+import { ITag, Tag } from './tagModel';
 import { PlanName } from './../plan/planModel';
-
-export type CuisineType =
-    'American'
-  // | 'Bbq'
-  | 'Chinese'
-  | 'Cuban'
-  | 'Indian'
-  | 'Italian'
-  | 'Japanese'
-  | 'Korean'
-  | 'Mediterranean'
-  | 'Mexican'
-  | 'Pescatarian'
-  | 'Pizza'
-  | 'Protein'
-  | 'Seafood'
-  // | 'Thai'
-  | 'Vegan'
-  | 'Vegetarian'
-
-export const CuisineTypes: {
-  American: 'American',
-  // Bbq: 'Bbq',
-  Chinese: 'Chinese',
-  Cuban: 'Cuban',
-  Indian: 'Indian',
-  Italian: 'Italian',
-  Japanese: 'Japanese',
-  Korean: 'Korean'
-  Mediterranean: 'Mediterranean',
-  Mexican: 'Mexican',
-  Pescatarian: 'Pescatarian'
-  Pizza: 'Pizza'
-  Protein: 'Protein'
-  Seafood: 'Seafood'
-  // Thai: 'Thai',
-  Vegan: 'Vegan',
-  Vegetarian: 'Vegetarian'
-} = {
-  American: 'American',
-  // Bbq: 'Bbq',
-  Chinese: 'Chinese',
-  Cuban: 'Cuban',
-  Indian: 'Indian',
-  Italian: 'Italian',
-  Japanese: 'Japanese',
-  Korean: 'Korean',
-  Mediterranean: 'Mediterranean',
-  Mexican: 'Mexican',
-  Pescatarian: 'Pescatarian',
-  Pizza: 'Pizza',
-  Protein: 'Protein',
-  Seafood: 'Seafood',
-  // Thai: 'Thai',
-  Vegan: 'Vegan',
-  Vegetarian: 'Vegetarian'
-}
-  
 
 export interface IOptionGroup {
   readonly names: string[]
@@ -111,7 +54,7 @@ export interface IMeal {
   readonly originalPrice: number
   readonly stripePlanId: string
   readonly planName: PlanName
-  readonly tags: string[]
+  readonly tags: ITag[]
 }
 
 export interface IMealInput extends Omit<IMeal, 'planName' | 'stripePlanId' | '_id'> {}
@@ -131,7 +74,7 @@ export class Meal implements IMeal {
   readonly originalPrice: number;
   readonly stripePlanId: string;
   readonly planName: PlanName;
-  readonly tags: string[];
+  readonly tags: Tag[];
 
   constructor(meal: IMeal) {
     this._id = meal._id;
@@ -144,7 +87,7 @@ export class Meal implements IMeal {
     this.optionGroups = meal.optionGroups.map(og => new OptionGroup(og))
     this.stripePlanId = meal.stripePlanId;
     this.planName = meal.planName;
-    this.tags = meal.tags;
+    this.tags = meal.tags.map(t => new Tag(t));
   }
 
   public get Id() { return this._id }

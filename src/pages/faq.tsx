@@ -77,15 +77,25 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What is Orchid?'
-            a="Orchid allows to receive your favorite restaurant meals every week at one low cost. We're a weekly
-            subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
-            fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
+            a="Orchid lets you mix-and-match from different restaurants to create weekly meal plans. We'll deliver all
+            your meals together based on your preferred time slot (extra deliveries are +$3.50). With Orchid you don't
+            have to think about food anymore because we'll automatically renew your subscription each and and pick new
+            meals for you. But if you like more control, you can always edit the meals or even skip a week."
           />
           <Qa
             q='What makes Orchid different from other delivery websites?'
-            a="Orchid provides weekly mix-and-match meals from your favorite local restaurants in bulk. We combine bulk
-            meals with personalized delivery times to save you time and money. Quality is our top priority, which is why
-            we only partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
+            a="We're a weekly meal-plan from a variety of restaurants but other websites offer 1 order from 1 restaurant.
+            Imagine subscribing to Netflix vs buying a movie on Amazon. With Orchid you pay a weekly subscription to
+            combine meals from any restaurant vs paying for an on-demand order from 1 restaurant. Our focus is on
+            meal-plans, not single meals."
+          />
+          <Qa
+            q='How fresh is the food?'
+            a="While Orchid meals are cooked the same day, we understand that freshness is a concern because we deliver
+            in batches of at least 4 meals, designed to be eaten over the week. If freshness is a priority, then
+            Orchid is not for you. Nothing beats the freshness of on-demand delivery or more importantly, dining-in.
+            But if you appreciate the comfort of coming home to a cooked meal or enjoy the flexibility of eating
+            whenever and however you want, then Orchid is the perfect fit."
           />
           <Qa
             q='How many restaurants can I pick?'

@@ -1,2367 +1,295 @@
-//////////////DONEEEEEEEEEEEEEEE
-// PUT consumers/_mapping
-// {
-//   "properties": {
-//     "plan": {
-//       "properties": {
-//         "referralCode": {
-//           "type": "keyword"
-//         },
-//         "weeklyDiscounts": {
-//           "properties": {
-//             "discounts": {
-//               "properties": {
-//                 "reason": {
-//                   "type": "keyword"
-//                 },
-//                 "description": {
-//                   "type": "keyword",
-//                   "ignore_above": 25
-//                 },
-//                 "amountOff": {
-//                   "type": "integer"
-//                 },
-//                 "percentOff": {
-//                   "type": "integer"
-//                 },
-//                 "referredUserId": {
-//                   "type": "keyword"
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
-
-// then make a referral code for each customer and attach it to them
-
-// POST consumers/_update_by_query
-// {
-//   "script" : {
-//     "source": """
-//       ctx._source.plan.weeklyDiscounts = new ArrayList();
-//       if (alma)
-
-//       if (brandon)
-
-//       if (josh)...
-//       ctx._source.plan.referralCode = 
-//     """,
-//     "lang": "painless"
-//   },
-//   "query": {
-//     "bool": {
-//       "filter": {
-//         "bool": {
-//           "must": [
-//             {
-//               "exits": {
-//                 "field": "plan"
-//               }
-//             }
-//           ]
-//         }
-//       }
-//     }
-//   }
-// }
-
-
-PUT rests/_mapping
+PUT /tags/
 {
-  "properties": {
-    "status": {
-      "type": "keyword"
-    },
-    "menu": {
-      "properties": {
-        "addonGroups": {
-          "properties": {
-            "names": {
-              "type": "keyword"
-            },
-            "limit": {
-              "type": "integer"
-            }
-          }
-        },
-        "orderNames": {
-          "type": {
-            "type": "keyword"
-          }
-        },
-        "optionGroups": {
-          "properties": {
-            "names": {
-              "type": "keyword"
-            }
-          }
-        },
-        "canAutoPick": {
-          "type": "boolean"
-        },
-        "isActive": :{
-          "type": "boolean"
-        },
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "type": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
       }
     }
   }
 }
 
-  POST rests/_update_by_query
-  {
-    "script" : {
-      "source": """
-        ctx._source.status = "Open"
-        for (int i = 0; i < ctx._source.menu.length; i++) {
-          ctx._source.menu[i].addonGroups = new ArrayList();
-          ctx._source.menu[i].optionGroups = new ArrayList();
-          ctx._source.menu[i].canAutoPick = true;
-          ctx._source.menu[i].isActive = true;
-        }
-      """,
-      "lang": "painless"
-    },
-    "query": { 
-      "match_all": {}
-    }
-  }
+POST _bulk
+{ "index" : { "_index" : "tags" } }
+{ "name" : "American", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Chinese", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Cuban", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Indian", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Italian", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Japanese", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Korean", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Mediterranean", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Mexican", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Thai", "type": "cuisine" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vietnamese", "type": "cuisine" }
 
 
-// PUT orders/_mapping
-// {
-//   "properties": {
-//     "deliveries": {
-//       "properties": {
-//         "meals": {
-//           "properties": {
-//             "choices":  {
-//               "type": "keyword"
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "costs": {
-//       "properties": {
-//         "discounts": {
-//           "properties": {
-//             "reason": {
-//               "type": "keyword"
-//             },
-//             "description": {
-//               "type": "keyword",
-//               "ignore_above": 25
-//             },
-//             "percentOff": {
-//               "type": "integer"
-//             },
-//             "amountOff": {
-//               "type": "integer"
-//             },
-//             "referredUserId": {
-//               "type": "keyword"
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
+POST _bulk
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Keto", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Low Cal", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Low Carb", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Pescatarian", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Protein", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Seafood", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vegan", "type": "diet" }
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Vegetarian", "type": "diet" }
 
 
-// POST orders/_update_by_query
-// {
-//   "script" : {
-//     "source": """
-//       for (int i = 0; i < ctx._source.deliveries.length; i++) {
-//         for (int j = 0; j < ctx._source.deliveries[i].meals.length; j++) {
-//           ctx._source.deliveries[i].meals[j].choices = new ArrayList();
-//         }
-//       }
-//       ctx._source.costs.promos = new ArrayList();
-//       ctx._source.costs.discounts = new ArrayList();
-//     """,
-//     "lang": "painless"
-//   },
-//   "query": { 
-//     "match_all": {}
-//   }
-// }
+POST _bulk
+{ "index" : { "_index" : "tags" } }
+{ "name" : "Pizza", "type": "form" }
 
 
+add new mapping called rest2
 
 
+then run the re-index
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////
-
-
-
-POST rests/_update_by_query?conflicts=proceed
-
-
-POST rests/_update_by_query
+POST _reindex
 {
-  "script" : {
+  "source": {
+    "index": "rests",
+    "_source": {
+      "excludes": [
+        "menu.canAutoPick",
+        "profile.tags"
+      ]
+    }
+  },
+  "dest": {
+    "index": "rests2"
+  },
+  "script": {
     "source": """
-      String name = ctx._source.profile.name;
-      ctx._source.status = "Open";
       def menu = ctx._source.menu;
-      if (name.equals("Malibu Diner")) {
-        ctx._source.status = "Closed";
-      }
-      if (name.equals("Canteen Desi Dhaba")) {
-        for (int i = 0; i < menu.length; i++) {
-          if (menu[i].name.equals("Chicken Tikka Masala w/ Naan")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Chicken Tikka Masala");
-            menu[i].orderNames.add("Plain Naan");
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Protein");
-            menu[i].originalPrice = 1145; //todo: ??? this is more expensiv than i thought?
-            menu[i].description = "Chicken tikka cooked with fenugreek sauce with Indian spices and Jeera Rice & Naan";
-          }
-          if (menu[i].name.equals("Lamb Rogan Josh")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].description = "A classic North Indian dish in cardamom sauce and Jeera Rice";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Protein");
-            menu[i].originalPrice = 1095;
-          }
-          if (menu[i].name.equals("Paneer Tikka Masala w/ Keema Naan")) {
-            menu[i].name = "Paneer Tikka Masala & Samosas";
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Paneer Tikka Masala");
-            menu[i].orderNames.add("Samosas Vegetable (2 Pcs)");
-            menu[i].description = "Homemade cubed cottage cheese in herbed creamy tomato sauce and Jeera Rice & Crispy turnovers with seasoned potatoes and peas";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Vegan");
-            menu[i].tags.add("Vegetarian");
-            menu[i].originalPrice = 1090;
-          }
-          if (menu[i].name.equals("Butter Chicken w/ Naan")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Butter Chicken");
-            menu[i].orderNames.add("Plain Naan");
-            menu[i].description = "Classic boneless chicken in makhani gravy and Jeera Rice & Naan";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Protein");
-            menu[i].originalPrice = 1145;
-          }
-          if (menu[i].name.equals("Chicken Biryani w/ Naan")) {
-            menu[i].name = "Chicken Biryani";
-            menu[i].orderNames = new ArrayList();
-            menu[i].description = "Marinated chicken with Indian herbs spices & dry fruits cooked with Basmati rice";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Protein");
-            menu[i].originalPrice = 1095;
-          }
-          if (menu[i].name.equals("Baigan Bartha w/ Vegetable Somasas")) {
-            menu[i].name = "Baigan Bartha & Samosas";
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Baigan Bartha");
-            menu[i].orderNames.add("Samosas Vegetable (2 Pcs)");
-            menu[i].description = "Fresh roasted eggplant with sauteed ginger, garlic and red onions in vegetable oil & Crispy turnovers with seasoned potatoes and peas";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Indian");
-            menu[i].tags.add("Vegan");
-            menu[i].tags.add("Vegetarian");
-            menu[i].originalPrice = 990;
+      ctx._source.remove("profile.tags");
+      for (int i = 0; i < menu.length; i++) {
+        def currTags = menu[i].tags;
+        def newTags = new ArrayList();
+        for (int j = 0; j < currTags.length; j++) {
+          if (currTags[j].equals("Pizza") {
+            newTags.add([
+              "name": currTags[j],
+              "type": "form"
+            ]);
+          } if (currTags[j].equals("Keto") || currTags[j].equals("Low Cal") || currTags[j].equals("Low Carb") || currTags[j].equals("Pescatarian") || currTags[j].equals("Protein") || currTags[j].equals("Seafood") || currTags[j].equals("Vegan") || currTags[j].equals("Vegetarian")) {
+            newTags.add([
+              "name": currTags[j],
+              "type": "diet"
+            ]);
+          } else {
+            newTags.add([
+              "name": currTags[j],
+              "type": "cuisine"
+            ]);
           }
         }
-        menu.add([
-          "name": "Naan Combo Basket",
-          "img": "/menu/canteen-dhaba/naan.jpg",
-          "originalPrice": 1048,
-          "orderNames": [
-            "Makhani Naan, Lasooni Naan, Jalapeno Naan, Kashmiri Naan (4 Total)"
-          ],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Assorted mix of naan: lasooni (garlic), makhani (creamy), jalapeno, and khasmiri (fruit)",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "pEVtLPtwKm6ifTTlmkaQc",
-          "tags": [
-            "Vegan",
-            "Vegetarian",
-            "Indian"
-          ]
-        ]);
-        menu.add([
-          "name": "Fish Goan Curry",
-          "img": "/menu/canteen-dhaba/fish-goan.jpg",
-          "originalPrice": 1095,
-          "orderNames": [],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Filet of fresh fish with ginger, garlic, mustard seed, curry leaf and coconut milk and Jeera Rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "9jqkrhJEEiIat3Q5-CyL9",
-          "tags": [
-            "Protein",
-            "Indian"
-          ]
-        ]);
-        menu.add([
-          "name": "Goat Handi",
-          "img": "/menu/canteen-dhaba/goat-handi.jpg",
-          "originalPrice": 1095,
-          "orderNames": [],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Classic brown gravy with goat, herbs, and spices and Jeera Rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "LiFNx8BiQhXOPHgJEnBUI",
-          "tags": [
-            "Protein",
-            "Indian"
-          ]
-        ]);
+        menu[i].tags = newTags;
       }
-      if (name.equals("Rumba Cubana")) {
-        ctx._source.tags = new ArrayList();
-        ctx._source.tags.add("Cuban");
-        for (int i = 0; i < menu.length; i++) {
-          if (menu[i].name.equals("Ropa Vieja")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].originalPrice = 995;
-            menu[i].description = "Shredded beef simmered with tomatoes, bell peppers, onions, and white rice";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Cuban");
-            menu[i].tags.add("Protein");
-          }
-          if (menu[i].name.equals("El Rumberito Sampler")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].originalPrice = 995;
-            menu[i].description = "A combination of our signature tapas, ham croquettes, corn tamale, beef empanada, corn fritters, stuffed potato, and pork bites";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Cuban");
-          }
-          if (menu[i].name.equals("Vaca Frita")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].originalPrice = 995;
-            menu[i].description = "Famous crispy shredded flank steak seared with garlic, red onions, fresh lime and rumba’s mojo sauce";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Cuban");
-          }
-          if (menu[i].name.equals("Ensalada Tropical & Avocado")) {
-            menu[i].name = "Ensalada Tropical & Plantain Chips";
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Ensalada Tropical (Avacodo)");
-            menu[i].orderNames.add("Plantain Chips");
-            menu[i].originalPrice = 1085;
-            menu[i].description = "Mixed greens tossed in a honey garlic lime vinaigrette, topped with avocado, pineapple, mango, diced tomatoes and red onions garnished with sesame seeds & Plantain chips";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Cuban");
-            menu[i].tags.add("Vegetarian");
-          }
-          if (menu[i].name.equals("Trio de Empanadas")) {
-            menu[i].name = "Trio De Empanadas & Yuca Fries";
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("Trio De Empanadas (Picadillo, Pollo, Espinaca Y Queso)");
-            menu[i].orderNames.add("Yuca Fries");
-            menu[i].originalPrice = 1095;
-            menu[i].description = "Traditional fried empanadas - beef, chicken, spinach and cheese, served with our rumba’s sauce & Yuca fries";
-            menu[i].tags = new ArrayList();
-            menu[i].tags.add("Cuban");
-          }
-          if (menu[i].name.equals("Sandwich Cubano")) {
-            menu[i].isActive = false;
-          }
-        }
-        menu.add([
-          "name": "El Revolico & Yuca Fries",
-          "img": "/menu/rumba-cubana/el-revolico.jpg",
-          "originalPrice": 995,
-          "orderNames": [
-            "El Revolico",
-            "Yuca Fries"
-          ],
-          "isActive": true,
-          "canAutoPick": true,
-          "addonGroups": [],
-          "optionGroups": [],
-          "description": "Flavorful churrasco steak, fried sweet plantains, and melted swiss cheese topped on hot-pressed cuban bread & Yuca fries",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "UMvYBWfG7g7hwX24SDlZY",
-          "tags": [
-            "Cuban",
-            "Protein"
-          ]
-        ]);
-        menu.add([
-          "name": "Chorizo Salteado & Chicharroncitos",
-          "img": "/menu/rumba-cubana/chorizo.jpg",
-          "originalPrice": 990,
-          "orderNames": [
-            "Chorizo Salteado",
-            "Chicharroncitos De Puerco"
-          ],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Sauteed spanish sausage with onions, peppers, and garlic with plantain chips & Crunchy pork belly skin bites",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "75DlruQYQRWzNUVQJX4Y-",
-          "tags": [
-            "Cuban",
-            "Protein"
-          ]
-        ]);
-        menu.add([
-          "name": "Filete De Pescado & Yuca Fries",
-          "img": "/menu/rumba-cubana/filete.jpg",
-          "originalPrice": 995,
-          "orderNames": [
-            "Filete De Pescado",
-            "Yuca Fries"
-          ],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Lightly breaded filet of fish dressed all the way with lettuce, tomatoes, onions and tartar sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "jFpjSJQ9VkVFdpKm0TTM0",
-          "tags": [
-            "Cuban",
-            "Protein",
-            "Seafood",
-            "Pescatarian"
-          ]
-        ]);
-        menu.add([
-          "name": "Fritas Cubanas",
-          "img": "/menu/rumba-cubana/fritas.jpg",
-          "originalPrice": 990,
-          "orderNames": [
-            "Frita Cubana Original",
-            "Frita Cubana Original"
-          ],
-          "addonGroups": [],
-          "optionGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Two Cuban–style burgers made with ground beef, onions, potato sticks",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "AxClN_w-on1aBZdKf1Xua",
-          "tags": [
-            "Cuban",
-            "Protein"
-          ]
-        ]);
-      }
-      if (name.equals("South Street Fish Co")) {
-        for (int i = 0; i < menu.length; i++) {
-          if (menu[i].name.equals("Ahi Tuna Sushirito")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Sushi Burrito - White Rice, Ahi Tuna, Masago, Seaweed Salad, Cucumbers, Lettuce, Furikake, Spicy Mayo");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Ahi tuna, rice, masago, seaweed salad, cucumbers, lettuce, furikake, spicy mayo";
-            menu[i].tags.add("Seafood");
-          }
-          if (menu[i].name.equals("Salmon Sushirito")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Sushi Burrito - White Rice, Ahi Tuna, Masago, Seaweed Salad, Cucumbers, Lettuce, Furikake, Spicy Mayo");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Salmon, rice, tamago, masago, seaweed salad, furikake, spicy mayo";
-            menu[i].tags.add("Seafood");
-          }
-          if (menu[i].name.equals("Ahi Tuna Poke Bowl")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Poke Bowl - White Rice, Ahi Tuna, Masago, Tamago, Scallions, Seaweed Salad, Tempura Flakes, Furikake, Poke Sauce");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Ahi tuna, rice, masago, tamago, scallions, seaweed salad, tempura flakes, furikake, poke sauce";
-            menu[i].tags.add("Seafood");
-          }
-          if (menu[i].name.equals("Spicy Tuna Poke Bowl")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Poke Bowl - White Rice, Spicy Tuna, Masago, Corn, Kimchi, Scallions, Tempura Flakes, Furikake, Spicy Mayo");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Spicy tuna, rice, masago, corn, kimchi, scallions, tempura flakes, furikake, spicy mayo";
-            menu[i].tags.add("Seafood");
-          }
-          if (menu[i].name.equals("Salmon Tropical Poke Bowl")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Poke Bowl - White Rice, Salmon, Tamago, Corn, Mango, Guacamole, Tempura Flakes, Furikake, Spicy Mayo");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Salmon, rice, tamago, corn, mango, guacamole, tempura flakes, furikake, spicy mayo";
-            menu[i].tags.add("Seafood");
-          }
-          if (menu[i].name.equals("Ahi Tuna Tropical Salad")) {
-            menu[i].orderNames = new ArrayList();
-            menu[i].orderNames.add("1 Protein Salad - Romaine Lettuce, Ahi Tuna, Edamame, Guacamole, Seaweed Salad, Cucumbers, Tempura Flakes, Furikake, Spicy Mayo");
-            menu[i].originalPrice = 1100;
-            menu[i].description = "Spicy tuna, lettuce, edamame, guacamole, seaweed salad, cucumbers, tempura flakes, furikake, spicy mayo";
-            menu[i].tags.add("Seafood");
-          }
-        }
-        menu.add([
-          "name": "Create Your Own Sushirito",
-          "img": "/menu/south-street/create.jpg",
-          "originalPrice": 1100,
-          "orderNames": [
-            "1 Protein Sushi Burrito (options)"
-          ],
-          "isActive": true,
-          "canAutoPick": false,
-          "optionGroups": new ArrayList([
-            [
-              "names": [
-                "White Rice",
-                "Romaine Lettuce",
-                "Kale"
-              ]
-            ],
-            [
-              "names": [
-                "Ahi Tuna",
-                "Spicy Tuna",
-                "Salmon",
-                "Grilled Salmon",
-                "Tofu"
-              ]
-            ]
-          ]),
-          "addonGroups": new ArrayList([
-            [
-              "names": [
-                "Cucumbers",
-                "Romaine",
-                "Kale",
-                "Carrots",
-                "Edamame",
-                "Purple Cabbage",
-                "Mango",
-                "Seaweed Salad",
-                "Kimchi",
-                "Tamago",
-                "Masago",
-                "Corn",
-                "Scallions",
-                "Jalapenos"
-              ],
-              "limit": 4
-            ],
-            [
-              "names": [
-                "Original Poke Sauce",
-                "Spicy Mayo",
-                "Teriyaki Sauce",
-                "Peanut Sauce",
-                "Ginger Dressing (nuts)",
-                "Sesame Sauce"
-              ],
-              "limit": 2
-            ],
-            [
-              "names": [
-                "Tempura Flakes",
-                "Fried Shallots",
-                "Peanuts",
-                "Sesame Seeds",
-                "Furikake",
-                "Wonton Chips",
-                "Plantain Chips"
-              ]
-            ]
-          ]),
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "DWEjVwMadIUNU-dzr2CLT",
-          "tags": [
-            "Japanese"
-          ]
-        ]);
-        menu.add([
-          "name": "Create Your Own Poke Bowl",
-          "img": "/menu/south-street/create.jpg",
-          "originalPrice": 1100,
-          "orderNames": [
-            "1 Protein Poke Bowl (options)"
-          ],
-          "isActive": true,
-          "canAutoPick": false,
-          "optionGroups": new ArrayList([
-            [
-              "names": [
-                "White Rice",
-                "Romaine Lettuce",
-                "Kale"
-              ]
-            ],
-            [
-              "names": [
-                "Ahi Tuna",
-                "Spicy Tuna",
-                "Salmon",
-                "Grilled Salmon",
-                "Tofu"
-              ]
-            ]
-          ]),
-          "addonGroups": new ArrayList([
-            [
-              "names": [
-                "Cucumbers",
-                "Romaine",
-                "Kale",
-                "Carrots",
-                "Edamame",
-                "Purple Cabbage",
-                "Mango",
-                "Seaweed Salad",
-                "Kimchi",
-                "Tamago",
-                "Masago",
-                "Corn",
-                "Scallions",
-                "Jalapenos"
-              ],
-              "limit": 4
-            ],
-            [
-              "names": [
-                "Original Poke Sauce",
-                "Spicy Mayo",
-                "Teriyaki Sauce",
-                "Peanut Sauce",
-                "Ginger Dressing (nuts)",
-                "Sesame Sauce"
-              ],
-              "limit": 2
-            ],
-            [
-              "names": [
-                "Tempura Flakes",
-                "Fried Shallots",
-                "Peanuts",
-                "Sesame Seeds",
-                "Furikake",
-                "Wonton Chips",
-                "Plantain Chips"
-              ]
-            ]
-          ]),
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "kUhGDS_75by2-BDmDXR9U",
-          "tags": [
-            "Japanese"
-          ]
-        ]);
-        menu.add([
-          "name": "Create Your Own Poke Salad",
-          "img": "/menu/south-street/create.jpg",
-          "originalPrice": 1100,
-          "orderNames": [
-            "1 Protein Salad (options)"
-          ],
-          "isActive": true,
-          "canAutoPick": false,
-          "optionGroups": new ArrayList([
-            [
-              "names": [
-                "White Rice",
-                "Romaine Lettuce",
-                "Kale"
-              ]
-            ],
-            [
-              "names": [
-                "Ahi Tuna",
-                "Spicy Tuna",
-                "Salmon",
-                "Grilled Salmon",
-                "Tofu"
-              ]
-            ]
-          ]),
-          "addonGroups": new ArrayList([
-            [
-              "names": [
-                "Cucumbers",
-                "Romaine",
-                "Kale",
-                "Carrots",
-                "Edamame",
-                "Purple Cabbage",
-                "Mango",
-                "Seaweed Salad",
-                "Kimchi",
-                "Tamago",
-                "Masago",
-                "Corn",
-                "Scallions",
-                "Jalapenos"
-              ],
-              "limit": 4
-            ],
-            [
-              "names": [
-                "Original Poke Sauce",
-                "Spicy Mayo",
-                "Teriyaki Sauce",
-                "Peanut Sauce",
-                "Ginger Dressing (nuts)",
-                "Sesame Sauce"
-              ],
-              "limit": 2
-            ],
-            [
-              "names": [
-                "Tempura Flakes",
-                "Fried Shallots",
-                "Peanuts",
-                "Sesame Seeds",
-                "Furikake",
-                "Wonton Chips",
-                "Plantain Chips"
-              ]
-            ]
-          ]),
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "BYGwDLkaCJfL0lXlXSZFM",
-          "tags": [
-            "Japanese"
-          ]
-        ]);
-      }
-      if (name.equals("Ahri's Kitchen")) {
-        ctx._source.tags = new ArrayList();
-        ctx._source.tags.add("Korean");
-        ctx._source.tags.add("Mexican");
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Tofu Bibimbop",
-          "img": "/menu/ahri-kitchen/tofu-bibimbop.jpg",
-          "originalPrice": 1100,
-          "optionGroups": [],
-          "addonGroups": [],
-          "orderNames": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Mixed rice bowl with tofu, carrot, cucumber, mushroom, zucchini, spinach, bean sprout, an egg sunnyside up drizzled with sesame oil and sesame seeds.",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "w5SyfZHgV3fZNQXuOg3jA",
-          "tags": [
-            "Korean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Bulgogi Tacos",
-          "img": "/menu/ahri-kitchen/bulgogi-tacos.jpg",
-          "originalPrice": 800,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Two tacos - Bulgogi, corn tortilla, radish, scallion, with spicy wasabi sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "s8F2cB5bxCeTpj3yLVszA",
-          "tags": [
-            "Korean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Tofu Tacos",
-          "img": "/menu/ahri-kitchen/tofu-tacos.jpg",
-          "originalPrice": 800,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Two tacos - Tofu, corn tortilla, radish, scallion, with spicy wasabi sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "O8W6YoKPYMgwHsYmLiyAI",
-          "tags": [
-            "Korean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Spicy Pork Tacos",
-          "img": "/menu/ahri-kitchen/spicy-pork-tacos.jpg",
-          "originalPrice": 800,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Two tacos - Spicy pork, corn tortilla, radish, scallion, with spicy wasabi sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "WCdyS7jDQWLWGThLCr5vE",
-          "tags": [
-            "Korean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Spicy Tuna Roll",
-          "img": "/menu/ahri-kitchen/spicy-tuna-roll.jpg",
-          "originalPrice": 1100,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Cooked spicy tuna, seasoned cucumber, carrot, & pickled radish",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "6cEicgo4MLZPKVwqn9tO_",
-          "tags": [
-            "Korean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Vegetable Roll",
-          "img": "/menu/ahri-kitchen/vegetable-roll.jpg",
-          "originalPrice": 1000,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Double seasoned cucumber, carrot, & pickled radish",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "L3uG4pfZTBmE88SUHwAzf",
-          "tags": [
-            "Korean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Vegetable Dumplings & Rice w/ Egg",
-          "img": "/menu/ahri-kitchen/veg-dumpling.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Vegetable Dumplings",
-            "Fried Egg + Extra Bowl Of White Rice"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Pan fried 6 dumplings with spinach, tofu, kale, onion, carrot, egg and vermicelli & Rice topped with fried egg",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "8D6n5HjF5hw4H01R-tNA9",
-          "tags": [
-            "Korean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Vegetable Japchae & Rice",
-          "img": "/menu/ahri-kitchen/veg-japchae.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Japchae",
-            "Extra Bowl Of White Rice"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Sweet and savory, stir-fried korean noodles and vegetables & Rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "lUpHFnkaDFYklM1w7vVMn",
-          "tags": [
-            "Korean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Grandma's Pork Dumplings & Rice",
-          "img": "/menu/ahri-kitchen/pork-dumpling.jpg",
-          "originalPrice": 900,
-          "orderNames": [
-            "Grandma's Pork Dumplings",
-            "Extra Bowl Of White Rice"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Pan fried 6 dumplings with pork, tofu, scallion, egg and vermicelli & Rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "vs3i_s731Ts7g0xVOAFuH",
-          "tags": [
-            "Korean"
-          ]
-        ]);
-      }
-      if (name.equals("Gypsy Grill")) {
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Shish Kabob Sandwich & Baklava",
-          "img": "/menu/gypsy-grill/shish-kabob-sandwich.jpg",
-          "originalPrice": 949,
-          "orderNames": [
-            "Shish Kabab Sandwich",
-            "Baklava (2pc)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Grilled beef with salad and tahini sauce in pita & Sweet pastry layered with nuts and syrup",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "UozYT3u0kYJplEKysteo4",
-          "tags": [
-            "Mediterranean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Kofta Kabob Sandwich & Falafel",
-          "img": "/menu/gypsy-grill/kofta-kabob-sandwhich.jpg",
-          "originalPrice": 1024,
-          "orderNames": [
-            "Kofta Kabob Sandwich",
-            "Falafel (4pc)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Grilled ground lamb and beef with salad and tahini sauce in pita & Fresh falafel",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "7a7jbpcXVNvcUi7YIo3h0",
-          "tags": [
-            "Mediterranean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Chicken Kabob Sandwich & Falafel",
-          "img": "/menu/gypsy-grill/chicken-kabob-sandwhich.jpg",
-          "originalPrice": 1024,
-          "orderNames": [
-            "Chicken Kabob Sandwich",
-            "Falafel (4pc)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Grilled chicken with salad and garlic sauce & Fresh falafel",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "CRC12VTuKnRJLEP4R0riB",
-          "tags": [
-            "Mediterranean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Feta Salad & Baklava",
-          "img": "/menu/gypsy-grill/feta.jpg",
-          "originalPrice": 998,
-          "orderNames": [
-            "Feta Salad",
-            "Baklava (2pc)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Feta cheese, tomato, cucumber, lettuce, olives & crispy pita & Sweet pastry layered with nuts and syrup",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "KjN9jtg2ubJ2-dsLuUFf7",
-          "tags": [
-            "Mediterranean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Fattoush Salad & Baklava",
-          "img": "/menu/gypsy-grill/fattoush.jpg",
-          "originalPrice": 998,
-          "orderNames": [
-            "Fattoush Salad",
-            "Baklava (2pc)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Crispy pita, lettuce, cucumber, red onions & tomatoes, spicy sumac, olive oil & lemon & Sweet pastry layered with nuts and syrup",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "J1gVLaxJVKBsGjpowMnH5",
-          "tags": [
-            "Mediterranean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Chicken Shawarma Box",
-          "img": "/menu/gypsy-grill/chicken-shawarma.jpg",
-          "originalPrice": 1099,
-          "orderNames": [],
-          "isActive": false,
-          "canAutoPick": true,
-          "optionGroups": [],
-          "addonGroups": [],
-          "description": "Chicken shawarma, rice, pita bread, hot sauces, garlic sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "4FuWZfWDiIhAVNwen1Hnr",
-          "tags": [
-            "Mediterranean"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Falafel Combo Platter",
-          "img": "/menu/gypsy-grill/falafel-platter.jpg",
-          "originalPrice": 899,
-          "orderNames": [
-            "Falafel With Rice & Salad"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Falafel platter with rice, salad, pita bread, tahini, and hot sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "F9eV5oCafbh4_GRL2MjGf",
-          "tags": [
-            "Mediterranean",
-            "Vegetarian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Falafel Combo & Spinach Feta Roll",
-          "img": "/menu/gypsy-grill/falafel-combo.jpg",
-          "originalPrice": 998,
-          "orderNames": [
-            "7 Pcs. Falafel & Salad",
-            "Spinach & Feta Cheese Roll"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": false,
-          "canAutoPick": true,
-          "description": "Falafel, salad, tahini, and hot sauce & spinach and feta cheese in fillo dough fried served with taziki sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "cwpYwn45WSh9PKWovFSGq",
-          "tags": [
-            "Mediterranean",
-            "Vegetarian"
-          ]
-        ]);
-      }
-      if (name.equals("Vip Diner")) {
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Philly Cheese Steak",
-          "img": "/menu/vip-diner/philly-cheesesteak.jpg",
-          "originalPrice": 895,
-          "optionGroups": [],
-          "addonGroups": [],
-          "orderNames": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "With peppers, onions & american cheese on hero bread with fries",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "5E8IO8p3N9HBTmXG16QLv",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Vip Grilled Chicken Wrap",
-          "img": "/menu/vip-diner/vip-wrap.jpg",
-          "originalPrice": 845,
-          "orderNames": [
-            "Vip Grilled Chicken Wrap (Herb Garlic Tortilla)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "With lettuce, tomato, honey mustard on a herb garlic wrap & French fries,",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "SSZnRga_jPP8mHSK_eECe",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Pastrami Omelette",
-          "img": "/menu/vip-diner/pastrami-omelette.jpg",
-          "originalPrice": 880,
-          "orderNames": [
-            "Pastrami Omelette W/ American Cheese"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "With pastrami, american cheese & Potatoes and toast",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "FMHSwI21-jLwyGMeXnEK-",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Bacon Western Omelette",
-          "img": "/menu/vip-diner/bacon-omelette.jpg",
-          "originalPrice": 890,
-          "orderNames": [
-            "Bacon Western Omelette W/ Bacon"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "With diced pepper, bacon, ham, onion , monterey jack & Potatoes and toast",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "BYNB7K5ovjFDkjA2026Ur",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Sunrise Pancake Platter",
-          "img": "/menu/vip-diner/pancakes.jpg",
-          "originalPrice": 930,
-          "orderNames": [
-            "Our Own Special Pancakes",
-            "Two Large Eggs, Sunnyside"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Homemade pancakes, eggs, potatoes (any style), and toast",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "-egup_S0NcSlZVcqATo1G",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Sunrise Waffle Special",
-          "img": "/menu/vip-diner/waffles.jpg",
-          "originalPrice": 985,
-          "orderNames": [
-            "Waffle Special (2 bacon, 1 sausage, 2 eggs - sunnyside)",
-            "Cinnamon Toast"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Homemade waffles, bacon, sausage, eggs, and Cinanamon toast",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "fq8x1-E_6rpgWm7Czr7Tz",
-          "tags": [
-            "American"
-          ]
-        ]);
-      }
-      if (name.equals("Margherita's")) {
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Fettuccine Alfredo",
-          "img": "/menu/margheritas/fettucine-alfredo.jpg",
-          "originalPrice": 1095,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "YBCvO0V2z3UDSfC6evRZe",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Penne Vodka",
-          "img": "/menu/margheritas/penne-vodka.jpg",
-          "originalPrice": 1095,
-          "orderNames": [],
-          "isActive": true,
-          "optionGroups": [],
-          "addonGroups": [],
-          "canAutoPick": true,
-          "description": "Fresh homemade penne pasta in a light tomato cream sauce with capers, shallots & a hint of vodka",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "leM-xEuV4ucGVV2GdcM3x",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Rigatoni w/ Meat Sauce",
-          "img": "/menu/margheritas/rigatoni-meat.jpg",
-          "originalPrice": 1095,
-          "orderNames": [
-            "Rigatoni With Meat Sauce"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Fresh homemade rigatoni pasta with meat sauce topped with ricotta cheese",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "umQoRB1zA7dpb2lZ_eta1",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Cavatelli & Broccoli",
-          "img": "/menu/margheritas/cavatelli.jpg",
-          "originalPrice": 1095,
-          "orderNames": [
-            "Cavatelli And Broccoli"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": false,
-          "canAutoPick": true,
-          "description": "Fresh homemade pasta served with crisp broccoli, olive oil, tomatoes, fresh garlic & romano cheese",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "zFSbyFbfXkD-pSI6p-ETG",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Cheese Ravioli",
-          "img": "/menu/margheritas/ravioli.jpg",
-          "originalPrice": 995,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Cheese filled ravioli, topped with marinara sauce and reggiano",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "kmXktTAR0c0FA7aA9RwJj",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Chicken Cutlet Sandwich",
-          "img": "/menu/margheritas/chicken-cutlet.jpg",
-          "originalPrice": 995,
-          "orderNames": [],
-          "isActive": true,
-          "optionGroups": [],
-          "addonGroups": [],
-          "canAutoPick": true,
-          "description": "Italian breaded chicken, fresh mozzarella, arugula, bruschetta, evoo, balsamic and mayo",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "uxeKzlMF-24OF8GXTrhUm",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Sausage & Peppers Sandwich",
-          "img": "/menu/margheritas/sausage-peppers.jpg",
-          "originalPrice": 995,
-          "orderNames": [
-            "Sausage, Peppers, And Onions Sandwich"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Sausage, peppers, and onions on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "6x5C64UtYJk-iFT5e4UG2",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Roasted Red Peppers & Mozzarella Sandwich",
-          "img": "/menu/margheritas/mozz-sandwich.jpg",
-          "originalPrice": 995,
-          "orderNames": [
-            "Fresh Mozzarella & Roasted Red Peppers Sandwich"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Housemade fresh mozzarella, roasted red peppers, arugula, balsamic glaze, pesto (contains nuts), served on local focaccia",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "sqCCWmHSIIVm-J1qoD97s",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Meatball Parmesan Sandwich",
-          "img": "/menu/margheritas/meatball-parm.jpg",
-          "originalPrice": 995,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "2HCidFii8HWG-gILIgznh",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Eggplant Parmesan Sandwich",
-          "img": "/menu/margheritas/eggplant-parm.jpg",
-          "originalPrice": 895,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Fresh homemade ribbon pasta, peas, and tomatoes in a traditional parmigiano cream sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "S37qaytrsXKsdz2YHJ3iD",
-          "tags": [
-            "Italian"
-          ]
-        ]);
-      }
-      if (name.equals("China Spice")) {
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Basil Ginger Chicken",
-          "img": "/menu/china-spice/basil-ginger.jpg",
-          "originalPrice": 1200,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Chicken breast stir-fried in ginger and basil sauce & Jeera Rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "LOeDflf4gWcqwstGKg3CN",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Thai Chicken Curry",
-          "img": "/menu/china-spice/thai-chicken.jpg",
-          "originalPrice": 1200,
-          "orderNames": [
-            "Thai Chicken Curry (Red)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Traditionally prepared chicken curry with bamboo shoots and coconut milk in panang sauce & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "zZ0HgS5QqD4qwedw40nEV",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Coriander Garlic Chicken",
-          "img": "/menu/china-spice/coriander-chicken.jpg",
-          "originalPrice": 1200,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Wok-fried chicken with onions and green peppers in garlic coriander sauce & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "77CogU3SlD_xG5y9aSAJW",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Spicy Curry Veggie Fried Rice",
-          "img": "/menu/china-spice/spicy-rice.jpg",
-          "originalPrice": 1200,
-          "orderNames": [
-            "Vegetables Spicy Curry Fried Rice"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Thai fried rice with onions, tomatoes, carrots, tofu, string beans & basil in light curry sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "ZlnsrAnkjppBwY64hCFWY",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Cauliflower Manchurian",
-          "img": "/menu/china-spice/cauliflower.jpg",
-          "originalPrice": 1100,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Cauliflower buds roasted to perfection in our famous manchurian sauce",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "EDjLDJejCNf75rYJj5NyW",
-          "tags": [
-            "Vegetarian",
-            "Vegan",
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Thai Veggie Green Curry",
-          "img": "/menu/china-spice/thai-curry.jpg",
-          "originalPrice": 1100,
-          "orderNames": [
-            "Thai Vegetable Curry (Green)"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "A traditionally prepared spicy vegetable curry with coconut milk and spices  & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "ZfU4VLmL89V6s6-qc_P0v",
-          "tags": [
-            "Vegetarian",
-            "Vegan",
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Szechwan Chicken",
-          "img": "/menu/china-spice/szechwan.jpg",
-          "originalPrice": 1200,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Chicken in spicy szechwan sauce  & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "sUtBkPoQo7f2lxOcb6tSo",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Sweet And Sour Chicken",
-          "img": "/menu/china-spice/sweet-sour.jpg",
-          "originalPrice": 1200,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Tender pieces of boneless chicken, green peppers, and onions in sweet and sour sauce  & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "CX0J7UNESyjuyagwfT6X_",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Hot Garlic Sauce Chicken",
-          "img": "/menu/china-spice/hot-garlic.jpg",
-          "originalPrice": 1200,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Chicken stir fried in hot garlic sauce & Jeera rice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "-wgeXplabL5WO9y5u3xZP",
-          "tags": [
-            "Indian",
-            "Chinese"
-          ]
-        ]);
-      }
-      if (name.equals("Würstbar")) {
-        ctx._source.menu = new ArrayList();
-        ctx._source.menu.add([
-          "name": "Rancho Grande Wurst",
-          "img": "/menu/wurstbar/rancho-grande.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Chorizo, El Rancho"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Chorizo sausage, haus guac, queso fresco, picked red onions, chili lime mayo on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "fDW0GVJlNFp3MON__23lz",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "King Marcus Wurst",
-          "img": "/menu/wurstbar/king-marcus.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Kielbasa, King Marcus"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Kielbasa, fried onions, BBQ sauce, tangy coleslaw on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "ZLJCA8jJjfTi8wOwX5uuj",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "The General's Wurst",
-          "img": "/menu/wurstbar/the-general.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Beef Frank, Field Day"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Beef frank, chopped bacon, cheese sauce, chives, fried onions on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "U6ZI-HDHpIzYGz_LiNbvK",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "The Italian Wurst",
-          "img": "/menu/wurstbar/the-italian.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Sweet Italian, The Crew"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Italian sausage, peppers & onions, ricotta cheese, pesto mayo on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "wIgbPKHPc3H9BtRlJatt5",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "The Haus Brat",
-          "img": "/menu/wurstbar/haus-brat.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Bratwurst, Haus"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Bratwurst, kraut, mustard, picked red onions, relish on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "pvzw1d8de94gElZv2_xK8",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Blue Nose Wurst",
-          "img": "/menu/wurstbar/blue-nose.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Beef Frank, Blue Nose"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Beef frank, bacon, truffle ailoli, blue cheese sauce, caramelized onions on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "c7pvPqTAndm8JJCAtd2lw",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "King Brat Wurst",
-          "img": "/menu/wurstbar/king-brat.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "Wurstbar Sausage Sandwich - Bratwurst, King Marcus"
-          ],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Bratwurst, BBQ sauce, fried onions, tangy coleslaw on a roll",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "A-rzXn5SwE8q72IL31Q1i",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Haus Fries Platter",
-          "img": "/menu/wurstbar/haus-fries.jpg",
-          "originalPrice": 1000,
-          "orderNames": [
-            "2X Haus Cut Fries"
-          ],
-          "isActive": true,
-          "canAutoPick": true,
-          "addonGroups": new ArrayList([
-            [
-              "names": [
-                "Cheese Sauce",
-                "Chipotle Mayo",
-                "Truffle Aioli",
-                "Sriracha Ketchup",
-                "Pesto Mayo",
-                "Chili Lime Mayo",
-                "Hoisin Aioli",
-                "Wasabi Aioli"
-              ],
-              "limit": 2
-            ]
-          ]),
-          "optionGroups": [],
-          "description": "Huge platter of haus cut fries with 2 dipping sauces of your choice",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "XS_QNOQSwZmFy6zw0kQNW",
-          "tags": [
-            "American"
-          ]
-        ]);
-        ctx._source.menu.add([
-          "name": "Haus Poutine",
-          "img": "/menu/wurstbar/haus-poutine.jpg",
-          "originalPrice": 1000,
-          "orderNames": [],
-          "optionGroups": [],
-          "addonGroups": [],
-          "isActive": true,
-          "canAutoPick": true,
-          "description": "Haus cut fries, cheese curds, gravy",
-          "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-          "planName": "Standard",
-          "_id": "QHhIMdAqyMobGvQmNZFho",
-          "tags": [
-            "American"
-          ]
-        ]);
-      }
-    """,
-    "lang": "painless"
-  },
-  "query": { 
-    "match_all": {}
+    """
   }
 }
 
-POST rests/_doc/
-{
-  "taxRate": 0.06625,
-  "createdDate": 1590858720124,
-  "profile": {
-    "phone": "(201) 275-0629",
-    "name": "Tony Boloney's",
-    "tags": [
-      "American",
-      "Pizza"
-    ]
-  },
-  "location": {
-    "geo": {
-      "lon": -74.042940,
-      "lat": 40.721400
-    },
-    "address": {
-      "zip": "07302",
-      "city": "Jersey City",
-      "address1": "363 Grove Street, Jersey City, NJ 07302",
-      "state": "NJ"
-    },
-    "timezone": "America/New_York"
-  },
-  "menu": [
-    {
-      "name": "Tikka x2",
-      "img": "/menu/tony-boloneys/tikka.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Tikka Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Homemade Indian tikka masala coconut curry, hand pressed paneer cheese, jalapenos, fresh cilantro, green chutney. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "WagrdOIw2ivDV8Zoz26X9",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Mex-Corn Husker x2",
-      "img": "/menu/tony-boloneys/mexcorn.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Mex-Corn Husker Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Jersey-roasted corn, hand-pulled queso oaxaca, pickled jalapeno crema, fresh cilantro, dusted w/ chillies. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "UvcpPON5FgaQxaOrzkiIU",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "General Khan x2",
-      "img": "/menu/tony-boloneys/general.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x General Khan Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Mongolian style general tso's spicy sweet & sour peanut sauce, asian fried chicken, toasted sesame seeds, mozzarella, scallions. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "U2RcHD_klt04NMY97I73z",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Bangkok Boardwalk x2",
-      "img": "/menu/tony-boloneys/bangkok.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Bangkok Boardwalk (Fried Chicken) Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Fried chicken, spicy thai sauce, jalapenos, cilantro, honey-roasted peanuts, black toasted sesame seeds. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "xMn1KCSy1tPwDUhKaA5NB",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "S#itfaced x2",
-      "img": "/menu/tony-boloneys/shit.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x S#itfaced Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Beer-battered chicken breast, homemade honey stout BBQ sauce, mozzarella, cheddar... the best... umm... sober pizza. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "xYbaSyUCSgGIj1btY836K",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Winger x2",
-      "img": "/menu/tony-boloneys/winger.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Winger Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Buttermilk fried chicken, sweet & spicy buffalo sauce, fresh mozzarella, blue cheese, a side of celery... TOUCHDOWN! Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "53bFrWTbPDBX82D5AzJ4-",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Pancho Franco x2",
-      "img": "/menu/tony-boloneys/pancho.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Pancho Franco Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Grilled chicken, fresh avocado, chopped cilantro, pickled jalapeno crema, hand-pulled queso oaxaca, jalapeno potato chips. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "CMByCbgk8yq_9gy7soZOA",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Ducktown x2",
-      "img": "/menu/tony-boloneys/ducktown.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Ducktown Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Sirloin steak, smoked bacon, fresh mozzarella, garlic, herbs. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "gQZhl1BuBXQQy1gz9wV66",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Casino Carnivore x2",
-      "img": "/menu/tony-boloneys/casino.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Casino Carnivore Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Meat lovers unite! 10 meats ravaged by mozzarella... Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "sV-0axHAFGAlMGeZW-X93",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Hawaiian Flush x2",
-      "img": "/menu/tony-boloneys/hawaii.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Hawaiian Flush Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Hawaiian pie- ham, pineapple, w/ smoked bacon & maybe a nice lil' hula chick if your lucky.... Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "1B7jSx5ZCmJkQRhtmf-4_",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Magic Mushroom x2",
-      "img": "/menu/tony-boloneys/magic.jpg",
-      "originalPrice": 938,
-      "orderNames": [
-        "2x Magic Mushroom Slices"
-      ],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Black truffle sauce, breadcrumb crust, crimini mushroom, whipped ricotta, fresh mutz, parsley. Two slices of pizza",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "bw1FGMbvOejVBKbupIBGq",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Winger Fries",
-      "img": "/menu/tony-boloneys/winger-fries.jpg",
-      "originalPrice": 950,
-      "orderNames": [],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Crispy signature fries with melted mozzarella, sweet & spicy buffalo sauce, blue cheese, chopped celery",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "1fTBaRDAL5wcvnagvEZsS",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Aloo Fries",
-      "img": "/menu/tony-boloneys/aloo-fries.jpg",
-      "originalPrice": 950,
-      "orderNames": [],
-      "optionGroups": [],
-      "addonGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Crispy signature fries with Indian tikka masala, homemade paneer cheese, fresh cilantro and jalapenos",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "TdAnlqGey2W920cEUUciq",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Magic Fries",
-      "img": "/menu/tony-boloneys/magic-fries.jpg",
-      "originalPrice": 1050,
-      "orderNames": [],
-      "isActive": true,
-      "optionGroups": [],
-      "addonGroups": [],
-      "canAutoPick": true,
-      "description": "Crispy signature fries with black truffle sauce, fresh mutz, and parsley",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "OndMFzsP_S2ywMpLSv4Hu",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    }
-  ],
-  "managers": [],
-  "status": "Open"
-}
 
-POST rests/_doc/
+then delete rests
+
+DELETE rests
+
+
+then remap rests with regular tags
+
+
+
+
+then reindex back
+
+
+POST _reindex
 {
-  "taxRate": 0.06625,
-  "createdDate": 1590858720124,
-  "profile": {
-    "phone": "(201) 459-6070",
-    "name": "Wings To Go",
-    "tags": [
-      "American",
-      "Pizza"
-    ]
+  "source": {
+    "index": "rests2"
   },
-  "status": "Open",
-  "location": {
-    "geo": {
-      "lon": -74.037598,
-      "lat": 40.737289
-    },
-    "address": {
-      "zip": "07030",
-      "city": "Hoboken",
-      "address1": "400 Newark St",
-      "state": "NJ"
-    },
-    "timezone": "America/New_York"
-  },
-  "menu": [
-    {
-      "name": "Boneless Wings x10",
-      "img": "/menu/wings-to-go/boneless.jpg",
-      "originalPrice": 1075,
-      "orderNames": [
-        "Boneless Wings X10 W/ Celery And Bleu Cheese - Sauce"
-      ],
-      "isActive": true,
-      "canAutoPick": true,
-      "optionGroups": [
-        {
-          "names": [
-            "Mild Sauce",
-            "X-Hot Sauce",
-            "Honey BBQ Sauce",
-            "Buffalo Garlic Sauce",
-            "Honey Mustard Sauce",
-            "Teriyaki Sauce",
-            "Garlic Parmesan Sauce",
-            "Sweet & Sour Sauce",
-            "Caribbean Jerk Sauce",
-            "Asian Fusion Sauce"
-          ]
-        }
-      ],
-      "addonGroups": [],
-      "description": "Served with celery and bleu cheese",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "vUWMkXiW_1uA06xwRBTFg",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Classic Wings x10",
-      "img": "/menu/wings-to-go/wings.jpg",
-      "originalPrice": 1099,
-      "orderNames": [
-        "Buffalo Wings X10 W/ Celery And Bleu Cheese - Sauce"
-      ],
-      "isActive": true,
-      "canAutoPick": true,
-      "optionGroups": [
-        {
-          "names": [
-            "Mild Sauce",
-            "X-Hot Sauce",
-            "Honey BBQ Sauce",
-            "Buffalo Garlic Sauce",
-            "Honey Mustard Sauce",
-            "Teriyaki Sauce",
-            "Garlic Parmesan Sauce",
-            "Sweet & Sour Sauce",
-            "Caribbean Jerk Sauce",
-            "Asian Fusion Sauce"
-          ]
-        }
-      ],
-      "addonGroups": [],
-      "description": "Served with celery and bleu cheese",
-      "planName": "Standard",
-      "stripePlanId": "plan_HE1O8fPf3",
-      "_id": "JhobLSQqKIq9A0hyZWZkq",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Chicken Tenders x5",
-      "img": "/menu/wings-to-go/tenders.jpg",
-      "originalPrice": 849,
-      "orderNames": [
-        "Chicken Tenders X5 W/ Celery And Bleu Cheese - Sauce"
-      ],
-      "isActive": true,
-      "canAutoPick": true,
-      "optionGroups": [
-        {
-          "names": [
-            "Mild Sauce",
-            "X-Hot Sauce",
-            "Honey BBQ Sauce",
-            "Buffalo Garlic Sauce",
-            "Honey Mustard Sauce",
-            "Teriyaki Sauce",
-            "Garlic Parmesan Sauce",
-            "Sweet & Sour Sauce",
-            "Caribbean Jerk Sauce",
-            "Asian Fusion Sauce"
-          ]
-        }
-      ],
-      "addonGroups": [],
-      "description": "Served with celery and bleu cheese",
-      "stripePlanId": "plan_HE1O8fPf3",
-      "_id": "UGImV6ZoBEs93lFHcEMB7",
-      "planName": "Standard",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Cheese Pizza Pie",
-      "img": "/menu/wings-to-go/cheese.jpg",
-      "originalPrice": 899,
-      "orderNames": [
-        "Plain Cheese Pizza - Small 12 in."
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Personal 12 in. pizza pie made with fresh cheeses",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "UxfYI9q5aq_xkBeLGZAtJ",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Sicilian Pizza Pie",
-      "img": "/menu/wings-to-go/sicilian.jpg",
-      "originalPrice": 999,
-      "orderNames": [
-        "Sicilian Pizza - Small 12 in."
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": false,
-      "canAutoPick": true,
-      "description": "Personal 12 in. pizza pie with thicker crust and extra sauce",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "apA1fFvKnVj6Qfb84ChZT",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Original Napolitano Pizza Pie",
-      "img": "/menu/wings-to-go/napolitano.jpg",
-      "originalPrice": 999,
-      "orderNames": [
-        "Original Napolitano Pizza - Small 12 in."
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Personal 12 in. pizza pie with  tomatoes, olive oil, fresh garlic and basil",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "nLirjXBKwk5zWxGG4sUe8",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    },
-    {
-      "name": "Mozzarella Sticks & Fries",
-      "img": "/menu/wings-to-go/sticks.jpg",
-      "originalPrice": 998,
-      "orderNames": [
-        "Mozzarella Sticks - 6pc",
-        "Seasoned French Fries"
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Mozzarella Sticks (6) & Seasoned fresh, french fries",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "22rnpCCIIGD4EFfPZmOFl",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Jalapeno Poppers & Fries",
-      "img": "/menu/wings-to-go/poppers.jpg",
-      "originalPrice": 998,
-      "orderNames": [
-        "Jalapeno Poppers - 6pc",
-        "Seasoned French Fries"
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Jalapeno Poppers (6) & Seasoned fresh, french fries",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "2oZhWV7tLgb7UgG1B-N9W",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Fiesta Chicken Salad",
-      "img": "/menu/wings-to-go/fiesta-salad.jpg",
-      "originalPrice": 949,
-      "orderNames": [
-        "Fiesta Chicken Salad W/ Creamy Italian Dressing"
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Chicken, lettuce, tomato, shredded cheese, salsa, jalapeno, corn, black beans with creamy italian dressing",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "R0Xw85OTQN5wUiZoxO__U",
-      "tags": [
-        "American"
-      ]
-    },
-    {
-      "name": "Buffalo Chicken Salad",
-      "img": "/menu/wings-to-go/buffalo-salad.jpg",
-      "originalPrice": 999,
-      "orderNames": [
-        "Buffalo Chicken Salad (Fried) W/ Ranch Dressing"
-      ],
-      "addonGroups": [],
-      "optionGroups": [],
-      "isActive": true,
-      "canAutoPick": true,
-      "description": "Fried chicken tossed in mild sauce and lettuce, served with your choice of ranch dressing",
-      "stripePlanId": "plan_HE1O8fPf3Nf3Uo",
-      "planName": "Standard",
-      "_id": "2lSuhBI21q1yggv7UCE8R",
-      "tags": [
-        "American",
-        "Pizza"
-      ]
-    }
-  ],
-  "managers": []
+  "dest": {
+    "index": "rests"
+  }
 }
 
 
 
-tags
 
-indian
-protein
-"Vegan",
-"Vegetarian"
-"Cuban"
-"Seafood",
-"Pescatarian"
-"Korean"
-"Pizza"
+
+
+
+
+
+
+CONSUMERSSSS
+
+
+add new mapping called consumers2
+
+then run the re-index
+
+POST _reindex
+{
+  "source": {
+    "index": "consumers"
+  },
+  "dest": {
+    "index": "consumers2"
+  },
+  "script": {
+    "source": """
+      if (ctx._source.plan != null) {
+        def cuisines = ctx._source.plan.cuisines;
+        def newTags = new ArrayList();
+        for (int j = 0; j < cuisines.length; j++) {
+          if (cuisines[j].equals("Pizza") {
+            newTags.add([
+              "name": cuisines[j],
+              "type": "form"
+            ]);
+          } if (cuisines[j].equals("Keto") || cuisines[j].equals("Low Cal") || cuisines[j].equals("Low Carb") || cuisines[j].equals("Pescatarian") || cuisines[j].equals("Protein") || cuisines[j].equals("Seafood") || cuisines[j].equals("Vegan") || cuisines[j].equals("Vegetarian")) {
+            newTags.add([
+              "name": cuisines[j],
+              "type": "diet"
+            ]);
+          } else {
+            newTags.add([
+              "name": cuisines[j],
+              "type": "cuisine"
+            ]);
+          }
+        }
+        ctx._source.plan.tags = newTags;
+      }
+    """
+  }
+}
+
+then delete consumers
+
+DELETE consumers
+
+
+then remap rests with regular tags
+
+then reindex back
+
+POST _reindex
+{
+  "source": {
+    "index": "consumers2",
+    "_source": {
+      "excludes": [
+        "plan.cuisines"
+      ]
+    }
+  },
+  "dest": {
+    "index": "consumers"
+  }
+}
+
+
+
+
+
+
+
+
+
+ordersssssssssss
+
+
+add new mapping called orders
+
+
+then run the re-index
+
+
+POST _reindex
+{
+  "source": {
+    "index": "orders"
+  },
+  "dest": {
+    "index": "orders2"
+  },
+  "script": {
+    "source": """
+      def deliveries = ctx._source.deliveries;
+      ctx._source.remove("profile.tags");
+      for (int i = 0; i < deliveries.length; i++) {
+        def meals = deliveries[i].meals;
+        for (int j = 0; j < meals.length; j++) {
+          def currTags = meals[j].tags;
+          def newTags = new ArrayList();
+          for (int k = 0; k < currTags.length; k++) {
+            if (currTags[k].equals("Pizza") {
+              newTags.add([
+                "name": currTags[k],
+                "type": "form"
+              ]);
+            } else if (currTags[k].equals("Keto") || currTags[k].equals("Low Cal") || currTags[k].equals("Low Carb") || currTags[k].equals("Pescatarian") || currTags[k].equals("Protein") || currTags[k].equals("Seafood") || currTags[k].equals("Vegan") || currTags[k].equals("Vegetarian")) {
+              newTags.add([
+                "name": currTags[k],
+                "type": "diet"
+              ]);
+            } else {
+              newTags.add([
+                "name": currTags[k],
+                "type": "cuisine"
+              ]);
+            }
+          }
+          meals[j].tags = newTags;
+        }
+      }
+    """
+  }
+}
+
+
+then delete orders
+
+DELETE orders
+
+
+then remap orders
+
+
+then reindex back
+
+POST _reindex
+{
+  "source": {
+    "index": "orders2"
+  },
+  "dest": {
+    "index": "orders"
+  }
+}
