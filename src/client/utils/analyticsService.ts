@@ -210,6 +210,8 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
       ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
+     // @ts-ignore
+     window.fbq('trackCustom', events.CANCELED_SUBSCRIPTION, {description: 'canceled subscription'});
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -217,6 +219,9 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CHOSE_PLAN, {
       ...fields,
     });
+
+    // @ts-ignore
+    window.fbq('trackCustom', events.CHOSE_PLAN, { ...fields });
   }
 
   public static sendUpdatePlanMetrics(
@@ -227,6 +232,10 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CHOSE_PLAN, {
       ...copyMealPlansWithPriceAndCount(newMealPlans, plans),
     });
+
+    // @ts-ignore
+    window.fbq('trackCustom', events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
+
     analyticsService.trackEvent(events.REMOVED_PLAN, {
       ...copyMealPlansWithPriceAndCount(oldMealPlans, plans),
     });
@@ -303,11 +312,16 @@ export class AnalyticsService {
       analyticsService.trackEvent(events.ADDED_CUISINE, {
         cuisine
       });
+      // @ts-ignore
+      window.fbq('trackCustom', events.ADDED_CUISINE, { cuisineType: cuisine });
     });
+
     removedCuisines.forEach(cuisine => {
       analyticsService.trackEvent(events.REMOVED_CUISINE, {
         cuisine
       });
+      // @ts-ignore
+      window.fbq('trackCustom', events.REMOVED_CUISINE, { cuisineType: cuisine });
     });
   }
 
@@ -347,6 +361,8 @@ export class AnalyticsService {
       ...fields,
       mealsSkipped: skippedMealsCount,
     });
+     // @ts-ignore
+    window.fbq('trackCustom', events.SKIPPED_DELIVERY, { description: 'skipped delivery'});
   }
 
   public static sendUpdateOrderMetrics(
@@ -373,6 +389,8 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.ENTERED_ZIP, {
       zip
     });
+    // @ts-ignore
+    window.fbq('trackCustom', events.ENTERED_ZIP, { description: 'entered zip'});
   }
 }
 
