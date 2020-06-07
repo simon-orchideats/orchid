@@ -59,10 +59,6 @@ export interface IMeal {
 
 export interface IMealInput extends Omit<IMeal, 'planName' | 'stripePlanId' | '_id'> {}
 
-export interface EMeal extends IMeal {
-  readonly canAutoPick: boolean
-}
-
 export class Meal implements IMeal {
   readonly _id: string;
   readonly img?: string;

@@ -825,7 +825,7 @@ PUT /rests/
               }
             }
           },
-          "isActive": :{
+          "isActive": {
             "type": "boolean"
           },
           "optionGroups": {

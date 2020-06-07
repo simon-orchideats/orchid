@@ -27,7 +27,6 @@ export interface IDeliveryMeal extends Omit<
   '_id'
   | 'description'
   | 'originalPrice'
-  | 'canAutoPick'
   | 'addonGroups'
   | 'optionGroups'
   | 'isActive'

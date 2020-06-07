@@ -9,7 +9,7 @@ import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
-import { IMeal, EMeal } from './../../rest/mealModel';
+import { IMeal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, IConsumerProfile, Consumer, Permissions } from './../../consumer/consumerModel';
 import { MealPlan, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerPlanModel';
@@ -35,7 +35,7 @@ export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, da
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
 
-const doesMealContainCuisines = (meal: EMeal, cuisines: string[]) => {
+const doesMealContainCuisines = (meal: IMeal, cuisines: string[]) => {
   for (let i = 0; i < cuisines.length; i++) {
     if (meal.tags.find(t => t.type === TagTypes.Cuisine && t.name === cuisines[i])) return true;
   }
@@ -43,14 +43,14 @@ const doesMealContainCuisines = (meal: EMeal, cuisines: string[]) => {
 }
 
 const chooseRandomMeals = (
-  menu: EMeal[],
+  menu: IMeal[],
   mealCount: number,
   restId: string,
   restName: string,
   taxRate: number,
   cuisines: string[]
 ): IDeliveryMeal[] => {
-  const chooseRandomly = getItemChooser<EMeal>(menu, m => m.canAutoPick && m.isActive && doesMealContainCuisines(m, cuisines));
+  const chooseRandomly = getItemChooser<IMeal>(menu, m => m.isActive && doesMealContainCuisines(m, cuisines));
   const meals: IMeal[] = [];
   for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
   return Cart.getDeliveryMeals(meals, restId, restName, taxRate);

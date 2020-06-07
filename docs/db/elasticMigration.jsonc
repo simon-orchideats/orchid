@@ -90,7 +90,7 @@ POST _reindex
         def currTags = menu[i].tags;
         def newTags = new ArrayList();
         for (int j = 0; j < currTags.length; j++) {
-          if (currTags[j].equals("Pizza") {
+          if (currTags[j].equals("Pizza")) {
             newTags.add([
               "name": currTags[j],
               "type": "form"
@@ -249,7 +249,7 @@ POST _reindex
           def currTags = meals[j].tags;
           def newTags = new ArrayList();
           for (int k = 0; k < currTags.length; k++) {
-            if (currTags[k].equals("Pizza") {
+            if (currTags[k].equals("Pizza")) {
               newTags.add([
                 "name": currTags[k],
                 "type": "form"
