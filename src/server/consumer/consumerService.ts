@@ -335,21 +335,6 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-    // left off here. replace myConsumer with a better version of this. the game plan is this...
-  /**
-   * anyone who logs in can do everyting form the same site. they'll hvae the same signedInUser obj.
-   * 
-   * consumer - has conusmer data
-   * rest owner - has just user data - but can do stuf. ex this person will have update rests so they can
-   * // will show own rest page which calls myRest which will do db query.
-   * rest manage r- has just user data - but can do stuff
-   * admin - has just user data - but can do stuff
-   * marketer - has just user data - but can do stuff
-   * 
-   * all these people can do consumer stuff... so the plan is to getConsumer for ALL users.
-   * and getConsumer will always return permissions. just gotta rename getConsuemr to getUser since
-   * obv not all users are gonna be consumers, BUT they can be.
-   */
   async getIConsumer(signedInUser: SignedInUser): Promise<IConsumer | null> {
     try {
       if (!signedInUser) throw 'No signed in user';
