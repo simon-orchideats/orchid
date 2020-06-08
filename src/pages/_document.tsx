@@ -6,7 +6,7 @@ import { getTheme } from '../client/global/styles/theme';
 import { activeConfig } from '../config';
 
 const tracking = activeConfig.client.analytics.ga.trackingId;
-const fbTracking = activeConfig.client.analytics.faceBookPixel.pixelId;
+const fbTracking = activeConfig.client.analytics.facebookPixel.pixelId;
 
 export default class MyDocument extends Document {
   render() {
