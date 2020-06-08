@@ -194,6 +194,15 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
+      const eConsumer = await this.getEConsumer(signedInUser._id);
+      const plan = eConsumer?.consumer.plan;
+      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
+      this.stripe.coupons.del(plan.referralCode)
+        .catch(e => {
+          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
+          throw e;
+        })
+
       const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
         stripeSubscriptionId: null,
         plan: null,
@@ -209,15 +218,6 @@ class ConsumerService implements IConsumerService {
         console.error(msg)
         throw e;
       });
-
-      const eConsumer = await this.getEConsumer(signedInUser._id);
-      const plan = eConsumer?.consumer.plan;
-      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
-      this.stripe.coupons.del(plan.referralCode)
-        .catch(e => {
-          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
-          throw e;
-        })
       this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
         const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)

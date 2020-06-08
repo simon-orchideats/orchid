@@ -16,7 +16,8 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     marginBottom: theme.spacing(2),
-    minWidth: 300
+    minWidth: 300,
+    maxWidth: 500,
   },
   row: {
     display: 'flex',
