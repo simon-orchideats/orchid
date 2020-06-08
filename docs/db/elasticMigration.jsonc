@@ -36,9 +36,6 @@ POST _bulk
 { "name" : "Thai", "type": "cuisine" }
 { "index" : { "_index" : "tags" } }
 { "name" : "Vietnamese", "type": "cuisine" }
-
-
-POST _bulk
 { "index" : { "_index" : "tags" } }
 { "name" : "Keto", "type": "diet" }
 { "index" : { "_index" : "tags" } }
@@ -55,9 +52,6 @@ POST _bulk
 { "name" : "Vegan", "type": "diet" }
 { "index" : { "_index" : "tags" } }
 { "name" : "Vegetarian", "type": "diet" }
-
-
-POST _bulk
 { "index" : { "_index" : "tags" } }
 { "name" : "Pizza", "type": "form" }
 
