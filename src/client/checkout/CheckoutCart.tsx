@@ -222,10 +222,13 @@ const CheckoutCart: React.FC<props> = ({
             {orderButton}
           </>
         }
+        <Typography variant='subtitle2' className={classes.paddingBottom}>
+          Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. If you're unsatisfied, email us at
+          simon@orchideats.com or call (609) 513-8166 and we'll refund your first week.
+        </Typography>
         <Typography variant='body2' className={classes.hint}>
-          Your first payment will occur on {moment().add(1, 'w').format('M/D')} and will automatically renew every week
-          unless canceled. Your price per meal is determined by the actual number of meals received per week, not
-          by your subscription. This way you can make adjustments each week as necessary and be fairly charged.
+          Your subscription renews every week unless canceled and is charged based on the number of meals received per
+          week.
         </Typography>
       </div>
     </>

@@ -1,4 +1,4 @@
-import { Container, makeStyles, Typography, Button, ExpansionPanelSummary, ExpansionPanel, ExpansionPanelDetails } from "@material-ui/core";
+import { Container, makeStyles, Typography, Button, ExpansionPanelSummary, ExpansionPanel, ExpansionPanelDetails, useTheme, Theme, useMediaQuery } from "@material-ui/core";
 import Faq from "../client/general/CommonQuestions";
 import withClientApollo from "../client/utils/withClientApollo";
 import Router, { useRouter } from 'next/router'
@@ -53,6 +53,8 @@ const delivery = () => {
   const [schedules, setSchedules] = useState<Schedule[]>(
     cart && cart.Schedules.length > 0 ? cart.Schedules : [ Schedule.getDefaultSchedule() ]
   );
+  const theme = useTheme<Theme>();
+  const isSmAndDown = useMediaQuery(theme.breakpoints.down('xs'));
   const plans = useGetAvailablePlans();
   const [hasScheduleError, setHasScheduleError] = useState<boolean>(false);
   const router = useRouter();
@@ -222,9 +224,9 @@ const delivery = () => {
                 </Typography>
               }
               {
-                schedules.length > 1 &&
+                schedules.length > 1 && isSmAndDown &&
                 <Typography className={classes.row}>
-                  <SyncAltIcon />Scroll left/right to see more
+                  <b>Scroll right to see more</b>&nbsp;<SyncAltIcon />
                 </Typography>
               }
             </div>
