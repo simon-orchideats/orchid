@@ -32,6 +32,7 @@ export const events = {
   EDITED_DELIVERY_FROM_MEALS: 'Edited delivery from meals',
   EDITED_DELIVERY_FROM_TAGS: 'Edited delivery from tags',
   ENTERED_ZIP: 'Entered zip',
+  TRACK_CUSTOM: 'trackCustom',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
   REMOVED_CUISINE: 'Removed cuisine',
@@ -211,7 +212,7 @@ export class AnalyticsService {
       ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
     // @ts-ignore
-    window.fbq('trackCustom', events.CANCELED_SUBSCRIPTION);
+    window.fbq(TRACK_CUSTOM, events.CANCELED_SUBSCRIPTION);
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -221,7 +222,7 @@ export class AnalyticsService {
     });
 
     // @ts-ignore
-    window.fbq('trackCustom', events.CHOSE_PLAN, { ...fields });
+    window.fbq(TRACK_CUSTOM, events.CHOSE_PLAN, { ...fields });
   }
 
   public static sendUpdatePlanMetrics(
@@ -234,7 +235,7 @@ export class AnalyticsService {
     });
 
     // @ts-ignore
-    window.fbq('trackCustom', events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
+    window.fbq(TRACK_CUSTOM, events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
 
     analyticsService.trackEvent(events.REMOVED_PLAN, {
       ...copyMealPlansWithPriceAndCount(oldMealPlans, plans),
@@ -313,7 +314,7 @@ export class AnalyticsService {
         cuisine
       });
       // @ts-ignore
-      window.fbq('trackCustom', events.ADDED_CUISINE, { cuisineType: cuisine });
+      window.fbq(TRACK_CUSTOM, events.ADDED_CUISINE, { cuisineType: cuisine });
     });
 
     removedCuisines.forEach(cuisine => {
@@ -321,7 +322,7 @@ export class AnalyticsService {
         cuisine
       });
       // @ts-ignore
-      window.fbq('trackCustom', events.REMOVED_CUISINE, { cuisineType: cuisine });
+      window.fbq(TRACK_CUSTOM, events.REMOVED_CUISINE, { cuisineType: cuisine });
     });
   }
 
@@ -362,7 +363,7 @@ export class AnalyticsService {
       mealsSkipped: skippedMealsCount,
     });
     // @ts-ignore
-    window.fbq('trackCustom', events.SKIPPED_DELIVERY);
+    window.fbq(TRACK_CUSTOM, events.SKIPPED_DELIVERY);
   }
 
   public static sendUpdateOrderMetrics(
@@ -390,7 +391,7 @@ export class AnalyticsService {
       zip
     });
     // @ts-ignore
-    window.fbq('trackCustom', events.ENTERED_ZIP);
+    window.fbq(TRACK_CUSTOM, events.ENTERED_ZIP);
   }
 }
 
