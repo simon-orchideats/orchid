@@ -27,7 +27,7 @@ const _ConsumerPlanQL = gql`
   input ConsumerPlanInput {
     mealPlans: [MealPlanInput!]!
     schedules: [ScheduleInput!]!
-    cuisines: [CuisineType!]!
+    tags: [TagInput!]!
   }
 
   type Schedule {
@@ -48,7 +48,7 @@ const _ConsumerPlanQL = gql`
   type ConsumerPlan {
     mealPlans: [MealPlan!]!
     schedules: [Schedule!]!
-    cuisines: [CuisineType!]!
+    tags: [Tag!]!
     referralCode: String!
     weeklyDiscounts: [WeeklyDiscount!]!
   }

@@ -1,7 +1,7 @@
 import { PlanName } from './../plan/planModel';
 import { IAddress } from './../place/addressModel';
 import { RestProfile, IRestProfile } from './restProfileModel';
-import { IMeal, EMeal, Meal, IMealInput, AddonGroup, OptionGroup } from './mealModel';
+import { IMeal, Meal, IMealInput, AddonGroup, OptionGroup } from './mealModel';
 import { ILocation, Location } from '../place/locationModel';
 import { nanoid } from 'nanoid'
 
@@ -23,7 +23,7 @@ export interface ERest {
       lon: string
     }
   };
-  readonly menu: EMeal[];
+  readonly menu: IMeal[];
   readonly profile: IRestProfile;
   readonly taxRate: number;
   readonly status: RestStatus
@@ -103,7 +103,6 @@ export class Rest implements IRest {
         optionGroups: m.optionGroups.map(og => OptionGroup.getICopy(og)),
         addonGroups: m.addonGroups.map(ag => AddonGroup.getICopy(ag)),
         _id: nanoid(),
-        canAutoPick: true,
         planName,
         stripePlanId,
       })),

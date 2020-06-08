@@ -10,7 +10,6 @@ import { state, Address } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
-import { CuisineType, CuisineTypes } from "../rest/mealModel";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
 import { usePlaceOrder, useGetPromo } from "../client/order/orderService";
@@ -30,6 +29,8 @@ import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import { useGetTags } from "../rest/restService";
+import { Tag } from "../rest/tagModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -83,7 +84,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
   const [promoDuration, setPromoDuration] = useState<promoDurations>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [cuisines, setCuisines] = useState<CuisineType[]>(Object.values(CuisineTypes));
+  const [tags, setTags] = useState<Tag[]>([]);
   const [accountName, setAccountName] = useState<string>('');
   const [accountNameError, setAccountNameError] = useState<string>('');
   const validateEmailRef = useRef<() => boolean>();
@@ -92,17 +93,24 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
-  const validateCuisineRef= useRef<() => boolean>();
+  const validateCuisineRef = useRef<() => boolean>();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
+  const allTags = useGetTags();
 
   useEffect(() => {
     if (router.query.a !== undefined) {
       setAmountOff(parseFloat(router.query.a as string));
     }
   }, [router.query.a]);
+
+  useEffect(() => {
+    if (allTags.data) {
+      setTags(allTags.data)
+    }
+  }, [allTags.data])  
 
   useMutationResponseHandler(applyPromoRes, () => {
     if (!applyPromoRes.data?.res?.AmountOff) {
@@ -174,7 +182,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            cuisines,
+            tags,
             promoInputRef.current?.value,
           )
         );
@@ -274,7 +282,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     sendCheckoutMetrics(
       cart,
       plans.data,
-      cuisines,
+      tags.map(t => t.Name),
     )
     if (!consumer || !consumer.data) {
       if (!email) {
@@ -301,7 +309,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           deliveryInstructions,
-          cuisines,
+          tags,
           promo,
         ),
       );
@@ -596,11 +604,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </div>
           <CardForm />
           <RenewalChooser
-            cuisines={cuisines}
+            allTags={allTags.data || []}
+            tags={tags}
             validateCuisineRef={validateCuisine => {
               validateCuisineRef.current = validateCuisine;
             }}
-            onCuisineChange={cuisines => setCuisines(cuisines)}
+            onTagChange={tags => setTags(tags)}
           />
         </Grid>
         {

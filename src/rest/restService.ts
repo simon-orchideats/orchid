@@ -1,3 +1,4 @@
+import { ITag, Tag } from './tagModel';
 import { ApolloCache, DataProxy } from 'apollo-cache';
 import { IRest, Rest, IRestInput } from './restModel';
 import gql from 'graphql-tag';
@@ -6,6 +7,7 @@ import { restFragment } from './restFragment';
 import { useMemo } from 'react';
 import { MutationBoolRes } from '../utils/apolloUtils';
 import { ApolloError } from 'apollo-client';
+import { tagFragment } from './tagFragment';
 
 export const useAddRest = (): [
   (rest: IRestInput) => void,
@@ -37,6 +39,31 @@ export const useAddRest = (): [
   ], [mutation]);
 }
 
+export const useGetTags = () => {
+  type res = {
+    allTags: ITag[]
+  }
+  const res = useQuery<res>(
+    gql`
+      query allTags {
+        allTags {
+          ...tagFragment
+        }
+      }
+      ${tagFragment}
+    `
+  );
+
+  const tags = useMemo<Tag[] | undefined>(() => (
+    res.data ? res.data.allTags.map(t => new Tag(t)) : res.data
+  ), [res.data]);
+
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: tags
+  }
+}
 
 const useGetNearbyRests = (cityOrZip: string) => {
   type res = {

@@ -6,7 +6,6 @@ import Router from 'next/router'
 import { Cart } from '../../order/cartModel';
 import { IPlan, Tier, PlanNames } from '../../plan/planModel';
 import { Schedule, MealPlan } from '../../consumer/consumerPlanModel';
-import { CuisineType } from '../../rest/mealModel';
 import { Order } from '../../order/orderModel';
 import moment from 'moment';
 
@@ -302,9 +301,9 @@ export class AnalyticsService {
     });
   }
 
-  public static sendCuisineMetrics(newCuisines: CuisineType[], oldCuisines: CuisineType[] = []) {
-    const addedCuisines: CuisineType[] = [];
-    const removedCuisines: CuisineType[] = [];
+  public static sendCuisineMetrics(newCuisines: string[], oldCuisines: string[] = []) {
+    const addedCuisines: string[] = [];
+    const removedCuisines: string[] = [];
     oldCuisines.forEach(old => {
       if (!newCuisines.find(newC => newC === old)) {
         removedCuisines.push(old);

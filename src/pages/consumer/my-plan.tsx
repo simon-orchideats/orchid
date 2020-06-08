@@ -1,7 +1,6 @@
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
 import { ConsumerPlan, deliveryDay, deliveryTime, Schedule, MealPlan } from '../../consumer/consumerPlanModel';
-import { CuisineType } from '../../rest/mealModel';
 import RenewalChooser from '../../client/general/RenewalChooser';
 import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
@@ -19,6 +18,8 @@ import { menuRoute } from "../menu";
 import Link from "next/link";
 import { debounce } from 'lodash';
 import { useGetAvailablePlans } from "../../plan/planService";
+import { useGetTags } from "../../rest/restService";
+import { Tag } from "../../rest/tagModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -75,10 +76,11 @@ const myPlan = () => {
   const consumer = useRequireConsumer(myPlanRoute);
   const plan = consumer.data && consumer.data.Plan;
   const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
-  const cuisines = plan ? plan.Cuisines : [];
+  const tags = plan ? plan.Tags : [];
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const plans = useGetAvailablePlans();
   const validateCuisineRef= useRef<() => boolean>();
+  const allTags = useGetTags();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
   const notify = useNotify();
   // useRef because we want a store this delayedFetch between renders, otherwise we always redefine the delayedFetch
@@ -97,13 +99,13 @@ const myPlan = () => {
     let msg = '.';
     const oldMealCount = MealPlan.getTotalCount(prevPlan.mealPlans);
     const newMealCount = MealPlan.getTotalCount(consumer.data.Plan.MealPlans);
-    const oldCuisines = prevPlan.Cuisines;
-    const newCuisines = consumer.data.Plan.Cuisines;
+    const oldTags = prevPlan.Tags;
+    const newTags = consumer.data.Plan.Tags;
     const oldSchedule = prevPlan.Schedules;
     const newSchedule = consumer.data.Plan.Schedules;
     if (oldMealCount !== newMealCount) {
       msg = `. We will pick ${newMealCount} meals for you in the future.`
-    } else if (!ConsumerPlan.areCuisinesEqual(oldCuisines, newCuisines)) {
+    } else if (!Tag.areTagsEqual(oldTags, newTags)) {
       msg = `. We will pick new cuisines for you in the future.`;
     } else if (!Schedule.equalsLists(oldSchedule, newSchedule)) {
       msg = '. We will follow your new schedule in the future.'
@@ -241,14 +243,17 @@ const myPlan = () => {
       consumer.data
     );
   }
-  const updateCuisines = (cuisines: CuisineType[]) => {
+  const updateTags = (tags: Tag[]) => {
     if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
     setPrevPlan(consumer.data.Plan);
-    sendChooseCuisineMetrics(cuisines, consumer.data.Plan.Cuisines);
+    sendChooseCuisineMetrics(
+      Tag.getCuisines(tags),
+      Tag.getCuisines(consumer.data.Plan.Tags),
+    );
     updateMyPlan(
       new ConsumerPlan({
         ...consumer.data.Plan,
-        cuisines,
+        tags,
       }),
       consumer.data
     );
@@ -338,8 +343,9 @@ const myPlan = () => {
               updateSchedule={updateSchedule}
             />
             <RenewalChooser
-              cuisines={cuisines}
-              onCuisineChange={cuisines => updateCuisines(cuisines)}
+              allTags={allTags.data || []}
+              tags={tags}
+              onTagChange={tags => updateTags(tags)}
               validateCuisineRef={validateCuisine => {
                 validateCuisineRef.current = validateCuisine;
               }}

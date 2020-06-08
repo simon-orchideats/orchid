@@ -1,12 +1,11 @@
 import { Cart } from '../../order/cartModel';
 import { AnalyticsService } from "../utils/analyticsService";
-import { CuisineType } from '../../rest/mealModel';
 import { IPlan } from '../../plan/planModel';
 
 export const sendCheckoutMetrics = (
   cart: Cart,
   plans: IPlan[],
-  cuisines: CuisineType[],
+  cuisines: string[],
 ) => {
   AnalyticsService.sendCheckoutMetrics(cart, plans);
   AnalyticsService.sendDeliveryMetrics(cart.Deliveries);

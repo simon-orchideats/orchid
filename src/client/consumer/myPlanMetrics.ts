@@ -1,6 +1,5 @@
 import { AnalyticsService } from './../utils/analyticsService';
 import { Schedule, MealPlan } from './../../consumer/consumerPlanModel';
-import { CuisineType } from '../../rest/mealModel';
 import { IPlan } from '../../plan/planModel';
 
 export const sendCancelSubscriptionMetrics = (oldMealPlans: MealPlan[], plans: IPlan[]) => {
@@ -8,8 +7,8 @@ export const sendCancelSubscriptionMetrics = (oldMealPlans: MealPlan[], plans: I
 }
 
 export const sendChooseCuisineMetrics = (
-  newCuisines: CuisineType[],
-  oldCuisines: CuisineType[] = [],
+  newCuisines: string[],
+  oldCuisines: string[] = [],
 ) => {
   AnalyticsService.sendCuisineMetrics(newCuisines, oldCuisines);
 }

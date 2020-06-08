@@ -13,6 +13,15 @@ export const RestQueryResolvers: ServerResolovers = {
   rest: (_root: any, { restId }: { restId: string }) => {
     return getRestService().getRest(restId);
   },
+
+  allTags: async () => {
+    try {
+      return await getRestService().getAllTags();
+    } catch (e) {
+      console.error('[RestResolver] failed to get all tags', e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
 }
 
 export const RestMutationResolvers: ServerResolovers = {

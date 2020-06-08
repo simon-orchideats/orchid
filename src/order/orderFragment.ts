@@ -50,7 +50,10 @@ const orderFragment = gql`
         stripePlanId
         planName
         taxRate
-        tags
+        tags {
+          name
+          type
+        }
       }
       status
     }

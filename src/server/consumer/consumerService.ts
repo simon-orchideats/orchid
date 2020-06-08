@@ -194,6 +194,15 @@ class ConsumerService implements IConsumerService {
         throw e;
       });
 
+      const eConsumer = await this.getEConsumer(signedInUser._id);
+      const plan = eConsumer?.consumer.plan;
+      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
+      this.stripe.coupons.del(plan.referralCode)
+        .catch(e => {
+          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
+          throw e;
+        })
+
       const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
         stripeSubscriptionId: null,
         plan: null,
@@ -209,15 +218,6 @@ class ConsumerService implements IConsumerService {
         console.error(msg)
         throw e;
       });
-
-      const eConsumer = await this.getEConsumer(signedInUser._id);
-      const plan = eConsumer?.consumer.plan;
-      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
-      this.stripe.coupons.del(plan.referralCode)
-        .catch(e => {
-          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
-          throw e;
-        })
       this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
         const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
         console.error(msg)
@@ -335,21 +335,6 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-    // left off here. replace myConsumer with a better version of this. the game plan is this...
-  /**
-   * anyone who logs in can do everyting form the same site. they'll hvae the same signedInUser obj.
-   * 
-   * consumer - has conusmer data
-   * rest owner - has just user data - but can do stuf. ex this person will have update rests so they can
-   * // will show own rest page which calls myRest which will do db query.
-   * rest manage r- has just user data - but can do stuff
-   * admin - has just user data - but can do stuff
-   * marketer - has just user data - but can do stuff
-   * 
-   * all these people can do consumer stuff... so the plan is to getConsumer for ALL users.
-   * and getConsumer will always return permissions. just gotta rename getConsuemr to getUser since
-   * obv not all users are gonna be consumers, BUT they can be.
-   */
   async getIConsumer(signedInUser: SignedInUser): Promise<IConsumer | null> {
     try {
       if (!signedInUser) throw 'No signed in user';
@@ -601,11 +586,12 @@ class ConsumerService implements IConsumerService {
         body: {
           doc
         }
-      })
+      });
 
       const newConsumer: IConsumer = {
+        ...updatedConsumer.body.get._source,
         _id: signedInUser._id,
-        ...updatedConsumer.body.get._source
+        permissions: signedInUser.permissions,
       };
       return {
         res: newConsumer,

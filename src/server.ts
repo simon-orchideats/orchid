@@ -41,42 +41,12 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 
 /**
  * 
- * 
- * when logging in from homepage, we lose the query params which is a problem when we have promos
- * 
- * 
- * 
- * 1) discount the referrer for every week of the referral
- * 2) discount the referral $7.50 / $5 for a month --- DONE
- * 3) discount the referral +7.50 for skipping on weeks 3 and 4.
+ * left off here
+ * to test... delete everyting in stage. migrate prod to stage. then log in and make a plan. confirm i can update deliveries.
+ * and checkout
  * 
  * 
- * 
- * 
- * heres the final plan
- * 
- * when a user signs up with a referral code...
- * 
- * 1) apply coupon to the new user
- * 2) get referrer data from coupon
- * 3) create 1 weeklyDiscount with 4 discounts inside it.
- * 4) apply what you can to the upcoming orders, this should return you a weeklyDiscount wth the remaining discounts in weeklyDiscount.discounts
- *    - if the order already has discounts, just append to the array
- * 5) apply the rest of these into the consumer plan
- *    - consumer is to have a list of weeklyDiscounts where each weeklyDiscount represents a discount to be applied for 
- *    upcoming orders. so if there are 5 weekly discounts, then there will be 5 discounts on the next order
- * 6) when generating a new upcoming order, cehck the consumer.plan for weeklyDiscounts and apply the first weeklyDiscounts.discount
- * for all weeklyDiscounts.
- * 
- * 
- * if the friend cancels, we need to remove all the discounts with referredUserId === friend.id and then if no more weekly.discounts, then remove weeklyDiscounts
- * 
- * if a friend skips, then we need to set 1 week's weeklyDiscount.discount to 0 with description that friend skipped
- * 
- * 
- * 3---- if there is a coupon applied and the referral is at least 2 weeks in (do discount end - discount start) and
- * order is autopicked, then create and apply the invoice
- * 
+ * then do the stage changes adn try again
  * 
  */
 

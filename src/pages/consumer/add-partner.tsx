@@ -6,14 +6,14 @@ import PhoneInput from "../../client/general/inputs/PhoneInput";
 import BaseInput from "../../client/general/inputs/BaseInput";
 import withClientApollo from "../../client/utils/withClientApollo";
 import RenewalChooser from "../../client/general/RenewalChooser";
-import { CuisineType } from "../../rest/mealModel";
-import { useAddRest } from "../../rest/restService";
+import { useAddRest, useGetTags } from "../../rest/restService";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import { useNotify } from "../../client/global/state/notificationState";
 import Notifier from "../../client/notification/Notifier";
 import { NotificationType } from "../../client/notification/notificationModel";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { nanoid } from 'nanoid/non-secure'
+import { Tag } from "../../rest/tagModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -66,7 +66,7 @@ type AddonGroupInputState = {
 
 type MenuInput = {
   key: string
-  cuisines: CuisineType[],
+  tags: Tag[],
   nameInputRef: RefObject<HTMLInputElement>,
   descriptionInputRef: RefObject<HTMLInputElement>,
   imgInputRef: RefObject<HTMLInputElement>,
@@ -160,7 +160,8 @@ const AddonGroupInput: React.FC<{
 const MenuItem: React.FC<
   Omit<MenuInput, 'key'>
   & {
-    onCuisineChange: (cuisines: CuisineType[]) => void,
+    allTags: Tag[],
+    onTagChange: (tags: Tag[]) => void,
     onAddOptionGroup: () => void,
     onAddOptionName: (groupIndex: number) => void,
     onAddAddonGroup: () => void,
@@ -172,7 +173,8 @@ const MenuItem: React.FC<
     onRemoveAddonName: (groupIndex: number, nameIndex: number) => void,
   }
 > = ({
-  cuisines,
+  allTags,
+  tags,
   nameInputRef,
   descriptionInputRef,
   imgInputRef,
@@ -180,7 +182,7 @@ const MenuItem: React.FC<
   optionGroups,
   isActiveRef,
   addonGroups,
-  onCuisineChange,
+  onTagChange,
   onAddOptionGroup,
   onAddOptionName,
   onAddAddonGroup,
@@ -259,9 +261,10 @@ const MenuItem: React.FC<
         )
       }
       <RenewalChooser
-        cuisines={cuisines}
+        allTags={allTags}
+        tags={tags}
         validateCuisineRef={() => {}}
-        onCuisineChange={onCuisineChange}
+        onTagChange={onTagChange}
       />
     </div>
   )
@@ -281,6 +284,7 @@ const AddPartner = () => {
   const [nameError, setNameError] = useState('');
   const [addRest, addRestRes] = useAddRest();
   const [clickedAdd, setClickedAdd] = useState<boolean>(false);
+  const allTags = useGetTags();
   const notify = useNotify();
   useMutationResponseHandler(addRestRes, () => {
     notify('Added. Refresh page to add another', NotificationType.success, true);
@@ -291,7 +295,7 @@ const AddPartner = () => {
     descriptionInputRef: createRef<HTMLInputElement>(),
     imgInputRef: createRef<HTMLInputElement>(),
     isActiveRef: createRef<HTMLInputElement>(),
-    cuisines: [] as CuisineType[],
+    tags: [] as Tag[],
     originalPriceInputRef: createRef<HTMLInputElement>(),
     optionGroups: [] as OptionGroupInputState[],
     addonGroups: [] as AddonGroupInputState[],
@@ -355,10 +359,10 @@ const AddPartner = () => {
       setMenuInputs(copy);
     }
   };
-  const changeCuisine = (menuIndex: number) => {
+  const changeTag = (menuIndex: number) => {
     const copy = [ ...menuInputs ];
-    return (cuisines: CuisineType[]) => {
-      copy[menuIndex].cuisines = cuisines;
+    return (tags: Tag[]) => {
+      copy[menuIndex].tags = tags;
       setMenuInputs(copy);
     }
   }
@@ -429,7 +433,7 @@ const AddPartner = () => {
           limit: ag.limit.current?.value ? parseFloat(ag.limit.current?.value) : undefined,
           names: ag.names.map(n => n.name.current!.value)
         })),
-        tags: mi.cuisines.map(t => t)
+        tags: mi.tags.map(t => Tag.getICopy(t)),
       }))
     });
   }
@@ -495,7 +499,8 @@ const AddPartner = () => {
             <React.Fragment key={menu.key}>
               <MenuItem 
                 {...menu}
-                onCuisineChange={changeCuisine(i)}
+                allTags={allTags.data || []}
+                onTagChange={changeTag(i)}
                 onAddOptionGroup={() => addOptionGroup(i)}
                 onAddAddonGroup={() => addAddonGroup(i)}
                 onAddOptionName={addOptionName(i)}

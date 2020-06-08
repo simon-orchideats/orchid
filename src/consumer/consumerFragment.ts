@@ -15,7 +15,10 @@ export const consumerFragment = gql`
         day
         time
       }
-      cuisines
+      tags {
+        type
+        name
+      }
       referralCode
       weeklyDiscounts {
         discounts {

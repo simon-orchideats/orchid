@@ -1,7 +1,6 @@
-
-import { CuisineTypes, CuisineType } from "../../rest/mealModel";
 import { Typography, makeStyles, Grid, Button } from "@material-ui/core";
 import { useState} from "react";
+import { Tag, TagTypes } from "../../rest/tagModel";
 
 const useStyles = makeStyles(theme => ({
   toggleButtonGroup: {
@@ -19,17 +18,19 @@ const useStyles = makeStyles(theme => ({
 
 const RenewalChooser: React.FC<{
   validateCuisineRef: (validateCuisine: () => boolean) => void,
-  cuisines: CuisineType[],
-  onCuisineChange: (cuisine:CuisineType[]) => void
+  allTags: Tag[],
+  tags: Tag[],
+  onTagChange: (tag: Tag[]) => void
 }>= ({
-  onCuisineChange,
-  cuisines,
+  allTags,
+  onTagChange,
+  tags,
   validateCuisineRef
 }) => {
   const [cuisinesError, setCuisinesError] = useState<string>('');
   const classes = useStyles();
   const validateCuisine = () => { 
-    if (cuisines.length === 0) {
+    if (tags.filter(t => t.Type === TagTypes.Cuisine).length === 0) {
       if (!cuisinesError) setCuisinesError('Please pick 1 type')
       return false;
     }
@@ -62,12 +63,12 @@ const RenewalChooser: React.FC<{
           </Typography>
         </Grid>
         <Grid container spacing={2}>
-          {Object.values<CuisineType>(CuisineTypes).map(cuisine => {
-            const withoutCuisine = cuisines.filter(c => cuisine !== c);
-            const isSelected = withoutCuisine.length !== cuisines.length;
+          {allTags.filter(t => t.Type === TagTypes.Cuisine).map(tag => {
+            const withoutCuisine = tags.filter(t => tag.Name !== t.Name);
+            const isSelected = withoutCuisine.length !== tags.length;
             return (
               <Grid
-                key={cuisine}
+                key={tag.Name}
                 item
                 xs={6}
                 sm={4}
@@ -78,10 +79,10 @@ const RenewalChooser: React.FC<{
                   color='primary'
                   variant={isSelected ? 'contained' : 'outlined'}
                   onClick={() =>
-                    isSelected ? onCuisineChange(withoutCuisine) : onCuisineChange([...cuisines, cuisine])
+                    isSelected ? onTagChange(withoutCuisine) : onTagChange([...tags, tag])
                   }
                 >
-                  {cuisine}
+                  {tag.Name}
                 </Button>
               </Grid>
             )

@@ -1,29 +1,6 @@
 import { gql } from 'apollo-server';
 
-const CuisineTypeQL = gql`
-  enum CuisineType {
-    American
-    # Bbq
-    Chinese
-    Cuban
-    Indian
-    Italian
-    Japanese
-    Korean
-    Mediterranean
-    Mexican
-    Pescatarian
-    Pizza
-    Protein
-    Seafood
-    # Thai
-    Vegan
-    Vegetarian
-  }
-`
-
 const MealQL = gql`
-
   input OptionGroupInput {
     names: [String!]!
   }
@@ -42,6 +19,16 @@ const MealQL = gql`
     limit: Int
   }
 
+  input TagInput {
+    type: String
+    name: String
+  }
+
+  type Tag {
+    type: String
+    name: String
+  }
+
   input MealInput {
     img: String!
     name: String!
@@ -50,7 +37,6 @@ const MealQL = gql`
     originalPrice: Float
     optionGroups: [OptionGroupInput!]!
     addonGroups: [AddonGroupInput!]!
-    tags: [String!]!
   }
 
   type Meal {
@@ -64,7 +50,7 @@ const MealQL = gql`
     addonGroups: [AddonGroup!]!
     stripePlanId: ID!
     planName: ID!
-    tags: [String!]!
+    tags: [Tag!]!
   }
 `
 
@@ -100,7 +86,6 @@ const _RestQL = gql`
 export const RestQL = () => [
   _RestQL,
   MealQL,
-  CuisineTypeQL,
   RestProfileQL,
 ]
 

@@ -38,7 +38,7 @@ export const _OrderQL = gql`
     stripePlanId: ID!
     planName: ID!
     taxRate: Float!
-    tags: [String!]!
+    tags: [TagInput!]!
   }
 
   input UpdateDeliveryInput { 
@@ -65,7 +65,7 @@ export const _OrderQL = gql`
     stripePlanId: ID!
     planName: ID!
     taxRate: Float!
-    tags: [String!]!
+    tags: [Tag!]!
   }
 
   type Delivery {

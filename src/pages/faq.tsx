@@ -1,6 +1,5 @@
 import { makeStyles, Container, Typography, Paper, Link } from '@material-ui/core';
 import Footer from '../client/general/Footer';
-import { plansRoute } from './plans';
 import { deliveryFee } from '../order/costModel';
 
 const useStyles = makeStyles(theme => ({
@@ -77,15 +76,25 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What is Orchid?'
-            a="Orchid allows to receive your favorite restaurant meals every week at one low cost. We're a weekly
-            subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
-            fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
+            a="Orchid lets you mix-and-match from different restaurants to create weekly meal plans. We'll deliver all
+            your meals together at once based on your preferred time slot (extra deliveries are +$3.50). With Orchid you
+            don't have to think about food anymore because we'll automatically renew your subscription each and and pick
+            new meals for you. But if you like more control, you can always edit the meals or even skip a week."
           />
           <Qa
-            q='What makes Orchid different from other delivery websites?'
-            a="Orchid provides weekly mix-and-match meals from your favorite local restaurants in bulk. We combine bulk
-            meals with personalized delivery times to save you time and money. Quality is our top priority, which is why
-            we only partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
+            q='How is Orchid different from other delivery websites?'
+            a="We offer a weekly meal-plan from a variety of restaurants whereas other websites offer single restaurant
+            orders. Imagine subscribing to Netflix vs buying a movie on Amazon. With Orchid you pay a weekly subscription
+            to combine meals from any restaurant vs paying for an on-demand order from 1 restaurant. Our focus is on
+            meal-plans, not single meals."
+          />
+          <Qa
+            q='How fresh is the food?'
+            a="We deliver in batches of at least 4 meals, designed to be eaten over the week. While Orchid meals are cooked
+            the same day they're delivered, we understand that freshness is a concern due to the nature of a meal plan.
+            If freshness is a priority, then Orchid is not for you. Nothing beats the freshness of on-demand delivery or
+            more importantly, dining-in. But if you appreciate the comfort of coming home to a cooked meal or enjoy the
+            flexibility of eating whenever and however you want, then Orchid is the perfect fit."
           />
           <Qa
             q='How many restaurants can I pick?'
@@ -98,42 +107,33 @@ const faqs = () => {
           />
           <Qa
             q='How do I update my subscription or delivery?'
-            a={`You can perform permanent updates to your recurring subscription in the My Plan page. These changes will
-            affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can make
-            1-time manual updates on a specific order from the Upcoming Deliveries if the upcoming deliveries require
-            any adjustments`}
+            a='You can permanently update your recurring subscription in the My Plan page. These changes will
+            affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can also make
+            1-time manual updates on a specific order from the Upcoming Deliveries.'
           />
           <Qa
             q="Do you offer any discounts?"
             n={
               <>
                 <Typography variant='body1'>
-                  We work closely with our restaurants to offer our customers the best deal and pricing as possible.
-                  Unfortunately at this time we do not offer any additional discounts. We are constantly working to provide the
-                  best deals. Stay subscribed to our emails or follow us on&nbsp;
-                  <Link
-                    component='button'
-                    variant='body1'
-                    className={classes.link}
-                  > 
-                    <div onClick={() => window.open('https://www.facebook.com/orchidFB')}>Facebook</div>
-                  </Link>
-                  &nbsp;or&nbsp;
-                  <Link
-                    component='button'
-                    variant='body1'
-                    className={classes.link}
-                  >
-                    <div onClick={() => window.open('https://www.instagram.com/orchidIG')}>Instagram</div>
-                  </Link>
-                  &nbsp;to be the first to hear about updates and new features.
+                  We have two special promotions.
                 </Typography>
+                <div className={classes.qa}>
+                  <Typography variant='body1'>
+                    First time customers get $35 off their first month ($5 over 4 weeks, plus $7.50 on weeks 3 & 4 when
+                    you let Orchid pick your meals).
+                  </Typography>
+                  <Typography variant='body1'>
+                    Existing customers can refer a friend to get $20 off ($5 over 4 weeks) and their friend gets
+                    $45 ($7.50 over 4 weeks, plus $7.50 on weeks 3 & 4 when they let Orchid pick meals).
+                  </Typography>
+                </div>
               </>
             }
           />
           <Qa
             q='Will I be locked into a contract?'
-            a="Orchid is a subscription, not a contract and you can cancel your service at any time."
+            a="Orchid is a subscription, not a contract. You can cancel your service at any time."
           />
           <Typography variant='h6' className={classes.title}>
             PAYMENTS & PRICING
@@ -143,16 +143,23 @@ const faqs = () => {
             n={
               <>
                 <Typography variant='body1'>
-                  To read more about meals and pricing, see our plan&nbsp;
-                  <Link href={plansRoute}>
-                    <Typography
-                      variant='body1'
-                      className={classes.link}
-                      component='span'
-                    >
-                      page.
-                    </Typography>
-                  </Link>
+                  We have 3 pricing tiers.
+                </Typography>
+                <div className={classes.qa}>
+                  <Typography variant='body1'>
+                    4 - 7 meals for $11.89
+                  </Typography>
+                  <Typography variant='body1'>
+                    8 - 11 meals for $10.49
+                  </Typography>
+                  <Typography variant='body1'>
+                    12+ for $9.99
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  We include 1 free delivery, but you can add more for an additional $3.50. A delivery must have at least
+                  4 meals. We only charge based on the number of meals confirmed per week, not based on your plan. So
+                  if you decide to add or remove meals for a given week, you'll be charged fairly.
                 </Typography>
               </>
             }
@@ -189,25 +196,46 @@ const faqs = () => {
           />
           <Qa
             q='How long will my meals last?'
-            a="From the time of delivery, each meal will last for a week so long it is stored properly."
+            a="While every meal is cooked the same day as it's delivered, it's probably not a good idea to eat sushi 7
+            days after you order it. That's why we recommend picking a balance of foods, some you can eat soon and some
+            you can save for later, just as you would when meal prepping."
           />
           <Typography variant='h6' className={classes.title}>
             DELIVERY
           </Typography>
           <Qa
             q='What days of the week do you deliver?'
-            a="Every day. If your restaurant is closed on a specific day, we'll deliver it the next day."
+            a="Every day. If your restaurant is closed on a specific day, we'll deliver your order the next day."
           />
           <Qa
             q='Who delivers my meals?'
             a="Every subscription comes complimentary with your own personal delivery driver from Orchid. Just as a server
             provides personal and exceptional service at a sit-down restaurant, our delivery drivers serve and deliver to
-            you during your entire subscription."
+            you during your entire subscription. They are your direct contact for everything."
           />
           <Qa
             q='What time of day will meals be delivered?'
-            a="You can choose from our 2 delivery windows, 4pm - 6pm and 6pm - 8pm. We'll let you know the precise ETA the
-            day before."
+            n={
+              <>
+                <Typography variant='body1'>
+                  You can choose from our 3 delivery windows. We'll let you know the precise ETA the day before.
+                </Typography>
+                <Typography variant='body1'>
+                  We have 3 pricing tiers.
+                </Typography>
+                <div className={classes.qa}>
+                  <Typography variant='body1'>
+                    5pm - 7pm
+                  </Typography>
+                  <Typography variant='body1'>
+                    6pm - 8pm
+                  </Typography>
+                  <Typography variant='body1'>
+                    7pm - 9pm
+                  </Typography>
+                </div>
+              </>
+            }
           />
           <Qa
             q='How can I add delivery instructions?'
@@ -220,8 +248,30 @@ const faqs = () => {
           />
           <Qa
             q='Where do you deliver?'
-            a="At the time we currently deliver in Jersey City and Hoboken. We are constantly updating our locations and
-            will announce when we offer additional delivery locations to you."
+            n={
+              <>
+                <Typography variant='body1'>
+                  At this time we currently deliver in Jersey City and Hoboken, but we're constantly updating our locations.
+                  Follow us on&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  > 
+                    <div onClick={() => window.open('https://www.facebook.com/orchidFB')}>Facebook</div>
+                  </Link>
+                  &nbsp;or&nbsp;
+                  <Link
+                    component='button'
+                    variant='body1'
+                    className={classes.link}
+                  >
+                    <div onClick={() => window.open('https://www.instagram.com/orchidIG')}>Instagram</div>
+                  </Link>
+                  &nbsp;to be the first to hear about new locations and updates.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q='How much is delivery?'
@@ -248,15 +298,7 @@ const faqs = () => {
           <Qa
             q='Is there an app available for download?'
             a="Unfortunately at this time no app is readily available. We are consistently making updates to our platform
-            and will notify customers via email and our social channels of any future updates."
-          />
-          <Qa
-            q='How do I unsubscribe from your emails?'
-            a="You can unsubscribe to our emails by clicking unsubscribe at the bottom of any of our emails."
-          />
-          <Qa
-            q='How can I subscribe to your promotional emails?'
-            a="You can subscribe to our emails by creating an account or by entering your email on our home page."
+            and will notify customers via our social channels of any future updates."
           />
         </Container>
       </Paper>
