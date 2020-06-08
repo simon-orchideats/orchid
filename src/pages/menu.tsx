@@ -9,10 +9,12 @@ import ZipModal from "../client/menu/ZipModal";
 import SideMenuCart from "../client/menu/SideMenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useUpdateZip } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
+import SearchInput from "../client/general/inputs/SearchInput";
+import { sendZipMetrics } from "../client/menu/menuMetrics";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -67,8 +69,11 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const updateCartZip = useUpdateZip()
   const zip = cart && cart.Zip ? cart.Zip : '';
-  const [open, setOpen] = useState(zip ? false : true);
+  const [isZipModalOpen, setZipModalOpen] = useState(zip ? false : true);
+  const [isShowingZipInput, setShowZipInput] = useState(false);
+  const [zipInput, setZipInput] = useState<string>(zip);
   const allTags = useGetTags();
   const [cuisines, setCuisines] = useState<string[]>([]);
   const rests = useGetNearbyRests(zip);
@@ -81,8 +86,19 @@ const menu = () => {
     if (cuisines.length === 0) {
       setCuisines(allCuisines)
     }
-  }, [allCuisines])  
+  }, [allCuisines]);
 
+  useEffect(() => {
+    setZipInput(zip);
+  }, [zip]);
+
+  const onSearchZip = () => {
+    if (zipInput) {
+      sendZipMetrics(zipInput);
+      updateCartZip(zipInput);
+    }
+    setShowZipInput(false);
+  }
   const RestMenus = rests.data && rests.data.map(rest => 
     <RestMenu
       key={rest.Id}
@@ -94,19 +110,27 @@ const menu = () => {
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const onClickZip = () => {
-    setOpen(true);
+    setShowZipInput(true);
   }
-  const zipButton = (
-    <Link
-      className={classes.link}
-      color='inherit'
-      onClick={onClickZip}
-    >
-      <LocationOnIcon />
-      <Typography>{zip ? zip : 'Zip'}</Typography>
-      <ArrowDropDownIcon />
-    </Link>
-  );
+  const zipButton = isShowingZipInput ?
+    <SearchInput 
+      search={zipInput}
+      onBlur={onSearchZip}
+      onSearchChange={setZipInput}
+      onSearch={onSearchZip}
+    />
+  :
+    (
+      <Link
+        className={classes.link}
+        color='inherit'
+        onClick={onClickZip}
+      >
+        <LocationOnIcon />
+        <Typography>{zip ? zip : 'Zip'}</Typography>
+        <ArrowDropDownIcon />
+      </Link>
+    )
   return (
     <Container
       maxWidth='xl'
@@ -114,10 +138,10 @@ const menu = () => {
       className={classes.container}
     >
       <ZipModal
-        open={open}
+        open={isZipModalOpen}
         defaultZip={zip}
         onClose={() => {
-          setOpen(false);
+          setZipModalOpen(false);
         }}
       />
       <Grid container alignItems='stretch'>

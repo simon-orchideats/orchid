@@ -32,6 +32,7 @@ export type RestMeals = {
 };
 
 export interface ICart {
+  readonly allMeals: DeliveryMeal[]
   readonly donationCount: number
   readonly deliveries: IDeliveryInput[];
   readonly restMeals: RestMeals
@@ -68,6 +69,7 @@ const getNextMealsIterator = (meals: DeliveryMeal[]) => {
 }
 
 export class Cart implements ICart {
+  readonly allMeals: DeliveryMeal[]
   readonly donationCount: number
   readonly deliveries: DeliveryInput[];
   readonly restMeals: RestMeals;
@@ -75,6 +77,7 @@ export class Cart implements ICart {
   readonly zip: string | null;
 
   constructor(cart: ICart) {
+    this.allMeals = cart.allMeals.map(m => new DeliveryMeal(m));
     this.donationCount = cart.donationCount;
     this.deliveries = cart.deliveries.map(d => new DeliveryInput(d));
     this.restMeals = Object.entries(cart.restMeals).reduce<RestMeals>((map, [restId, data]) => {
@@ -88,6 +91,7 @@ export class Cart implements ICart {
     this.zip = cart.zip;
   }
 
+  public get AllMeals() { return this.allMeals }
   public get DonationCount() { return this.donationCount }
   public get Deliveries() { return this.deliveries }
   public get RestMeals() { return this.restMeals }
@@ -338,6 +342,22 @@ export class Cart implements ICart {
       restName,
       taxRate
     );
+    const allMealsIndex = newCart.AllMeals.findIndex(m => DeliveryMeal.isSameMeal(m, deliveryMeal));
+    if (allMealsIndex === -1) {
+      newCart.AllMeals.unshift(deliveryMeal);
+    } else {
+      const newMeal = new DeliveryMeal({
+        ...deliveryMeal,
+        quantity: newCart.AllMeals[allMealsIndex].Quantity + 1,
+      });
+      if (allMealsIndex === 0) {
+        newCart.AllMeals[0] = newMeal;
+      } else {
+        const temp = newCart.AllMeals[0];
+        newCart.AllMeals[0] = newMeal;
+        newCart.AllMeals[allMealsIndex] = temp;
+      }
+    }
     Cart.addMealToRestMeals(newCart.RestMeals, deliveryMeal);
     if (newCart.Deliveries.length > 0) {
       const firstDelivery = newCart.Deliveries[0];
@@ -359,7 +379,6 @@ export class Cart implements ICart {
         })
       }
     }
-
     return newCart;
   }
 
@@ -458,9 +477,23 @@ export class Cart implements ICart {
     const restMeals = newCart.RestMeals[restId];
     const index = restMeals.meals.findIndex(meal => DeliveryMeal.isSameMeal(meal, removalMeal));
     if (index === -1) {
-      const err = new Error(`MealId '${removalMeal.mealId + removalMeal.choices.join(', ')}' not found in cart`);
+      const err = new Error(`MealId '${removalMeal.mealId + removalMeal.choices.join(', ')}' not found in restMeals`);
       console.error(err.stack);
       throw err;
+    }
+    const allMealsIndex = newCart.AllMeals.findIndex(meal => DeliveryMeal.isSameMeal(meal, removalMeal));
+    if (allMealsIndex === -1) {
+      const err = new Error(`MealId '${removalMeal.mealId + removalMeal.choices.join(', ')}' not found in allMeals`);
+      console.error(err.stack);
+      throw err;
+    }
+    if (newCart.AllMeals[allMealsIndex].Quantity === 1) {
+      newCart.AllMeals.splice(allMealsIndex, 1);
+    } else {
+      newCart.AllMeals[allMealsIndex] = new DeliveryMeal({
+        ...newCart.AllMeals[allMealsIndex],
+        quantity: newCart.AllMeals[allMealsIndex].Quantity - 1,
+      })
     }
     const targetMeal = restMeals.meals[index];
     const currMealPlans = newCart.RestMeals[restId].mealPlans;

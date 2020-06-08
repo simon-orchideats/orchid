@@ -11,6 +11,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(4),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2.75rem'
+    },
   },
   link: {
     textDecoration: 'underline',
