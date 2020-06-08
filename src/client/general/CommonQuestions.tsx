@@ -63,15 +63,17 @@ const Faq = () => {
         </Typography>
         <Expander
           q='What is Orchid?'
-          a="Orchid allows you to receive your favorite restaurant meals every week at one low cost. We're a weekly
-          subscription meal service that delivers same-day-fresh cooked meals from your local restaurants. Because they're
-          fully cooked, all you have to do is heat them up. We started Orchid to save you time, energy, and money."
+          a="Orchid lets you mix-and-match from different restaurants to create weekly meal plans. We'll deliver all
+          your meals together at once based on your preferred time slot (extra deliveries are +$3.50). With Orchid you
+          don't have to think about food anymore because we'll automatically renew your subscription each and and pick
+          new meals for you. But if you like more control, you can always edit the meals or even skip a week."
         />
         <Expander
-          q='What makes Orchid different from other delivery websites?'
-          a="Orchid provides weekly mix-and-match meals from your favorite local restaurants in bulk. We combine bulk
-          meals with personalized delivery times to save you time and money. Quality is our top priority, which is why
-          we only partner with exclusive restaurants and offer a limited number of carefully designed meals per restaurant."
+          q='How is Orchid different from other delivery websites?'
+          a="We offer a weekly meal-plan from a variety of restaurants whereas other websites offer single restaurant
+          orders. Imagine subscribing to Netflix vs buying a movie on Amazon. With Orchid you pay a weekly subscription
+          to combine meals from any restaurant vs paying for an on-demand order from 1 restaurant. Our focus is on
+          meal-plans, not single meals."
         />
         <Expander
           q='How many restaurants can I pick?'
@@ -79,15 +81,14 @@ const Faq = () => {
         />
         <Expander
           q="Do I need to pick meals every week?"
-          a="Forgot to pick your meal? No worries. Our team will hand select your favorite meals based off your preferences. 
+          a="Forgot to pick your meal? No worries. Our team will hand select your favorite meals based on your preferences. 
           Otherwise, we recommend coming back to orchideats.com to choose the meals you'd like to receive every week."
         />
         <Expander
           q='How do I update my subscription or delivery?'
-          a={`You can perform permanent updates to your reoccuring subscription in the My Plan page. These changes will
-          affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can make
-          1-time manual updates on a specific order from the Upcoming Deliveries if the upcoming deliveries require
-          any adjustments`}
+          a='You can permanently update your recurring subscription in the My Plan page. These changes will
+          affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can also make
+          1-time manual updates on a specific order from the Upcoming Deliveries.'
         />
         <Expander
           q='Can I skip a week of delivery?'
@@ -100,7 +101,7 @@ const Faq = () => {
         />
         <Expander
           q='Will I be locked into a contract?'
-          a="Orchid is a subscription, not a contract and you can cancel your service at any time."
+          a="Orchid is a subscription, not a contract. You can cancel your service at any time."
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
           See more answers on our&nbsp;
