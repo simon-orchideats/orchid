@@ -1156,13 +1156,6 @@ class OrderService {
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
       });
-      this.consumerService.upsertMarketingEmail(
-        signedInUser.profile.email,
-        signedInUser.profile.name,
-        addr,
-      ).catch(e => {
-        console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
-      });
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, signedInUser.permissions, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);

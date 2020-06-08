@@ -1,5 +1,4 @@
 import { IWeeklyDiscount } from './../../order/discountModel';
-import { IAddress } from './../../place/addressModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
 import { getAuth0Header } from './../auth/auth0Management';
@@ -16,7 +15,6 @@ import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
-import crypto  from 'crypto';
 import { refetchAccessToken } from '../../utils/auth';
 import { Delivery } from '../../order/deliveryModel';
 
@@ -49,7 +47,6 @@ export interface IConsumerService {
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   upsertConsumer(_id: string, permissions: Permission[], consumer: EConsumer): Promise<IConsumer>
-  upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
@@ -98,52 +95,6 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] Failed to get EConsumer ${userId}: ${e.stack}`)
       return null;
-    }
-  }
-
-  public async upsertMarketingEmail(email: string, name?: string, addr?: IAddress): Promise<MutationBoolRes> {
-    try {
-      let emailId = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
-      const merge_fields: any = {}
-      if (name) {
-        const split = name.split(' ', 2);
-        merge_fields.FNAME = split[0] ;
-        merge_fields.LNAME = split[1];
-      }
-
-      if (addr) {
-        merge_fields.ADDRESS = {
-          addr1: addr.address1,
-          city: addr.city,
-          state: addr.state,
-          zip: addr.zip,
-          country: 'US',
-        }
-      }
-      const res = await fetch(`https://${activeConfig.server.mailChimp.dataCenter}.api.mailchimp.com/3.0/lists/${activeConfig.server.mailChimp.audienceId}/members/${emailId}`, {
-        headers: {
-          authorization: `Basic ${Buffer.from(`anystring:${activeConfig.server.mailChimp.key}`, 'utf8').toString('base64')}`
-        },
-        method: 'PUT',
-        body: JSON.stringify({
-          email_address: email,
-          status_if_new: 'subscribed',
-          merge_fields,
-        })
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        const msg = `Error adding marketing email '${json.detail}'`;
-        console.error(msg);
-        throw new Error(msg)
-      }
-      return {
-        res: true,
-        error: null
-      }
-    } catch (e) {
-      console.error(`[ConsumerService] failed to add marketing email ${email}`, e.stack);
-      throw new Error('Internal Server Error');
     }
   }
 
@@ -402,9 +353,6 @@ class ConsumerService implements IConsumerService {
         signedUp.res.profile.email,
         signedUp.res.permissions,
       )
-      this.upsertMarketingEmail(email, name).catch(e => {
-        console.error(`[ConsumerService] failed to upsert marketing email '${email}' with name '${name}'`, e.stack);
-      });
       return {
         res: consumer,
         error: null,
@@ -539,9 +487,6 @@ class ConsumerService implements IConsumerService {
         });
       }
       await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
-      this.upsertMarketingEmail(signedInUser.profile.email, profile.name, profile.destination.address).catch(e => {
-        console.error(`[ConsumerService] failed to upsert marketing email for email '${signedInUser.profile.email}'`, e.stack)
-      });
       return {
         res: newConsumer,
         error: null
