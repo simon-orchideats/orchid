@@ -49,10 +49,10 @@ export const events = {
 }
 
 export const fbEvents = {
-  FB_TRACK_CUSTOM: 'trackCustom',
-  FB_INIT: 'init',
-  FB_TRACK: 'track',
-  FB_PAGE_VIEW: 'PageView',
+  TRACK_CUSTOM: 'trackCustom',
+  INIT: 'init',
+  TRACK: 'track',
+  PAGE_VIEW: 'PageView',
 }
 
 const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =>
@@ -218,7 +218,7 @@ export class AnalyticsService {
       ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
     // @ts-ignore
-    window.fbq(fbEvents.FB_TRACK_CUSTOM, events.CANCELED_SUBSCRIPTION);
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CANCELED_SUBSCRIPTION);
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -228,7 +228,7 @@ export class AnalyticsService {
     });
 
     // @ts-ignore
-    window.fbq(fbEvents.FB_TRACK_CUSTOM, events.CHOSE_PLAN, { ...fields });
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CHOSE_PLAN, { ...fields });
   }
 
   public static sendUpdatePlanMetrics(
@@ -241,7 +241,7 @@ export class AnalyticsService {
     });
 
     // @ts-ignore
-    window.fbq(fbEvents.FB_TRACK_CUSTOM, events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
 
     analyticsService.trackEvent(events.REMOVED_PLAN, {
       ...copyMealPlansWithPriceAndCount(oldMealPlans, plans),
@@ -320,7 +320,7 @@ export class AnalyticsService {
         cuisine
       });
       // @ts-ignore
-      window.fbq(fbEvents.FB_TRACK_CUSTOM, events.ADDED_CUISINE, { cuisineType: cuisine });
+      window.fbq(fbEvents.TRACK_CUSTOM, events.ADDED_CUISINE, { cuisineType: cuisine });
     });
 
     removedCuisines.forEach(cuisine => {
@@ -328,7 +328,7 @@ export class AnalyticsService {
         cuisine
       });
       // @ts-ignore
-      window.fbq(fbEvents.FB_TRACK_CUSTOM, events.REMOVED_CUISINE, { cuisineType: cuisine });
+      window.fbq(fbEvents.TRACK_CUSTOM, events.REMOVED_CUISINE, { cuisineType: cuisine });
     });
   }
 
@@ -369,7 +369,7 @@ export class AnalyticsService {
       mealsSkipped: skippedMealsCount,
     });
     // @ts-ignore
-    window.fbq(fbEvents.FB_TRACK_CUSTOM, events.SKIPPED_DELIVERY);
+    window.fbq(fbEvents.TRACK_CUSTOM, events.SKIPPED_DELIVERY);
   }
 
   public static sendUpdateOrderMetrics(
@@ -397,7 +397,7 @@ export class AnalyticsService {
       zip
     });
     // @ts-ignore
-    window.fbq(fbEvents.FB_TRACK_CUSTOM, events.ENTERED_ZIP);
+    window.fbq(fbEvents.TRACK_CUSTOM, events.ENTERED_ZIP);
   }
 }
 

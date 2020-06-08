@@ -43,8 +43,8 @@ export default class MyDocument extends Document {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq(${fbEvents.FB_INIT}, ${fbTracking});
-              fbq(${fbEvents.FB_TRACK}, ${fbEvents.FB_PAGE_VIEW});
+              fbq(${fbEvents.INIT}, ${fbTracking});
+              fbq(${fbEvents.TRACK}, ${fbEvents.PAGE_VIEW});
             ` 
           }}/>
 
