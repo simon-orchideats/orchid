@@ -167,7 +167,7 @@ POST _reindex
         def cuisines = ctx._source.plan.cuisines;
         def newTags = new ArrayList();
         for (int j = 0; j < cuisines.length; j++) {
-          if (cuisines[j].equals("Pizza") {
+          if (cuisines[j].equals("Pizza")) {
             newTags.add([
               "name": cuisines[j],
               "type": "form"
