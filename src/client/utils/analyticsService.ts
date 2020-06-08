@@ -50,6 +50,9 @@ export const events = {
 
 export const fbEvents = {
   FB_TRACK_CUSTOM: 'trackCustom',
+  FB_INIT: 'init',
+  FB_TRACK: 'track',
+  FB_PAGE_VIEW: 'PageView',
 }
 
 const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =>
