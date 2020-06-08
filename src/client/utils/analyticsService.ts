@@ -210,8 +210,8 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
       ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
-     // @ts-ignore
-     window.fbq('trackCustom', events.CANCELED_SUBSCRIPTION, { description: 'canceled subscription' });
+    // @ts-ignore
+    window.fbq('trackCustom', events.CANCELED_SUBSCRIPTION);
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -361,8 +361,8 @@ export class AnalyticsService {
       ...fields,
       mealsSkipped: skippedMealsCount,
     });
-     // @ts-ignore
-    window.fbq('trackCustom', events.SKIPPED_DELIVERY, { description: 'skipped delivery' });
+    // @ts-ignore
+    window.fbq('trackCustom', events.SKIPPED_DELIVERY);
   }
 
   public static sendUpdateOrderMetrics(
@@ -390,7 +390,7 @@ export class AnalyticsService {
       zip
     });
     // @ts-ignore
-    window.fbq('trackCustom', events.ENTERED_ZIP, { description: 'entered zip' });
+    window.fbq('trackCustom', events.ENTERED_ZIP);
   }
 }
 
