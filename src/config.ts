@@ -23,7 +23,7 @@ type config = {
       ga: {
         trackingId: string
       },
-      faceBookPixel: {
+      facebookPixel: {
         pixelId: string
       }
     },
@@ -95,7 +95,7 @@ const development: config = {
         // trackingId: 'UA-158803692-1',
         trackingId: '',
       },
-      faceBookPixel: {
+      facebookPixel: {
         pixelId: '254026399032356'
       }
     },
@@ -188,7 +188,7 @@ const stage: config = {
         // trackingId: 'UA-158803692-1',
         trackingId: '',
       },
-      faceBookPixel: {
+      facebookPixel: {
         pixelId: ''
       }
     },
@@ -277,7 +277,7 @@ const production: config = {
       ga: {
         trackingId: 'UA-158791511-1',
       },
-      faceBookPixel: {
+      facebookPixel: {
         pixelId: '701753510614691'
       }
     },
