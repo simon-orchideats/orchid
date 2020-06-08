@@ -181,7 +181,7 @@ const menu = () => {
           {
             hasNoRests ?
             <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-              No restaurants found for city or zip code&nbsp;
+              Coming soon to&nbsp;
               <Link className={classes.link} color='inherit' onClick={onClickZip}>
                 {zip}
               </Link>

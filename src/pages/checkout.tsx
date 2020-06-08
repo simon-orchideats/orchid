@@ -28,7 +28,7 @@ import { useGetAvailablePlans } from "../plan/planService";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
 
@@ -51,6 +51,10 @@ const useStyles = makeStyles(theme => ({
   subtitle: {
     marginTop: -theme.spacing(2),
     fontWeight: 'bold',
+  },
+  secureSeal: {
+    paddingLeft: theme.spacing(1),
+    height: 26,
   },
   row: {
     display: 'flex',
@@ -597,10 +601,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <div className={classes.row}>
-            <LockOutlinedIcon />
+            <VerifiedUserIcon />
             <a href='https://stripe.com/' target='_blank'>
               <img src='/checkout/stripe.png' alt='stripe' />
             </a>
+            {/* <a href='https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js' target='_blank'> */}
+              <img
+                className={classes.secureSeal}
+                src='/checkout/secureSeal.png'
+                alt='secureSeal'
+              />
+            {/* </a> */}
           </div>
           <CardForm />
           <RenewalChooser

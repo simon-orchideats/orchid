@@ -12,6 +12,13 @@ export default class MyDocument extends Document {
     return (
       <html lang="en">
         <script src="https://js.stripe.com/v3/"></script>
+        <script type="text/javascript">
+          var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.trust-provider.com/" : "http://www.trustlogo.com/");
+          document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+          TrustLogo("https://orchideats.com/checkout/secureSeal.png", "CL1", "none");
+        </script>
         <Head>
           {/* Global Site Tag (gtag.js) - Google Analytics */}
           <script

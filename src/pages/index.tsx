@@ -35,11 +35,12 @@ const useStyles = makeStyles(theme => ({
       background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(bowls.jpg)',
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
+      height: 400,
     },
     backgroundImage: `url(/bowls.jpg)`,
     backgroundPosition: '50% 75%',
     backgroundSize: 'cover',
-    height: 400,
+    height: '100vh',
     marginTop: -theme.mixins.navbar.marginBottom
   },
   friends: {
