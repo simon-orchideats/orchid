@@ -31,6 +31,9 @@ import { promoDurations } from "../order/promoModel";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
+//left off here
+import Head from "next/head";
+import TrustLogo from "../client/checkout/TrustLogo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -103,7 +106,27 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
   const allTags = useGetTags();
+//left off here
 
+  // useEffect(() => {
+  //   if (!isServer()) {
+  //     const script = document.createElement('script');
+  //     script.src = 'http://www.trustlogo.com/trustlogo/javascript/trustlogo.js';
+  //     document.body.appendChild(script);
+  //     // @ts-ignore
+  //     TrustLogo('https://orchideats.com/checkout/positiveSeal.png', 'CL1', 'none');
+  //     return () => {
+  //       document.body.removeChild(script);
+  //     }
+  //   }
+  // }, [])
+  
+  // useEffect(() => {
+  //   console.log('inside effect');
+  //   //@ts-ignore
+  //   TrustLogo('https://orchideats.com/checkout/positiveSeal.png', 'CL1', 'none');
+  //   //@ts-ignore
+  // }, [TrustLogo])
   useEffect(() => {
     if (router.query.a !== undefined) {
       setAmountOff(parseFloat(router.query.a as string));
@@ -440,13 +463,21 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (amountOff !== 0) setAmountOff(0);
     }
   }
-
   return (
     <Container
       maxWidth='xl'
       className={classes.container}
     >
+      {/* //left off here */}
+      <Head>
+        {/* <script src='http://www.trustlogo.com/trustlogo/javascript/trustlogo.js' /> */}
+        {/* <script>
+          console.log(TrustLogo);
+        </script> */}
+        {/* <script src='/checkout/trustLogo.js' /> */}
+      </Head>
       <Notifier />
+      <TrustLogo />
       <Grid container alignItems='stretch'>
         <Grid
           item
@@ -605,13 +636,14 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <a href='https://stripe.com/' target='_blank'>
               <img src='/checkout/stripe.png' alt='stripe' />
             </a>
-            {/* <a href='https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js' target='_blank'> */}
+            {/* //left off here */}
+            <a href='https://www.trustlogo.com/ttb_searcher/trustlogo?v_querytype=W&v_shortname=CL1&v_search=https://orchideats.com' target='_blank'>
               <img
                 className={classes.secureSeal}
-                src='/checkout/secureSeal.png'
+                src='/checkout/positiveSeal.png'
                 alt='secureSeal'
               />
-            {/* </a> */}
+            </a>
           </div>
           <CardForm />
           <RenewalChooser
