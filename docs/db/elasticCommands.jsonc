@@ -976,7 +976,6 @@ PUT /rests/
     }
   }
 }
-
 PUT /orders/
 {
   "mappings": {
@@ -1414,7 +1413,7 @@ PUT /promos/
       "nextAllowedRedemptionDate": {
         "type": "date",
         "format": "epoch_millis"
-      },
+      }
     }
   }
 }
@@ -3212,7 +3211,6 @@ POST rests/_doc/
   "managers" : [ ],
   "status" : "Closed"
 }
-
 POST rests/_doc/
 {
   "taxRate" : 0.0625,
