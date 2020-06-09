@@ -31,9 +31,7 @@ import { promoDurations } from "../order/promoModel";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
-//left off here
-import Head from "next/head";
-// import TrustLogo from "../client/checkout/TrustLogo";
+import TrustSeal from "../client/checkout/TrustSeal";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -57,10 +55,14 @@ const useStyles = makeStyles(theme => ({
   },
   secureSeal: {
     paddingLeft: theme.spacing(1),
-    height: 26,
+  },
+  shield: {
+    marginTop: 2,
+    alignSelf: 'flex-start',
   },
   row: {
     display: 'flex',
+    alignItems: 'center',
     marginTop: -theme.spacing(1),
     paddingBottom: theme.spacing(2),
   },
@@ -106,27 +108,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
   const allTags = useGetTags();
-//left off here
-
-  // useEffect(() => {
-  //   if (!isServer()) {
-  //     const script = document.createElement('script');
-  //     script.src = 'http://www.trustlogo.com/trustlogo/javascript/trustlogo.js';
-  //     document.body.appendChild(script);
-  //     // @ts-ignore
-  //     TrustLogo('https://orchideats.com/checkout/positiveSeal.png', 'CL1', 'none');
-  //     return () => {
-  //       document.body.removeChild(script);
-  //     }
-  //   }
-  // }, [])
-  
-  // useEffect(() => {
-  //   console.log('inside effect');
-  //   //@ts-ignore
-  //   TrustLogo('https://orchideats.com/checkout/positiveSeal.png', 'CL1', 'none');
-  //   //@ts-ignore
-  // }, [TrustLogo])
   useEffect(() => {
     if (router.query.a !== undefined) {
       setAmountOff(parseFloat(router.query.a as string));
@@ -468,16 +449,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       maxWidth='xl'
       className={classes.container}
     >
-      {/* //left off here */}
-      <Head>
-        {/* <script src='http://www.trustlogo.com/trustlogo/javascript/trustlogo.js' /> */}
-        {/* <script>
-          console.log(TrustLogo);
-        </script> */}
-        {/* <script src='/checkout/trustLogo.js' /> */}
-      </Head>
       <Notifier />
-      {/* <TrustLogo /> */}
       <Grid container alignItems='stretch'>
         <Grid
           item
@@ -632,18 +604,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <div className={classes.row}>
-            <VerifiedUserIcon />
+            <VerifiedUserIcon className={classes.shield} />
             <a href='https://stripe.com/' target='_blank'>
               <img src='/checkout/stripe.png' alt='stripe' />
             </a>
-            {/* //left off here */}
-            <a href='https://www.trustlogo.com/ttb_searcher/trustlogo?v_querytype=W&v_shortname=CL1&v_search=https://orchideats.com' target='_blank'>
-              <img
-                className={classes.secureSeal}
-                src='/checkout/positiveSeal.png'
-                alt='secureSeal'
-              />
-            </a>
+            <div className={classes.secureSeal}>
+              <TrustSeal />
+            </div>
           </div>
           <CardForm />
           <RenewalChooser

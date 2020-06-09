@@ -12,24 +12,8 @@ export default class MyDocument extends Document {
     return (
       <html lang="en">
         <script src="https://js.stripe.com/v3/"></script>
-        {/* <script src='http://www.trustlogo.com/trustlogo/javascript/trustlogo.js' /> */}
         <script src='https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js' />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              TrustLogo("https://orchideats.com/checkout/positiveSeal.png", "CL1", "none");
-            `,
-          }}
-        />
-        
-        
-        
-        
-        
-        {/* this doesn't evnen load */}
-        {/* <script type="text/javascript">
-          TrustLogo("https://orchideats.com/checkout/positiveSeal.png", "CL1", "none");
-        </script> */}
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/postscribe/2.0.6/postscribe.min.js' />
         <Head>
           {/* Global Site Tag (gtag.js) - Google Analytics */}
           <script
