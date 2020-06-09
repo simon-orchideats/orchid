@@ -17,7 +17,7 @@ export default class MyDocument extends Document {
           document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
         </script>
         <script type="text/javascript">
-          TrustLogo("https://orchideats.com/checkout/secureSeal.png", "CL1", "none");
+          TrustLogo("https://orchideats.com/checkout/positiveSeal.png", "CL1", "none");
         </script>
         <Head>
           {/* Global Site Tag (gtag.js) - Google Analytics */}
