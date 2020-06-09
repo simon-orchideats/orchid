@@ -33,7 +33,7 @@ import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
 //left off here
 import Head from "next/head";
-import TrustLogo from "../client/checkout/TrustLogo";
+// import TrustLogo from "../client/checkout/TrustLogo";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -477,7 +477,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         {/* <script src='/checkout/trustLogo.js' /> */}
       </Head>
       <Notifier />
-      <TrustLogo />
+      {/* <TrustLogo /> */}
       <Grid container alignItems='stretch'>
         <Grid
           item
