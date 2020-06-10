@@ -22,6 +22,8 @@ const query = gql`
     allTags: [Tag!]! 
     myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
+    myRewards: Rewards!
+    mySpent: Spent!
     nearbyRests(cityOrZip: String): [Rest!]!
     rest(restId: ID!): Rest!
     order(orderId: ID!): Order!

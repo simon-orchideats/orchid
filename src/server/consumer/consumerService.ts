@@ -1,3 +1,4 @@
+import { IRewards } from './../../order/rewardModel';
 import { IWeeklyDiscount } from './../../order/discountModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
@@ -42,6 +43,7 @@ export interface IConsumerService {
     consumer?: EConsumer
   ) => Promise<void>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
+  getRewards: (signedInUser: SignedInUser) => Promise<IRewards>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
   removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
@@ -229,6 +231,24 @@ class ConsumerService implements IConsumerService {
       }
     } catch (e) {
       console.error(`[ConsumerService] Failed to attachDiscountsToPlan for consumer ${_id}`, e.stack);
+      throw e;
+    }
+  }
+
+  public async getRewards(signedInUser: SignedInUser): Promise<IRewards> {
+    try {
+      if (!signedInUser) throw 'No signed in user';
+      const res = await this.getEConsumer(signedInUser._id);
+      if (!res) throw new Error('No user found');
+      return {
+        earned: 0,
+        potential: res.consumer.plan?.weeklyDiscounts.reduce<number>((sum, { discounts }) =>
+          sum + discounts.reduce<number>((sum, d) => sum + (d.amountOff ?? 0), 0), 
+          0
+        ) ?? 0,
+      };
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to get rewards for '${signedInUser?._id}'`, e.stack);
       throw e;
     }
   }

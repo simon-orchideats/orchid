@@ -20,6 +20,8 @@ import { Permissions } from '../../consumer/consumerModel';
 import withClientApollo from '../utils/withClientApollo';
 import { addPartnerRoute } from '../../pages/consumer/add-partner';
 import StorefrontIcon from '@material-ui/icons/Storefront';
+import { savingsRoute } from '../../pages/consumer/savings';
+import RedeemIcon from '@material-ui/icons/Redeem';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -90,6 +92,15 @@ const ConsumerPopper: React.FC<{
           <EventIcon fontSize='large' />
           <Typography variant='h6'>
             Upcoming deliveries
+          </Typography>
+        </div>
+        <div className={classes.row} onClick={() => {
+          Router.push(savingsRoute);
+          onClose();
+        }}>          
+          <RedeemIcon fontSize='large' />
+          <Typography variant='h6'>
+            Savings
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {

@@ -13,11 +13,20 @@ export const OrderQueryResolvers: ServerResolovers = {
     }
   },
   
-  allPaidOrders: async(_root, _args, { signedInUser }) => {
+  myRewards: async(_root, _args, { signedInUser }) => {
     try {
-      return await getOrderService().getAllPaidIOrders(signedInUser);
+      return await getOrderService().getMyRewards(signedInUser);
     } catch (e) {
-      console.error(`[OrderResolver] Failed to get allUpcomingOrders '${signedInUser?._id}'`, e.stack);
+      console.error(`[OrderResolver] Failed to get getMyRewards '${signedInUser?._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
+
+  mySpent: async(_root, _args, { signedInUser }) => {
+    try {
+      return await getOrderService().getMySpent(signedInUser);
+    } catch (e) {
+      console.error(`[OrderResolver] Failed to get getMySpent '${signedInUser?._id}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   },
