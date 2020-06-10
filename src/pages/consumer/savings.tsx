@@ -77,50 +77,63 @@ const Referrals = () => {
       fill: '#f6fbfc',
     },
   ]
+  const doesNotNeedPie = earned === 0 && potential === 0;
   return (
     <Paper className={classes.paper}>
-      <Typography
-        variant='h4'
-        color='primary'
-        className={classes.sectionHeader}
-      >
-        Earnings from referrals
-      </Typography>
+    <Typography
+      variant='h4'
+      color='primary'
+      className={classes.totalSavings}
+    >
+      Earnings from referrals
+    </Typography>
+    <Typography
+      variant='body1'
+      color='textSecondary'
+      className={classes.assumption}
+    >
+      Referring a friend earns you $5 over 4 weeks
+    </Typography>
       <Grid 
         spacing={2}
         container 
         className={classes.description}
       >
-        <Grid
-          className={classes.graphContainer}
-          item
-          md={4}
-          sm={12}
-        >
-          <PieChart width={300} height={200}>
-            <Pie
-              nameKey='name'
-              dataKey='amount'
-              startAngle={180}
-              endAngle={0}
-              data={data}
-              cy={150}
-              outerRadius={100}
-              innerRadius={75}
-              labelLine={false}
-              label={renderCustomizedLabel}
-            />
-            <Legend
-              iconSize={10}
-              verticalAlign='bottom'
-              align="center"
-            />
-          </PieChart>
-        </Grid>
+        {
+          doesNotNeedPie ?
+            null
+          :
+            <Grid
+              className={classes.graphContainer}
+              item
+              md={4}
+              sm={12}
+            >
+              <PieChart width={300} height={200}>
+                <Pie
+                  nameKey='name'
+                  dataKey='amount'
+                  startAngle={180}
+                  endAngle={0}
+                  data={data}
+                  cy={150}
+                  outerRadius={100}
+                  innerRadius={75}
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                />
+                <Legend
+                  iconSize={10}
+                  verticalAlign='bottom'
+                  align="center"
+                />
+              </PieChart>
+            </Grid>
+        }
         <Grid
           item
           className={`${classes.marginTop} ${classes.savings}`}
-          md={4}
+          md={doesNotNeedPie ? 6 : 4}
           sm={12}
         >
           <CountUp
@@ -146,7 +159,7 @@ const Referrals = () => {
         <Grid
           className={classes.marginTop}
           item
-          md={4}
+          md={doesNotNeedPie ? 6 : 4}
           sm={12}
         >
           <CountUp
@@ -178,13 +191,13 @@ const TotalSavings = () => {
   const classes = useStyles();
   const spentRes = useGetSpent();
   const spentAmount = spentRes.data?.Amount ? spentRes.data.Amount / 100 : 0;
-  const numMeals = spentRes.data?.numMeals ?? 0;
+  const numMeals = spentRes.data?.NumMeals ?? 0;
   const numOrders = spentRes.data?.NumOrders ?? 0;
-  const lifetimeSavings = (16 * numMeals) - (spentAmount * numMeals);
+  const lifetimeSavings = (16 * numMeals) - (spentAmount);
   const data = [
     {
       name: 'Lifetime savings',
-      amount: lifetimeSavings
+      amount: lifetimeSavings.toFixed(2),
     },
   ]
   return (
@@ -194,14 +207,14 @@ const TotalSavings = () => {
         color='primary'
         className={classes.totalSavings}
       >
-        Total savings compared to on-demand delivery
+        Total savings vs on-demand apps
       </Typography>
       <Typography
         variant='body1'
         color='textSecondary'
         className={classes.assumption}
       >
-        vs $16 (after fees) per meal with on-demand apps
+        Compared to $16 per meal after fees
       </Typography>
       <Grid
         container
@@ -267,8 +280,6 @@ const TotalSavings = () => {
           sm={12}
         >
           <CountUp
-            prefix='$'
-            decimals={2}
             start={0}
             end={numOrders}
             delay={0}

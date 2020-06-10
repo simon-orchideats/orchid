@@ -129,6 +129,7 @@ export const useGetSpent = () => {
         mySpent {
           amount
           numMeals
+          numOrders
         }
       }
     `
