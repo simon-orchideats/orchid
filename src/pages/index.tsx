@@ -84,6 +84,11 @@ const useStyles = makeStyles(theme => ({
     minHeight: 400,
     padding: theme.spacing(3),
   },
+  subtitle: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.65rem'
+    },
+  },
   reasons: {
     background: 'none',
   },
@@ -101,17 +106,25 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 135,
     height: 78,
     marginBottom: theme.spacing(1),
+    [theme.breakpoints.down('xs')]: {
+      height: 38,
+    },
   },
   shrinker: {
     [theme.breakpoints.down('xs')]: {
-      fontSize: '2.25rem',
+      fontSize: '2.15rem',
     },
   },
   howIcon: {
     fontSize: 90,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 59,
+    },
   },
-  relaxIcon: {
-    fontSize: 85,
+  howSubtitle: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.25rem',
+    },
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -171,6 +184,8 @@ const Welcome = withClientApollo(() => {
 
 const HowItWorks = () => {
   const classes = useStyles();
+  // const theme = useTheme();
+  // const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const Content: React.FC<{
     title: string,
     description: string,
@@ -195,7 +210,7 @@ const HowItWorks = () => {
         {
           icon && icon
         }
-        <Typography variant='h5'>
+        <Typography variant='h5' className={classes.howSubtitle}>
           {title}
         </Typography>
         <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
@@ -255,7 +270,7 @@ const Plans = withClientApollo(() => {
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         Choose a Plan
       </Typography>
-      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.subtitle}`}>
         Customize a meal plan to fit your lifestyle. Starting at $9.99 per meal
       </Typography>
       <PlanCards />
@@ -278,7 +293,7 @@ const Benefits = () => {
     <>
       <Typography
         variant='h4'
-        className={`${classes.verticalMargin} ${classes.shrinker}`}
+        className={`${classes.verticalMargin} ${classes.subtitle}`}
       >
         {title}
       </Typography>
@@ -407,11 +422,11 @@ const Benefits = () => {
     <>
       <Typography
         variant='h2'
-        className={`${classes.largeBottomMargin} ${classes.centered}`}
+        className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}
       >
         Who we are
       </Typography>
-      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.subtitle}`}>
         We believe in connecting the community through food.
       </Typography>
     </>
