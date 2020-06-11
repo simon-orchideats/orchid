@@ -12,9 +12,8 @@ import React, { Fragment } from 'react';
 import { useGetConsumer } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
-import { referralFriendAmount, referralSelfAmount, welcomePromoAmount, autoPickPromoAmount, referralMonthDuration } from '../order/promoModel';
-import { activeConfig } from '../config';
-import WithClickToCopy from '../client/general/WithClickToCopy';
+import { welcomePromoAmount, autoPickPromoAmount, referralMonthDuration } from '../order/promoModel';
+import Referral from '../client/general/Referral';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -35,12 +34,11 @@ const useStyles = makeStyles(theme => ({
       background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(bowls.jpg)',
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
-      height: 400,
     },
     backgroundImage: `url(/bowls.jpg)`,
     backgroundPosition: '50% 75%',
     backgroundSize: 'cover',
-    height: '100vh',
+    height: 400,
     marginTop: -theme.mixins.navbar.marginBottom
   },
   friends: {
@@ -151,9 +149,8 @@ const useStyles = makeStyles(theme => ({
     },
     backgroundColor: theme.palette.common.white,    
   },
-  referralText: {
-    backgroundColor: theme.palette.common.white,
-    padding: theme.spacing(4),
+  referralBottom: {
+    marginBottom: theme.mixins.navbar.marginBottom
   }
 }));
 
@@ -197,7 +194,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={2} md={2}>
+    <Grid item xs={12} sm={12} md={2}>
       <div className={classes.centered}>
         {
           img &&
@@ -488,58 +485,22 @@ const Promotion = withClientApollo(() => {
   );
 });
 
-const Referral = withClientApollo(() => {
+const ReferralWelcome = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
-  const theme = useTheme<Theme>();
   const consumerData = consumer.data;
-  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   if (!consumerData || !consumerData.Plan) return null;
-  const referralLink = `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan.ReferralCode}&a=${referralFriendAmount}`
-  const friendAmount = referralFriendAmount * 4 * referralMonthDuration;
   return (
-    <div className={`${classes.friends} ${classes.centered}`}>
-      <div className={`${classes.welcomeText} ${classes.referralText}`}>
-        <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-          Refer a friend 
-        </Typography>
-        <Typography  variant={isSmAndDown ? 'h6' : 'h4'}>
-          When they checkout with your link
-        </Typography>
-        <WithClickToCopy
-          render={onCopy => 
-            <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.mediumVerticalMargin} onClick={() => onCopy(referralLink)}>
-              <b>
-                {referralLink}
-              </b>
-            </Typography>
-          }
-        />
-        <Typography variant={isSmAndDown ? 'h6' : 'h4'}>
-          Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get ${(friendAmount / 100).toFixed(2)} off
-        </Typography>
-        <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.topMargin}>
-          Friends get another ${(2 * autoPickPromoAmount / 100).toFixed(2)} on the last 2 weeks when they
-          let Orchid pick their meals
-        </Typography>
-        <Typography
-          variant='body2'
-          className={classes.topMargin}
-          color='textSecondary'
-          align='left'
-        >
-          Discount applied in weekly increments over 1 month. Skipping orders or canceling subscriptions will terminate
-          discounts
-        </Typography>
-      </div>
+    <div className={classes.referralBottom}>
+      <Referral />
     </div>
-  );
+  )
 });
 
 const Index = () => {
   return (
     <>
-      <Referral />
+      <ReferralWelcome />
       <Welcome />
       <Promotion />
       <HowItWorks />
