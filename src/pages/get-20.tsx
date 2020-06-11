@@ -13,4 +13,4 @@ const ReferralPage = () => {
 
 export default ReferralPage;
 
-export const referralPageRoute = '/earn-20'
+export const referralPageRoute = '/get-20'

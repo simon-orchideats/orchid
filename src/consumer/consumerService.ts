@@ -188,6 +188,25 @@ export const useGetConsumer = () => {
   }
 }
 
+export const useGetConsumerFromPromo = (promoCode: string) => {
+  type consumerFromReferral = { consumerFromReferral: string }
+  const res = useQuery<consumerFromReferral>(gql`
+      query consumerFromReferral($promoCode: ID!) {
+        consumerFromReferral(promoCode: $promoCode)
+      }
+    `, 
+    {
+      skip: !promoCode,
+      variables: { promoCode },
+    }
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    name: res.data?.consumerFromReferral,
+  }
+}
+
 export const useGetLazyConsumer = (): [
   () => void,
   {

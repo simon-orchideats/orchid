@@ -27,6 +27,7 @@ const query = gql`
     nearbyRests(cityOrZip: String): [Rest!]!
     rest(restId: ID!): Rest!
     order(orderId: ID!): Order!
+    consumerFromReferral(promoCode: ID!): String!
     myConsumer: Consumer
   }
 `

@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { makeStyles, Typography, Container, Paper, Grid } from "@material-ui/core";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";
@@ -64,11 +63,8 @@ const Referrals = () => {
       {`$${amount.toFixed(0)}`}
     </text>
   );
-  // const earned = rewardsRes.data?.Earned ? rewardsRes.data.Earned / 100 : 0;
-  // const potential = earned + (rewardsRes.data?.Potential ? rewardsRes.data?.Potential / 100 : 0);
-
-  const earned = 25;
-  const potential = 100;
+  const earned = rewardsRes.data?.Earned ? rewardsRes.data.Earned / 100 : 0;
+  const potential = earned + (rewardsRes.data?.Potential ? rewardsRes.data?.Potential / 100 : 0);
   const data = [
     {
       name: 'Earned',

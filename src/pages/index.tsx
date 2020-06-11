@@ -4,15 +4,15 @@ import Link from 'next/link';
 import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React, { Fragment } from 'react';
-import { useGetConsumer } from '../consumer/consumerService';
+import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
-import { welcomePromoAmount, autoPickPromoAmount, referralMonthDuration } from '../order/promoModel';
+import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 
 const useStyles = makeStyles(theme => ({
@@ -463,23 +463,37 @@ const Promotion = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
   const theme = useTheme<Theme>();
+  const router = useRouter();
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
+  const a = router.query.a as string;
+  const p = router.query.p as string;
+  const res = useGetConsumerFromPromo(p);
+  const referralDollars = a ? parseFloat(a) / 100 : 0;
   const consumerData = consumer.data;
   if (consumerData && consumerData.Plan) return null;
-  const autoAmount = (2 * autoPickPromoAmount / 100);
+  const name = res.name;
+  if (name) {
+    const referral = referralDollars * 4 * referralMonthDuration;
+    const fName = name.split(' ')[0].toLowerCase();
+    return (
+      <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
+        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
+          Welcome from {fName.charAt(0).toUpperCase() + fName.slice(1)}!
+        </Typography>
+        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
+          ${referral} off your first month, auto applied at checkout
+        </Typography>
+      </div>
+    )
+  }
   const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
-  const promoAmount = basePromoAmount + autoAmount;
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${promoAmount} off your first month, auto applied at checkout! 
+        ${basePromoAmount} off your first month, auto applied at checkout! 
       </Typography>
       <Typography variant='body2' className={classes.topMargin}>
-        *${(welcomePromoAmount / 100)} off 4 weeks. ${autoAmount} applied on weeks 3 & 4 when you
-        let Orchid pick your meals.
-      </Typography>
-      <Typography variant='body2' className={classes.topMargin}>
-        Skipping or canceling terminates discounts
+        *${(welcomePromoAmount / 100)} off 4 weeks
       </Typography>
     </div>
   );

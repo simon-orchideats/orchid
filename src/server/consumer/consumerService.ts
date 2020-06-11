@@ -45,6 +45,7 @@ export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   getRewards: (signedInUser: SignedInUser) => Promise<IRewards>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
+  getNameFromReferral: (promoCode: string) => Promise<string>
   removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
@@ -354,6 +355,32 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
       throw new Error('Internal Server Error');
+    }
+  }
+
+  async getNameFromReferral(promoCode: string): Promise<string> {
+    try {
+      const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                term: {
+                  'plan.referralCode': promoCode
+                }
+              }
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value === 0) throw new Error(`Consumer with referralCode '${promoCode}' not found`);
+      const consumer = res.body.hits.hits[0];
+      return consumer._source.profile.name;
+    } catch (e) {
+      console.error(`Failed to search for consumer promoCode '${promoCode}'`, e.stack);
+      throw e;
     }
   }
 

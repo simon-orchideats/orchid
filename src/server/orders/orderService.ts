@@ -1432,6 +1432,7 @@ class OrderService {
         numOrders: 0,
       })
       return res.body.hits.hits.reduce<ISpent>((spent, { _source }) => {
+        if (!_source.stripeInvoiceId) return spent;
         const orderSpent = _source.deliveries.reduce<ISpent>((orderSpent, d) => {
           if (d.status !== 'Confirmed') return orderSpent;
           const deliverySpent = d.meals.reduce<ISpent>((deliverySpent, m) => {

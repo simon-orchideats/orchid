@@ -2,10 +2,13 @@ import { makeStyles, Typography, Grid, useMediaQuery, Theme, useTheme, Paper } f
 import withClientApollo from '../utils/withClientApollo';
 import React from 'react';
 import { useGetConsumer } from '../../consumer/consumerService';
-import { referralFriendAmount, referralSelfAmount, referralMonthDuration, autoPickPromoAmount } from '../../order/promoModel';
+import { referralFriendAmount, referralSelfAmount, referralMonthDuration } from '../../order/promoModel';
 import { activeConfig } from '../../config';
 import WithClickToCopy from '../general/WithClickToCopy';
 import RedeemRoundedIcon from '@material-ui/icons/RedeemRounded';
+
+const selfAmount = referralSelfAmount * 4 * referralMonthDuration / 100;
+const friendAmount = referralFriendAmount * 4 * referralMonthDuration / 100;
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -41,19 +44,6 @@ const useStyles = makeStyles(theme => ({
     },
     fontSize: '5rem',
   },
-  welcome: {
-    [theme.breakpoints.down('lg')]: {
-      background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(bowls.jpg)',
-      backgroundPosition: '50% 75%',
-      backgroundSize: 'cover',
-      height: 400,
-    },
-    backgroundImage: `url(/bowls.jpg)`,
-    backgroundPosition: '50% 75%',
-    backgroundSize: 'cover',
-    height: '100vh',
-    marginTop: -theme.mixins.navbar.marginBottom
-  },
   row: {
     display: 'flex',
     flexDirection: 'column',
@@ -63,7 +53,7 @@ const useStyles = makeStyles(theme => ({
   },
   friends: {
     color: 'white',
-    background: 'url(/home/friends.jpeg)',
+    background: 'url(/home/friends.png)',
     backgroundSize: 'cover',
     height: '40vh',
     backgroundPosition: '50% 50%',
@@ -87,7 +77,7 @@ const useStyles = makeStyles(theme => ({
   topMargin: {
     marginTop: theme.spacing(1),
   },
-  mediumVerticalMargin: {
+  link: {
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
   },
@@ -147,7 +137,7 @@ const Header = () => {
   return (
     <div className={`${classes.friends} ${classes.centered}`}>
       <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-        Gift $40, Get $20
+        Gift ${friendAmount}, Get ${selfAmount}
       </Typography>
     </div>
   );
@@ -167,30 +157,23 @@ const Redeem = () => {
 const Description = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
-  const theme = useTheme<Theme>();
   const consumerData = consumer.data;
-  const isSmAndDown = useMediaQuery(theme.breakpoints.down('xs'));
   const referralLink = consumerData && consumerData.Plan &&
     `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan.ReferralCode}&a=${referralFriendAmount}`
-  const friendAmount = referralFriendAmount * 4 * referralMonthDuration + autoPickPromoAmount * 2;
   const width = referralLink ? 4 : 3;
   return (
     <div className={`${classes.description} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.largeBottomMargin} ${classes.shrinker}`}>
-        Get $20 when you refer a friend&nbsp;
+        Get ${selfAmount} when you refer a friend&nbsp;
         {
           referralLink &&
           <WithClickToCopy
             render={onCopy => 
-              <Typography
-                variant={isSmAndDown ? 'h6' : 'h4'}
-                className={classes.mediumVerticalMargin}
-                onClick={() => onCopy(referralLink)}
-              >
+              <div className={classes.link} onClick={() => onCopy(referralLink)}>
                 <b>
                   {referralLink}
                 </b>
-              </Typography>
+              </div>
             }
           />
         }
@@ -253,7 +236,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              They get ${(friendAmount / 100)} over 4 weeks
+              They get ${friendAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>
@@ -270,7 +253,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              You earn ${(referralSelfAmount * 4 * referralMonthDuration / 100)} over 4 weeks
+              You earn ${selfAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>
