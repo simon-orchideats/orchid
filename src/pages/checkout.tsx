@@ -33,6 +33,7 @@ import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
 import TrustSeal from "../client/checkout/TrustSeal";
 
+
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
