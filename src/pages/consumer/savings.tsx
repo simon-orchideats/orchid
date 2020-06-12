@@ -6,6 +6,7 @@ import CountUp from 'react-countup';
 import {
   PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
 } from 'recharts';
+import { competitorMealPrice } from "../../order/costModel";
 
 const savingsColor = '#008036'
 
@@ -193,7 +194,7 @@ const TotalSavings = () => {
   const spentAmount = spentRes.data?.Amount ? spentRes.data.Amount / 100 : 0;
   const numMeals = spentRes.data?.NumMeals ?? 0;
   const numOrders = spentRes.data?.NumOrders ?? 0;
-  const lifetimeSavings = (16 * numMeals) - (spentAmount);
+  const lifetimeSavings = (competitorMealPrice * numMeals) - (spentAmount);
   const data = [
     {
       name: 'Lifetime savings',

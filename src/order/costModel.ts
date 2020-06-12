@@ -4,6 +4,7 @@ import { IDeliveryInput } from './deliveryModel';
 import { IPromo, Promo } from './promoModel';
 
 export const deliveryFee = 350;
+export const competitorMealPrice = 16;
 
 export interface ICost {
   readonly tax: number
