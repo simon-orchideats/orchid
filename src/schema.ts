@@ -22,9 +22,12 @@ const query = gql`
     allTags: [Tag!]! 
     myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
+    myRewards: Rewards!
+    mySpent: Spent!
     nearbyRests(cityOrZip: String): [Rest!]!
     rest(restId: ID!): Rest!
     order(orderId: ID!): Order!
+    consumerFromReferral(promoCode: ID!): String!
     myConsumer: Consumer
   }
 `
@@ -39,7 +42,6 @@ const mutation = gql`
     cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
     getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
-    addMarketingEmail(email: String!): BoolRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
     skipDelivery(orderId: ID!, deliveryIndex: Int!): BoolRes!
     updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!

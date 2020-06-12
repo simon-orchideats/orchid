@@ -23,7 +23,7 @@ import { MIN_DAYS_AHEAD } from "../../consumer/consumerPlanModel";
 import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
-import { referralFriendAmount, referralSelfAmount, referralMonthDuration, autoPickPromoAmount } from "../../order/promoModel";
+import { referralFriendAmount, referralSelfAmount, referralMonthDuration } from "../../order/promoModel";
 import OrderOverview from "../../client/consumer/OrderOverview";
 import { activeConfig } from "../../config";
 import WithClickToCopy from "../../client/general/WithClickToCopy";
@@ -242,10 +242,6 @@ const UpcomingDeliveries = () => {
       <Typography variant='h6' className={classes.marginBottom}>
         Refer a friend. You Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get
         ${(friendAmount / 100).toFixed(2)} off
-      </Typography>
-      <Typography variant='h6' className={classes.marginBottom}>
-        Friends get another ${(2 * autoPickPromoAmount / 100).toFixed(2)} on the last 2 weeks when they
-        let Orchid pick their meals
       </Typography>
       <WithClickToCopy 
         render={onCopy =>

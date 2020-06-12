@@ -211,9 +211,9 @@ const Privacy = () => {
           <br />
           foodflick inc.
           <br />
-          107 Romaine Pl Apt 4
+          444 Washington Boulevard Suite 3551
           <br />
-          Leonia, NJ 07605
+          Jersey City, NJ 07310
           <br />
           <br />
           Terms and Conditions

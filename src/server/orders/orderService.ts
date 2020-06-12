@@ -2,7 +2,7 @@ import { TagTypes, Tag } from './../../rest/tagModel';
 import { IDiscount, IWeeklyDiscount, WeeklyDiscount } from './../../order/discountModel';
 import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration, oncePromoKey } from './../../order/promoModel';
 import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
-import { Cost, ICost } from './../../order/costModel';
+import { Cost, ICost, ISpent } from './../../order/costModel';
 import { getNextDeliveryDate, isDateMinDaysLater } from './../../order/utils';
 import { IPlan, MIN_MEALS } from './../../plan/planModel';
 import { refetchAccessToken } from '../../utils/auth'
@@ -27,6 +27,7 @@ import moment from 'moment-timezone';
 import { IDeliveryMeal, IDeliveryInput, IDelivery, IUpdateDeliveryInput } from '../../order/deliveryModel';
 import { getItemChooser } from '../../utils/utils';
 import { DiscountReasons } from '../../order/discountModel';
+import { IRewards } from '../../order/rewardModel';
 
 const ORDER_INDEX = 'orders';
 const PROMO_INDEX = 'promos';
@@ -75,6 +76,24 @@ const validateDeliveryDate = (date: number, now = Date.now()) => {
     return `Delivery date '${moment(date).format(adjustmentDateFormat)}' is not 2 days in advance`;
   }
 }
+
+const getMyAllOrdersQuery = (signedInUserId: string) => ({
+  query: {
+    bool: {
+      filter: {
+        bool: {
+          must: [
+            {
+              term: {
+                "consumer.userId": signedInUserId
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+})
 
 const getUpcomingOrdersQuery = (signedInUserId?: string) => {
   const query: any = {
@@ -182,10 +201,12 @@ export interface IOrderService {
     order: EOrder,
   } | null>
   getAllPaidIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
-  getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getUpcomingEOrders(userId: string): Promise<{ _id: string, order: EOrder }[]>
   getAllUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  getMyRewards(signedInUser: SignedInUser): Promise<IRewards>
+  getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]>
   getMyUpcomingIOrders(signedInUser: SignedInUser): Promise<IOrder[]>
+  getMySpent(signedInUser: SignedInUser): Promise<ISpent>
   getPromo(promo: string, phone: string, addrStr: string): Promise<MutationPromoRes>
   getIOrder: (signedInUser: SignedInUser, orderId: string, fields?: string[]) => Promise<IOrder | null>
   processTaxesAndFeesAndDiscounts(
@@ -1156,13 +1177,6 @@ class OrderService {
       ).catch(e => {
         console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
       });
-      this.consumerService.upsertMarketingEmail(
-        signedInUser.profile.email,
-        signedInUser.profile.name,
-        addr,
-      ).catch(e => {
-        console.error(`[OrderService] failed to upsert marketing email '${signedInUser.profile.email}'`, e.stack);
-      });
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, signedInUser.permissions, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
@@ -1215,6 +1229,42 @@ class OrderService {
       };
     } catch (e) {
       console.error('[OrderService] could not place order', e.stack);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getMyRewards(signedInUser: SignedInUser): Promise<IRewards> {
+    try {
+      if (!signedInUser) throw new Error('Missing signed in user');
+      if (!this.consumerService) throw new Error('Missing consumer service');
+      const res: ApiResponse<SearchResponse<EOrder>>  = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: getMyAllOrdersQuery(signedInUser._id)
+      });
+      const rewards = res.body.hits.hits.reduce<IRewards>((rewards, { _source }) => {
+        const add = _source.costs.discounts.reduce<number>((sum, discount) =>
+          sum + (discount.amountOff ? discount.amountOff : 0),
+          0
+        );
+        return _source.stripeInvoiceId ?
+          {
+            ...rewards,
+            earned: rewards.earned + add,
+          }
+        :
+          {
+            ...rewards,
+            potential: rewards.potential + add,
+          }
+      }, { earned: 0, potential: 0 });
+      const consumerRes = await this.consumerService.getRewards(signedInUser);
+      return {
+        earned: rewards.earned + consumerRes.earned,
+        potential: rewards.potential + consumerRes.potential
+      }
+    } catch (e) {
+      console.error(`[OrderService] Failed to get rewards for '${signedInUser?._id}'`, e.stack)
       throw new Error('Internal Server Error');
     }
   }
@@ -1364,6 +1414,50 @@ class OrderService {
       return res.map(({ _id, order }) => Order.getIOrderFromEOrder(_id, order))
     } catch (e) {
       console.error(`[OrderService] couldn't get upcoming IOrders for consumer '${signedInUser._id}'. '${e.stack}'`);
+      throw new Error('Internal Server Error');
+    }
+  }
+
+  async getMySpent(signedInUser: SignedInUser): Promise<ISpent> {
+    try {
+      if (!signedInUser) throw new Error('Missing signed in user');
+      const res: ApiResponse<SearchResponse<EOrder>>  = await this.elastic.search({
+        index: ORDER_INDEX,
+        size: 1000,
+        body: getMyAllOrdersQuery(signedInUser._id)
+      });
+      const getEmptySpent = () => ({
+        amount: 0,
+        numMeals: 0,
+        numOrders: 0,
+      })
+      return res.body.hits.hits.reduce<ISpent>((spent, { _source }) => {
+        if (!_source.stripeInvoiceId) return spent;
+        const orderSpent = _source.deliveries.reduce<ISpent>((orderSpent, d) => {
+          if (d.status !== 'Confirmed') return orderSpent;
+          const deliverySpent = d.meals.reduce<ISpent>((deliverySpent, m) => {
+            const mealPrice = _source.costs.mealPrices.find(mp => mp.stripePlanId === m.stripePlanId);
+            if (!mealPrice) throw new Error('Missing meal price');
+            return {
+              amount: deliverySpent.amount + mealPrice.mealPrice * m.quantity,
+              numMeals: deliverySpent.numMeals + m.quantity,
+              numOrders: 0,
+            }
+          }, getEmptySpent());
+          return {
+            amount: orderSpent.amount + deliverySpent.amount,
+            numMeals: orderSpent.numMeals + deliverySpent.numMeals,
+            numOrders: 0,
+          }
+        }, getEmptySpent());
+        return {
+          amount: spent.amount + orderSpent.amount + _source.costs.deliveryFee,
+          numMeals: spent.numMeals + orderSpent.numMeals,
+          numOrders: spent.numOrders + 1,
+        }
+      }, getEmptySpent());
+    } catch (e) {
+      console.error(`[OrderService] Failed to get my spent for '${signedInUser?._id}'`, e.stack)
       throw new Error('Internal Server Error');
     }
   }

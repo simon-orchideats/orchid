@@ -1,3 +1,4 @@
+import { IRewards, Rewards } from './../../order/rewardModel';
 import { MutationPromoRes, Promo } from './../../order/promoModel';
 import { Plan, IPlan } from './../../plan/planModel';
 import { Consumer } from './../../consumer/consumerModel';
@@ -12,6 +13,7 @@ import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 import { orderFragment } from '../../order/orderFragment';
+import { ISpent, Spent } from '../../order/costModel';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -100,6 +102,44 @@ export const useGetOrder = (orderId: string | null) => {
   }
 }
 
+export const useGetRewards = () => {
+  type res = { myRewards: IRewards }
+  const res = useQuery<res>(
+    gql`
+      query myRewards {
+        myRewards {
+          earned
+          potential
+        }
+      }
+    `
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: res.data ? new Rewards(res.data.myRewards) : res.data
+  }
+}
+
+export const useGetSpent = () => {
+  type res = { mySpent: ISpent }
+  const res = useQuery<res>(
+    gql`
+      query mySpent {
+        mySpent {
+          amount
+          numMeals
+          numOrders
+        }
+      }
+    `
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: res.data ? new Spent(res.data.mySpent) : res.data
+  }
+}
 
 type newConsumer = {
   _id: string,

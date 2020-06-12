@@ -47,6 +47,13 @@ export const events = {
   UPDATED_INSTRUCTIONS: 'Updated instructions',
 }
 
+export const fbEvents = {
+  TRACK_CUSTOM: 'trackCustom',
+  INIT: 'init',
+  TRACK: 'track',
+  PAGE_VIEW: 'PageView',
+}
+
 const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =>
   mealPlans.reduce<
     { [key: string]: number }
@@ -209,6 +216,8 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CANCELED_SUBSCRIPTION, {
       ...copyMealPlansWithPriceAndCount(mealPlans, plans),
     });
+    // @ts-ignore
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CANCELED_SUBSCRIPTION);
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -216,6 +225,9 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CHOSE_PLAN, {
       ...fields,
     });
+
+    // @ts-ignore
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CHOSE_PLAN, { ...fields });
   }
 
   public static sendUpdatePlanMetrics(
@@ -226,6 +238,10 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.CHOSE_PLAN, {
       ...copyMealPlansWithPriceAndCount(newMealPlans, plans),
     });
+
+    // @ts-ignore
+    window.fbq(fbEvents.TRACK_CUSTOM, events.CHOSE_PLAN, { ...copyMealPlansWithPriceAndCount(newMealPlans, plans) });
+
     analyticsService.trackEvent(events.REMOVED_PLAN, {
       ...copyMealPlansWithPriceAndCount(oldMealPlans, plans),
     });
@@ -302,11 +318,16 @@ export class AnalyticsService {
       analyticsService.trackEvent(events.ADDED_CUISINE, {
         cuisine
       });
+      // @ts-ignore
+      window.fbq(fbEvents.TRACK_CUSTOM, events.ADDED_CUISINE, { cuisineType: cuisine });
     });
+
     removedCuisines.forEach(cuisine => {
       analyticsService.trackEvent(events.REMOVED_CUISINE, {
         cuisine
       });
+      // @ts-ignore
+      window.fbq(fbEvents.TRACK_CUSTOM, events.REMOVED_CUISINE, { cuisineType: cuisine });
     });
   }
 
@@ -346,6 +367,8 @@ export class AnalyticsService {
       ...fields,
       mealsSkipped: skippedMealsCount,
     });
+    // @ts-ignore
+    window.fbq(fbEvents.TRACK_CUSTOM, events.SKIPPED_DELIVERY);
   }
 
   public static sendUpdateOrderMetrics(
@@ -372,6 +395,8 @@ export class AnalyticsService {
     analyticsService.trackEvent(events.ENTERED_ZIP, {
       zip
     });
+    // @ts-ignore
+    window.fbq(fbEvents.TRACK_CUSTOM, events.ENTERED_ZIP);
   }
 }
 

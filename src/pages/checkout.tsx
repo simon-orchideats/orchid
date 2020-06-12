@@ -28,9 +28,12 @@ import { useGetAvailablePlans } from "../plan/planService";
 import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { useGetTags } from "../rest/restService";
 import { Tag } from "../rest/tagModel";
+import TrustSeal from "../client/checkout/TrustSeal";
+import BaseInput from "../client/general/inputs/BaseInput";
+
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -52,8 +55,16 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.spacing(2),
     fontWeight: 'bold',
   },
+  secureSeal: {
+    paddingLeft: theme.spacing(1),
+  },
+  shield: {
+    marginTop: 2,
+    alignSelf: 'flex-start',
+  },
   row: {
     display: 'flex',
+    alignItems: 'center',
     marginTop: -theme.spacing(1),
     paddingBottom: theme.spacing(2),
   },
@@ -85,11 +96,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [promoDuration, setPromoDuration] = useState<promoDurations>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
   const [tags, setTags] = useState<Tag[]>([]);
-  const [accountName, setAccountName] = useState<string>('');
-  const [accountNameError, setAccountNameError] = useState<string>('');
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
-  const [password, setPassword] = useState<string>('');
+  const accountNameInputRef = createRef<HTMLInputElement>();
+  const passwordInputRef = createRef<HTMLInputElement>();
+  const [accountNameError, setAccountNameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
@@ -99,7 +110,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
   const allTags = useGetTags();
-
   useEffect(() => {
     if (router.query.a !== undefined) {
       setAmountOff(parseFloat(router.query.a as string));
@@ -204,7 +214,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }
 
-  const validate = () => {
+  const validate = (name?: string, password?: string) => {
     let isValid = true;
     if (!validatePhoneRef.current!()) {
       isValid = false;
@@ -212,7 +222,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validateAddressRef.current!()) {
       isValid = false;
     }
-    if (!consumer.data && !accountName) {
+    if (!consumer.data && !name) {
       setAccountNameError('Your name is incomplete');
       isValid = false;
     }
@@ -240,6 +250,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }
   const doPlaceOrder = async (
+    name?: string,
+    password?: string,
     email?: string,
     addr1?: string,
     addr2?: string,
@@ -279,19 +291,26 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    sendCheckoutMetrics(
-      cart,
-      plans.data,
-      tags.map(t => t.Name),
-    )
     if (!consumer || !consumer.data) {
       if (!email) {
-        const err = new Error(`No email`);
+        const err = new Error('No email');
         console.error(err.stack);
         setDidPlaceOrder(false);
         throw err;
       }
-      signUp(email, accountName, password);
+      if (!name) {
+        const err = new Error('No name');
+        console.error(err.stack);
+        setDidPlaceOrder(false);
+        throw err;
+      }
+      if (!password) {
+        const err = new Error('No password');
+        console.error(err.stack);
+        setDidPlaceOrder(false);
+        throw err;
+      }
+      signUp(email, name, password);
     } else {
       placeOrder(
         {
@@ -314,10 +333,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         ),
       );
     }
+    sendCheckoutMetrics(
+      cart,
+      plans.data,
+      tags.map(t => t.Name),
+    )
   }
 
-
   const onClickPlaceOrder = async (
+    name?: string,
+    password?: string,
     email?: string,
     addr1?: string,
     addr2?: string,
@@ -328,7 +353,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   ) => {
     if (didPlaceOrder) return;
     setDidPlaceOrder(true);
-    if (!validate()) {
+    if (!validate(name, password)) {
       notify('Please fix errors', NotificationType.error, true);
       setDidPlaceOrder(false);
       return
@@ -364,7 +389,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    const billingName = (!consumer || !consumer.data) ? accountName : consumer.data.Profile.Name;
+    const billingName = (!consumer || !consumer.data) ? name : consumer.data.Profile.Name;
     try {
       pm.current = await stripe.createPaymentMethod({
         type: 'card',
@@ -372,7 +397,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         billing_details: { name: billingName },
       });
     } catch (e) {
-      const err = new Error(`Failed to createPaymentMethod for accountName '${accountName}'`);
+      const err = new Error(`Failed to createPaymentMethod for accountName '${billingName}'`);
       console.error(err.stack);
       setDidPlaceOrder(false);
       throw err;
@@ -386,6 +411,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
     doPlaceOrder(
+      name,
+      password,
       email,
       addr1,
       addr2,
@@ -399,7 +426,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 
 
   const onApplyPromo = () => {
-    if (!validate()) {
+    if (!validate(accountNameInputRef.current?.value, passwordInputRef.current?.value)) {
       notify('Please fix errors', NotificationType.error, true);
       return
     };
@@ -420,6 +447,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     amountOff: amountOff ?? 0,
     promoDuration,
     onPlaceOrder: () => onClickPlaceOrder(
+      accountNameInputRef.current?.value,
+      passwordInputRef.current?.value,
       emailInputRef.current?.value,
       addr1InputRef.current?.value,
       addr2InputRef.current?.value,
@@ -436,7 +465,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       if (amountOff !== 0) setAmountOff(0);
     }
   }
-
   return (
     <Container
       maxWidth='xl'
@@ -447,8 +475,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         <Grid
           item
           sm={12}
-          md={8}
-          lg={9}
+          md={7}
+          lg={8}
           className={classes.inputs}
         >
           <Typography
@@ -495,7 +523,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               md={6}
             >
               <TextField
-                label='Special requests or instructions'
+                label='Requests or instructions'
                 variant='outlined'
                 size='small'
                 fullWidth
@@ -534,16 +562,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             :
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
+                <BaseInput
                   label='Name'
-                  variant='outlined'
-                  size='small'
-                  fullWidth
                   error={!!accountNameError}
                   helperText={accountNameError}
-                  value={accountName}
-                  onChange={e => {
-                    setAccountName(e.target.value);
+                  inputRef={accountNameInputRef}
+                  onChange={() => {
                     if (accountNameError) setAccountNameError('');
                   }}
                 />
@@ -558,17 +582,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <BaseInput
                   label='Password'
                   type='password'
-                  variant='outlined'
-                  size='small'
                   error={!!passwordError}
                   helperText={passwordError}
-                  fullWidth
-                  value={password}
-                  onChange={e => {
-                    setPassword(e.target.value);
+                  inputRef={passwordInputRef}
+                  onChange={() => {
                     if (passwordError) setPasswordError('');
                   }}
                 />
@@ -597,10 +617,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Payment
           </Typography>
           <div className={classes.row}>
-            <LockOutlinedIcon />
+            <VerifiedUserIcon className={classes.shield} />
             <a href='https://stripe.com/' target='_blank'>
               <img src='/checkout/stripe.png' alt='stripe' />
             </a>
+            <div className={classes.secureSeal}>
+              <TrustSeal />
+            </div>
           </div>
           <CardForm />
           <RenewalChooser
@@ -616,8 +639,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           isMdAndUp &&
           <Grid
             item
-            md={4}
-            lg={3}
+            md={5}
+            lg={4}
           >
             <StickyDrawer>
               <CheckoutCart {...checkoutCartProps} />

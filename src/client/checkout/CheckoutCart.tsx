@@ -6,7 +6,7 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import { Tier, PlanNames } from "../../plan/planModel";
 import moment from "moment";
 import { Schedule } from "../../consumer/consumerPlanModel";
-import { Cost } from "../../order/costModel";
+import { Cost, competitorMealPrice } from "../../order/costModel";
 import { Cart } from "../../order/cartModel";
 import { MealPrice } from "../../order/orderModel";
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -106,7 +106,8 @@ const CheckoutCart: React.FC<props> = ({
   )
   const taxes = Cost.getTaxes(cart.Deliveries, mealPrices);
   const deliveryFee = Cost.getDeliveryFee(cart.Deliveries);
-  const total = ((taxes + planPrice - amountOff + (deliveryFee * (cart.Schedules.length - 1))) / 100).toFixed(2);
+  const total = ((taxes + planPrice - amountOff + (deliveryFee * (cart.Schedules.length - 1))) / 100);
+  const competitorPrice = competitorMealPrice * mealCount;
   const restMealsPerDelivery = Cart.getRestMealsPerDelivery(cart.deliveries);
   return (
     <>
@@ -206,12 +207,28 @@ const CheckoutCart: React.FC<props> = ({
             <b>-${(amountOff / 100).toFixed(2)}</b>
           </Typography>
         </div>
-        <div className={`${classes.row} ${classes.paddingBottom}`} >
+        <div className={`${classes.row}`} >
+          <Typography variant='body1'>
+            Other delivery apps
+          </Typography>
+          <Typography variant='body1'>
+            <del>${competitorPrice.toFixed(2)}</del>
+          </Typography>
+        </div>
+        <div className={`${classes.row}`} >
           <Typography variant='body1' color='primary'>
-            Total
+            <b>Total</b>
           </Typography>
           <Typography variant='body1' color='primary'>
-            ${total}
+            <b>${total.toFixed(2)}</b>
+          </Typography>
+        </div>
+        <div className={`${classes.row} ${classes.paddingBottom}`} >
+          <Typography variant='body1' color='primary'>
+            You save
+          </Typography>
+          <Typography variant='body1' color='primary'>
+            ${(competitorPrice - total).toFixed(2)}
           </Typography>
         </div>
         {
@@ -222,10 +239,13 @@ const CheckoutCart: React.FC<props> = ({
             {orderButton}
           </>
         }
+        <Typography variant='subtitle2' className={classes.paddingBottom}>
+          Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. If you're unsatisfied, email us at
+          simon@orchideats.com or call (609) 513-8166 and we'll refund your first week.
+        </Typography>
         <Typography variant='body2' className={classes.hint}>
-          Your first payment will occur on {moment().add(1, 'w').format('M/D')} and will automatically renew every week
-          unless canceled. Your price per meal is determined by the actual number of meals received per week, not
-          by your subscription. This way you can make adjustments each week as necessary and be fairly charged.
+          Your subscription renews every week unless canceled and is charged based on the number of meals received per
+          week.
         </Typography>
       </div>
     </>

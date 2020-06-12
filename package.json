@@ -53,8 +53,10 @@
     "next": "^9.3.6",
     "node-fetch": "^2.6.0",
     "react": "^16.12.0",
+    "react-countup": "^4.3.3",
     "react-dom": "^16.12.0",
     "react-stripe-elements": "^6.0.1",
+    "recharts": "^1.8.5",
     "stripe": "^8.15.0"
   },
   "devDependencies": {
@@ -71,6 +73,7 @@
     "@types/node": "^13.1.6",
     "@types/react": "^16.9.17",
     "@types/react-stripe-elements": "^6.0.3",
+    "@types/recharts": "^1.8.11",
     "jest": "^25.1.0",
     "nodemon": "^2.0.2",
     "ts-node": "^8.6.2",

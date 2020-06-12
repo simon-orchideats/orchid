@@ -6,14 +6,19 @@ import { getConsumerService } from './consumerService';
 export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, { signedInUser }) => {
     return signedInUser && await getConsumerService().getIConsumer(signedInUser)  
+  },
+
+  consumerFromReferral: async (_, { promoCode }: { promoCode: string }) => {
+    try {
+      return await getConsumerService().getNameFromReferral(promoCode)  
+    } catch (e) {
+      console.error(`[ConsumerResolver] Failed to get consumer from referral '${promoCode}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
   }
 }
 
 export const ConsumerMutationResolvers: ServerResolovers = {
-  addMarketingEmail: async (_root, { email }: { email: string }) => {
-    return await getConsumerService().upsertMarketingEmail(email);
-  },
-
   cancelSubscription: async (_root, _vars, { signedInUser, req, res }) => {
     return await getConsumerService().cancelSubscription(signedInUser, req, res);
   },

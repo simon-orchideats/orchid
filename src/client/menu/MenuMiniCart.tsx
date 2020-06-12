@@ -92,45 +92,43 @@ const MenuMiniCart: React.FC<{
           </Button>
         </div>
         <div className={`${classes.bar} ${classes.scrollable}`}>
-          {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
-            restMeals.meals.map(deliveryMeal => (
-              <div className={classes.meals} key={deliveryMeal.IdKey}>
-                <div className={classes.bar}>
-                  <Button
-                    size='small'
-                    variant='text'
-                    color='primary'
-                    onClick={() => addMealToCart(
-                      deliveryMeal.MealId,
-                      deliveryMeal,
-                      deliveryMeal.Choices,
-                      restId,
-                      deliveryMeal.RestName,
-                      deliveryMeal.TaxRate
-                    )}
-                  >
-                    <AddIcon />
-                    </Button>
-                  <Typography variant='subtitle2'>
-                    {deliveryMeal.Quantity}
-                  </Typography>
-                  <Button
-                    size='small'
-                    variant='text'
-                    onClick={() => removeMealFromCart(restId, deliveryMeal)}
-                  >
-                    <RemoveIcon />
-                  </Button>
-                </div>
-                <Typography
-                  className={classes.name}
-                  variant='body2'
-                  align='center'
+          {cart && cart.AllMeals.map(deliveryMeal => (
+            <div className={classes.meals} key={deliveryMeal.IdKey}>
+              <div className={classes.bar}>
+                <Button
+                  size='small'
+                  variant='text'
+                  color='primary'
+                  onClick={() => addMealToCart(
+                    deliveryMeal.MealId,
+                    deliveryMeal,
+                    deliveryMeal.Choices,
+                    deliveryMeal.RestId,
+                    deliveryMeal.RestName,
+                    deliveryMeal.TaxRate
+                  )}
                 >
-                  {deliveryMeal.name.toUpperCase()}
+                  <AddIcon />
+                  </Button>
+                <Typography variant='subtitle2'>
+                  {deliveryMeal.Quantity}
                 </Typography>
+                <Button
+                  size='small'
+                  variant='text'
+                  onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                >
+                  <RemoveIcon />
+                </Button>
               </div>
-            ))
+              <Typography
+                className={classes.name}
+                variant='body2'
+                align='center'
+              >
+                {deliveryMeal.name.toUpperCase()}
+              </Typography>
+            </div>
           ))}
         </div>
         {(!cart || !cart.Zip) && (

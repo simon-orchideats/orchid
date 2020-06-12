@@ -2,6 +2,10 @@ import { IDiscount, Discount } from './discountModel';
 import { IMealPrice, MealPrice } from './orderModel';
 import { IDeliveryInput } from './deliveryModel';
 import { IPromo, Promo } from './promoModel';
+
+export const deliveryFee = 350;
+export const competitorMealPrice = 16;
+
 export interface ICost {
   readonly tax: number
   readonly tip: number
@@ -76,4 +80,25 @@ export class Cost implements ICost {
   }
 }
 
-export const deliveryFee = 350;
+export interface ISpent {
+  readonly amount: number
+  readonly numMeals: number
+  readonly numOrders: number
+}
+
+export class Spent {
+  readonly amount: number
+  readonly numMeals: number
+  readonly numOrders: number
+  
+  constructor(s: ISpent) {
+    this.amount = s.amount;
+    this.numMeals = s.numMeals;
+    this.numOrders = s.numOrders;
+  }
+
+  public get Amount() { return this.amount }
+  public get NumMeals() { return this.numMeals }
+  public get NumOrders() { return this.numOrders }
+
+}

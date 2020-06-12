@@ -309,6 +309,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return updateCartCache(cache, new Cart({
         donationCount: 0,
         deliveries: [],
+        allMeals: [newDeliveryMeal],
         restMeals: {
           [restId]: {
             mealPlans: newMealPlans,
@@ -349,6 +350,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       throw err;
     }
     return updateCartCache(cache, new Cart({
+      allMeals: res.cart.AllMeals,
       donationCount: res.cart.DonationCount - 1,
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
@@ -361,6 +363,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const res = getCart(cache);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
+        allMeals: [],
         donationCount: 1,
         restMeals: {},
         deliveries: [],
@@ -369,6 +372,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     return updateCartCache(cache, new Cart({
+      allMeals: res.cart.AllMeals,
       donationCount: res.cart.DonationCount + 1,
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
@@ -384,6 +388,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       return null;
     }
     return updateCartCache(cache, new Cart({
+      allMeals: [],
       donationCount: 0,
       restMeals: {},
       deliveries: [],
@@ -413,6 +418,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     let newCart = res.cart.removeMeal(restId, meal);
     if (Cart.getStandardMealCount(newCart) === 0) {
       newCart = new Cart({
+        allMeals: [],
         donationCount: newCart.DonationCount,
         restMeals: {},
         deliveries: [],
@@ -435,6 +441,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     //   });
     // }
     return updateCartCache(cache, new Cart({
+      allMeals: [],
       donationCount: order.DonationCount,
       restMeals,
       deliveries: newDeliveries,
@@ -450,6 +457,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     const res = getCart(cache);
     if (!res || !res.cart) {
       return updateCartCache(cache, new Cart({
+        allMeals: [],
         donationCount: 0,
         deliveries: [],
         restMeals: {},
@@ -458,6 +466,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       }));
     }
     return updateCartCache(cache, new Cart({
+      allMeals: res.cart.AllMeals,
       donationCount: res.cart.DonationCount,
       deliveries: res.cart.Deliveries,
       restMeals: res.cart.RestMeals,

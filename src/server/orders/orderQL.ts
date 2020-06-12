@@ -100,6 +100,16 @@ export const _OrderQL = gql`
     deliveryFee: Float!
   }
 
+  type Spent {
+    amount: Int!
+    numMeals: Int!
+    numOrders: Int!
+  }
+
+  type Rewards {
+    earned: Int!
+    potential: Int!
+  }
 
   type PromoRes {
     res: Promo

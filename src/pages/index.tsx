@@ -1,21 +1,19 @@
-import { makeStyles, Typography, Button, Paper, Grid, Container, Hidden, useMediaQuery, Theme, useTheme } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, Container, Hidden, useMediaQuery, Theme, useTheme } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
 import RestIcon from '@material-ui/icons/RestaurantMenu';
 import TodayIcon from '@material-ui/icons/Today';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
-import React, { useRef, createRef, useState, Fragment } from 'react';
-import EmailInput from '../client/general/inputs/EmailInput';
-import { useAddMarketingEmail, useGetConsumer } from '../consumer/consumerService';
+import React, { Fragment } from 'react';
+import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
 import MoneyOffIcon from '@material-ui/icons/MoneyOff';
-import { referralFriendAmount, referralSelfAmount, welcomePromoAmount, autoPickPromoAmount, referralMonthDuration } from '../order/promoModel';
-import { activeConfig } from '../config';
-import WithClickToCopy from '../client/general/WithClickToCopy';
+import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
+import Referral from '../client/general/Referral';
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -84,6 +82,11 @@ const useStyles = makeStyles(theme => ({
     minHeight: 400,
     padding: theme.spacing(3),
   },
+  subtitle: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.65rem'
+    },
+  },
   reasons: {
     background: 'none',
   },
@@ -101,17 +104,25 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 135,
     height: 78,
     marginBottom: theme.spacing(1),
+    [theme.breakpoints.down('xs')]: {
+      height: 38,
+    },
   },
   shrinker: {
     [theme.breakpoints.down('xs')]: {
-      fontSize: '2.25rem',
+      fontSize: '2.15rem',
     },
   },
   howIcon: {
     fontSize: 90,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 59,
+    },
   },
-  relaxIcon: {
-    fontSize: 85,
+  howSubtitle: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.25rem',
+    },
   },
   title: {
     paddingBottom: theme.spacing(2)
@@ -121,26 +132,6 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.common.white,
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-  },
-  newsLetterInput: {
-    marginTop: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    display: 'flex',
-    width: '100%',
-    maxWidth: 500,
-    [theme.breakpoints.down('sm')]: {
-      flexDirection: 'column'
-    },
-  },
-  newsletterPaper: {
-    backgroundColor: theme.palette.common.white,
-    width: '60%',
-    paddingBottom: theme.spacing(4),
-    paddingTop: theme.spacing(4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
   },
   emailInput: {
     marginRight: theme.spacing(1),
@@ -158,9 +149,8 @@ const useStyles = makeStyles(theme => ({
     },
     backgroundColor: theme.palette.common.white,    
   },
-  referralText: {
-    backgroundColor: theme.palette.common.white,
-    padding: theme.spacing(4),
+  referralBottom: {
+    marginBottom: theme.mixins.navbar.marginBottom
   }
 }));
 
@@ -191,6 +181,8 @@ const Welcome = withClientApollo(() => {
 
 const HowItWorks = () => {
   const classes = useStyles();
+  // const theme = useTheme();
+  // const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const Content: React.FC<{
     title: string,
     description: string,
@@ -202,7 +194,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={2} md={2}>
+    <Grid item xs={12} sm={12} md={2}>
       <div className={classes.centered}>
         {
           img &&
@@ -215,7 +207,7 @@ const HowItWorks = () => {
         {
           icon && icon
         }
-        <Typography variant='h5'>
+        <Typography variant='h5' className={classes.howSubtitle}>
           {title}
         </Typography>
         <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
@@ -259,7 +251,7 @@ const HowItWorks = () => {
         <Grid item xs={12} sm={1} md={1} />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
-        Questions or Comments? Email us at alvin@orchideats.com to learn more.
+        Questions or Comments? Email us at simon@orchideats.com to learn more.
       </Typography>
       <Link href={howItWorksRoute}>
         <Button variant='outlined' color='primary'>Learn More</Button>
@@ -269,23 +261,13 @@ const HowItWorks = () => {
 };
 
 const Plans = withClientApollo(() => {
-  const [addMarketingEmail] = useAddMarketingEmail();
-  const [isSubbed, setIsSubbed] = useState(false);
-  const validateEmailRef = useRef<() => boolean>();
-  const emailInputRef = createRef<HTMLInputElement>();
-  const onSubscribe = () => {
-    if (!validateEmailRef.current!()) return;
-    const email = emailInputRef.current!.value;
-    addMarketingEmail(email);
-    setIsSubbed(true);
-  }
   const classes = useStyles();
   return (
     <div className={`${classes.plans} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         Choose a Plan
       </Typography>
-      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.subtitle}`}>
         Customize a meal plan to fit your lifestyle. Starting at $9.99 per meal
       </Typography>
       <PlanCards />
@@ -298,38 +280,6 @@ const Plans = withClientApollo(() => {
           SEE MENU
         </Button>
       </Link>
-      <Paper className={classes.newsletterPaper}>
-        <Typography variant='h6'>
-          Schedule Your Meals
-        </Typography>
-        <Typography variant='h6'>
-          sign up for offers, new restaurants and more
-        </Typography>
-        {
-          isSubbed ?
-            <Typography variant='subtitle1'>
-              Thank you!
-            </Typography>
-          :
-            <div className={classes.newsLetterInput}>
-              <EmailInput
-                variant='outlined'
-                className={classes.emailInput}
-                inputRef={emailInputRef}
-                setValidator={(validator: () => boolean) => {
-                  validateEmailRef.current = validator;
-                }}
-              />
-              <Button
-                variant='contained'
-                color='primary'
-                onClick={onSubscribe}
-              >
-                Subscribe
-              </Button>
-            </div>
-        }
-      </Paper>
     </div>
   )
 });
@@ -340,7 +290,7 @@ const Benefits = () => {
     <>
       <Typography
         variant='h4'
-        className={`${classes.verticalMargin} ${classes.shrinker}`}
+        className={`${classes.verticalMargin} ${classes.subtitle}`}
       >
         {title}
       </Typography>
@@ -469,11 +419,11 @@ const Benefits = () => {
     <>
       <Typography
         variant='h2'
-        className={`${classes.largeBottomMargin} ${classes.centered}`}
+        className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}
       >
         Who we are
       </Typography>
-      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.subtitle}`}>
         We believe in connecting the community through food.
       </Typography>
     </>
@@ -513,80 +463,58 @@ const Promotion = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
   const theme = useTheme<Theme>();
+  const router = useRouter();
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
+  const a = router.query.a as string;
+  const p = router.query.p as string;
+  const res = useGetConsumerFromPromo(p);
+  const referralDollars = a ? parseFloat(a) / 100 : 0;
   const consumerData = consumer.data;
   if (consumerData && consumerData.Plan) return null;
-  const autoAmount = (2 * autoPickPromoAmount / 100);
+  const name = res.name;
+  if (name) {
+    const referral = referralDollars * 4 * referralMonthDuration;
+    const fName = name.split(' ')[0].toLowerCase();
+    return (
+      <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
+        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
+          Welcome from {fName.charAt(0).toUpperCase() + fName.slice(1)}!
+        </Typography>
+        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
+          ${referral} off your first month, auto applied at checkout
+        </Typography>
+      </div>
+    )
+  }
   const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
-  const promoAmount = basePromoAmount + autoAmount;
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${promoAmount} off your first month, auto applied at checkout! 
+        ${basePromoAmount} off your first month, auto applied at checkout! 
       </Typography>
       <Typography variant='body2' className={classes.topMargin}>
-        *${(welcomePromoAmount / 100)} off 4 weeks. ${autoAmount} applied on weeks 3 & 4 when you
-        let Orchid pick your meals.
-      </Typography>
-      <Typography variant='body2' className={classes.topMargin}>
-        Skipping or canceling terminates discounts
+        *${(welcomePromoAmount / 100)} off 4 weeks
       </Typography>
     </div>
   );
 });
 
-const Referral = withClientApollo(() => {
+const ReferralWelcome = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
-  const theme = useTheme<Theme>();
   const consumerData = consumer.data;
-  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   if (!consumerData || !consumerData.Plan) return null;
-  const referralLink = `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan.ReferralCode}&a=${referralFriendAmount}`
-  const friendAmount = referralFriendAmount * 4 * referralMonthDuration;
   return (
-    <div className={`${classes.friends} ${classes.centered}`}>
-      <div className={`${classes.welcomeText} ${classes.referralText}`}>
-        <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-          Refer a friend 
-        </Typography>
-        <Typography  variant={isSmAndDown ? 'h6' : 'h4'}>
-          When they checkout with your link
-        </Typography>
-        <WithClickToCopy
-          render={onCopy => 
-            <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.mediumVerticalMargin} onClick={() => onCopy(referralLink)}>
-              <b>
-                {referralLink}
-              </b>
-            </Typography>
-          }
-        />
-        <Typography variant={isSmAndDown ? 'h6' : 'h4'}>
-          Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get ${(friendAmount / 100).toFixed(2)} off
-        </Typography>
-        <Typography variant={isSmAndDown ? 'h6' : 'h4'} className={classes.topMargin}>
-          Friends get another ${(2 * autoPickPromoAmount / 100).toFixed(2)} on the last 2 weeks when they
-          let Orchid pick their meals
-        </Typography>
-        <Typography
-          variant='body2'
-          className={classes.topMargin}
-          color='textSecondary'
-          align='left'
-        >
-          Discount applied in weekly increments over 1 month. Skipping orders or canceling subscriptions will terminate
-          discounts
-        </Typography>
-      </div>
+    <div className={classes.referralBottom}>
+      <Referral />
     </div>
-  );
+  )
 });
 
 const Index = () => {
   return (
     <>
-      <Referral />
+      <ReferralWelcome />
       <Welcome />
       <Promotion />
       <HowItWorks />

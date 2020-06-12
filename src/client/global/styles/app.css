@@ -1,0 +1,4 @@
+/* for the trust seal. id determined by inspection */
+#tl_popupCL1 {
+  z-index: 9999999 !important;
+}

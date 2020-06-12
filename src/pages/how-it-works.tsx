@@ -54,6 +54,16 @@ const useStyles = makeStyles(theme => ({
     },
     backgroundColor: theme.palette.secondary.main,    
   },
+  shrinker: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '2.75rem',
+    },
+  },
+  subtitleShrinker: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.85rem',
+    },
+  },
   potatoes: {
     [theme.breakpoints.down('lg')]: {
       width: 525,
@@ -129,7 +139,7 @@ const TextBlock: React.FC<{title: string, description: string}> = ({ title, desc
   const classes = useStyles();
   return (
     <>
-      <Typography variant='h4' className={classes.mediumBottomMargin}>
+      <Typography variant='h4' className={`${classes.mediumBottomMargin} ${classes.subtitleShrinker}`}>
         {title}
       </Typography>
       <Typography variant='h6' color='textSecondary'>
@@ -212,7 +222,7 @@ const HowItWorks = () => {
   return (
     <>
       <Container maxWidth='lg' className={classes.explainations}>
-        <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+        <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
           How it Works
         </Typography>
         <Grid container>
@@ -264,7 +274,7 @@ const HowItWorks = () => {
       </Container>
       <Grid container className={`${classes.verticalPadding} ${classes.benefits}`}>
         <Grid item xs={12}>
-          <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered}`}>
+          <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
             Benefits
           </Typography>
         </Grid>

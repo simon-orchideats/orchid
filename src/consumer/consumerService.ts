@@ -60,37 +60,6 @@ export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.read
   query: MY_CONSUMER_QUERY
 });
 
-export const useAddMarketingEmail = (): [
-  (email: string) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  }
-] => {
-  type res = { addMarketingEmail: MutationBoolRes };
-  type vars = { email: string }
-  const [mutate, mutation] = useMutation<res, vars>(gql`
-    mutation addMarketingEmail($email: String!) {
-      addMarketingEmail(email: $email) {
-        res
-        error
-      }
-    }
-  `);
-  const addMarketingEmail = (email: string) => {
-    mutate({
-      variables: { email },
-    })
-  }
-  return useMemo(() => [
-    addMarketingEmail,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.addMarketingEmail : undefined,
-    }
-  ], [mutation]);
-}
-
 export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: IConsumer) => {
   const newConsumer = copyWithTypenames(consumer);
   cache.writeQuery<myConsumerRes>({
@@ -216,6 +185,25 @@ export const useGetConsumer = () => {
     loading: res.loading,
     error: res.error,
     data: consumer
+  }
+}
+
+export const useGetConsumerFromPromo = (promoCode: string) => {
+  type consumerFromReferral = { consumerFromReferral: string }
+  const res = useQuery<consumerFromReferral>(gql`
+      query consumerFromReferral($promoCode: ID!) {
+        consumerFromReferral(promoCode: $promoCode)
+      }
+    `, 
+    {
+      skip: !promoCode,
+      variables: { promoCode },
+    }
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    name: res.data?.consumerFromReferral,
   }
 }
 
