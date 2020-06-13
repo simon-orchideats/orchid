@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, Container, Hidden, useMediaQuery, Theme, useTheme } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, Container, Hidden, useMediaQuery, Theme, useTheme, Avatar } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -16,6 +16,26 @@ import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 
 const useStyles = makeStyles(theme => ({
+  avatar: {
+    marginTop: -10,
+    marginLeft: -50,
+    position: 'absolute',
+    height: 75,
+    width: 75,
+    [theme.breakpoints.down('md')]: {
+      height: 60,
+      width: 60,
+      marginLeft: -45,
+    },
+    [theme.breakpoints.down(500)]: {
+      height: 40,
+      width: 40,
+      marginLeft: -25,
+    },
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    },
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -82,9 +102,109 @@ const useStyles = makeStyles(theme => ({
     minHeight: 400,
     padding: theme.spacing(3),
   },
+  testimonialsContainer: {
+    [theme.breakpoints.down(1450)]: {
+      paddingRight: theme.spacing(9),
+    },
+    [theme.breakpoints.up(1450)]: {
+      paddingRight: theme.spacing(18)
+    },
+    [theme.breakpoints.down('lg')]: {
+      backgroundImage: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/peach.png)',
+      paddingRight: theme.spacing(4),
+      alignItems: 'center',
+    },
+    backgroundImage: `url(/home/peach.png)`,
+    backgroundPosition: '20% 50%',
+    backgroundSize: 'cover',
+    display: 'flex',
+    alignItems: 'flex-end',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    minHeight: 600,
+    padding: theme.spacing(4),
+    marginBottom: theme.spacing(3),
+  },
+  testimonial: {
+    textAlign: 'left',
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+    paddingBottom: theme.spacing(3),
+    paddingTop: theme.spacing(3),
+    maxHeight: 150,
+    maxWidth: 350,
+    borderRadius: 30,
+    borderStyle: 'solid',
+    alignItems: 'flex-start',
+    backgroundColor: theme.palette.common.white,
+    borderColor: theme.palette.text.primary,
+    [theme.breakpoints.down('md')]: {
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      paddingTop: theme.spacing(2),
+      maxHeight: 200,
+    },
+  },
+  testimonials: {
+    display: 'flex',
+    [theme.breakpoints.down('md')]: {
+      alignItems: 'center',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
+  },
   subtitle: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.65rem'
+    },
+  },
+  testimonialHeader: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  headerAvatar: {
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.up('sm')]: {
+      display: 'none'
+    },
+  },
+  t1: {
+    display: 'flex',
+    alignItems: 'center',
+    [theme.breakpoints.down('md')]: {
+      marginLeft: -55,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+    },
+  },
+  t2: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: 210,
+    marginLeft: -60,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginLeft: 80
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+    },
+  },
+  t3: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: -100,
+    marginBottom: 200,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginBottom: 0,
+      marginLeft: -60,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
     },
   },
   reasons: {
@@ -109,6 +229,9 @@ const useStyles = makeStyles(theme => ({
     },
   },
   shrinker: {
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2.75rem',
+    },
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.15rem',
     },
@@ -133,13 +256,6 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
-  emailInput: {
-    marginRight: theme.spacing(1),
-    [theme.breakpoints.down('sm')]: {
-      marginRight: 0,
-      marginBottom: theme.spacing(2),
-    },
-  },
   bold: {
     fontWeight: 600,
   },
@@ -154,7 +270,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Welcome = withClientApollo(() => {
+const Welcome = () => {
   const classes = useStyles();
   const onClick = () => {
     Router.push(menuRoute);
@@ -177,7 +293,7 @@ const Welcome = withClientApollo(() => {
       </div>
     </div>
   );
-});
+};
 
 const HowItWorks = () => {
   const classes = useStyles();
@@ -418,7 +534,7 @@ const Benefits = () => {
   const title = (
     <>
       <Typography
-        variant='h2'
+        variant='h3'
         className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}
       >
         Who we are
@@ -511,6 +627,64 @@ const ReferralWelcome = withClientApollo(() => {
   )
 });
 
+const Testimonials = () => {
+  const classes = useStyles();
+  return (
+    <div className={`${classes.testimonialsContainer}`}>
+      <div>
+        <Typography variant='h3' className={`${classes.largeBottomMargin} ${classes.shrinker} ${classes.centered}`}>
+          What People Say
+        </Typography>
+        <div className={classes.testimonials}>
+          <div className={classes.t1}>
+            <Avatar className={classes.avatar} src='/home/alma.jpg'/>
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/alma.jpg'/>
+                <Typography variant='body1' className={classes.bold}>
+                  Alma Rey
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1' >
+                Big gracias to @Bizzabo. We’re running all ticketing through their awesome platform for our event.
+                #cmxsummit
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t2}>
+            <Avatar className={classes.avatar} src='/home/brandon.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
+                <Typography variant='body1' className={classes.bold}>
+                  Brandon
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1' >
+                @JLSokoloski @Boomset  I love my @Bizzabo :) Easy platform to use, fantasic staff and nothing but great results! 
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t3}>
+            <Avatar className={classes.avatar} src='/home/arv.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
+                <Typography variant='body1' className={classes.bold}>
+                  Arvinder
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1'>
+                @Bizzabo It’s like you read my mind with the new Session feature. Thank you!
+              </Typography>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Index = () => {
   return (
     <>
@@ -520,6 +694,7 @@ const Index = () => {
       <HowItWorks />
       <Plans />
       <Benefits />
+      <Testimonials />
       <Footer />
     </>
   )
