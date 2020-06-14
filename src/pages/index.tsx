@@ -661,7 +661,7 @@ const Testimonials = () => {
                 </Typography>
               </div>
               <Typography color='textSecondary' variant='body1' >
-                @JLSokoloski @Boomset  I love my @Bizzabo :) Easy platform to use, fantasic staff and nothing but great results! 
+                Other apps cost way to much. Even small orders. The delivery and service fees add up. This is why I use Orchid.
               </Typography>
             </div>
           </div>
@@ -675,7 +675,7 @@ const Testimonials = () => {
                 </Typography>
               </div>
               <Typography color='textSecondary' variant='body1'>
-                @Bizzabo It’s like you read my mind with the new Session feature. Thank you!
+                It's so convenient. I don't have to think about food.
               </Typography>
             </div>
           </div>
