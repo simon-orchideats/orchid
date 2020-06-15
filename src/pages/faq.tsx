@@ -96,13 +96,10 @@ const faqs = () => {
           <Qa
             q='How fresh is the food?'
             a="Orchid meals are cooked the same day and our meal plans are designed to be eaten over the week. While we
-            understand that freshness is a concern for prolonged storage, we want to provide a service of comfort and
-            savings. Find comfort in having meal plans with food that’s always ready to eat. Find savings in time not
-            spent choosing what to order or cook...and then waiting for delivery or prepping, cooking, and cleaning.
-            Find savings in your budget with bulk savings, free delivery, and no extra fees. If you still want a fresh
-            meal every day, then nothing beats the freshness of expensive, on-demand delivery or more importantly,
-            dining-in. But if you appreciate the comfort of always having cooked meals at home or the flexibility of
-            eating whenever and however you want, then Orchid is the perfect fit."
+            understand that freshness is a concern when storing food, you gain always-ready meals and bulk savings from
+            a plan. If freshness is a priority then nothing beats the freshness of on-demand delivery or more
+            importantly, dining-in. But if you appreciate the comfort of always having cooked meals at home or the
+            flexibility of eating whenever and however you want, then Orchid is the perfect fit."
           />
           <Qa
             q='How many restaurants can I pick?'

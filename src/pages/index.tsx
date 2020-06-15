@@ -371,7 +371,7 @@ const HowItWorks = () => {
         />
         <Content
           title='Subscribe'
-          description='Pick new meals each or let us do it for you'
+          description='Pick meals each week or let us pick'
           icon={<WeekendIcon className={classes.howIcon} />}
         />
       </Grid>
@@ -522,8 +522,8 @@ const Benefits = () => {
     {
       title: 'Save 26-38%',
       description: `
-        Cooking or ordering a single meal is inefficient and expensive. Our meal plans give bulk savings with the 12 meal
-        plan starting at $9.99 per meal. Compare with other apps at $16.00 per meal after fees.
+        Cooking or ordering a single meal is inefficient and expensive. Our meal plans give bulk savings with the 4 meal
+        plan starting at $11.89 per meal. Compare with other apps at $16.00 per meal after fees.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true

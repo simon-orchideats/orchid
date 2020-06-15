@@ -180,7 +180,7 @@ const delivery = () => {
                   1. Choose weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  Meal plans can be edited/skipped up to 2 days before each scheduled delivery.
+                  Meal plans can be edited/skipped up to 2 days before each scheduled delivery
                 </Typography>
                 <Typography variant='body1' color='textPrimary'>
                   <b>
@@ -220,9 +220,6 @@ const delivery = () => {
           <ExpansionPanelSummary>
             <div>
               <Typography variant='h4' color='primary'>
-                {
-                  isUpdating ? `2. Schedule meals for ${startDate} - ${endDate}` : '2. Schedule meals for the first week'
-                }
                 {step2Title}
               </Typography>
               {
@@ -232,7 +229,7 @@ const delivery = () => {
                 </Typography>
                 :
                 <Typography variant='body1' color='textSecondary'>
-                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime.
+                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime
                 </Typography>
               }
               {

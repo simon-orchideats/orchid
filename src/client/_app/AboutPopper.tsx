@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography, Popover } from '@material-ui/core';
 import Router from 'next/router'
 import { howItWorksRoute } from '../../pages/how-it-works';
-import { plansRoute } from '../../pages/plans';
 import { faqsRoute } from '../../pages/faq';
 import { referralPageRoute } from '../../pages/get-20';
 
@@ -48,14 +47,6 @@ const AboutPopper: React.FC<{
       }}
     >
       <Paper className={classes.paper}>
-        <div className={classes.row} onClick={() => {
-          Router.push(plansRoute);
-          onClose();
-        }}>
-          <Typography variant='button'>
-            Plans
-          </Typography>
-        </div>
         <div className={classes.row} onClick={() => {
           Router.push(howItWorksRoute);
           onClose();

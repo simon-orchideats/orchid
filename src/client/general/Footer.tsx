@@ -5,7 +5,6 @@ import { faqsRoute } from '../../pages/faq';
 import { termsRoute } from '../../pages/terms';
 import FacebookIcon from '@material-ui/icons/Facebook';
 import InstagramIcon from '@material-ui/icons/Instagram';
-import { plansRoute } from '../../pages/plans';
 import { menuRoute } from '../../pages/menu';
 import { howItWorksRoute } from '../../pages/how-it-works';
 
@@ -81,14 +80,6 @@ const Footer = () => {
                 className={classes.link}
               >
                 How it works
-              </Typography>
-            </Link>
-            <Link href={plansRoute}>
-              <Typography
-                variant='button'
-                className={classes.link}
-              >
-                Plans
               </Typography>
             </Link>
             <Link href={faqsRoute}>

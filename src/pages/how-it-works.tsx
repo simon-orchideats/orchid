@@ -286,7 +286,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Enjoy'
-            description='Eat your meal plan at your own pace. Find comfort having food that’s always ready.'
+            description='Eat your meal plan at your own pace. Find comfort in having food that’s always ready.'
             dividerTitle='Step'
             dividerSubtitle='3'
             img='how-it-works/deliver.jpg'
