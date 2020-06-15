@@ -636,17 +636,16 @@ const Testimonials = () => {
         </Typography>
         <div className={classes.testimonials}>
           <div className={classes.t1}>
-            <Avatar className={classes.avatar} src='/home/alma.jpg'/>
+            <Avatar className={classes.avatar} src='/home/josh.jpg'/>
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/alma.jpg'/>
+                <Avatar className={classes.headerAvatar} src='/home/josh.jpg'/>
                 <Typography variant='body1' className={classes.bold}>
-                  Alma Rey
+                  Josh
                 </Typography>
               </div>
               <Typography color='textSecondary' variant='body1' >
-                Big gracias to @Bizzabo. We’re running all ticketing through their awesome platform for our event.
-                #cmxsummit
+                Orchid is a no brainer. Cheaper and more convenient than ordering everyday.
               </Typography>
             </div>
           </div>
@@ -660,7 +659,7 @@ const Testimonials = () => {
                 </Typography>
               </div>
               <Typography color='textSecondary' variant='body1' >
-                Other apps cost way to much. Even small orders. The delivery and service fees add up. This is why I use Orchid.
+                Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid.
               </Typography>
             </div>
           </div>
