@@ -140,6 +140,14 @@ const delivery = () => {
     setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     setExpanded('assignments');
   }
+  let step2Title = `2. Schedule meals for ${startDate} - ${endDate}`;
+  if (!isUpdating) {
+    if (schedules.length === 1) {
+      step2Title = '2. Confirm meals';
+    } else {
+      step2Title = '2. Choose meals for each delivery';
+    }
+  }
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
@@ -163,17 +171,21 @@ const delivery = () => {
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   These days are only for this order. We disabled days too far past your billing day. If a restaurant is
-                  closed, we'll deliver the next day
+                  closed, we'll notify you before deliver the next day
                 </Typography>
               </div>
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Choose subscription delivery dates
+                  1. Choose weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  Orchid will deliver meals at these times each week. If a restaurant is closed, we'll deliver the next
-                  day
+                  Meal plans can be edited/skipped up to 2 days before each scheduled delivery.
+                </Typography>
+                <Typography variant='body1' color='textPrimary'>
+                  <b>
+                    If a restaurant is closed, we'll notify you and deliver the next day
+                  </b>
                 </Typography>
               </div>
             }
@@ -211,6 +223,7 @@ const delivery = () => {
                 {
                   isUpdating ? `2. Schedule meals for ${startDate} - ${endDate}` : '2. Schedule meals for the first week'
                 }
+                {step2Title}
               </Typography>
               {
                 isUpdating ?
@@ -219,8 +232,7 @@ const delivery = () => {
                 </Typography>
                 :
                 <Typography variant='body1' color='textSecondary'>
-                  Orchid will automatically pick <i>next week's</i> meals based on your schedule. You can
-                  always edit 2 days prior to your delivery.
+                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime.
                 </Typography>
               }
               {

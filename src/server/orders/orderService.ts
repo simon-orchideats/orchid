@@ -1,4 +1,4 @@
-import { TagTypes, Tag } from './../../rest/tagModel';
+import { Tag } from './../../rest/tagModel';
 import { IDiscount, IWeeklyDiscount, WeeklyDiscount } from './../../order/discountModel';
 import { referralFriendAmount, referralSelfAmount, ReferralSource, ReferralPromo, referralMonthDuration, oncePromoKey } from './../../order/promoModel';
 import { MutationPromoRes, IPromo, EPromo } from '../../order/promoModel';
@@ -9,7 +9,7 @@ import { refetchAccessToken } from '../../utils/auth'
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress, Address } from './../../place/addressModel';
 import { EOrder, IOrder, IMealPrice, MealPrice, Order } from './../../order/orderModel';
-import { IMeal } from './../../rest/mealModel';
+import { Meal } from './../../rest/mealModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { EConsumer, IConsumerProfile, Consumer, Permissions } from './../../consumer/consumerModel';
 import { MealPlan, MIN_DAYS_AHEAD, ConsumerPlan } from './../../consumer/consumerPlanModel';
@@ -35,27 +35,6 @@ const PROMO_INDEX = 'promos';
 export const getAdjustmentDesc = (fromPlanCount: number, toPlanCount: number, date: string) =>
   `Plan adjustment from ${fromPlanCount} to ${toPlanCount} for week of ${date}`
 export const adjustmentDateFormat = 'M/D/YY';
-
-const doesMealContainCuisines = (meal: IMeal, cuisines: string[]) => {
-  for (let i = 0; i < cuisines.length; i++) {
-    if (meal.tags.find(t => t.type === TagTypes.Cuisine && t.name === cuisines[i])) return true;
-  }
-  return false;
-}
-
-const chooseRandomMeals = (
-  menu: IMeal[],
-  mealCount: number,
-  restId: string,
-  restName: string,
-  taxRate: number,
-  cuisines: string[]
-): IDeliveryMeal[] => {
-  const chooseRandomly = getItemChooser<IMeal>(menu, m => m.isActive && doesMealContainCuisines(m, cuisines));
-  const meals: IMeal[] = [];
-  for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
-  return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
-}
 
 // place this fn in here instead of in Promo model so that it stays serverside and client cannot see how we
 // check for dupe promo redemptions
@@ -766,7 +745,7 @@ class OrderService {
           const randomRest = chooseRandomRest();
           const eRest = randomRest.rest;
           Cart.addMealsToExistingDeliveryMeals(
-            chooseRandomMeals(
+            Meal.chooseRandomMeals(
               eRest.menu,
               1,
               randomRest._id,
@@ -794,7 +773,7 @@ class OrderService {
       for (let i = 0; i < numRemainingMeals; i++) {
         const randomRest = chooseRandomRest();
         Cart.addMealsToExistingDeliveryMeals(
-          chooseRandomMeals(
+          Meal.chooseRandomMeals(
             randomRest.rest.menu,
             1,
             randomRest._id,

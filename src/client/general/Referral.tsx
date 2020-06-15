@@ -52,7 +52,6 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'left',
   },
   friends: {
-    color: 'white',
     background: 'url(/home/friends.png)',
     backgroundSize: 'cover',
     height: '40vh',
@@ -69,7 +68,6 @@ const useStyles = makeStyles(theme => ({
     fontWeight: 600,
     backgroundColor: theme.palette.common.white,
     padding: 16,
-    color: theme.palette.common.black,
     borderRadius: 40,
     paddingLeft: 24,
     paddingRight: 24,

@@ -3,6 +3,7 @@ import Faq from '../client/general/CommonQuestions';
 import Link from 'next/link';
 import { menuRoute } from './menu';
 import Footer from '../client/general/Footer';
+import CheckIcon from '@material-ui/icons/Check';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -25,6 +26,15 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4),
   },
+  gridBox: {
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(2)
+    },
+    padding: theme.spacing(3),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
   mediumBottomMargin: {
     marginBottom: theme.spacing(2),
   },
@@ -38,9 +48,11 @@ const useStyles = makeStyles(theme => ({
   largeBottomPadding: {
     paddingBottom: theme.spacing(8),
   },
-  verticalPadding: {
+  benefitsTitle: {
     paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
+  },
+  padding: {
+    padding: theme.spacing(4),
   },
   largeBottomMargin: {
     marginBottom: theme.spacing(4),
@@ -103,6 +115,19 @@ const useStyles = makeStyles(theme => ({
     right: 0,
     position: 'absolute',
   },
+  benefitBox: {
+    maxWidth: 300
+  },
+  check: {
+    paddingRight: theme.spacing(1),
+    color: 'green',
+  },
+  row: {
+    [theme.breakpoints.down('xs')]: {
+      justifyContent: 'center',
+    },
+    display: 'flex',
+  },
   sandwich: {
     [theme.breakpoints.down('lg')]: {
       width: 375,
@@ -123,13 +148,24 @@ const BenefitTextBox: React.FC<{title: string, description: string}> = ({ title,
   const classes = useStyles();
   return (
     <>
-      <Grid item xs={12} sm={3} className={classes.mediumBottomMargin}>
-        <Typography variant='h6' className={classes.smallBottomMargin}>
-          {title}
-        </Typography>
-        <Typography variant='body1'>
-          {description}
-        </Typography>
+      <Grid
+        item
+        xs={12}
+        sm={6}
+        md={4}
+        className={classes.gridBox}
+      >
+        <div className={classes.benefitBox}>
+          <div className={classes.row}>
+            <CheckIcon fontSize='large' className={classes.check} />
+            <Typography variant='h6' className={classes.smallBottomMargin}>
+              {title}
+            </Typography>
+          </div>
+          <Typography variant='body1'>
+            {description}
+          </Typography>
+        </div>
       </Grid>
     </>
   )
@@ -227,9 +263,9 @@ const HowItWorks = () => {
         </Typography>
         <Grid container>
           <Explanation
-            title='Pick the meal plan'
-            description='Subscribe and save! Choose any number of meals per week to fit your lifestyle. Need to cancel, 
-            change menus, or skip a week? Not a problem.'
+            title="Mix n' Match"
+            description='Pick meals from different restaurants to build your weekly meal plan. Everyone gets what they
+            want.'
             dividerTitle='Step'
             dividerSubtitle='1'
             img='how-it-works/burgers.jpg'
@@ -238,9 +274,9 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Pick the menu'
-            description="Like variety? Pick a set of customized meals from a variety of your favorite local restaurants.
-            Forgot to choose next weeks menu? No worries. We'll pick a new restaurant, personalized for you."
+            title='Set Delivery'
+            description="Tell us what day and time you want your meals. We confirm your exact delivery ETA a day in
+            advance. No more waiting and wondering when you get to eat."
             dividerTitle='Step'
             dividerSubtitle='2'
             img='how-it-works/chef.jpg'
@@ -249,9 +285,8 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Set delivery time'
-            description='Know exactly when your food arrives, no more unpredictable delivery times. Every meal is cooked
-            the same day and delivered exactly when you want it.'
+            title='Enjoy'
+            description='Eat your meal plan at your own pace. Find comfort having food that’s always ready.'
             dividerTitle='Step'
             dividerSubtitle='3'
             img='how-it-works/deliver.jpg'
@@ -260,9 +295,9 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Enjoy'
-            description='Enjoy the meal as intended, fresh from the kitchen. Never frozen. No wasteful packaging. Just
-            food. Just eat.'
+            title='Subscribe'
+            description='Pick meals each week in advance or let us choose based on your favorites. Skip a week or cancel
+            anytime with ease. '
             dividerTitle='Step'
             dividerSubtitle='4'
             img='how-it-works/eating.jpg'
@@ -272,35 +307,41 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
         </Grid>
       </Container>
-      <Grid container className={`${classes.verticalPadding} ${classes.benefits}`}>
-        <Grid item xs={12}>
-          <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
-            Benefits
-          </Typography>
+      <div className={classes.benefits}>
+        <Typography variant='h2' className={`${classes.benefitsTitle} ${classes.centered} ${classes.shrinker}`}>
+          Benefits
+        </Typography>
+        <Grid
+          container
+          className={classes.padding}
+        >
+          <BenefitTextBox
+            title='26-38% Off'
+            description='Enjoy affordable meal plans from restaurants via bulk pricing, free delivery, and no service fees.'
+          />
+          <BenefitTextBox
+            title='Unrivaled Variety'
+            description='Pick meals for your order from as many different restaurants and cuisines as you want.'
+          />
+          <BenefitTextBox
+            title='Reliable, Exact Delivery'
+            description='Know exactly when you get to eat. We confirm exact ETA’s for all your deliveries in advance.'
+          />
+          <BenefitTextBox
+            title='Subscription'
+            description='Enjoy weekly meals with ease. Just pick in advance or let us choose based on your favorites.'
+          />
+          <BenefitTextBox
+            title='Convenient'
+            description='Get your food, ready to eat, all at once. No cooking. No cleanup. Just eat.'
+          />
+          <BenefitTextBox
+            title='Sustainable'
+            description='Other meal subscriptions come from warehouse kitchens, cross-country trucking, and ice packs.
+            Instead, our weekly meal plans are cooked same-day fresh from down the street.'
+          />
         </Grid>
-        <Grid item xs={2} />
-        <BenefitTextBox
-          title='Sustainable'
-          description='Responsibly sourced food from local restaurants.'
-        />
-        <Grid item xs={2} />
-        <BenefitTextBox
-          title='Affordable'
-          description='Buy in bulk and save.'
-        />
-        <Grid item xs={2} />
-        <Grid item xs={2} />
-        <BenefitTextBox
-          title='Convenient'
-          description='Just reheat and eat. Customize your delivery schedule to suit you.'
-        />
-        <Grid item xs={2} />
-        <BenefitTextBox
-          title='Variety'
-          description='Ultimate variety from an endless collection of restaurants.'
-        />
-        <Grid item xs={2} />
-      </Grid>
+      </div>
       <Faq />
       <Paper elevation={0} className={`${classes.largeBottomPadding} ${classes.centered} ${classes.footer}`}>
         <Link href={menuRoute}>

@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, Container, Hidden, useMediaQuery, Theme, useTheme } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, Container, Hidden, useMediaQuery, Theme, useTheme, Avatar } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -11,11 +11,30 @@ import Footer from '../client/general/Footer';
 import React, { Fragment } from 'react';
 import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
-import MoneyOffIcon from '@material-ui/icons/MoneyOff';
 import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 
 const useStyles = makeStyles(theme => ({
+  avatar: {
+    marginTop: -10,
+    marginLeft: -50,
+    position: 'absolute',
+    height: 75,
+    width: 75,
+    [theme.breakpoints.down('md')]: {
+      height: 60,
+      width: 60,
+      marginLeft: -45,
+    },
+    [theme.breakpoints.down(500)]: {
+      height: 40,
+      width: 40,
+      marginLeft: -25,
+    },
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    },
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -82,9 +101,109 @@ const useStyles = makeStyles(theme => ({
     minHeight: 400,
     padding: theme.spacing(3),
   },
+  testimonialsContainer: {
+    [theme.breakpoints.down(1450)]: {
+      paddingRight: theme.spacing(9),
+    },
+    [theme.breakpoints.up(1450)]: {
+      paddingRight: theme.spacing(18)
+    },
+    [theme.breakpoints.down('lg')]: {
+      backgroundImage: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/peach.png)',
+      paddingRight: theme.spacing(4),
+      alignItems: 'center',
+    },
+    backgroundImage: `url(/home/peach.png)`,
+    backgroundPosition: '20% 50%',
+    backgroundSize: 'cover',
+    display: 'flex',
+    alignItems: 'flex-end',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    minHeight: 600,
+    padding: theme.spacing(4),
+    marginBottom: theme.spacing(3),
+  },
+  testimonial: {
+    textAlign: 'left',
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+    paddingBottom: theme.spacing(3),
+    paddingTop: theme.spacing(3),
+    maxHeight: 150,
+    maxWidth: 350,
+    borderRadius: 30,
+    borderStyle: 'solid',
+    alignItems: 'flex-start',
+    backgroundColor: theme.palette.common.white,
+    borderColor: theme.palette.text.primary,
+    [theme.breakpoints.down('md')]: {
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      paddingTop: theme.spacing(2),
+      maxHeight: 200,
+    },
+  },
+  testimonials: {
+    display: 'flex',
+    [theme.breakpoints.down('md')]: {
+      alignItems: 'center',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
+  },
   subtitle: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.65rem'
+    },
+  },
+  testimonialHeader: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  headerAvatar: {
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.up('sm')]: {
+      display: 'none'
+    },
+  },
+  t1: {
+    display: 'flex',
+    alignItems: 'center',
+    [theme.breakpoints.down('md')]: {
+      marginLeft: -55,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+    },
+  },
+  t2: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: 210,
+    marginLeft: -60,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginLeft: 80
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+    },
+  },
+  t3: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: -100,
+    marginBottom: 200,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginBottom: 0,
+      marginLeft: -60,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
     },
   },
   reasons: {
@@ -109,6 +228,9 @@ const useStyles = makeStyles(theme => ({
     },
   },
   shrinker: {
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2.75rem',
+    },
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.15rem',
     },
@@ -133,13 +255,6 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
-  emailInput: {
-    marginRight: theme.spacing(1),
-    [theme.breakpoints.down('sm')]: {
-      marginRight: 0,
-      marginBottom: theme.spacing(2),
-    },
-  },
   bold: {
     fontWeight: 600,
   },
@@ -154,7 +269,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Welcome = withClientApollo(() => {
+const Welcome = () => {
   const classes = useStyles();
   const onClick = () => {
     Router.push(menuRoute);
@@ -166,18 +281,35 @@ const Welcome = withClientApollo(() => {
           Your week, catered.
         </Typography>
         <Typography variant='h4' className={classes.title}>
-          redefine the way you eat
+          A meal plan subscription
         </Typography>
-        <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Weekly meal subscriptions from local restaurants starting at $9.99
+        <Typography variant='subtitle1'>
+          Mix n’ match meals from your favorite restaurants at one flat price
         </Typography>
+        <Grid container className={classes.title}>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • Free Delivery
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • No Service Fees
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • Save 26-38%
+            </Typography>
+          </Grid>
+        </Grid>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
         </Button>
       </div>
     </div>
   );
-});
+};
 
 const HowItWorks = () => {
   const classes = useStyles();
@@ -194,7 +326,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={12} md={2}>
+    <Grid item xs={12} sm={12} md={3}>
       <div className={classes.centered}>
         {
           img &&
@@ -222,33 +354,26 @@ const HowItWorks = () => {
         How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Grid item xs={12} sm={1} md={1} />
         <Content
-          title='Mix and Match'
-          description='Pick meals from any restaurant'
+          title="Mix n' Match"
+          description='Pick meals from different restaurant'
           icon={<RestIcon className={classes.howIcon} />}
         />
         <Content
-          title='Affordable'
-          description='Save 26-38% vs other apps'
-          icon={<MoneyOffIcon className={classes.howIcon} />}
-        />
-        <Content
           title='Save time'
-          description='Tell us when to deliver'
+          description='Tell us a time and day to deliver'
           icon={<TodayIcon className={classes.howIcon}/>}
         />
         <Content
-          title='Flexible'
+          title='Enjoy'
           description='Eat now, share, or save for later'
           img='home/microwave.png'
         />
         <Content
-          title='Relax'
-          description='Pick new meals or let us do it for you'
+          title='Subscribe'
+          description='Pick new meals each or let us do it for you'
           icon={<WeekendIcon className={classes.howIcon} />}
         />
-        <Grid item xs={12} sm={1} md={1} />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
         Questions or Comments? Email us at simon@orchideats.com to learn more.
@@ -377,19 +502,10 @@ const Benefits = () => {
 
   const explanations = [
     {
-      title: 'Neighborhood food',
-      description: `
-        Food tastes better when cooked by somone you know. Ditch cross-country shipments, ice packs, and warehouse cooks
-        from other meal plans. We deliver meals same-day fresh from local restaurants down the street.
-      `,
-      img: 'home/rest.jpeg',
-      imgLeft: false,
-    },
-    {
       title: 'Come home to a warm meal',
       description: `
-      Few things express love like coming home to a warm meal after a long day. No more waiting for a delivery or
-      stressing over what to cook. Enjoy a meal right away.
+      Few things express love like coming home to a warm meal after a long day. Find comfort in having food that's always
+      ready. No more stressing over what to cook or debating what to order. Enjoy a meal right away.
       `,
       img: '/home/sharing.jpeg',
       imgLeft: true
@@ -398,7 +514,7 @@ const Benefits = () => {
       title: 'No service charge, ever',
       description: `
         There's no service fee when buying in-store, so why charge one online? Neighbors don't nickle and dime each
-        other, so neither do we. Let's redefine ordering food online together.
+        other, so neither do we. Let's redefine ordering food together.
       `,
       img: 'home/trade.jpg',
       imgLeft: false
@@ -406,9 +522,8 @@ const Benefits = () => {
     {
       title: 'Save 26-38%',
       description: `
-        Cooking 1 meal is inefficient. That's why we offer meal plans over single
-        meals. You get bulk savings and a free weekly delivery. Save with each meal at $9.99 vs $16.00 after fees on
-        other food apps.
+        Cooking or ordering a single meal is inefficient and expensive. Our meal plans give bulk savings with the 12 meal
+        plan starting at $9.99 per meal. Compare with other apps at $16.00 per meal after fees.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
@@ -418,7 +533,7 @@ const Benefits = () => {
   const title = (
     <>
       <Typography
-        variant='h2'
+        variant='h3'
         className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}
       >
         Who we are
@@ -490,10 +605,10 @@ const Promotion = withClientApollo(() => {
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${basePromoAmount} off your first month, auto applied at checkout! 
+        Get ${basePromoAmount} off! Limited time only
       </Typography>
       <Typography variant='body2' className={classes.topMargin}>
-        *${(welcomePromoAmount / 100)} off 4 weeks
+        Promotion over your first month, auto applied at checkout
       </Typography>
     </div>
   );
@@ -511,6 +626,63 @@ const ReferralWelcome = withClientApollo(() => {
   )
 });
 
+const Testimonials = () => {
+  const classes = useStyles();
+  return (
+    <div className={`${classes.testimonialsContainer}`}>
+      <div>
+        <Typography variant='h3' className={`${classes.largeBottomMargin} ${classes.shrinker} ${classes.centered}`}>
+          What People Say
+        </Typography>
+        <div className={classes.testimonials}>
+          <div className={classes.t1}>
+            <Avatar className={classes.avatar} src='/home/josh.jpg'/>
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/josh.jpg'/>
+                <Typography variant='body1' className={classes.bold}>
+                  Josh
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1' >
+                Orchid is a no brainer. Cheaper and more convenient than ordering everyday.
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t2}>
+            <Avatar className={classes.avatar} src='/home/brandon.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
+                <Typography variant='body1' className={classes.bold}>
+                  Brandon
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1' >
+                Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid.
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t3}>
+            <Avatar className={classes.avatar} src='/home/arv.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
+                <Typography variant='body1' className={classes.bold}>
+                  Arvinder
+                </Typography>
+              </div>
+              <Typography color='textSecondary' variant='body1'>
+                It's so convenient. I don't have to think about food.
+              </Typography>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Index = () => {
   return (
     <>
@@ -520,6 +692,7 @@ const Index = () => {
       <HowItWorks />
       <Plans />
       <Benefits />
+      <Testimonials />
       <Footer />
     </>
   )

@@ -11,6 +11,9 @@ const useStyles = makeStyles(theme => ({
   suggestion: {
     color: theme.palette.warning.main,
   },
+  summary: {
+    whiteSpace: 'pre-line',
+  },
   button: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
@@ -96,7 +99,11 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             !hideNext &&
             <div className={classes.bottom}>
               {meals}
-              <Typography variant='body1' color='primary'>
+              <Typography
+                variant='body1'
+                color='primary'
+                className={classes.summary}
+              >
                 {summary}
               </Typography>
               <Button

@@ -1,5 +1,15 @@
-import { ITag, Tag } from './tagModel';
+import { ITag, Tag, TagTypes } from './tagModel';
 import { PlanName } from './../plan/planModel';
+import { IDeliveryMeal } from '../order/deliveryModel';
+import { getItemChooser } from '../utils/utils';
+import { Cart } from '../order/cartModel';
+
+const doesMealContainCuisines = (meal: IMeal, cuisines: string[]) => {
+  for (let i = 0; i < cuisines.length; i++) {
+    if (meal.tags.find(t => t.type === TagTypes.Cuisine && t.name === cuisines[i])) return true;
+  }
+  return false;
+}
 
 export interface IOptionGroup {
   readonly names: string[]
@@ -104,5 +114,23 @@ export class Meal implements IMeal {
       addonGroups: meal.addonGroups.map(ag => AddonGroup.getICopy(ag)),
       optionGroups: meal.optionGroups.map(og => OptionGroup.getICopy(og))
     }
+  }
+
+  static chooseRandomMeals(
+    menu: IMeal[],
+    mealCount: number,
+    restId: string,
+    restName: string,
+    taxRate: number,
+    cuisines?: string[]
+  ): IDeliveryMeal[] {
+    const filter = cuisines ?
+      (m: IMeal) => m.isActive && doesMealContainCuisines(m, cuisines)
+    :
+      (m: IMeal) => m.isActive
+    const chooseRandomly = getItemChooser<IMeal>(menu, filter);
+    const meals: IMeal[] = [];
+    for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
+    return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
   }
 }

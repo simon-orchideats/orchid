@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Divider, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button } from "@material-ui/core";
 import { useGetCart } from "../global/state/cartState";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
@@ -16,6 +16,7 @@ import { promoDurations } from "../../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
+    marginTop: theme.spacing(2),
     paddingBottom: theme.spacing(1),
   },
   paddingBottom: {
@@ -24,10 +25,6 @@ const useStyles = makeStyles(theme => ({
   row: {
     display: 'flex',
     justifyContent: 'space-between',
-  },
-  divider: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
   },
   hint: {
     color: theme.palette.text.hint,
@@ -119,49 +116,6 @@ const CheckoutCart: React.FC<props> = ({
           {applyPromoButton}
         </>
       }
-      <Typography
-        variant='h6'
-        color='primary'
-        className={classes.title}
-      >
-        Order summary
-      </Typography>
-      {
-        cart.DonationCount > 0 &&
-        <CartMealGroup
-          img='/heartHand.png'
-          name='Donation'
-          quantity={cart.DonationCount}
-        />
-      }
-      {
-        cart.Deliveries.map((d, i) => (
-          <div key={i}>
-            <Typography variant='h6' className={classes.paddingBottom}>
-              {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
-            </Typography>
-            {Object.values(restMealsPerDelivery[i]).map((restMeal, j) => (
-              <div key={i + ',' + j + '-' + restMeal.meals[0].RestId}>
-                <Typography variant='subtitle1' className={classes.paddingBottom}>
-                  {restMeal.meals[0].RestName}
-                </Typography>
-                {
-                  restMeal.meals.map(m => 
-                    <CartMealGroup
-                      key={m.IdKey}
-                      choices={m.Choices}
-                      name={m.Name}
-                      img={m.Img}
-                      quantity={m.Quantity}
-                    />
-                  )
-                }
-              </div>
-            ))}
-          </div>
-        )) 
-      }
-      <Divider className={classes.divider} />
       {/* necessary div so that the rows dont reduce in height in safari */}
       <div>
         <div className={classes.row}>
@@ -240,14 +194,55 @@ const CheckoutCart: React.FC<props> = ({
           </>
         }
         <Typography variant='subtitle2' className={classes.paddingBottom}>
-          Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. If you're unsatisfied, email us at
-          simon@orchideats.com or call (609) 513-8166 and we'll refund your first week.
+          Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. Satisfaction is guaranteed so contact us
+          at simon@orchideats.com or call (609) 513-8166 with any concerns or refund requests.
         </Typography>
         <Typography variant='body2' className={classes.hint}>
-          Your subscription renews every week unless canceled and is charged based on the number of meals received per
-          week.
+          Your subscription renews every week. Pricing is based on meals per week. Skip weeks or cancel anytime.
         </Typography>
       </div>
+      <Typography
+        variant='h6'
+        color='primary'
+        className={classes.title}
+      >
+        Order summary
+      </Typography>
+      {
+        cart.DonationCount > 0 &&
+        <CartMealGroup
+          img='/heartHand.png'
+          name='Donation'
+          quantity={cart.DonationCount}
+        />
+      }
+      {
+        cart.Deliveries.map((d, i) => (
+          <div key={i}>
+            <Typography variant='h6' className={classes.paddingBottom}>
+              {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
+            </Typography>
+            {Object.values(restMealsPerDelivery[i]).map((restMeal, j) => (
+              <div key={i + ',' + j + '-' + restMeal.meals[0].RestId}>
+                <Typography variant='subtitle1' className={classes.paddingBottom}>
+                  {restMeal.meals[0].RestName}
+                </Typography>
+                {
+                  restMeal.meals.map(m => 
+                    <CartMealGroup
+                      key={m.IdKey}
+                      choices={m.Choices}
+                      name={m.Name}
+                      img={m.Img}
+                      quantity={m.Quantity}
+                    />
+                  )
+                }
+              </div>
+            ))}
+          </div>
+        )) 
+      }
     </>
   )
 }

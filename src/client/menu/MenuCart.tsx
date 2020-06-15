@@ -82,10 +82,18 @@ const MenuCart: React.FC<{
   let suggestions: string[] = [];
   if (plans.data) {
     if (mealCount >= MIN_MEALS) {
-      const moreToNext = Tier.getCountTillNextPlan(PlanNames.Standard, mealCount, plans.data);
-      const nextPrice = Tier.getNextMealPrice(PlanNames.Standard, mealCount, plans.data);
-      const next = moreToNext && nextPrice ? ` +${moreToNext} for ${(nextPrice / 100).toFixed(2)} ea` : ''
+      const moreToNext = Tier.getNextPlans(PlanNames.Standard, mealCount, plans.data);
+      let next = '';
+      for (let i = 0; i < moreToNext.length; i++) {
+        const nextPrice = moreToNext[i].price;
+        const nextCount = moreToNext[i].count;
+        next = `${next} +${nextCount} for ${(nextPrice / 100).toFixed(2)} ea.`
+      }
       summary = `${mealCount} meal plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
+    }
+    if (cart && Cart.getAllowedDeliveries(cart) > 1) {
+      const extra = Cart.getAllowedDeliveries(cart) - 1;
+      summary = `${summary}\n${extra} extra deliver${extra === 1 ? 'y' : 'ies available'}`
     }
     suggestions = getSuggestion(cart, MIN_MEALS);
   }

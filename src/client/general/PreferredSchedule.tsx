@@ -60,10 +60,10 @@ const PreferredSchedule: React.FC<{
     extraDeliveries = (
       <>
         <Typography variant='body1' color='textSecondary'>
-          * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'delivieries' : 'delivery'} remaining (+ ${(deliveryFee / 100).toFixed(2)} ea)
+          * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'deliveries' : 'delivery'} available (+${(deliveryFee / 100).toFixed(2)} ea)
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          (1 extra delivery allowed for every {MIN_MEALS} meals)
+          (Separate deliveries available for every batch of {MIN_MEALS}+ meals)
         </Typography>
         <Button
           variant='outlined'
@@ -94,7 +94,7 @@ const PreferredSchedule: React.FC<{
                   color='primary'
                   className={classes.paddingLeft}
                 >
-                  (Free first delivery)
+                  (Free)
                 </Typography>
               :
                 <Typography

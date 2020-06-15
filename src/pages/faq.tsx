@@ -1,6 +1,7 @@
 import { makeStyles, Container, Typography, Paper, Link } from '@material-ui/core';
 import Footer from '../client/general/Footer';
 import { deliveryFee } from '../order/costModel';
+import { referralFriendAmount, welcomePromoAmount, referralSelfAmount } from '../order/promoModel';
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -76,34 +77,41 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What is Orchid?'
-            a="Orchid lets you mix-and-match from different restaurants to create weekly meal plans. We'll deliver all
-            your meals together at once based on your preferred time slot (extra deliveries are +$3.50). With Orchid you
-            don't have to think about food anymore because we'll automatically renew your subscription each and and pick
-            new meals for you. But if you like more control, you can always edit the meals or even skip a week."
+            a="A weekly-delivered meal plan subscription fulfilled by local restaurants. Each week, you can either
+            build their meal plan by picking meals from as many different restaurants as they want or allow Orchid to
+            choose, based on their pre-filled plan preferences. Orchid then does the rest by placing all the different
+            orders, picking up from all the different restaurants, and then delivering them in one simple batch to
+            you. Weekly deliveries are based on each your preferred schedule and are confirmed in advance with
+            exact ETA’s."
           />
           <Qa
             q='How is Orchid different from other delivery websites?'
-            a="We offer a weekly meal-plan from a variety of restaurants whereas other websites offer single restaurant
-            orders. Imagine subscribing to Netflix vs buying a movie on Amazon. With Orchid you pay a weekly subscription
-            to combine meals from any restaurant vs paying for an on-demand order from 1 restaurant. Our focus is on
-            meal-plans, not single meals."
+            a="We offer weekly-delivered meal plans that offer unrivaled variety with the ability to mix and match
+            different restaurants. Other services offer single-limited restaurant orders and charge higher fees with
+            unreliable and unpredictable deliveries. Imagine subscribing to Netflix vs buying a movie on Amazon. With
+            Orchid you pay a weekly subscription to combine meals from different restaurants all at one flat rate. Our
+            focus is on meal plans, not single meals. All restaurants on our menu listings are carefully picked to 
+            provide the best quality, variety, and value for you."
           />
           <Qa
             q='How fresh is the food?'
-            a="We deliver in batches of at least 4 meals, designed to be eaten over the week. While Orchid meals are cooked
-            the same day they're delivered, we understand that freshness is a concern due to the nature of a meal plan.
-            If freshness is a priority, then Orchid is not for you. Nothing beats the freshness of on-demand delivery or
-            more importantly, dining-in. But if you appreciate the comfort of coming home to a cooked meal or enjoy the
-            flexibility of eating whenever and however you want, then Orchid is the perfect fit."
+            a="Orchid meals are cooked the same day and our meal plans are designed to be eaten over the week. While we
+            understand that freshness is a concern for prolonged storage, we want to provide a service of comfort and
+            savings. Find comfort in having meal plans with food that’s always ready to eat. Find savings in time not
+            spent choosing what to order or cook...and then waiting for delivery or prepping, cooking, and cleaning.
+            Find savings in your budget with bulk savings, free delivery, and no extra fees. If you still want a fresh
+            meal every day, then nothing beats the freshness of expensive, on-demand delivery or more importantly,
+            dining-in. But if you appreciate the comfort of always having cooked meals at home or the flexibility of
+            eating whenever and however you want, then Orchid is the perfect fit."
           />
           <Qa
             q='How many restaurants can I pick?'
-            a="As many as you want!"
+            a="As many as you want! Go wild."
           />
           <Qa
             q="Do I need to pick meals every week?"
-            a="Forgot to pick your meal? No worries. Our team will hand select your favorite meals based on your preferences. 
-            Otherwise, we recommend coming back to orchideats.com to choose the meals you'd like to receive every week."
+            a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Orchid to do it fo
+            you. Our team will hand select your meals based on your favorite foods."
           />
           <Qa
             q='How do I update my subscription or delivery?'
@@ -120,12 +128,14 @@ const faqs = () => {
                 </Typography>
                 <div className={classes.qa}>
                   <Typography variant='body1'>
-                    First time customers get $35 off their first month ($5 over 4 weeks, plus $7.50 on weeks 3 & 4 when
-                    you let Orchid pick your meals).
+                    First time customers get ${(welcomePromoAmount * 4 / 100).toFixed(0)} off their first month
+                    (${(welcomePromoAmount / 100).toFixed(2)} off for 4 weeks).
                   </Typography>
                   <Typography variant='body1'>
-                    Existing customers can refer a friend to get $20 off ($5 over 4 weeks) and their friend gets
-                    $45 ($7.50 over 4 weeks, plus $7.50 on weeks 3 & 4 when they let Orchid pick meals).
+                    Existing customers can refer a friend to get ${(referralSelfAmount * 4 / 100).toFixed(0)} off
+                    (${(referralSelfAmount / 100).toFixed(0)} off for 4 weeks) and give their friend
+                    ${(referralFriendAmount * 4 / 100).toFixed(0)} off (${(referralFriendAmount / 100).toFixed(2)} off
+                    for 4 weeks).
                   </Typography>
                 </div>
               </>
@@ -133,13 +143,13 @@ const faqs = () => {
           />
           <Qa
             q='Will I be locked into a contract?'
-            a="Orchid is a subscription, not a contract. You can cancel your service at any time."
+            a="Orchid is a subscription, not a contract. You can cancel your service with ease at any time."
           />
           <Typography variant='h6' className={classes.title}>
             PAYMENTS & PRICING
           </Typography>
           <Qa
-            q='Meal Plans & Pricing'
+            q='How much does it cost?'
             n={
               <>
                 <Typography variant='body1'>
@@ -157,7 +167,7 @@ const faqs = () => {
                   </Typography>
                 </div>
                 <Typography variant='body1'>
-                  We include 1 free delivery, but you can add more for an additional $3.50. A delivery must have at least
+                  We include a free delivery each week, but you can add more for an additional $3.50. A delivery must have at least
                   4 meals. We only charge based on the number of meals confirmed per week, not based on your plan. So
                   if you decide to add or remove meals for a given week, you'll be charged fairly.
                 </Typography>
@@ -205,7 +215,7 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What days of the week do you deliver?'
-            a="Every day. If your restaurant is closed on a specific day, we'll deliver your order the next day."
+            a="Every day. If your restaurant is closed on a specific day, we'll deliver your entire order the next day."
           />
           <Qa
             q='Who delivers my meals?'
@@ -219,9 +229,6 @@ const faqs = () => {
               <>
                 <Typography variant='body1'>
                   You can choose from our 3 delivery windows. We'll let you know the precise ETA the day before.
-                </Typography>
-                <Typography variant='body1'>
-                  We have 3 pricing tiers.
                 </Typography>
                 <div className={classes.qa}>
                   <Typography variant='body1'>
@@ -251,8 +258,8 @@ const faqs = () => {
             n={
               <>
                 <Typography variant='body1'>
-                  At this time we currently deliver in Jersey City and Hoboken, but we're constantly updating our locations.
-                  Follow us on&nbsp;
+                  At this time we currently deliver in Jersey City and Hoboken with NYC soon to follow. We constantly
+                  work to expand our locations. Follow us on&nbsp;
                   <Link
                     component='button'
                     variant='body1'
@@ -275,7 +282,7 @@ const faqs = () => {
           />
           <Qa
             q='How much is delivery?'
-            a={`First delivery is free each week! Additional deliveries are $${(deliveryFee / 100).toFixed(2)}`}
+            a={`You get a free delivery each week! Additional deliveries are $${(deliveryFee / 100).toFixed(2)}`}
           />
           <Qa
             q='Can I skip a week of delivery?'
