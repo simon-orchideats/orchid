@@ -1,5 +1,6 @@
 import { makeStyles, FormControl, FormLabel, FormGroup, Checkbox, FormControlLabel, Popover, Paper, Button } from "@material-ui/core";
 import { useState } from "react";
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 const useStyles = makeStyles(theme => ({
   zip: {
@@ -91,6 +92,7 @@ const Filter: React.FC<{
         onClick={onClickFilter}
       >
         Filter
+        <ArrowDropDownIcon />
       </Button>
     </>
   )

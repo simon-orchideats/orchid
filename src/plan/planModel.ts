@@ -81,26 +81,19 @@ export class Tier implements ITier {
     throw err;
   }
 
-  public static getNextMealPrice(type: PlanName, count: number, plans: IPlan[]) {
+  public static getNextPlans(type: PlanName, count: number, plans: IPlan[]) {
     const plan = getPlanByType(type, plans);
     const tiers = plan.tiers;
+    const res = [];
     for (let i = 0; i < tiers.length; i++) {
       if (count < tiers[i].minMeals) {
-        return tiers[i].mealPrice;
+        res.push({
+          count: tiers[i].minMeals - count,
+          price: tiers[i].mealPrice
+        });
       }
     }
-    return null
-  }
-
-  public static getCountTillNextPlan(type: PlanName, count: number, plans: IPlan[]) {
-    const plan = getPlanByType(type, plans);
-    const tiers = plan.tiers;
-    for (let i = 0; i < tiers.length; i++) {
-      if (count < tiers[i].minMeals) {
-        return tiers[i].minMeals - count;
-      }
-    }
-    return null
+    return res
   }
 
   public static getPlanPrice(type: PlanName, count: number, plans: IPlan[]) {

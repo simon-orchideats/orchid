@@ -49,7 +49,7 @@ const RenewalChooser: React.FC<{
             color='primary'
             className={classes.title}
           >
-            What foods would you like us to pick for you?
+            Which foods are your favorite? On weeks you forget, we'll choose a meal plan you love
           </Typography>
         </Grid>
         <Grid item xs={12}>

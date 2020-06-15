@@ -11,7 +11,6 @@ import Footer from '../client/general/Footer';
 import React, { Fragment } from 'react';
 import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
 import WeekendIcon from '@material-ui/icons/Weekend';
-import MoneyOffIcon from '@material-ui/icons/MoneyOff';
 import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 
@@ -282,11 +281,28 @@ const Welcome = () => {
           Your week, catered.
         </Typography>
         <Typography variant='h4' className={classes.title}>
-          redefine the way you eat
+          A meal plan subscription
         </Typography>
-        <Typography variant='subtitle1' className={classes.mediumVerticalMargin}>
-          Weekly meal subscriptions from local restaurants starting at $9.99
+        <Typography variant='subtitle1'>
+          Mix n’ match meals from your favorite restaurants at one flat price
         </Typography>
+        <Grid container className={classes.title}>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • Free Delivery
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • No Service Fees
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant='subtitle1'>
+              • Save 26-38%
+            </Typography>
+          </Grid>
+        </Grid>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           START SAVING
         </Button>
@@ -310,7 +326,7 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={12} md={2}>
+    <Grid item xs={12} sm={12} md={3}>
       <div className={classes.centered}>
         {
           img &&
@@ -338,33 +354,26 @@ const HowItWorks = () => {
         How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
-        <Grid item xs={12} sm={1} md={1} />
         <Content
-          title='Mix and Match'
-          description='Pick meals from any restaurant'
+          title="Mix n' Match"
+          description='Pick meals from different restaurant'
           icon={<RestIcon className={classes.howIcon} />}
         />
         <Content
-          title='Affordable'
-          description='Save 26-38% vs other apps'
-          icon={<MoneyOffIcon className={classes.howIcon} />}
-        />
-        <Content
           title='Save time'
-          description='Tell us when to deliver'
+          description='Tell us a time and day to deliver'
           icon={<TodayIcon className={classes.howIcon}/>}
         />
         <Content
-          title='Flexible'
+          title='Enjoy'
           description='Eat now, share, or save for later'
           img='home/microwave.png'
         />
         <Content
-          title='Relax'
-          description='Pick new meals or let us do it for you'
+          title='Subscribe'
+          description='Pick new meals each or let us do it for you'
           icon={<WeekendIcon className={classes.howIcon} />}
         />
-        <Grid item xs={12} sm={1} md={1} />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
         Questions or Comments? Email us at simon@orchideats.com to learn more.
@@ -493,19 +502,10 @@ const Benefits = () => {
 
   const explanations = [
     {
-      title: 'Neighborhood food',
-      description: `
-        Food tastes better when cooked by somone you know. Ditch cross-country shipments, ice packs, and warehouse cooks
-        from other meal plans. We deliver meals same-day fresh from local restaurants down the street.
-      `,
-      img: 'home/rest.jpeg',
-      imgLeft: false,
-    },
-    {
       title: 'Come home to a warm meal',
       description: `
-      Few things express love like coming home to a warm meal after a long day. No more waiting for a delivery or
-      stressing over what to cook. Enjoy a meal right away.
+      Few things express love like coming home to a warm meal after a long day. Find comfort in having food that's always
+      ready. No more stressing over what to cook or debating what to order. Enjoy a meal right away.
       `,
       img: '/home/sharing.jpeg',
       imgLeft: true
@@ -514,7 +514,7 @@ const Benefits = () => {
       title: 'No service charge, ever',
       description: `
         There's no service fee when buying in-store, so why charge one online? Neighbors don't nickle and dime each
-        other, so neither do we. Let's redefine ordering food online together.
+        other, so neither do we. Let's redefine ordering food together.
       `,
       img: 'home/trade.jpg',
       imgLeft: false
@@ -522,9 +522,8 @@ const Benefits = () => {
     {
       title: 'Save 26-38%',
       description: `
-        Cooking 1 meal is inefficient. That's why we offer meal plans over single
-        meals. You get bulk savings and a free weekly delivery. Save with each meal at $9.99 vs $16.00 after fees on
-        other food apps.
+        Cooking or ordering a single meal is inefficient and expensive. Our meal plans give bulk savings with the 12 meal
+        plan starting at $9.99 per meal. Compare with other apps at $16.00 per meal after fees.
       `,
       img: 'home/bulk.jpg',
       imgLeft: true
@@ -606,10 +605,10 @@ const Promotion = withClientApollo(() => {
   return (
     <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${basePromoAmount} off your first month, auto applied at checkout! 
+        Get ${basePromoAmount} off! Limited time only
       </Typography>
       <Typography variant='body2' className={classes.topMargin}>
-        *${(welcomePromoAmount / 100)} off 4 weeks
+        Promotion over your first month, auto applied at checkout
       </Typography>
     </div>
   );

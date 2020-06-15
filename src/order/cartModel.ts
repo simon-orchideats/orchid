@@ -278,7 +278,7 @@ export class Cart implements ICart {
 
   public static getAllowedDeliveries(cart: Cart) {
     return Math.max(
-      Math.floor(Cart.getStandardMealCount(cart) / 4),
+      Math.floor(Cart.getStandardMealCount(cart) / MIN_MEALS),
       1
     )
   }
