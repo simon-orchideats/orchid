@@ -665,10 +665,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 const CheckoutContainer = withClientApollo(injectStripe(checkout));
 
 export default () => {
-  let stripe = null;
-  if (!isServer()) {
-    stripe = window.Stripe(activeConfig.client.stripe.key)
-  }
+  if (isServer()) return null;
+  const stripe = window.Stripe(activeConfig.client.stripe.key)
   return (
     <StripeProvider stripe={stripe}>
       <Elements>
