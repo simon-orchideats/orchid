@@ -203,7 +203,7 @@ const Terms = () => {
           A signature or the electronic equivalent from the copyright holder or authorized representative.
           <br />
           <br/>
-          Send this information by mail to Orchid, 444 Washington Boulevard Suite 3551 Jersey City, NJ 07310. In an effort to protect the rights of copyright owners, Orchid maintains a policy for the termination, in appropriate circumstances, of subscribers and account holders of the Site who are repeat infringers.
+          Send this information by mail to Orchid, 19 Middle St Unit 1 Boston, MA 02127. In an effort to protect the rights of copyright owners, Orchid maintains a policy for the termination, in appropriate circumstances, of subscribers and account holders of the Site who are repeat infringers.
           ok® and Instagram® are registered trademarks of Facebook, Inc. (“Facebook”). LinkedIn® is a registered trademark of LinkedIn Corporation (“LinkedIn”). Pinterest® is a registered trademark of Pinterest, Inc. (“Pinterest”). Twitter® is a registered trademark of Twitter, Inc. (“Twitter”). Snapchat® is a registered trademark of Snapchat, Inc. YouTube® is a registered trademark of Google, Inc. (“Google”). Please be advised that Orchid is not in any way affiliated with Facebook, Google, LinkedIn, Pinterest or Twitter, and the Orchid Offerings are not endorsed, administered or sponsored by any of those parties.
         </Typography>
         <br/>
@@ -323,7 +323,7 @@ const Terms = () => {
         </Typography>
         <br />
         <Typography variant='body1'>
-          Orchid may deliver notice to you under this Agreement by means of electronic mail, a general notice on the site, or by written communication delivered by first class U.S. mail to your address on record in your Orchid account. You may give notice to Orchid at any time via electronic mail or by letter delivered by first class postage prepaid U.S. mail or overnight courier to the following address: Orchid, 444 Washington Boulevard Suite 3551 Jersey City, NJ 07310.
+          Orchid may deliver notice to you under this Agreement by means of electronic mail, a general notice on the site, or by written communication delivered by first class U.S. mail to your address on record in your Orchid account. You may give notice to Orchid at any time via electronic mail or by letter delivered by first class postage prepaid U.S. mail or overnight courier to the following address: Orchid, 19 Middle St Unit 1 Boston MA, 02127.
         </Typography>
         <br />
         <Typography variant='h5'>

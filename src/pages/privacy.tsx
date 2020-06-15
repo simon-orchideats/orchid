@@ -211,9 +211,9 @@ const Privacy = () => {
           <br />
           foodflick inc.
           <br />
-          444 Washington Boulevard Suite 3551
+          19 Middle St Unit 1
           <br />
-          Jersey City, NJ 07310
+          Boston, MA 02127
           <br />
           <br />
           Terms and Conditions
