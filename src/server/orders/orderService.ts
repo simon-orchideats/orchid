@@ -1348,12 +1348,7 @@ class OrderService {
                         }
                       },
                     },
-                  ],
-                  must_not: {
-                    exists: {
-                      field: 'stripeInvoiceId'
-                    }
-                  }
+                  ]
                 }
               }
             }
