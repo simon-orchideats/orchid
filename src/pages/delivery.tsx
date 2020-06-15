@@ -170,8 +170,12 @@ const delivery = () => {
                   1. Choose days for week {startDate} - {endDate}
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  These days are only for this order. We disabled days too far past your billing day. If a restaurant is
-                  closed, we'll notify you before deliver the next day
+                  These days are only for this order. We disabled days too far past your billing day.
+                </Typography>
+                <Typography variant='body1' color='textPrimary'>
+                  <b>
+                    If a restaurant is closed, we'll notify you and deliver the next day
+                  </b>
                 </Typography>
               </div>
               :

@@ -235,6 +235,18 @@ const menu = () => {
             :
             RestMenus
           }
+          {
+            rests.error ?
+            <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
+              Couldn't find&nbsp;
+              <Link className={classes.link} color='inherit' onClick={onClickZip}>
+                {zip}.
+              </Link>
+              Please try with a different zip code or city
+            </Typography>
+            :
+            RestMenus
+          }
         </Grid>
         {
           isMdAndUp &&
