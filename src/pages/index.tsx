@@ -70,6 +70,12 @@ const useStyles = makeStyles(theme => ({
   },
   welcomeTitle: {
     fontWeight: 500,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '3.25rem',
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '3rem',
+    },
   },
   welcomeText: {
     maxWidth: 600 // chosen by inspection
@@ -155,7 +161,7 @@ const useStyles = makeStyles(theme => ({
   },
   subtitle: {
     [theme.breakpoints.down('xs')]: {
-      fontSize: '1.65rem'
+      fontSize: '1.35rem'
     },
   },
   testimonialHeader: {
@@ -247,7 +253,13 @@ const useStyles = makeStyles(theme => ({
     },
   },
   title: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
+    },
   },
   promotion: {
     backgroundColor: theme.palette.primary.main,
@@ -356,7 +368,7 @@ const HowItWorks = () => {
       <Grid container className={classes.verticalMargin}>
         <Content
           title="Mix n' Match"
-          description='Pick meals from different restaurant'
+          description='Pick meals from different restaurants'
           icon={<RestIcon className={classes.howIcon} />}
         />
         <Content
