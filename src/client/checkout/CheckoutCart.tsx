@@ -162,19 +162,19 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
         </div>
         <div className={`${classes.row}`} >
-          <Typography variant='body1'>
-            Other delivery apps
-          </Typography>
-          <Typography variant='body1'>
-            <del>${competitorPrice.toFixed(2)}</del>
-          </Typography>
-        </div>
-        <div className={`${classes.row}`} >
           <Typography variant='body1' color='primary'>
             <b>Total</b>
           </Typography>
           <Typography variant='body1' color='primary'>
             <b>${total.toFixed(2)}</b>
+          </Typography>
+        </div>
+        <div className={`${classes.row}`} >
+          <Typography variant='body1'>
+            Other delivery apps
+          </Typography>
+          <Typography variant='body1'>
+            <del>${competitorPrice.toFixed(2)}</del>
           </Typography>
         </div>
         <div className={`${classes.row} ${classes.paddingBottom}`} >
