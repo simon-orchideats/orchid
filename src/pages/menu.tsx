@@ -225,28 +225,29 @@ const menu = () => {
           </Paper>
           {rests.loading && <Typography>Loading...</Typography>}
           {
-            hasNoRests ?
+            hasNoRests &&
             <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
               Coming soon to&nbsp;
               <Link className={classes.link} color='inherit' onClick={onClickZip}>
                 {zip}
               </Link>
             </Typography>
-            :
-            RestMenus
           }
           {
-            rests.error ?
-            <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-              Couldn't find&nbsp;
-              <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                {zip}.
-              </Link>
-              Please try with a different zip code or city
-            </Typography>
-            :
-            RestMenus
+            rests.error &&
+            <>
+              <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
+                Couldn't find&nbsp;
+                <Link className={classes.link} color='inherit' onClick={onClickZip}>
+                  {zip}.
+                </Link>
+              </Typography>
+              <Typography variant='h5'>
+                Please try with a different zip code or city
+              </Typography>
+            </>
           }
+          {!hasNoRests && !rests.error && RestMenus}
         </Grid>
         {
           isMdAndUp &&
