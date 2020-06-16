@@ -207,7 +207,6 @@ const menu = () => {
                 </div>
               </div>
             :
-              rests.data &&
               <MenuMiniCart
                 filter={
                   <>
@@ -217,7 +216,7 @@ const menu = () => {
                       onClickCuisine={onFilterCuisines}
                       zip={zipButton}
                     />
-                    {SurpriseMe}
+                    {rests.data && SurpriseMe}
                   </>
                 }
               />
@@ -227,25 +226,8 @@ const menu = () => {
           {
             hasNoRests &&
             <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-              Coming soon to&nbsp;
-              <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                {zip}
-              </Link>
+              Coming soon to {zip}. Please filter again with a different zip code or city
             </Typography>
-          }
-          {
-            rests.error &&
-            <>
-              <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-                Couldn't find&nbsp;
-                <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                  {zip}.
-                </Link>
-              </Typography>
-              <Typography variant='h5'>
-                Please try with a different zip code or city
-              </Typography>
-            </>
           }
           {!hasNoRests && !rests.error && RestMenus}
         </Grid>

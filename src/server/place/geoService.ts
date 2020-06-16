@@ -76,7 +76,8 @@ class GeoService implements IGeoService{
         if (res.status != 200) throw new Error('Could not fetch geocode');
         jsonData = await res.json();
       } catch (e) {
-        throw new Error(`Could not fetch city, state for '${city}': ${e.stack}`);
+        console.warn(`Could not fetch city, state for '${city}': ${e.stack}`);
+        return null;
       }
       if (jsonData.results && jsonData.results.length > 0) {
         const {
@@ -114,7 +115,8 @@ class GeoService implements IGeoService{
         if (res.status != 200) throw new Error('Could not fetch geocode');
         jsonData = await res.json();
       } catch (e) {
-        throw new Error(`Could not fetch city, state for '${zip}': ${e.stack}`);
+        console.warn(`Could not fetch city, state for '${zip}': ${e.stack}`);
+        return null;
       }
       if (jsonData.results && jsonData.results.length > 0) {
         const {
