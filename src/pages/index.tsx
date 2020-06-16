@@ -223,7 +223,7 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'left',
   },
   lowWidth: {
-    maxWidth: 150,
+    maxWidth: 200,
   },
   microwave: {
     maxWidth: 135,
@@ -295,7 +295,7 @@ const Welcome = () => {
         <Typography variant='h4' className={classes.title}>
           A meal plan subscription
         </Typography>
-        <Typography variant='subtitle1'>
+        <Typography variant='subtitle1' className={classes.topMargin}>
           Mix n’ match meals from your favorite restaurants at one flat price
         </Typography>
         <Grid container className={classes.title}>
