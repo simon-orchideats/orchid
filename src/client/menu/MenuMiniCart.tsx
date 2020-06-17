@@ -27,6 +27,9 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     width: '100%',
   },
+  summary: {
+    whiteSpace: 'pre'
+  },
   heart: {
     height: 24,
   },
@@ -71,7 +74,7 @@ const MenuMiniCart: React.FC<{
       disabled,
       onNext,
       suggestions,
-      _summary,
+      summary,
       _donationCount,
       _incrementDonationCount,
       _decrementDonationCount,
@@ -136,6 +139,26 @@ const MenuMiniCart: React.FC<{
             Enter zip to continue
           </Typography>
         )}
+        <Typography
+          variant='body1'
+          color='primary'
+          className={classes.summary}
+        >
+          {summary.length > 0 && summary[0]}
+        </Typography>
+        <Typography
+          variant='body1'
+          color='primary'
+          className={classes.summary}
+        >
+        {
+          summary.length > 1 && summary.map((s, i) => i === 0 ?
+            ''
+              :
+            `• ${s} `
+          )
+        }
+        </Typography>
         {cart && cart.Zip && suggestions.map((suggestion, i) => 
           <Typography
             key={i}

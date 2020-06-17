@@ -290,33 +290,16 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Your week, catered.
+          Potluck, but from restaurants
         </Typography>
         <Typography variant='h4' className={classes.title}>
-          A meal plan subscription
+          A weekly meal plan delivery
         </Typography>
         <Typography variant='subtitle1' className={classes.topMargin}>
-          Mix n’ match meals from your favorite restaurants at one flat price
+          Mix n’ match meals at one flat price from different restaurants
         </Typography>
-        <Grid container className={classes.title}>
-          <Grid item xs={12} md={4}>
-            <Typography variant='subtitle1'>
-              • Free Delivery
-            </Typography>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography variant='subtitle1'>
-              • No Service Fees
-            </Typography>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography variant='subtitle1'>
-              • Save 26-38%
-            </Typography>
-          </Grid>
-        </Grid>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
-          START SAVING
+          Explore Menu
         </Button>
       </div>
     </div>

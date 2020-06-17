@@ -61,6 +61,7 @@ const RestMenu: React.FC<{
         key={meal.Id}
         xs={4}
         sm={4}
+        md={3}
       >
         <MenuMeal
           restId={rest.Id}

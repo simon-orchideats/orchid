@@ -82,6 +82,7 @@ const MenuMeal: React.FC<{
   const [desc, setDesc] = useState<string>();
   const [optionGroupIndex, setOptionGroupIndex] = useState<number>(0);
   const [addonGroupIndex, setAddonGroupIndex] = useState<number>(0);
+  const addMealToCart = useAddMealToCart();
   type addonGroupsState = {
     [name: string]: {
       isChecked: boolean,
@@ -124,7 +125,6 @@ const MenuMeal: React.FC<{
       setDesc(mealDesc || 'No description')
     }
   };
-  const addMealToCart = useAddMealToCart();
   const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
     setAddons({
       ...addons,
@@ -329,7 +329,7 @@ const MenuMeal: React.FC<{
             :
             <Typography>
               No picture
-        </Typography>
+            </Typography>
         }
       </div>
       <CardContent className={classes.content}>
