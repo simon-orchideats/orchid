@@ -5,7 +5,7 @@ import { useGetConsumer } from '../../consumer/consumerService';
 import { referralFriendAmount, referralSelfAmount, referralMonthDuration } from '../../order/promoModel';
 import { activeConfig } from '../../config';
 import WithClickToCopy from '../general/WithClickToCopy';
-import RedeemRoundedIcon from '@material-ui/icons/RedeemRounded';
+import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 
 const selfAmount = referralSelfAmount * 4 * referralMonthDuration / 100;
 const friendAmount = referralFriendAmount * 4 * referralMonthDuration / 100;
@@ -146,7 +146,7 @@ const Redeem = () => {
   return (
     <div className={`${classes.centered} ${classes.redeem}`}>
       <div className={classes.round}>
-        <RedeemRoundedIcon className={classes.icon} />
+        <LocalOfferIcon className={classes.icon} />
       </div>
     </div>
   )

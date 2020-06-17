@@ -22,6 +22,8 @@ import { addPartnerRoute } from '../../pages/consumer/add-partner';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import { savingsRoute } from '../../pages/consumer/savings';
 import RedeemIcon from '@material-ui/icons/Redeem';
+import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import { referralPageRoute } from '../../pages/get-20';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -69,6 +71,15 @@ const ConsumerPopper: React.FC<{
       }}
     >
       <Paper className={classes.paper}>
+        <div className={classes.row} onClick={() => {
+          Router.push(referralPageRoute);
+          onClose();
+        }}>
+          <LocalOfferIcon fontSize='large' className={classes.icon} />
+          <Typography variant='h6'>
+            Get $20
+          </Typography>
+        </div>
         <div className={classes.row} onClick={() => {
           Router.push(profileRoute);
           onClose();
