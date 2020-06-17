@@ -26,11 +26,13 @@ import RedeemIcon from '@material-ui/icons/Redeem';
 const useStyles = makeStyles(theme => ({
   row: {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     cursor: 'pointer',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
+  },
+  icon: {
+    paddingRight: theme.spacing(1),
   },
   paper: {
     paddingLeft: theme.spacing(3),
@@ -71,7 +73,7 @@ const ConsumerPopper: React.FC<{
           Router.push(profileRoute);
           onClose();
         }}>
-          <PersonIcon fontSize='large' />
+          <PersonIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             Profile
           </Typography>
@@ -80,7 +82,7 @@ const ConsumerPopper: React.FC<{
           Router.push(myPlanRoute);
           onClose();
         }}>
-          <RestaurantMenuIcon fontSize='large' />
+          <RestaurantMenuIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             My plan
           </Typography>
@@ -89,7 +91,7 @@ const ConsumerPopper: React.FC<{
           Router.push(upcomingDeliveriesRoute);
           onClose();
         }}>          
-          <EventIcon fontSize='large' />
+          <EventIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             Upcoming deliveries
           </Typography>
@@ -98,7 +100,7 @@ const ConsumerPopper: React.FC<{
           Router.push(savingsRoute);
           onClose();
         }}>          
-          <RedeemIcon fontSize='large' />
+          <RedeemIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             Savings
           </Typography>
@@ -107,7 +109,7 @@ const ConsumerPopper: React.FC<{
           Router.push(orderHistoryRoute);
           onClose();
         }}>          
-          <HistoryIcon fontSize='large' />
+          <HistoryIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             Order history
           </Typography>
@@ -119,7 +121,7 @@ const ConsumerPopper: React.FC<{
               Router.push(allUpcomingDeliveriesRoute);
               onClose();
             }}>
-              <EventAvailableIcon fontSize='large' />
+              <EventAvailableIcon fontSize='large' className={classes.icon} />
               <Typography variant='h6'>
                 All orders
               </Typography>
@@ -128,7 +130,7 @@ const ConsumerPopper: React.FC<{
               Router.push(allOrderHistoryRoute);
               onClose();
             }}>
-              <ReceiptIcon fontSize='large' />
+              <ReceiptIcon fontSize='large' className={classes.icon} />
               <Typography variant='h6'>
                 All past orders
               </Typography>
@@ -141,7 +143,7 @@ const ConsumerPopper: React.FC<{
             Router.push(addPartnerRoute);
             onClose();
           }}>
-            <StorefrontIcon fontSize='large' />
+            <StorefrontIcon fontSize='large' className={classes.icon} />
             <Typography variant='h6'>
               Add a partner
             </Typography>
@@ -151,7 +153,7 @@ const ConsumerPopper: React.FC<{
           window.location.assign('/api/logout');
           onClose();
         }}>
-          <ExitToAppIcon fontSize='large' />
+          <ExitToAppIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             Log out
           </Typography>
