@@ -36,6 +36,9 @@ const restFragment = gql`
     profile {
       name
       phone
+      actor
+      actorImg
+      story
     }
     taxRate
   }

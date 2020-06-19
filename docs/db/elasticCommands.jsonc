@@ -964,7 +964,19 @@ PUT /rests/
                 "ignore_above": 256
               }
             }
-          }
+          },
+          "story": {
+            "type": "keyword",
+            "ignore_above": 10
+          },
+          "actor": {
+            "type": "keyword",
+            "ignore_above": 10
+          },
+          "actorImg": {
+            "type": "keyword",
+            "ignore_above": 10
+          },
         }
       },
       "taxRate": {

@@ -5,6 +5,7 @@ import Router from 'next/router'
 import { howItWorksRoute } from '../../pages/how-it-works';
 import { faqsRoute } from '../../pages/faq';
 import { referralPageRoute } from '../../pages/get-20';
+import { whoWeAreRoute } from '../../pages/who-we-are';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -61,6 +62,14 @@ const AboutPopper: React.FC<{
         }}>
           <Typography variant='button'>
             Get $20
+          </Typography>
+        </div>
+        <div className={classes.row} onClick={() => {
+          Router.push(whoWeAreRoute);
+          onClose();
+        }}>
+          <Typography variant='button'>
+            Who we are
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {
