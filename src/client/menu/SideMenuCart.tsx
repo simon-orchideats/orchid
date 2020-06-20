@@ -99,13 +99,16 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             !hideNext &&
             <div className={classes.bottom}>
               {meals}
-              <Typography
-                variant='body1'
-                color='primary'
-                className={classes.summary}
-              >
-                {summary}
-              </Typography>
+              {summary.map((s, i) => (
+                <Typography
+                  key={i}
+                  variant='body1'
+                  color='primary'
+                  className={classes.summary}
+                >
+                  {s}
+                </Typography>
+              ))}
               <Button
                 disabled={disabled}
                 variant='contained'

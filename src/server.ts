@@ -41,12 +41,10 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
 
 /**
  * 
- * left off here
- * to test... delete everyting in stage. migrate prod to stage. then log in and make a plan. confirm i can update deliveries.
- * and checkout
  * 
- * 
- * then do the stage changes adn try again
+ * simon:
+ * fluffy who we are link
+ * get20 in consumer popup
  * 
  */
 

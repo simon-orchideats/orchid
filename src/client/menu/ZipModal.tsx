@@ -103,7 +103,7 @@ const ZipModal: React.FC<{
             <Grid item xs={12} sm={7} md={5} className={classes.input}>
               <form onSubmit={findFood}>
                 <Typography variant='h3' className={classes.title}>
-                  Subscribe to meal plans from local eats you love in JC & Hoboken
+                  Mix n' match from local eats you love in JC & Hoboken
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={12} md={6}>

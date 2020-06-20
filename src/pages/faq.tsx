@@ -77,32 +77,58 @@ const faqs = () => {
           </Typography>
           <Qa
             q='What is Orchid?'
-            a="A weekly-delivered meal plan subscription fulfilled by local restaurants. Each week, you can either
-            build their meal plan by picking meals from as many different restaurants as they want or allow Orchid to
-            choose, based on their pre-filled plan preferences. Orchid then does the rest by placing all the different
-            orders, picking up from all the different restaurants, and then delivering them in one simple batch to
-            you. Weekly deliveries are based on each your preferred schedule and are confirmed in advance with
-            exact ETA’s."
+            n={
+              <>
+                <Typography variant='body1'>
+                  A weekly-delivered meal plan subscription fulfilled by local restaurants. Each week, you can either
+                  build your meal plan by picking meals from as many different restaurants as you want or allow Orchid to
+                  choose, based on your pre-filled plan preferences.
+                </Typography>
+                <p />
+                <Typography variant='body1'>
+                  Orchid then does the rest by placing all the different
+                  orders, picking up from all the different restaurants, and then delivering them in one simple batch to
+                  you. Weekly deliveries are based on each your preferred schedule and are confirmed in advance with
+                  exact ETA’s.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q='How is Orchid different from other delivery websites?'
-            a="We offer weekly-delivered meal plans that offer unrivaled variety with the ability to mix and match
-            different restaurants. Other services offer single-limited restaurant orders and charge higher fees with
-            unreliable and unpredictable deliveries. Imagine subscribing to Netflix vs buying a movie on Amazon. With
-            Orchid you pay a weekly subscription to combine meals from different restaurants all at one flat rate. Our
-            focus is on meal plans, not single meals. All restaurants on our menu listings are carefully picked to 
-            provide the best quality, variety, and value for you."
+            n={
+              <>
+                <Typography variant='body1'>
+                  We offer weekly-delivered meal plans that offer unrivaled variety with the ability to mix and match
+                  different restaurants. Other services offer single-limited restaurant orders and charge higher fees with
+                  unreliable and unpredictable deliveries. Imagine subscribing to Netflix vs buying a movie on Amazon.
+                </Typography>
+                <p />
+                <Typography variant='body1'>
+                  With Orchid you pay a weekly subscription to combine meals from different restaurants all at one flat rate.
+                  Our focus is on meal plans, not single meals. All restaurants on our menu listings are carefully picked to 
+                  provide the best quality, variety, and value for you.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q='How fresh is the food?'
-            a="Orchid meals are cooked the same day and our meal plans are designed to be eaten over the week. While we
-            understand that freshness is a concern for prolonged storage, we want to provide a service of comfort and
-            savings. Find comfort in having meal plans with food that’s always ready to eat. Find savings in time not
-            spent choosing what to order or cook...and then waiting for delivery or prepping, cooking, and cleaning.
-            Find savings in your budget with bulk savings, free delivery, and no extra fees. If you still want a fresh
-            meal every day, then nothing beats the freshness of expensive, on-demand delivery or more importantly,
-            dining-in. But if you appreciate the comfort of always having cooked meals at home or the flexibility of
-            eating whenever and however you want, then Orchid is the perfect fit."
+            n={
+              <>
+                <Typography variant='body1'>
+                  Orchid meals are cooked the same day and our meal plans are designed to be eaten over the week. While we
+                  understand that freshness is a concern when when saving food, you gain all the perks of meal prepping for
+                  the week without the work - instant meals and bulk savings.
+                </Typography>
+                <p />
+                <Typography variant='body1'>
+                  If freshness is the #1 priority then nothing beats dining-in or on-demand delivery. But if you appreciate
+                  the comfort of always having cooked meals at home or the flexibility of eating whenever and however you
+                  want, then Orchid is the perfect fit.
+                </Typography>
+              </>
+            }
           />
           <Qa
             q='How many restaurants can I pick?'
@@ -207,8 +233,8 @@ const faqs = () => {
           <Qa
             q='How long will my meals last?'
             a="While every meal is cooked the same day as it's delivered, it's probably not a good idea to eat sushi 7
-            days after you order it. That's why we recommend picking a balance of foods, some you can eat soon and some
-            you can save for later, just as you would when meal prepping."
+            days after you order it. That's why we recommend picking a balance, some meals for now and some for later, 
+            just as you would when meal prepping."
           />
           <Typography variant='h6' className={classes.title}>
             DELIVERY

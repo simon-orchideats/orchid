@@ -2,7 +2,7 @@ import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Pa
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetTags } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
@@ -18,6 +18,7 @@ import { sendZipMetrics } from "../client/menu/menuMetrics";
 import { getItemChooser } from "../utils/utils";
 import { Meal } from "../rest/mealModel";
 import { DeliveryMeal } from "../order/deliveryModel";
+import { throttle } from 'lodash';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -84,6 +85,8 @@ const menu = () => {
   const rests = useGetNearbyRests(zip);
   const clearCartMeals = useClearCartMeals();
   const addMeal = useAddMealToCart();
+  const timer = useRef<NodeJS.Timeout | null>(null);
+  const [showMiniCart, setShowMiniCart] = useState(true);
   const onFilterCuisines = (cuisines: string[]) => {
     setCuisines(cuisines);
   };
@@ -98,6 +101,17 @@ const menu = () => {
   useEffect(() => {
     setZipInput(zip);
   }, [zip]);
+
+  const onScroll = throttle(() => {
+    if (showMiniCart) setShowMiniCart(false);
+    if (timer.current) clearTimeout(timer.current);     
+    timer.current = setTimeout(() => setShowMiniCart(true), 300);
+  }, 200);
+
+  useEffect(() => {
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll)
+  }, []);
 
   const onSearchZip = () => {
     if (zipInput) {
@@ -192,12 +206,12 @@ const menu = () => {
           lg={8}
           className={classes.menu}
         >
-          <Paper className={classes.filters}>
+          <Paper className={classes.filters} style={{ position: isMdAndUp || showMiniCart ? 'sticky' : 'static' }}>
             {
               isMdAndUp ?
               <div className={classes.row}>
                 {zipButton}
-                <Filter 
+                <Filter
                   allCuisines={allCuisines}
                   cuisines={cuisines}
                   onClickCuisine={onFilterCuisines}
@@ -206,8 +220,7 @@ const menu = () => {
                   {SurpriseMe}
                 </div>
               </div>
-            :
-              rests.data &&
+              :
               <MenuMiniCart
                 filter={
                   <>
@@ -217,7 +230,7 @@ const menu = () => {
                       onClickCuisine={onFilterCuisines}
                       zip={zipButton}
                     />
-                    {SurpriseMe}
+                    {rests.data && SurpriseMe}
                   </>
                 }
               />
@@ -225,16 +238,12 @@ const menu = () => {
           </Paper>
           {rests.loading && <Typography>Loading...</Typography>}
           {
-            hasNoRests ?
+            hasNoRests &&
             <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-              Coming soon to&nbsp;
-              <Link className={classes.link} color='inherit' onClick={onClickZip}>
-                {zip}
-              </Link>
+              Coming soon to {zip}. Please filter again with a different zip code or city
             </Typography>
-            :
-            RestMenus
           }
+          {!hasNoRests && !rests.error && RestMenus}
         </Grid>
         {
           isMdAndUp &&

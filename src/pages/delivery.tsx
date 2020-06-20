@@ -170,8 +170,12 @@ const delivery = () => {
                   1. Choose days for week {startDate} - {endDate}
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  These days are only for this order. We disabled days too far past your billing day. If a restaurant is
-                  closed, we'll notify you before deliver the next day
+                  These days are only for this order. We disabled days too far past your billing day.
+                </Typography>
+                <Typography variant='body1' color='textPrimary'>
+                  <b>
+                    If a restaurant is closed, we'll notify you and deliver the next day
+                  </b>
                 </Typography>
               </div>
               :
@@ -180,7 +184,7 @@ const delivery = () => {
                   1. Choose weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
-                  Meal plans can be edited/skipped up to 2 days before each scheduled delivery.
+                  Meal plans can be edited/skipped up to 2 days before each scheduled delivery
                 </Typography>
                 <Typography variant='body1' color='textPrimary'>
                   <b>
@@ -220,9 +224,6 @@ const delivery = () => {
           <ExpansionPanelSummary>
             <div>
               <Typography variant='h4' color='primary'>
-                {
-                  isUpdating ? `2. Schedule meals for ${startDate} - ${endDate}` : '2. Schedule meals for the first week'
-                }
                 {step2Title}
               </Typography>
               {
@@ -232,7 +233,7 @@ const delivery = () => {
                 </Typography>
                 :
                 <Typography variant='body1' color='textSecondary'>
-                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime.
+                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime
                 </Typography>
               }
               {

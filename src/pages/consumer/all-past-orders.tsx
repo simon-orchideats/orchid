@@ -27,6 +27,7 @@ const OrderHistory = () => {
   } else {
     OrderOverviews = consumerData && orders.data && orders.data.map(order => 
       <OrderOverview
+        key={order._id}
         order={order}
         action={null}
         scheduleDeliveries={<ScheduleDeliveries deliveries={order.Deliveries} />}
@@ -54,4 +55,4 @@ const OrderHistory = () => {
 
 export default withApollo(OrderHistory);
 
-export const allOrderHistoryRoute = '/consumer/all-order-history';
+export const allOrderHistoryRoute = '/consumer/all-past-orders';

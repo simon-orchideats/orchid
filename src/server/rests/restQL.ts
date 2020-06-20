@@ -63,6 +63,9 @@ const RestProfileQL = gql`
   type RestProfile {
     name: String!
     phone: String!
+    story: String
+    actor: String
+    actorImg: String
   }
 `
 

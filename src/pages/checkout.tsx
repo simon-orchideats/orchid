@@ -34,7 +34,6 @@ import { Tag } from "../rest/tagModel";
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
 
-
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none',
@@ -91,6 +90,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const [applyPromo, applyPromoRes] = useGetPromo();
+  const receiveTextsInput = createRef<HTMLInputElement>();
   const promoInputRef = createRef<HTMLInputElement>();
   const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
   const [promoDuration, setPromoDuration] = useState<promoDurations>();
@@ -102,6 +102,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const passwordInputRef = createRef<HTMLInputElement>();
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
+  const [receiveTextError, setReceiveTextError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
   const validateCuisineRef = useRef<() => boolean>();
@@ -214,8 +215,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }
 
-  const validate = (name?: string, password?: string) => {
+  const validate = (name?: string, password?: string, canReceiveTexts?: boolean) => {
     let isValid = true;
+    if (!canReceiveTexts) {
+      setReceiveTextError('Must agree to receive delivery updates')
+      isValid = false;
+    }
     if (!validatePhoneRef.current!()) {
       isValid = false;
     }
@@ -350,10 +355,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     zip?: string,
     phone?: string,
     promo?: string,
+    canReceiveTexts?: boolean,
   ) => {
     if (didPlaceOrder) return;
     setDidPlaceOrder(true);
-    if (!validate(name, password)) {
+    if (!validate(name, password, canReceiveTexts)) {
       notify('Please fix errors', NotificationType.error, true);
       setDidPlaceOrder(false);
       return
@@ -456,6 +462,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       zipInputRef.current?.value,
       phoneInputRef.current?.value,
       promoInputRef.current?.value,
+      receiveTextsInput.current?.checked,
     ),
     loading: didPlaceOrder,
     promoRef: promoInputRef,
@@ -534,8 +541,24 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <Grid item xs={12}>
               <FormControlLabel
                 label='I agree to receives delivery update texts'
-                control={<Checkbox checked disabled />}
+                control={
+                  <Checkbox
+                    color='primary'
+                    defaultChecked
+                    inputRef={receiveTextsInput}
+                    onChange={(_e, checked) => {
+                      if (checked) {
+                        setReceiveTextError('');
+                      } else {
+                        setReceiveTextError('Must agree to receive delivery updates')
+                      }
+                    }}
+                  />
+                }
               />
+              <Typography variant='body1' color='error'>
+                {receiveTextError}
+              </Typography>
             </Grid>
           </Grid>
           <Typography
@@ -665,10 +688,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 const CheckoutContainer = withClientApollo(injectStripe(checkout));
 
 export default () => {
-  let stripe = null;
-  if (!isServer()) {
-    stripe = window.Stripe(activeConfig.client.stripe.key)
-  }
+  if (isServer()) return null;
+  const stripe = window.Stripe(activeConfig.client.stripe.key)
   return (
     <StripeProvider stripe={stripe}>
       <Elements>

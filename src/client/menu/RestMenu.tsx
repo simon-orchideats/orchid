@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles, Typography, Grid, Paper } from "@material-ui/core";
+import { makeStyles, Typography, Grid, Paper, Avatar } from "@material-ui/core";
 import { Rest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { Meal } from '../../rest/mealModel';
@@ -15,6 +15,17 @@ const useStyles = makeStyles(theme => ({
       paddingLeft: theme.spacing(4),
       paddingRight: theme.spacing(3),
     },
+  },
+  profile: {
+    display: 'flex',
+  },
+  profilePic: {
+    marginRight: theme.spacing(1),
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   paper: {
     marginTop: theme.spacing(2),
@@ -45,10 +56,10 @@ const isMealInFilter = (meal: Meal, cuisines: string[]) => {
 
 const RestMenu: React.FC<{
   cuisinesFilter: string[],
-  rest: Rest
+  rest: Rest,
 }> = ({
   cuisinesFilter,
-  rest
+  rest,
 }) => {
   const classes = useStyles();
   const meals = rest.Menu.map(meal => {
@@ -61,11 +72,12 @@ const RestMenu: React.FC<{
         key={meal.Id}
         xs={4}
         sm={4}
+        md={3}
       >
         <MenuMeal
           restId={rest.Id}
           restName={rest.Profile.Name}
-          meal={meal} 
+          meal={meal}
           taxRate={rest.TaxRate}
         />
       </Grid>
@@ -75,11 +87,43 @@ const RestMenu: React.FC<{
   return (
     <Paper className={classes.paper}>
       <div className={classes.summary}>
-        <Typography variant='h4'>
-          {rest.Profile.Name}
-        </Typography>
-        <Typography variant='subtitle1' color='textSecondary'>
-          {`${rest.Location.Address.Address1}, ${rest.Location.Address.City}`}
+        <Grid container className={classes.row}>
+          {
+            rest.Profile.Actor ?
+            <>
+              <Grid item md={8}>
+                <div className={classes.profile}>
+                  <Avatar src={rest.Profile.ActorImg} className={classes.profilePic} />
+                  <Typography variant='h4'>
+                    {rest.Profile.Actor}
+                  </Typography>
+                </div>
+              </Grid>
+              <Grid item md={4}>
+                <Typography variant='h6' align='right'>
+                  {rest.Profile.Name}
+                </Typography>
+              </Grid>
+            </>
+          :
+            <Grid item xs={12}>
+              <Typography variant='h4'>
+                {rest.Profile.Name}
+              </Typography>
+              <Typography
+                variant='subtitle1'
+                color='textSecondary'
+              >
+                {`${rest.Location.Address.Address1}, ${rest.Location.Address.City}`}
+              </Typography>
+            </Grid>
+          }
+        </Grid>
+        <Typography
+          variant='subtitle1'
+          color='textSecondary'
+        >
+          {rest.Profile.Story}
         </Typography>
       </div>
       <Grid container className={classes.meals}>

@@ -3,9 +3,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography, Popover } from '@material-ui/core';
 import Router from 'next/router'
 import { howItWorksRoute } from '../../pages/how-it-works';
-import { plansRoute } from '../../pages/plans';
 import { faqsRoute } from '../../pages/faq';
 import { referralPageRoute } from '../../pages/get-20';
+import { whoWeAreRoute } from '../../pages/who-we-are';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -49,14 +49,6 @@ const AboutPopper: React.FC<{
     >
       <Paper className={classes.paper}>
         <div className={classes.row} onClick={() => {
-          Router.push(plansRoute);
-          onClose();
-        }}>
-          <Typography variant='button'>
-            Plans
-          </Typography>
-        </div>
-        <div className={classes.row} onClick={() => {
           Router.push(howItWorksRoute);
           onClose();
         }}>
@@ -70,6 +62,14 @@ const AboutPopper: React.FC<{
         }}>
           <Typography variant='button'>
             Get $20
+          </Typography>
+        </div>
+        <div className={classes.row} onClick={() => {
+          Router.push(whoWeAreRoute);
+          onClose();
+        }}>
+          <Typography variant='button'>
+            Who we are
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {

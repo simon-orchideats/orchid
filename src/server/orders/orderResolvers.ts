@@ -12,6 +12,16 @@ export const OrderQueryResolvers: ServerResolovers = {
       throw new Error('Internal Server Error');
     }
   },
+
+  
+  allPaidOrders: async(_root, _args, { signedInUser }) => {
+    try {
+      return await getOrderService().getAllPaidIOrders(signedInUser);
+    } catch (e) {
+      console.error(`[OrderResolver] Failed to get allPaidOrders '${signedInUser?._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
   
   myRewards: async(_root, _args, { signedInUser }) => {
     try {

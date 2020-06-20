@@ -8,12 +8,12 @@ import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
 
-export const getSuggestion = (cart: Cart | null, minMeals: number) => {
+export const getSuggestion = (cart: Cart | null, minMeals: number, cost: number) => {
   if (!cart) return [];
   let suggestion: string[] = [];
   const mealCount = Cart.getStandardMealCount(cart)
   if (mealCount < minMeals) {
-    suggestion.push(`Need ${minMeals - mealCount} more meals`);
+    suggestion.push(`Need ${minMeals - mealCount} more meals for ${(cost / 100).toFixed(2)} ea`);
   }
   return suggestion;
 }
@@ -24,7 +24,7 @@ const MenuCart: React.FC<{
     disabled: boolean | undefined,
     onNext: () => void,
     suggestions: string[],
-    summary: string,
+    summary: string[],
     donationCount: number,
     incrementDonationCount: () => void,
     decremetnDonationCount: () => void,
@@ -78,24 +78,24 @@ const MenuCart: React.FC<{
   const decrementDonationCount = useDecrementCartDonationCount();
 
   const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
-  let summary = '';
+  let summary = [];
   let suggestions: string[] = [];
   if (plans.data) {
+    const minPrice = Tier.getMealPrice(PlanNames.Standard, MIN_MEALS, plans.data)
+    suggestions = getSuggestion(cart, MIN_MEALS, minPrice);
+    const moreToNext = Tier.getNextPlans(PlanNames.Standard, mealCount, plans.data);
     if (mealCount >= MIN_MEALS) {
-      const moreToNext = Tier.getNextPlans(PlanNames.Standard, mealCount, plans.data);
-      let next = '';
+      summary.push(`${mealCount} meal plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea)`);
       for (let i = 0; i < moreToNext.length; i++) {
         const nextPrice = moreToNext[i].price;
         const nextCount = moreToNext[i].count;
-        next = `${next} +${nextCount} for ${(nextPrice / 100).toFixed(2)} ea.`
+        summary.push(`+${nextCount} for ${(nextPrice / 100).toFixed(2)} ea`)
       }
-      summary = `${mealCount} meal plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea).${next}`
     }
     if (cart && Cart.getAllowedDeliveries(cart) > 1) {
       const extra = Cart.getAllowedDeliveries(cart) - 1;
-      summary = `${summary}\n${extra} extra deliver${extra === 1 ? 'y' : 'ies available'}`
+      summary.push(`${extra} extra deliver${extra === 1 ? 'y available' : 'ies available'}`);
     }
-    suggestions = getSuggestion(cart, MIN_MEALS);
   }
   return (
     <>
