@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     height: 75,
     width: 75,
+    zIndex: 1,
     [theme.breakpoints.down('md')]: {
       height: 60,
       width: 60,
@@ -101,12 +102,21 @@ const useStyles = makeStyles(theme => ({
     minHeight: 400,
     padding: theme.spacing(3),
   },
-  testimonialsContainer: {
-    [theme.breakpoints.down(1450)]: {
-      paddingRight: theme.spacing(9),
+  testimonialsTitle: {
+    [theme.breakpoints.down(1250)]: {
+      paddingLeft: '0px !important',
     },
-    [theme.breakpoints.up(1450)]: {
-      paddingRight: theme.spacing(18)
+    [theme.breakpoints.down(1600)]: {
+      paddingLeft: 400,
+    },
+    paddingLeft: 100,
+  },
+  testimonialsContainer: {
+    [theme.breakpoints.down(1200)]: {
+      paddingRight: theme.spacing(1),
+    },
+    [theme.breakpoints.down(1450)]: {
+      paddingRight: theme.spacing(3),
     },
     [theme.breakpoints.down('lg')]: {
       backgroundImage: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/peach.png)',
@@ -124,15 +134,17 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4),
     marginBottom: theme.spacing(3),
   },
+  orchidFood: {
+    width: '100%',
+  },
   testimonial: {
     textAlign: 'left',
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),
     paddingBottom: theme.spacing(2),
     paddingTop: theme.spacing(2),
-    maxHeight: 150,
     maxWidth: 350,
-    borderRadius: 30,
+    borderRadius: 20,
     borderStyle: 'solid',
     alignItems: 'flex-start',
     backgroundColor: theme.palette.common.white,
@@ -142,8 +154,8 @@ const useStyles = makeStyles(theme => ({
       paddingRight: theme.spacing(2),
       paddingBottom: theme.spacing(2),
       paddingTop: theme.spacing(2),
-      maxHeight: 200,
     },
+    position: 'relative',
   },
   testimonials: {
     display: 'flex',
@@ -169,11 +181,37 @@ const useStyles = makeStyles(theme => ({
       display: 'none'
     },
   },
+  bubbleTip: {
+    content: '""',
+    position: 'absolute',
+    zIndex: 0,
+    bottom: 0,
+    left: -7,
+    height: 20,
+    width: 20,
+    borderBottomRightRadius: 15,
+  },
+  bubble: {
+    borderRadius: 20,
+    padding: '8px 15px',
+    position: 'relative',
+  },
+  t0: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 200,
+    [theme.breakpoints.down('md')]: {
+      marginLeft: 0,
+      marginBottom: 0,
+    },
+  },
   t1: {
     display: 'flex',
     alignItems: 'center',
+    marginTop: 200,
     [theme.breakpoints.down('md')]: {
       marginLeft: -55,
+      marginTop: theme.spacing(3),
     },
     [theme.breakpoints.down('xs')]: {
       marginLeft: 0,
@@ -182,24 +220,24 @@ const useStyles = makeStyles(theme => ({
   t2: {
     display: 'flex',
     alignItems: 'center',
-    marginTop: 210,
-    marginLeft: -60,
+    marginBottom: 210,
+    marginLeft: -200,
     [theme.breakpoints.down('md')]: {
       marginTop: theme.spacing(3),
-      marginLeft: 80
+      marginLeft: 80,
+      marginBottom: 0,
     },
     [theme.breakpoints.down('xs')]: {
       marginLeft: 0,
+      marginBottom: 0,
     },
   },
   t3: {
     display: 'flex',
     alignItems: 'center',
     marginLeft: -100,
-    marginBottom: 200,
     [theme.breakpoints.down('md')]: {
       marginTop: theme.spacing(3),
-      marginBottom: 0,
       marginLeft: -60,
     },
     [theme.breakpoints.down('xs')]: {
@@ -443,49 +481,76 @@ const Testimonials = () => {
   return (
     <div className={`${classes.testimonialsContainer}`}>
       <div>
-        <Typography variant='h3' className={`${classes.largeBottomMargin} ${classes.shrinker} ${classes.centered}`}>
+        <Typography
+          variant='h3' 
+          className={`
+            ${classes.largeBottomMargin}
+            ${classes.shrinker}
+            ${classes.centered}
+            ${classes.testimonialsTitle}
+        `}>
           What People Say
         </Typography>
         <div className={classes.testimonials}>
+          <div className={classes.t0}>
+            <Avatar className={classes.avatar} src='/home/alma.png'/>
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <img src='/home/bubble.png' className={classes.bubbleTip}/>
+              <div className={classes.testimonialHeader}>
+                <Avatar className={classes.headerAvatar} src='/home/alma.png'/>
+                <Typography variant='body1' className={classes.bold}>
+                  Alma
+                </Typography>
+              </div>
+              <Typography variant='body1'>
+                I'm so thankful for this 😭
+              </Typography>
+              <img src='/home/orchidFood.png' className={classes.orchidFood} />
+            </div>
+          </div>
           <div className={classes.t1}>
             <Avatar className={classes.avatar} src='/home/josh.jpg'/>
             <div className={`${classes.testimonial} ${classes.centered}`}>
+              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/josh.jpg'/>
                 <Typography variant='body1' className={classes.bold}>
                   Josh
                 </Typography>
               </div>
-              <Typography color='textSecondary' variant='body1' >
-                Orchid is a no brainer. Cheaper and more convenient than ordering everyday.
+              <Typography variant='body1' >
+                I do love it, it's honestly a no-brainer, were are tired of having to work, cook and do dishes, so this
+                is a great opportunity to support our restaurants plus making things more convenient for us
               </Typography>
             </div>
           </div>
           <div className={classes.t2}>
             <Avatar className={classes.avatar} src='/home/brandon.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
+              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
                 <Typography variant='body1' className={classes.bold}>
                   Brandon
                 </Typography>
               </div>
-              <Typography color='textSecondary' variant='body1' >
-                Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid.
+              <Typography variant='body1' >
+                Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid
               </Typography>
             </div>
           </div>
           <div className={classes.t3}>
             <Avatar className={classes.avatar} src='/home/arv.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
+              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
                 <Typography variant='body1' className={classes.bold}>
                   Arvinder
                 </Typography>
               </div>
-              <Typography color='textSecondary' variant='body1'>
-                It's so convenient. I don't have to think about food.
+              <Typography variant='body1'>
+                It's so convenient. I don't have to think about food
               </Typography>
             </div>
           </div>
