@@ -312,7 +312,7 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Potluck, but from restaurants
+          Restaurants in your fridge
         </Typography>
         <Typography variant='h4' className={classes.title}>
           A weekly meal plan delivery
