@@ -66,7 +66,7 @@ const useStyles = makeStyles(theme => ({
   people: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     width: 250,
   },
@@ -264,12 +264,12 @@ const whoWeAre = () => {
             md={4}
           >
             <div className={classes.people}>
-              <img src='/menu/canteen-dhaba/owner.jpg' className={classes.owner}/>
+              <img src='/who-we-are/canteen.jpg' className={classes.owner}/>
               <Typography variant='subtitle1'>
                 Hanish & Peter
               </Typography>
               <Typography variant='subtitle2'>
-                Brothers and owners of Canteen Dhaba + China Spice
+                Brothers of Canteen Dhaba + China Spice
               </Typography>
             </div>
           </Grid>
@@ -280,12 +280,12 @@ const whoWeAre = () => {
             md={4}
           >
             <div className={classes.people}>
-              <img src='/menu/shaka/owner.jpeg' className={classes.owner}/>
+              <img src='/who-we-are/shaka.jpeg' className={classes.owner}/>
               <Typography variant='subtitle1'>
                 Kiersten & Krista
               </Typography>
               <Typography variant='subtitle2'>
-                Sisters and owners of Shaka Bowl
+                Sisters of Shaka Bowl
               </Typography>
             </div>
           </Grid>
@@ -296,12 +296,12 @@ const whoWeAre = () => {
             md={4}
           >
             <div className={classes.people}>
-              <img src='/menu/rumba-cubana/owner.jpg' className={classes.owner} />
+              <img src='/who-we-are/rumba.jpg' className={classes.owner} />
               <Typography variant='subtitle1'>
                 Alan & Nairelys
               </Typography>
               <Typography variant='subtitle2'>
-                Husband and wife and owners of Rumba Cubana
+                Husband and wife of Rumba Cubana
               </Typography>
             </div>
           </Grid>
