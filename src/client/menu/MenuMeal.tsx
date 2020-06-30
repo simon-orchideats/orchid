@@ -23,6 +23,7 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: 0,
     paddingBottom: `${theme.spacing(1)}px !important`,
     paddingTop: 4,
+    cursor: 'pointer',
     [theme.breakpoints.up('md')]: {
       paddingTop: undefined,
     },
@@ -43,7 +44,14 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'flex-end'
   },
   title: {
-    lineHeight: 1.5
+    lineHeight: 1.5,
+  },
+  desc: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    '-webkit-line-clamp': 2,
+    '-webkit-box-orient': 'vertical',
   },
   imgAdd: {
     color: theme.palette.common.white
@@ -119,11 +127,10 @@ const MenuMeal: React.FC<{
       setChoicesAnchor(event.currentTarget);
     }
   };
-  const onClickName = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
-    if (!isMdAndUp) {
-      setDescAnchor(descAnchor ? null : event.currentTarget);
-      setDesc(mealDesc || 'No description')
-    }
+  const onClickContent = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
+    setDescAnchor(descAnchor ? null : event.currentTarget);
+    setDesc(mealDesc || 'No description');
+    
   };
   const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
     setAddons({
@@ -302,12 +309,12 @@ const MenuMeal: React.FC<{
         anchorEl={descAnchor}
         onClose={() => setDescAnchor(null)}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: 'bottom',
+          horizontal: 'center',
         }}
         transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: 'top',
+          horizontal: 'center',
         }}
       >
         <Paper className={classes.popper}>
@@ -332,18 +339,21 @@ const MenuMeal: React.FC<{
             </Typography>
         }
       </div>
-      <CardContent className={classes.content}>
+      <CardContent className={classes.content} onClick={e => onClickContent(e, meal.Description)}>
         <Typography
           gutterBottom
           variant='subtitle1'
           className={classes.title}
-          onClick={e => onClickName(e, meal.Description)}
         >
-          {meal.Name} {!isMdAndUp && meal.Description && <ShortTextIcon className={classes.detail} />}
+          {meal.Name} {meal.Description && <ShortTextIcon className={classes.detail} />}
         </Typography>
         {
           isMdAndUp &&
-          <Typography variant='body2' color='textSecondary'>
+          <Typography
+            variant='body2'
+            color='textSecondary'
+            className={classes.desc}
+          >
             {meal.Description}
           </Typography>
         }

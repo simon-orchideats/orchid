@@ -36,7 +36,20 @@ PUT /_snapshot/foodflick/rests?wait_for_completion=true
 
 GET /_snapshot/_all
 
-
+POST _reindex
+{
+  "source": {
+    "remote": {
+      "host": "https://a153191553584841a3c930b758f559c6.us-east-1.aws.found.io:9243",
+      "username": "elastic",
+      "password": "uzXmaVMQn6mnfNwzi5JdvUa4"
+    },
+    "index": "rests"
+  },
+  "dest": {
+    "index": "dest"
+  }
+}
 ############################
 
 ########### READ ###########

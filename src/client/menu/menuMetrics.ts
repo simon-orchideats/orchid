@@ -5,3 +5,8 @@ export const sendZipMetrics = (
 ) => {
   AnalyticsService.sendZipMetrics(zip);
 }
+
+
+export const sendOpenDescriptionMetrics = () => {
+  AnalyticsService.sendOpenDescriptionMetrics();
+}
