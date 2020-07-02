@@ -312,7 +312,10 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <div className={classes.welcomeText}>
         <Typography variant='h2' className={classes.welcomeTitle}>
-          Restaurants in your fridge
+          Restaurants
+        </Typography>
+        <Typography variant='h2' className={classes.welcomeTitle}>
+          in your fridge
         </Typography>
         <Typography variant='h4' className={classes.title}>
           A weekly meal plan delivery
@@ -495,7 +498,6 @@ const Testimonials = () => {
           <div className={classes.t0}>
             <Avatar className={classes.avatar} src='/home/alma.png'/>
             <div className={`${classes.testimonial} ${classes.centered}`}>
-              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/alma.png'/>
                 <Typography variant='body1' className={classes.bold}>
@@ -511,7 +513,6 @@ const Testimonials = () => {
           <div className={classes.t1}>
             <Avatar className={classes.avatar} src='/home/josh.jpg'/>
             <div className={`${classes.testimonial} ${classes.centered}`}>
-              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/josh.jpg'/>
                 <Typography variant='body1' className={classes.bold}>
@@ -527,7 +528,6 @@ const Testimonials = () => {
           <div className={classes.t2}>
             <Avatar className={classes.avatar} src='/home/brandon.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
-              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
                 <Typography variant='body1' className={classes.bold}>
@@ -542,7 +542,6 @@ const Testimonials = () => {
           <div className={classes.t3}>
             <Avatar className={classes.avatar} src='/home/arv.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
-              <img src='/home/bubble.png' className={classes.bubbleTip}/>
               <div className={classes.testimonialHeader}>
                 <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
                 <Typography variant='body1' className={classes.bold}>
