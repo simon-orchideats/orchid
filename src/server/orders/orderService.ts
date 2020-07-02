@@ -730,7 +730,7 @@ class OrderService {
       const rests = await this.restService.getNearbyERests(
         consumer.profile.destination.address.zip,
         cuisines,
-        ['menu', 'profile', 'location', 'taxRate']
+        ['menu', 'profile', 'location', 'taxRate', 'hours']
       );
       if (rests.length === 0) throw new Error(`Rests of cuisine '${JSON.stringify(cuisines)}' is empty`)
       const deliveries: IDeliveryInput[] = [];
@@ -751,6 +751,7 @@ class OrderService {
               randomRest._id,
               eRest.profile.name,
               eRest.taxRate,
+              eRest.hours,
               cuisines,
             ),
             meals,
@@ -779,6 +780,7 @@ class OrderService {
             randomRest._id,
             randomRest.rest.profile.name,
             randomRest.rest.taxRate,
+            randomRest.rest.hours,
             cuisines,
           ),
           remainingMeals,
@@ -789,6 +791,7 @@ class OrderService {
         remainingMeals,
         deliveries[0].meals,
       );
+      Cart.delayDeliveriesForClosures(deliveries);
 
       const automatedOrder = Order.getNewOrder(
         consumerId,
@@ -1144,6 +1147,9 @@ class OrderService {
       const indexer = this.elastic.index({
         index: ORDER_INDEX,
         body: order
+      }).catch(e => {
+        console.error(`Failed to index new order ${JSON.stringify(order)}`, e.stack)
+        throw e;
       })
       this.addAutomaticOrder(
         signedInUser._id,
@@ -1207,7 +1213,7 @@ class OrderService {
         error: null
       };
     } catch (e) {
-      console.error('[OrderService] could not place order', e.stack);
+      console.error(`[OrderService] could not place order for ${signedInUser._id}`, e.stack);
       throw new Error('Internal Server Error');
     }
   }

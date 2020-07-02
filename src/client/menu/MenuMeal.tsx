@@ -5,6 +5,7 @@ import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, us
 import ShortTextIcon from '@material-ui/icons/ShortText';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { Hours } from '../../rest/restModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -76,11 +77,13 @@ const MenuMeal: React.FC<{
   restId: string,
   restName: string,
   taxRate: number,
+  hours: Hours,
 }> = ({
   meal,
   restId,
   restName,
-  taxRate
+  taxRate,
+  hours,
 }) => {
   const theme = useTheme<Theme>();
   const classes = useStyles({ meal });
@@ -120,7 +123,8 @@ const MenuMeal: React.FC<{
         [],
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours,
       );
       setChoicesAnchor(null);
     } else {
@@ -162,7 +166,8 @@ const MenuMeal: React.FC<{
         [ ...Object.values(options), ...Object.values(addons).filter(a => a.isChecked).map(a => a.name)],
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours,
       );
       onCloseChoices();
     } else {
@@ -189,7 +194,8 @@ const MenuMeal: React.FC<{
         [...Object.values(options), selectedOption],
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours
       );
       onCloseChoices();
     } else {

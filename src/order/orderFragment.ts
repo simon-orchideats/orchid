@@ -54,6 +54,36 @@ const orderFragment = gql`
           name
           type
         }
+        hours {
+          Su {
+            open
+            close
+          }
+          M {
+            open
+            close
+          }
+          T {
+            open
+            close
+          }
+          W {
+            open
+            close
+          }
+          Th {
+            open
+            close
+          }
+          F {
+            open
+            close
+          }
+          Sa {
+            open
+            close
+          }
+        }
       }
       status
     }

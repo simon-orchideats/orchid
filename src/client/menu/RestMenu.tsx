@@ -81,6 +81,7 @@ const RestMenu: React.FC<{
           restName={rest.Profile.Name}
           meal={meal}
           taxRate={rest.TaxRate}
+          hours={rest.Hours}
         />
       </Grid>
     )
@@ -130,31 +131,6 @@ const RestMenu: React.FC<{
               </Grid>
             }
           </Grid>
-        {/* <Grid container className={classes.row}> */}
-          {/* {
-            rest.Profile.Actor ?
-            <>
-              <div className={classes.row}>
-                <Avatar src={rest.Profile.ActorImg} className={classes.profilePic} />
-                <Typography variant='h4'>
-                  {rest.Profile.Name}
-                </Typography>
-              </div>
-              <div className={classes.row}>
-                <Typography variant='body1' color='textSecondary'>
-                  by&nbsp;
-                </Typography>
-                <Typography variant='h5'>
-                  {rest.Profile.Actor}
-                </Typography>
-              </div>
-            </>
-          :
-            <Typography variant='h4'>
-              {rest.Profile.Name}
-            </Typography>
-          } */}
-        {/* </Grid> */}
         <Typography
           variant='subtitle1'
           color='textSecondary'

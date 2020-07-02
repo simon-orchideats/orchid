@@ -1,3 +1,4 @@
+import { Hours } from './../../../rest/restModel';
 import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
 import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerPlanModel';
 import { ApolloCache } from 'apollo-cache';
@@ -8,6 +9,8 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Order } from '../../../order/orderModel';
 import moment from 'moment';
+import { ApolloError } from 'apollo-client';
+import { useMemo } from 'react';
 
 type cartQueryRes = {
   cart: Cart | null
@@ -20,13 +23,17 @@ export const cartQL = gql`
     schedules: [Schedule!]!
     zip: String
   }
+  type AutoDelivery {
+    cart: CartState
+    delays: [String!]!
+  }
   extend type Query {
     cart: CartState
   }
   extend type Mutation {
     clearCartMeals: CartState
     addMealToCart(mealId: String!, meal: Meal!, restId: ID!, restName: String!, taxRate: Float!): CartState!
-    setScheduleAndAutoDeliveries(schedules: [Schedule!]!, start: Float): CartState!
+    setScheduleAndAutoDeliveries(schedules: [Schedule!]!, start: Float): AutoDelivery!
     decrementDonationCount: CartState!
     incrementDonationCount: CartState!
     moveMealToNewDelivery(meal: Meal!, fromDeliveryIndex: Int!, toDeliveryIndex: Int!): CartState!
@@ -46,16 +53,36 @@ const CART_QUERY = gql`
   }
 `
 
-export const useSetScheduleAndAutoDeliveries = (): (schedules: Schedule[], start?: number) => void => {
+export const useSetScheduleAndAutoDeliveries = (): [
+  (schedules: Schedule[], start?: number) => void,
+  {
+    error: ApolloError | undefined
+    delays: string[],
+  }
+] => {
+  type res = {
+      setScheduleAndAutoDeliveries: {
+        delays: string[]
+    }
+  };
   type vars = { schedules: Schedule[], start?: number };
-  const [mutate] = useMutation<any, vars>(gql`
+  const [mutate, mutation] = useMutation<res, vars>(gql`
     mutation setScheduleAndAutoDeliveries($schedules: [Schedule!]!, $start: Float) {
       setScheduleAndAutoDeliveries(schedules: $schedules, start: $start) @client
     }
   `);
-  return (schedules: Schedule[], start?: number) => {
+  const setScheduleAndAutoDeliveries = (schedules: Schedule[], start?: number) => {
     mutate({ variables: { schedules, start } })
-  }
+  };
+  return useMemo(() => {
+    return [
+      setScheduleAndAutoDeliveries,
+      {
+        error: mutation.error,
+        delays: mutation.data?.setScheduleAndAutoDeliveries.delays || [],
+      }
+    ]
+  }, [mutation]);
 }
 
 export const useGetCart = () => {
@@ -102,7 +129,8 @@ export const useAddMealToCart = (): (
   choices: string[],
   restId: string,
   restName: string,
-  taxRate: number
+  taxRate: number,
+  hours: Hours,
 ) => void => {
   type vars = {
     mealId: string,
@@ -110,7 +138,8 @@ export const useAddMealToCart = (): (
     choices: string[],
     restId: string,
     restName: string,
-    taxRate: number
+    taxRate: number,
+    hours: Hours,
   };
   const [mutate] = useMutation<any, vars>(gql`
     mutation addMealToCart(
@@ -119,7 +148,8 @@ export const useAddMealToCart = (): (
       $choices: [String!]!
       $restId: ID!,
       $restName: String!,
-      $taxRate: Float!
+      $taxRate: Float!,
+      $hours: Hours!,
     ) {
       addMealToCart(
         mealId: $mealId,
@@ -127,7 +157,8 @@ export const useAddMealToCart = (): (
         choices: $choices,
         restId: $restId,
         restName: $restName,
-        taxRate: $taxRate
+        taxRate: $taxRate,
+        hours: $hours,
       ) @client
     }
   `);
@@ -137,7 +168,8 @@ export const useAddMealToCart = (): (
     choices: string[],
     restId: string,
     restName: string,
-    taxRate: number
+    taxRate: number,
+    hours: Hours,
   ) => {
     mutate({ 
       variables: {
@@ -146,7 +178,8 @@ export const useAddMealToCart = (): (
         choices,
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours
       }
     })
   }
@@ -255,9 +288,10 @@ type cartMutationResolvers = {
     choices: string[],
     restId: string,
     restName: string,
-    taxRate: number
+    taxRate: number,
+    hours: Hours,
   }, Cart | null>
-  setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[], start?: number }, Cart | null>
+  setScheduleAndAutoDeliveries: ClientResolver<{ schedules: Schedule[], start?: number }, { cart: Cart | null, delays: string[] }>
   clearCartMeals: ClientResolver<undefined, Cart | null>
   decrementDonationCount: ClientResolver<undefined, Cart | null>
   incrementDonationCount: ClientResolver<undefined, Cart | null>
@@ -287,7 +321,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
       choices,
       restId,
       restName,
-      taxRate
+      taxRate,
+      hours,
     },
     { cache }
   ) => {
@@ -299,7 +334,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
         choices,
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours,
       );
       const newMealPlans = [new MealPlan({
         stripePlanId: meal.StripePlanId,
@@ -326,7 +362,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
       choices,
       restId,
       restName,
-      taxRate
+      taxRate,
+      hours,
     );
     return updateCartCache(cache, newCart);
   },
@@ -338,8 +375,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
       console.error(err.stack);
       throw err;
     }
-    const newCart = res.cart.setScheduleAndAutoDeliveries(schedules, start);
-    return updateCartCache(cache, newCart);
+    const autos = res.cart.setScheduleAndAutoDeliveries(schedules, start);
+    updateCartCache(cache, autos.cart);
+    return autos;
   },
 
   decrementDonationCount: (_, _args, { cache }) => {

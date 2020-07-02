@@ -131,6 +131,18 @@ const ScheduleDeliveries: React.FC<{
                 Minimum {MIN_MEALS} meals per delivery
               </Typography>
             }
+            {
+              !('Status' in d) && Delivery.getClosures(d).length > 0 && Delivery.getClosures(d).map((c, i) => (
+                <Typography
+                  variant='body1'
+                  className={`${classes.orange} ${classes.paddingBottom}`}
+                  align='center'
+                  key={i}
+                >
+                  {c}
+                </Typography>
+              ))
+            }
           </div>
           {
             d.Meals.length === 0 ?

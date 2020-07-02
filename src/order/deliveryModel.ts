@@ -1,8 +1,10 @@
 import { Tag } from './../rest/tagModel';
 import { PlanName } from './../plan/planModel';
 import { IMeal } from './../rest/mealModel';
-import { deliveryTime } from './../consumer/consumerPlanModel';
+import { deliveryTime, deliveryDay } from './../consumer/consumerPlanModel';
 import { difference } from 'lodash';
+import { Hours, IHours } from '../rest/restModel';
+import moment from 'moment';
 
 type DeliveryStatus = 'Complete' | 'Confirmed' | 'Open' | 'Returned' | 'Skipped' | 'Canceled';
 
@@ -31,6 +33,7 @@ export interface IDeliveryMeal extends Omit<
   | 'optionGroups'
   | 'isActive'
   > {
+  readonly hours: IHours,
   readonly mealId: string
   readonly choices: string[]
   readonly quantity: number
@@ -52,6 +55,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   readonly mealId: string;
   readonly img?: string;
   readonly name: string;
+  readonly hours: Hours;
   readonly choices: string[]
   readonly quantity: number
   readonly restId: string
@@ -65,6 +69,7 @@ export class DeliveryMeal implements IDeliveryMeal {
     this.mealId = meal.mealId;
     this.img = meal.img;
     this.name = meal.name;
+    this.hours = new Hours(meal.hours);
     this.quantity = meal.quantity;
     this.restId = meal.restId;
     this.restName = meal.restName;
@@ -78,6 +83,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   public get MealId() { return this.mealId }
   public get Choices() { return this.choices }
   public get Img() { return this.img }
+  public get Hours() { return this.hours }
   public get Name() { return this.name }
   public get Quantity() { return this.quantity }
   public get RestId() { return this.restId }
@@ -95,12 +101,14 @@ export class DeliveryMeal implements IDeliveryMeal {
     restId: string,
     restName: string,
     taxRate: number,
+    hours: IHours,
     quantity: number = 1
   ) {
     return new DeliveryMeal({
       mealId,
       img: meal.img,
       name: meal.name,
+      hours,
       quantity,
       restId,
       choices,
@@ -131,6 +139,7 @@ export class DeliveryMeal implements IDeliveryMeal {
   static getICopy(meal: IDeliveryMeal): IDeliveryMeal {
     return {
       ...meal,
+      hours: Hours.getICopy(meal.hours),
       choices: meal.choices.map(c => c),
       tags: meal.tags.map(t => Tag.getICopy(t))
     }
@@ -216,6 +225,17 @@ export class Delivery extends DeliveryInput implements IDelivery {
       });
       return sum;
     }, {});
+  }
+
+  static getClosures(d: IDeliveryInput | IDelivery): string[] {
+    const day = moment(d.deliveryDate).day() as deliveryDay
+    const closures: string[] = []
+    for (let i = 0; i < d.meals.length; i++) {
+      if (d.meals[i].hours[Hours.getDay(day)].length === 0) {
+        closures.push(`${d.meals[i].restName} is closed on ${moment(d.deliveryDate).format('ddd')}`)
+      }
+    }
+    return closures;
   }
 }
 

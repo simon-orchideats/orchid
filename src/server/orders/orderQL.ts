@@ -35,6 +35,7 @@ export const _OrderQL = gql`
     restId: ID!
     choices: [String!]!
     restName: String!
+    hours: HoursInput!
     stripePlanId: ID!
     planName: ID!
     taxRate: Float!
@@ -62,6 +63,7 @@ export const _OrderQL = gql`
     quantity: Int!
     restId: ID!
     restName: String!
+    hours: Hours!
     stripePlanId: ID!
     planName: ID!
     taxRate: Float!

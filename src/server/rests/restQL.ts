@@ -70,7 +70,37 @@ const RestProfileQL = gql`
 `
 
 const _RestQL = gql`
-  
+
+  input DayHoursInput {
+    open: String!
+    close: String!
+  }
+
+  type DayHours {
+    open: String!
+    close: String!
+  }
+
+  type Hours {
+    Su: [DayHours!]!
+    M: [DayHours!]!
+    T: [DayHours!]!
+    W: [DayHours!]!
+    Th: [DayHours!]!
+    F: [DayHours!]!
+    Sa: [DayHours!]!
+  }
+
+  input HoursInput {
+    Su: [DayHoursInput!]!
+    M: [DayHoursInput!]!
+    T: [DayHoursInput!]!
+    W: [DayHoursInput!]!
+    Th: [DayHoursInput!]!
+    F: [DayHoursInput!]!
+    Sa: [DayHoursInput!]!
+  }
+
   input RestInput {
     address: AddressInput!
     menu: [MealInput!]!
@@ -81,6 +111,7 @@ const _RestQL = gql`
     _id: ID!
     location: Location!
     menu: [Meal!]!
+    hours: Hours
     profile: RestProfile!
     taxRate: Float!
   }

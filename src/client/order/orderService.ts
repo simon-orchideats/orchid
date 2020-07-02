@@ -45,7 +45,7 @@ export const useGetPromo = (): [
 ] => {
   type res = { getPromo: MutationPromoRes };
   type vars = { promoCode: string, phone: string, fullAddr: string }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
+  const [mutate, mutation] = useMutation<res, vars>(gql`
     mutation getPromo($promoCode: String!, $phone: String!, $fullAddr: String!) {
       getPromo(promoCode: $promoCode, phone: $phone, fullAddr: $fullAddr) {
         res {
