@@ -1,4 +1,4 @@
-import { deliveryDay, ISchedule } from './../consumer/consumerPlanModel';
+import { deliveryDay } from './../consumer/consumerPlanModel';
 import { PlanName } from './../plan/planModel';
 import { IAddress } from './../place/addressModel';
 import { RestProfile, IRestProfile } from './restProfileModel';
