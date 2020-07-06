@@ -42,7 +42,7 @@ const useStyles = makeStyles(theme => ({
   },
   welcome: {
     [theme.breakpoints.down('lg')]: {
-      background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(bowls.jpg)',
+      background: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-plating.png)',
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
     },
@@ -85,15 +85,17 @@ const useStyles = makeStyles(theme => ({
   plans: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: 150,
+    paddingTop: 160,
     backgroundImage: 'url(/home/friends.png)',
-    backgroundPosition: '0% 60%',
+    backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
     height: 900,
+    paddingBottom: 32,
     alignItems: 'center',
-  },
-  plansTitle: {
-    paddingBottom: 150,
+    [theme.breakpoints.down('md')]: {
+      paddingTop: theme.spacing(4),
+      height: 650,
+    },
   },
   testimonialsTitle: {
     [theme.breakpoints.down(1250)]: {
@@ -112,7 +114,7 @@ const useStyles = makeStyles(theme => ({
       paddingRight: theme.spacing(3),
     },
     [theme.breakpoints.down('lg')]: {
-      backgroundImage: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/peach.png)',
+      backgroundImage: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-peach.png)',
       paddingRight: theme.spacing(4),
       alignItems: 'center',
     },
@@ -225,12 +227,18 @@ const useStyles = makeStyles(theme => ({
   lowWidth: {
     maxWidth: 200,
   },
-  microwave: {
+  icon: {
     maxWidth: 135,
     height: 78,
     marginBottom: theme.spacing(1),
-    [theme.breakpoints.down('xs')]: {
-      height: 38,
+  },
+  arrow: {
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: theme.spacing(5),
+      transform: 'rotate(-90deg) scaleX(-1)',
+      height: 50,
+      marginLeft: theme.spacing(1),
+      marginBottom: 0,
     },
   },
   shrinker: {
@@ -247,19 +255,34 @@ const useStyles = makeStyles(theme => ({
       fontSize: 59,
     },
   },
-  howSubtitle: {
-    [theme.breakpoints.down('xs')]: {
+  whySubtitle: {
+    [theme.breakpoints.down('sm')]: {
       fontSize: '1.25rem',
+      fontWeight: 400,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1rem',
+      fontWeight: 400,
+    },
+  },
+  howSubtitle: {
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.25rem',
+      fontWeight: 400,
     },
   },
   title: {
     paddingBottom: theme.spacing(2),
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
+      fontWeight: 500,
     },
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.50rem',
     },
+  },
+  plansTitle: {
+    paddingBottom: theme.spacing(4),
   },
   promotion: {
     backgroundColor: theme.palette.primary.main,
@@ -314,25 +337,20 @@ const Why = () => {
   const Content: React.FC<{
     title?: string,
     img?: string,
-    icon?: JSX.Element,
   }> = ({
     title,
-    icon,
     img
   }) => (
-    <div className={classes.centered}>
+    <div className={`${classes.centered} ${classes.verticalMargin}`}>
       {
         img &&
         <img
           src={img}
           alt='logo'
-          className={classes.microwave}
+          className={classes.icon}
         />
       }
-      {
-        icon && icon
-      }
-      <Typography variant='h5' className={classes.howSubtitle}>
+      <Typography variant='h5' className={classes.whySubtitle}>
         {title}
       </Typography>
     </div>
@@ -342,45 +360,126 @@ const Why = () => {
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         Why Orchid?
       </Typography>
-      <Grid container className={classes.verticalMargin}>
-        <Grid item xs={12} sm={12} md={4}>
-          <Content
-            title="You order 3+ deliveries a week"
-            img='home/money.png'
-          />
-          <Content
-            img='home/down.svg'
-          />
-          <Content
-            title='Subscribe & save'
-            img='home/piggy-bank.svg'
-          />
+      <Grid
+        container
+        className={classes.verticalMargin}
+      >
+        <Grid
+          container
+          item
+          xs={12} 
+          sm={12}
+          md={4}
+        >
+          <Grid
+            item
+            xs={4}
+            md={12}
+          >
+            <Content
+              title="You order 3+ deliveries a week"
+              img='home/money.png'
+            />
+          </Grid>
+          <Grid
+            item 
+            xs={4}
+            md={12}
+          >
+            <img
+              src='/home/down.svg'
+              alt='logo'
+              className={`${classes.icon} ${classes.arrow}`}
+            />
+          </Grid>
+          <Grid
+            item
+            xs={4}
+            md={12}
+          >
+            <Content
+              title='Subscribe & save'
+              img='home/piggy-bank.svg'
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={12} md={4}>
-          <Content
-            title='You hate waiting for delivery'
-            img='home/snail.png'
-          />
-          <Content
-            img='home/down.svg'
-          />
-          <Content
-            title="Just heat it up"
-            img='home/omelette.png'
-          />
+        <Grid
+          container
+          item
+          xs={12} 
+          sm={12}
+          md={4}
+        >
+          <Grid
+            item
+            xs={4}
+            md={12}
+          >
+            <Content
+              title='You hate waiting for delivery'
+              img='home/snail.png'
+            />
+          </Grid>
+          <Grid
+            item 
+            xs={4}
+            md={12}
+          >
+            <img
+              src='/home/down.svg'
+              alt='logo'
+              className={`${classes.icon} ${classes.arrow}`}
+            />
+          </Grid>
+            <Grid
+              item
+              xs={4}
+              md={12}
+            >
+            <Content
+              title="Just heat it up"
+              img='home/omelette.png'
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={12} md={4}>
-          <Content
-            title='You & roomies argue on what to eat'
-            img='home/argue.png'
-          />
-          <Content
-            img='home/down.svg'
-          />
-          <Content
-            title="Mix n' match restaurants"
-            img='home/eat.svg'
-          />
+        <Grid
+          container
+          item
+          xs={12} 
+          sm={12}
+          md={4}
+        >
+          <Grid
+            item
+            xs={4}
+            md={12}
+          >
+            <Content
+              title='You & roomies argue on what to eat'
+              img='home/argue.png'
+            />
+          </Grid>
+          <Grid
+            item 
+            xs={4}
+            md={12}
+          >
+            <img
+              src='/home/down.svg'
+              alt='logo'
+              className={`${classes.icon} ${classes.arrow}`}
+            />
+          </Grid>
+          <Grid
+            item
+            xs={4}
+            md={12}
+          >
+            <Content
+              title="Mix n' match restaurants"
+              img='home/eat.svg'
+            />
+          </Grid>
         </Grid>
       </Grid>
       <Link href={menuRoute}>
@@ -401,36 +500,33 @@ const HowItWorks = () => {
   const Content: React.FC<{
     title: string,
     description: string,
-    img?: string,
-    icon?: JSX.Element,
+    img: string,
   }> = ({
     title,
     description,
-    icon,
     img
   }) => (
-        <Grid item xs={12} sm={12} md={3}>
-          <div className={classes.centered}>
-            {
-              img &&
-              <img
-                src={img}
-                alt='logo'
-                className={classes.microwave}
-              />
-            }
-            {
-              icon && icon
-            }
-            <Typography variant='h5' className={classes.howSubtitle}>
-              {title}
-            </Typography>
-            <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-              {description}
-            </Typography>
-          </div>
-        </Grid>
-      )
+    <Grid
+      item
+      xs={12}
+      sm={12}
+      md={3}
+    >
+      <div className={`${classes.verticalMargin} ${classes.centered}`}>
+        <img
+          src={img}
+          alt='logo'
+          className={classes.icon}
+        />
+        <Typography variant='h5' className={classes.howSubtitle}>
+          {title}
+        </Typography>
+        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+          {description}
+        </Typography>
+      </div>
+    </Grid>
+  )
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
@@ -459,7 +555,7 @@ const HowItWorks = () => {
         />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
-        Questions or Comments? Email us at simon@orchideats.com to learn more.
+        Questions or comments? Email us at simon@orchideats.com
       </Typography>
       <Link href={howItWorksRoute}>
         <Button variant='contained' color='primary'>Learn More</Button>
@@ -472,7 +568,7 @@ const Plans = withClientApollo(() => {
   const classes = useStyles();
   return (
     <div className={`${classes.plans}`}>
-      <Typography variant='h3' className={`${classes.shrinker} ${classes.plansTitle} ${classes.centered}`}>
+      <Typography variant='h3' className={`${classes.shrinker} ${classes.plansTitle} ${classes.centered} ${classes.title}`}>
         Choose a Plan
       </Typography>
       <PlanCards />
@@ -549,6 +645,7 @@ const Testimonials = () => {
         <Typography
           variant='h3'
           className={`
+            ${classes.title}
             ${classes.largeBottomMargin}
             ${classes.shrinker}
             ${classes.centered}
