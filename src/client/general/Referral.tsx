@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'left',
   },
   friends: {
-    background: 'url(/home/friends.png)',
+    background: 'url(/referral/eat-together.png)',
     backgroundSize: 'cover',
     height: '40vh',
     backgroundPosition: '50% 50%',

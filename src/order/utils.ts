@@ -22,7 +22,7 @@ export const getNextDeliveryDate = (day: deliveryDay | null, start?: number, tim
     }
   }
   const deliveryDate = moment(startDate).day(day).endOf('day');
-  const minDaysAfterStartDate = moment(startDate).add(MIN_DAYS_AHEAD, 'd');
+  const minDaysAfterStartDate = moment(startDate).add(MIN_DAYS_AHEAD, 'd').endOf('day');
   if (deliveryDate.isAfter(minDaysAfterStartDate)) return deliveryDate;
   const datePlus7 = deliveryDate.add(7, 'd');
   // this is false when the chosen delivery day is earlier in the week

@@ -19,6 +19,7 @@ import { getItemChooser } from "../utils/utils";
 import { Meal } from "../rest/mealModel";
 import { DeliveryMeal } from "../order/deliveryModel";
 import { throttle } from 'lodash';
+import { Hours } from "../rest/restModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -150,6 +151,7 @@ const menu = () => {
             rest._id,
             rest.profile.name,
             rest.taxRate,
+            rest.Hours,
           )[0];
           addMeal(
             m.mealId,
@@ -158,6 +160,7 @@ const menu = () => {
             m.restId,
             m.restName,
             m.taxRate,
+            new Hours(m.hours),
           );
         }
       }}

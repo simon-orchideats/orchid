@@ -18,14 +18,16 @@ const useStyles = makeStyles(theme => ({
   },
   profile: {
     display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    [theme.breakpoints.down('sm')]: {
+      justifyContent: 'flex-start',
+    },
   },
   profilePic: {
     marginRight: theme.spacing(1),
-  },
-  row: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    width: 60,
+    height: 60,
   },
   paper: {
     marginTop: theme.spacing(2),
@@ -79,6 +81,7 @@ const RestMenu: React.FC<{
           restName={rest.Profile.Name}
           meal={meal}
           taxRate={rest.TaxRate}
+          hours={rest.Hours}
         />
       </Grid>
     )
@@ -87,38 +90,47 @@ const RestMenu: React.FC<{
   return (
     <Paper className={classes.paper}>
       <div className={classes.summary}>
-        <Grid container className={classes.row}>
-          {
-            rest.Profile.Actor ?
-            <>
-              <Grid item md={8}>
-                <div className={classes.profile}>
-                  <Avatar src={rest.Profile.ActorImg} className={classes.profilePic} />
+        <Grid
+          container
+          alignItems='center'
+          justify='space-between'
+        >
+            {
+              rest.Profile.Actor ?
+              <>
+                <Grid
+                  item
+                  md={8}
+                  sm={12}
+                >
                   <Typography variant='h4'>
-                    {rest.Profile.Actor}
+                    {rest.Profile.Name}
                   </Typography>
-                </div>
-              </Grid>
-              <Grid item md={4}>
-                <Typography variant='h6' align='right'>
+                </Grid>
+                <Grid
+                  item
+                  md={4}
+                  sm={12}
+                >
+                  <div className={classes.profile}>
+                    <Avatar src={rest.Profile.ActorImg} className={classes.profilePic} />
+                    <Typography variant='body1' color='textSecondary'>
+                      by&nbsp;
+                    </Typography>
+                    <Typography variant='h6'>
+                      {rest.Profile.Actor}
+                    </Typography>
+                  </div>
+                </Grid>
+              </>
+            :
+              <Grid item xs={12}>
+                <Typography variant='h4'>
                   {rest.Profile.Name}
                 </Typography>
               </Grid>
-            </>
-          :
-            <Grid item xs={12}>
-              <Typography variant='h4'>
-                {rest.Profile.Name}
-              </Typography>
-              <Typography
-                variant='subtitle1'
-                color='textSecondary'
-              >
-                {`${rest.Location.Address.Address1}, ${rest.Location.Address.City}`}
-              </Typography>
-            </Grid>
-          }
-        </Grid>
+            }
+          </Grid>
         <Typography
           variant='subtitle1'
           color='textSecondary'

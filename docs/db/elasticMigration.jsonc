@@ -2,19 +2,193 @@
 PUT rests/_mapping
 {
   "properties": {
-    "profile": {
+    "hours": {
       "properties": {
-        "story": {
-          "type": "keyword",
-          "ignore_above": 10
+        "Su": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
         },
-        "actor": {
-          "type": "keyword",
-          "ignore_above": 10
+        "M": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
         },
-        "actorImg": {
-          "type": "keyword",
-          "ignore_above": 10
+        "T": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
+        },
+        "W": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
+        },
+        "Th": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
+        },
+        "F": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
+        },
+        "Sa": {
+          "properties": {
+            "open": {
+              "type": "date",
+              "format": "hour_minute"
+            },
+            "close": {
+              "type": "date",
+              "format": "hour_minute"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT orders/_mapping
+{
+  "properties": {
+    "deliveries": {
+      "properties": {
+        "meals": {
+          "properties": {
+            "hours": {
+              "properties": {
+                "Su": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "M": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "T": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "W": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "Th": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "F": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                },
+                "Sa": {
+                  "properties": {
+                    "open": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    },
+                    "close": {
+                      "type": "date",
+                      "format": "hour_minute"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -26,53 +200,762 @@ POST rests/_update_by_query
   "script" : {
     "source": """
       if (ctx._source.profile.name.equals("Rumba Cubana")) {
-        ctx._source.profile.story = "Born in Chambas, Cuba, we came to USA in the year 2000 and brought our dream of opening a restaurant. Rumba Cubana opened in 2009 for us to share our lost flavor of home";
-        ctx._source.profile.actor = "Alan & Nairelys";
-        ctx._source.profile.actorImg = "/menu/rumba-cubana/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("Gypsy Grill")) {
-        ctx._source.profile.story = "I learned the culinary arts in London, Cario, and the US. My time abroad gives my dishes a European/Mediterranean flair";
-        ctx._source.profile.actor = "Moudy";
-        ctx._source.profile.actorImg = "/menu/gypsy-grill/owner.png";
-      }
-      if (ctx._source.profile.name.equals("La Taqueria Downtown")) {
-        ctx._source.profile.story = "We started selling tacos in a taco truck in the corner of Grove and Montgomery and moved to our current location in 2005. Thank you everyone for the support!";
-        ctx._source.profile.actor = "Andrea and Phil";
-        ctx._source.profile.actorImg = "/menu/taqueria/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("Würstbar")) {
-        ctx._source.profile.story = "A JC local since 2001. No matter where you are in the world, everybody has a sausage. We kinda wanted to, bring that to the Würstbar";
-        ctx._source.profile.actor = "Aaron";
-        ctx._source.profile.actorImg = "/menu/wurstbar/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("Margherita's")) {
-        ctx._source.profile.actor = "Matt";
-        ctx._source.profile.actorImg = "/menu/margheritas/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("Canteen Desi Dhaba")) {
-        ctx._source.profile.story = "My brother and I opened our first restaurant in 1991. We still deliver meals ourselves today";
-        ctx._source.profile.actor = "Hanish & Peter";
-        ctx._source.profile.actorImg = "/menu/canteen-dhaba/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("China Spice")) {
-        ctx._source.profile.story = "My brother and I opened our first restaurant in 1991. We still deliver meals ourselves today";
-        ctx._source.profile.actor = "Hanish & Peter";
-        ctx._source.profile.actorImg = "/menu/china-spice/owner.jpg";
-      }
-      if (ctx._source.profile.name.equals("Shaka Bowl")) {
-        ctx._source.profile.story = "We moved to Hilo, Hawaii in 2014. Here we learned the “Hawaiian way” and were inspired to create Shaka Bowl in 2016";
-        ctx._source.profile.actor = "Kiersten & Krista";
-        ctx._source.profile.actorImg = "/menu/shaka/owner.jpeg";
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "23:00"
+            ]
+          ]
+        ];
       }
       if (ctx._source.profile.name.equals("Ahri's Kitchen")) {
-        ctx._source.profile.story = "After moving to JC we found there were no places to get our Korean fix so we cooked up our own. Who's Ahri? My daughter, of course!";
-        ctx._source.profile.actor = "Aena";
-        ctx._source.profile.actorImg = "/menu/ahri-kitchen/owner.png";
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "M": [
+            [
+              "open": "11:30",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "21:30"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:30",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "21:30"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:30",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "21:30"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:30",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "21:30"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:30",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "21:30"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Gypsy Grill")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "10:30",
+              "close": "22:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Vip Diner")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "00:00",
+              "close": "24:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Margherita's")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "M": [],
+          "T": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("China Spice")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "15:00",
+              "close": "24:00"
+            ]
+          ],
+          "M": [],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "15:00",
+              "close": "24:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("La Taqueria Downtown")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "22:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Canteen Desi Dhaba")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "15:00",
+              "close": "24:00"
+            ]
+          ],
+          "M": [],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "15:00"
+            ],
+            [
+              "open": "17:00",
+              "close": "24:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "15:00",
+              "close": "24:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Würstbar")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "12:00",
+              "close": "21:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Wings To Go")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "M": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "21:30"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Tacos Victoria")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "09:00",
+              "close": "20:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Okinawa Sushi")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ],
+          "T": [],
+          "W": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "16:30",
+              "close": "21:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Food King")) {
+        ctx._source.hours = [
+          "Su": [],
+          "M": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("South Street Fish Co")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "11:00",
+              "close": "21:00"
+            ]
+          ]
+        ];
+      }
+      if (ctx._source.profile.name.equals("Shaka Bowl")) {
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "08:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": []
+        ];
       }
       if (ctx._source.profile.name.equals("Tony Boloney's")) {
-        ctx._source.profile.story = "It started in Atlantic City, but my dreams and passion for food were too big for AC alone, so I brought original flavors to Hoboken and Jersey City";
-        ctx._source.profile.actor = "Mike";
-        ctx._source.profile.actorImg = "/menu/tony-boloneys/owner.jpg";
+        ctx._source.hours = [
+          "Su": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "M": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "T": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "W": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "Th": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "F": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ],
+          "Sa": [
+            [
+              "open": "10:00",
+              "close": "21:00"
+            ]
+          ]
+        ];
       }
     """,
     "lang": "painless"

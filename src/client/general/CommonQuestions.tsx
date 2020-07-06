@@ -27,6 +27,9 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
+  details: {
+    flexDirection: 'column'
+  },
 }))
 
 const Expander: React.FC<{
@@ -38,12 +41,13 @@ const Expander: React.FC<{
   a,
   n,
 }) => {
+  const classes = useStyles();
   return (
     <ExpansionPanel>
       <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant='subtitle1'>{q}</Typography>
       </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
+      <ExpansionPanelDetails className={classes.details}>
       {
         a && 
         <Typography variant='body1'>

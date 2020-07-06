@@ -5,7 +5,7 @@ import Router, { useRouter } from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "../client/global/state/cartState";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerPlanModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
 import { checkoutRoute } from "./checkout";
@@ -19,6 +19,9 @@ import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/del
 import { useGetAvailablePlans } from "../plan/planService";
 import SyncAltIcon from '@material-ui/icons/SyncAlt';
 import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
+import Notifier from "../client/notification/Notifier";
+import { useNotify } from "../client/global/state/notificationState";
+import { NotificationType } from "../client/notification/notificationModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -43,11 +46,24 @@ const useStyles = makeStyles(theme => ({
   col: {
     flexDirection: 'column',
   },
+  warning: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    padding: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    color: theme.palette.common.warning,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: theme.palette.common.warning
+  }
 }));
 
 const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const notify = useNotify();
   const clearCartMeals = useClearCartMeals();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
   const [schedules, setSchedules] = useState<Schedule[]>(
@@ -67,7 +83,7 @@ const delivery = () => {
   const start = parseFloat(urlQuery.start as string);
   const startDate = moment(start).format('M/D/YY');
   const endDate = moment(start).add(1, 'w').format('M/D/YY');
-  const setScheduleAndAutoDeliveries = useSetScheduleAndAutoDeliveries();
+  const [setScheduleAndAutoDeliveries, scheduleRes] = useSetScheduleAndAutoDeliveries();
   const [updateDeliveries, updateDeliveriesRes] = useUpdateDeliveries();
   const updateSchedules = (i: number, day: deliveryDay, time: deliveryTime) => {
     const newSchedules = schedules.map(s => new Schedule(s));
@@ -81,6 +97,12 @@ const delivery = () => {
     clearCartMeals();
     Router.push(upcomingDeliveriesRoute);
   });
+  useEffect(() => {
+    if (scheduleRes.error) {
+      // shouldn't happen
+      notify("Sorry couldn't find a new delivery date", NotificationType.error, false);
+    }
+  }, [scheduleRes]);
   const navToCheckout = () => {
     const pushing = {
       pathname: checkoutRoute
@@ -156,6 +178,7 @@ const delivery = () => {
   const isPreferredScheduleNextDisabled = allowedDeliveries < schedules.length;
   return (
     <>
+      <Notifier />
       <Container className={classes.container}>
         <ExpansionPanel
           expanded={expanded === 'deliveries'}
@@ -172,24 +195,14 @@ const delivery = () => {
                 <Typography variant='body1' color='textSecondary'>
                   These days are only for this order. We disabled days too far past your billing day.
                 </Typography>
-                <Typography variant='body1' color='textPrimary'>
-                  <b>
-                    If a restaurant is closed, we'll notify you and deliver the next day
-                  </b>
-                </Typography>
               </div>
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Choose weekly delivery schedule
+                  1. Preferred repeat delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   Meal plans can be edited/skipped up to 2 days before each scheduled delivery
-                </Typography>
-                <Typography variant='body1' color='textPrimary'>
-                  <b>
-                    If a restaurant is closed, we'll notify you and deliver the next day
-                  </b>
                 </Typography>
               </div>
             }
@@ -245,6 +258,21 @@ const delivery = () => {
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.col}>
+            {
+              scheduleRes.delays.length > 0 &&
+              <div className={classes.warning}>
+                <Typography variant='h6'>
+                  Deliveries based on your preferred day
+                </Typography>
+                {
+                  scheduleRes.delays.map((d, i) => 
+                    <Typography variant='subtitle1' key={i}>
+                      {d}
+                    </Typography>
+                  )
+                }
+              </div>
+            }
             <ScheduleDeliveries
               deliveries={cart.Deliveries}
               isUpdating={isUpdating}

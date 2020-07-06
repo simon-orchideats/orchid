@@ -64,7 +64,8 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                     deliveryMeal.Choices,
                     restId,
                     deliveryMeal.RestName,
-                    deliveryMeal.TaxRate
+                    deliveryMeal.TaxRate,
+                    deliveryMeal.Hours,
                   )}
                   choices={deliveryMeal.Choices}
                   onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal)}

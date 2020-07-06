@@ -33,6 +33,7 @@ export const events = {
   ENTERED_ZIP: 'Entered zip',
   NAVIGATED: 'Navigated to route',
   OPENED_APP: 'Opened app',
+  OPEN_DESCRIPTION: 'Opened description',
   REMOVED_CUISINE: 'Removed cuisine',
   REMOVED_CHECKOUT_SCHEDULE: 'Removed checkout schedule',
   REMOVED_DONATIONS_FROM_DELIVERY: 'Removed donations from delivery',
@@ -110,7 +111,7 @@ const trackDeliveries = (deliveries: DeliveryInput[], mealEvent: string, tagEven
         });
         m.Tags.forEach(t => {
           analyticsService.trackEvent(tagEvent, {
-            tag: t,
+            tag: t.Name,
           });
         });
       }
@@ -218,6 +219,10 @@ export class AnalyticsService {
     });
     // @ts-ignore
     window.fbq(fbEvents.TRACK_CUSTOM, events.CANCELED_SUBSCRIPTION);
+  }
+
+  public static sendOpenDescriptionMetrics() {
+    analyticsService.trackEvent(events.OPEN_DESCRIPTION);
   }
 
   public static sendPlanMetrics(mealPlans: MealPlan[], plans: IPlan[]) {
@@ -357,7 +362,7 @@ export class AnalyticsService {
         });
         m.Tags.forEach(t => {
           analyticsService.trackEvent(events.SKIPPED_DELIVERY_MEAL_TAG, {
-            tag: t,
+            tag: t.Name,
           });
         });
       }

@@ -108,7 +108,8 @@ const MenuMiniCart: React.FC<{
                     deliveryMeal.Choices,
                     deliveryMeal.RestId,
                     deliveryMeal.RestName,
-                    deliveryMeal.TaxRate
+                    deliveryMeal.TaxRate,
+                    deliveryMeal.Hours,
                   )}
                 >
                   <AddIcon />

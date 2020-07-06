@@ -12,6 +12,36 @@ const restFragment = gql`
         zip
       }
     }
+    hours {
+      Su {
+        open
+        close
+      }
+      M {
+        open
+        close
+      }
+      T {
+        open
+        close
+      }
+      W {
+        open
+        close
+      }
+      Th {
+        open
+        close
+      }
+      F {
+        open
+        close
+      }
+      Sa {
+        open
+        close
+      }
+    }
     menu {
       _id
       img

@@ -1,9 +1,10 @@
+import { IHours, Hours } from './../rest/restModel';
 import { MIN_MEALS, PlanNames } from './../plan/planModel';
 import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { IConsumerPlan, ISchedule, Schedule, MealPlan, defaultDeliveryDay } from '../consumer/consumerPlanModel';
+import { IConsumerPlan, ISchedule, Schedule, MealPlan, defaultDeliveryDay, deliveryDay } from '../consumer/consumerPlanModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
@@ -113,9 +114,9 @@ export class Cart implements ICart {
     })
   }
 
-  public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]) {
+  public static autoAddMealsToDeliveries(restMeals: RestMeals, deliveries: DeliveryInput[]): string[] {
     Object.values(restMeals).forEach(restMeals => {
-      const numMealsInRest = Cart.getRestMealCount(restMeals.mealPlans); // 9
+      const numMealsInRest = Cart.getRestMealCount(restMeals.mealPlans);
       const getNextMeals = getNextMealsIterator(restMeals.meals);
       let numAddedMeals = 0;
       let meals;
@@ -156,7 +157,45 @@ export class Cart implements ICart {
           Cart.addMealsToExistingDeliveryMeals(meals, deliveries[0].Meals);          
         }
       }
-    })
+    });
+    return Cart.delayDeliveriesForClosures(deliveries)
+  }
+
+  public static delayDeliveriesForClosures(deliveries: IDeliveryInput[], timezone?: string) {
+    const msgs: string[] = [];
+    let timesDelayed = 0;
+    for (let i = 0; i < deliveries.length; i++) {
+      if (timesDelayed === 7) {
+        const err = new Error(`Failed to advance to valid delivery date with deliveries '${JSON.stringify(deliveries)}'`);
+        console.error(err.stack);
+        throw err;
+      }
+      const d = deliveries[i];
+      let hasClosedMeal = false;
+      const day = timezone ? moment(d.deliveryDate).tz(timezone).day() : moment(d.deliveryDate).day()
+      for (let i = 0; i < d.meals.length; i++) {
+        if (d.meals[i].hours[Hours.getDay(day as deliveryDay)].length === 0) {
+          hasClosedMeal = true;
+          const msg = `${d.meals[i].restName} is closed on ${moment(d.deliveryDate).format('ddd')}`;
+          if (!msgs.includes(msg)) msgs.push(msg);
+        }
+      }
+      if (hasClosedMeal) {
+        timesDelayed++;
+        const time = timezone ? moment(d.deliveryDate).tz(timezone) : moment(d.deliveryDate)
+        const tomorrow = time.add(1, 'd').valueOf();
+        const copy = DeliveryInput.getICopy(d);
+        deliveries.splice(i + 1, 0, new DeliveryInput({
+          ...copy,
+          deliveryDate: tomorrow,
+        }));
+        deliveries.splice(i, 1);
+        i = i - 1;
+      } else {
+        timesDelayed = 0;
+      }
+    };
+    return msgs;
   }
 
   public static getDeliveriesFromSchedule(
@@ -167,9 +206,7 @@ export class Cart implements ICart {
   ) {
     return schedules.map(s => {
       let deliveryDate = getNextDeliveryDate(s.day, start, timezone);
-      if (dateModifier) {
-        deliveryDate = dateModifier(deliveryDate);
-      }
+      if (dateModifier) deliveryDate = dateModifier(deliveryDate);
       return new DeliveryInput({
         deliveryTime: s.time,
         deliveryDate: deliveryDate.valueOf(),
@@ -233,7 +270,8 @@ export class Cart implements ICart {
     meals: IMeal[],
     restId: string,
     restName: string,
-    taxRate: number
+    taxRate: number,
+    hours: IHours,
   ) {
     return meals.reduce<DeliveryMeal[]>((groupings, meal) => {
       const choices: string[] = [];
@@ -253,7 +291,8 @@ export class Cart implements ICart {
         choices,
         restId,
         restName,
-        taxRate
+        taxRate,
+        hours,
       );
       const groupIndex = groupings.findIndex(group => DeliveryMeal.isSameMeal(group, deliveryMeal));
       if (groupIndex === -1) {
@@ -314,15 +353,21 @@ export class Cart implements ICart {
     // we do this so that if a customer decides to add/remove meals AFTER setting deliveries, that
     // we don't 'reset' their preferred deliveries
     if (Schedule.equalsLists(schedules, this.Schedules) && this.Deliveries.length > 1) {
-      return this;
+      return {
+        cart: this,
+        delays: [],
+      };
     }
     const newCart = new Cart({
       ...this,
       schedules,
       deliveries: Cart.getDeliveriesFromSchedule(schedules, start),
     });
-    Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
-    return newCart;
+    const delays = Cart.autoAddMealsToDeliveries(this.restMeals, newCart.deliveries);
+    return {
+      cart: newCart,
+      delays,
+    };
   }
 
   public addMeal(
@@ -332,6 +377,7 @@ export class Cart implements ICart {
     restId: string,
     restName: string,
     taxRate: number,
+    hours: Hours,
   ) {
     const newCart = new Cart(this);
     const deliveryMeal = DeliveryMeal.getDeliveryMeal(
@@ -340,7 +386,8 @@ export class Cart implements ICart {
       choices,
       restId,
       restName,
-      taxRate
+      taxRate,
+      hours
     );
     const allMealsIndex = newCart.AllMeals.findIndex(m => DeliveryMeal.isSameMeal(m, deliveryMeal));
     if (allMealsIndex === -1) {
@@ -371,6 +418,7 @@ export class Cart implements ICart {
             restId,
             restName,
             taxRate,
+            hours,
         ));
       } else {
         firstDelivery.Meals[newMealIndex] = new DeliveryMeal({

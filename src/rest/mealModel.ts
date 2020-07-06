@@ -1,3 +1,4 @@
+import { IHours } from './restModel';
 import { ITag, Tag, TagTypes } from './tagModel';
 import { PlanName } from './../plan/planModel';
 import { IDeliveryMeal } from '../order/deliveryModel';
@@ -122,7 +123,8 @@ export class Meal implements IMeal {
     restId: string,
     restName: string,
     taxRate: number,
-    cuisines?: string[]
+    hours: IHours,
+    cuisines?: string[],
   ): IDeliveryMeal[] {
     const filter = cuisines ?
       (m: IMeal) => m.isActive && doesMealContainCuisines(m, cuisines)
@@ -131,6 +133,6 @@ export class Meal implements IMeal {
     const chooseRandomly = getItemChooser<IMeal>(menu, filter);
     const meals: IMeal[] = [];
     for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
-    return Cart.getDeliveryMeals(meals, restId, restName, taxRate);
+    return Cart.getDeliveryMeals(meals, restId, restName, taxRate, hours);
   }
 }
