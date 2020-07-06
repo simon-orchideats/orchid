@@ -1,16 +1,21 @@
 import { NotificationType } from '../../notification/notificationModel';
 import { createMuiTheme, Theme } from "@material-ui/core";
 import { ThemeOptions } from "@material-ui/core/styles/createMuiTheme";
-const floralWhite = '#FBFCEB';
-const lightGray = '#f9f9f9';
+const floralWhite = '#ffdd40'; //'#fceaa3' // '#F1F1DB' //'#F8DF7B' //'#FABE0E';
+const lightGray = '#f9f9f9'; //'#f2f7fb'//'#EEF1F6';
 const charcoal = '#3c3c3c';
-const leafGreen = '#28590C';
+const leafGreen = '#538401'; //'#6ad080' //'#538401' // '#A3B95A'//'#538401'//'#8AB661' //'#B8E6B1' //'#89C057'; //#28590c
 const blue = '#0070eb';
 const white = "#ffffff";
 const powerGreen = '#3d9241';
 const powerOrange = '#ffa000';
 const powerRed = '#f44336'
-
+/**
+ * 
+ * #F0DBDB
+ * #E6F0DB
+ * #F1F1DB
+ */
 const brandBase = white;
 const brandPrimary = leafGreen;
 const brandSecondary = floralWhite;
@@ -139,15 +144,15 @@ const theme: ThemeOptions = {
     type: 'light',
     primary: {
       // commented out so mui auto generates light + dark
-      // light: '#7986cb',
+      light: '#E6F0DB',
       main: brandPrimary,
-      // dark: '#303f9f',
+      // dark: brandPrimaryDark,
       contrastText: brandText
     },
     secondary: {
-      // light: '#ff4081',
+      light: '#fceaa3',
       main: brandSecondary,
-      // dark: '#c51162',
+      dark: '#ed8b00',
       contrastText: '#fff'
     },
     error: {

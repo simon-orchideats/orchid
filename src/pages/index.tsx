@@ -2,15 +2,12 @@ import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, A
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
-import RestIcon from '@material-ui/icons/RestaurantMenu';
-import TodayIcon from '@material-ui/icons/Today';
 import Router, { useRouter } from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React from 'react';
 import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
-import WeekendIcon from '@material-ui/icons/Weekend';
 import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 
@@ -49,19 +46,11 @@ const useStyles = makeStyles(theme => ({
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
     },
-    backgroundImage: `url(/bowls.jpg)`,
-    backgroundPosition: '50% 75%',
+    backgroundImage: `url(/home/yellow-plating.png)`,
+    backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
     height: 400,
     marginTop: -theme.mixins.navbar.marginBottom
-  },
-  friends: {
-    background: 'linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.5)), url(/home/friends.jpeg)',
-    backgroundSize: 'cover',
-    height: 800,
-    backgroundPosition: '50% 50%',
-    marginTop: -theme.mixins.navbar.marginBottom,
-    marginBottom: theme.spacing(12),
   },
   welcomeTitle: {
     fontWeight: 500,
@@ -94,13 +83,17 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(5),
   },
   plans: {
-    backgroundImage: `url(/home/board.jpeg)`,
-    backgroundPosition: '70% 30%',
-    backgroundSize: 'cover',
     display: 'flex',
-    justifyContent: 'center',
-    minHeight: 400,
-    padding: theme.spacing(3),
+    flexDirection: 'column',
+    paddingTop: 150,
+    backgroundImage: 'url(/home/friends.png)',
+    backgroundPosition: '0% 60%',
+    backgroundSize: 'cover',
+    height: 900,
+    alignItems: 'center',
+  },
+  plansTitle: {
+    paddingBottom: 150,
   },
   testimonialsTitle: {
     [theme.breakpoints.down(1250)]: {
@@ -123,7 +116,7 @@ const useStyles = makeStyles(theme => ({
       paddingRight: theme.spacing(4),
       alignItems: 'center',
     },
-    backgroundImage: `url(/home/peach.png)`,
+    backgroundImage: `url(/home/yellow-peach.png)`,
     backgroundPosition: '20% 50%',
     backgroundSize: 'cover',
     display: 'flex',
@@ -180,21 +173,6 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       display: 'none'
     },
-  },
-  bubbleTip: {
-    content: '""',
-    position: 'absolute',
-    zIndex: 0,
-    bottom: 0,
-    left: -7,
-    height: 20,
-    width: 20,
-    borderBottomRightRadius: 15,
-  },
-  bubble: {
-    borderRadius: 20,
-    padding: '8px 15px',
-    position: 'relative',
   },
   t0: {
     display: 'flex',
@@ -286,8 +264,8 @@ const useStyles = makeStyles(theme => ({
   promotion: {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
   },
   bold: {
     fontWeight: 600,
@@ -296,7 +274,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
     },
-    backgroundColor: theme.palette.common.white,    
+    backgroundColor: theme.palette.common.white,
   },
   referralBottom: {
     marginBottom: theme.mixins.navbar.marginBottom
@@ -331,6 +309,93 @@ const Welcome = () => {
   );
 };
 
+const Why = () => {
+  const classes = useStyles();
+  const Content: React.FC<{
+    title?: string,
+    img?: string,
+    icon?: JSX.Element,
+  }> = ({
+    title,
+    icon,
+    img
+  }) => (
+    <div className={classes.centered}>
+      {
+        img &&
+        <img
+          src={img}
+          alt='logo'
+          className={classes.microwave}
+        />
+      }
+      {
+        icon && icon
+      }
+      <Typography variant='h5' className={classes.howSubtitle}>
+        {title}
+      </Typography>
+    </div>
+  )
+  return (
+    <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
+      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+        Why Orchid?
+      </Typography>
+      <Grid container className={classes.verticalMargin}>
+        <Grid item xs={12} sm={12} md={4}>
+          <Content
+            title="You order 3+ deliveries a week"
+            img='home/money.png'
+          />
+          <Content
+            img='home/down.svg'
+          />
+          <Content
+            title='Subscribe & save'
+            img='home/piggy-bank.svg'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4}>
+          <Content
+            title='You hate waiting for delivery'
+            img='home/snail.png'
+          />
+          <Content
+            img='home/down.svg'
+          />
+          <Content
+            title="Just heat it up"
+            img='home/omelette.png'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4}>
+          <Content
+            title='You & roomies argue on what to eat'
+            img='home/argue.png'
+          />
+          <Content
+            img='home/down.svg'
+          />
+          <Content
+            title="Mix n' match restaurants"
+            img='home/eat.svg'
+          />
+        </Grid>
+      </Grid>
+      <Link href={menuRoute}>
+        <Button
+          className={classes.topMargin}
+          variant='contained'
+          color='primary'
+        >
+          Start mixing
+        </Button>
+      </Link>
+    </div>
+  );
+};
+
 const HowItWorks = () => {
   const classes = useStyles();
   const Content: React.FC<{
@@ -344,28 +409,28 @@ const HowItWorks = () => {
     icon,
     img
   }) => (
-    <Grid item xs={12} sm={12} md={3}>
-      <div className={classes.centered}>
-        {
-          img &&
-          <img
-            src={img}
-            alt='logo'
-            className={classes.microwave}
-          />
-        }
-        {
-          icon && icon
-        }
-        <Typography variant='h5' className={classes.howSubtitle}>
-          {title}
-        </Typography>
-        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-          {description}
-        </Typography>
-      </div>
-    </Grid>
-  )
+        <Grid item xs={12} sm={12} md={3}>
+          <div className={classes.centered}>
+            {
+              img &&
+              <img
+                src={img}
+                alt='logo'
+                className={classes.microwave}
+              />
+            }
+            {
+              icon && icon
+            }
+            <Typography variant='h5' className={classes.howSubtitle}>
+              {title}
+            </Typography>
+            <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+              {description}
+            </Typography>
+          </div>
+        </Grid>
+      )
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
@@ -375,12 +440,12 @@ const HowItWorks = () => {
         <Content
           title="Mix n' Match"
           description='Pick meals from different restaurants'
-          icon={<RestIcon className={classes.howIcon} />}
+          img='home/mix.png'
         />
         <Content
           title='Save time'
           description='Tell us a time and day to deliver'
-          icon={<TodayIcon className={classes.howIcon}/>}
+          img='home/calendar.png'
         />
         <Content
           title='Enjoy'
@@ -390,14 +455,14 @@ const HowItWorks = () => {
         <Content
           title='Subscribe'
           description='Pick meals each week or let us pick'
-          icon={<WeekendIcon className={classes.howIcon} />}
+          img='home/sofa.png'
         />
       </Grid>
       <Typography variant='subtitle1' className={classes.title}>
         Questions or Comments? Email us at simon@orchideats.com to learn more.
       </Typography>
       <Link href={howItWorksRoute}>
-        <Button variant='outlined' color='primary'>Learn More</Button>
+        <Button variant='contained' color='primary'>Learn More</Button>
       </Link>
     </div>
   );
@@ -406,19 +471,16 @@ const HowItWorks = () => {
 const Plans = withClientApollo(() => {
   const classes = useStyles();
   return (
-    <div className={`${classes.plans} ${classes.centered}`}>
-      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+    <div className={`${classes.plans}`}>
+      <Typography variant='h3' className={`${classes.shrinker} ${classes.plansTitle} ${classes.centered}`}>
         Choose a Plan
-      </Typography>
-      <Typography variant='h4' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.subtitle}`}>
-        Customize a meal plan to fit your lifestyle. Starting at $9.99 per meal
       </Typography>
       <PlanCards />
       <Link href={menuRoute}>
         <Button
+          className={`${classes.topMargin} ${classes.centered}`}
           variant='contained'
           color='primary'
-          className={classes.largeVerticalMargin}
         >
           SEE MENU
         </Button>
@@ -456,7 +518,7 @@ const Promotion = withClientApollo(() => {
   }
   const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
   return (
-    <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
+    <div className={`${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
         Get ${basePromoAmount} off! Limited time only
       </Typography>
@@ -485,7 +547,7 @@ const Testimonials = () => {
     <div className={`${classes.testimonialsContainer}`}>
       <div>
         <Typography
-          variant='h3' 
+          variant='h3'
           className={`
             ${classes.largeBottomMargin}
             ${classes.shrinker}
@@ -496,10 +558,10 @@ const Testimonials = () => {
         </Typography>
         <div className={classes.testimonials}>
           <div className={classes.t0}>
-            <Avatar className={classes.avatar} src='/home/alma.png'/>
+            <Avatar className={classes.avatar} src='/home/alma.png' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/alma.png'/>
+                <Avatar className={classes.headerAvatar} src='/home/alma.png' />
                 <Typography variant='body1' className={classes.bold}>
                   Alma
                 </Typography>
@@ -511,10 +573,10 @@ const Testimonials = () => {
             </div>
           </div>
           <div className={classes.t1}>
-            <Avatar className={classes.avatar} src='/home/josh.jpg'/>
+            <Avatar className={classes.avatar} src='/home/josh.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/josh.jpg'/>
+                <Avatar className={classes.headerAvatar} src='/home/josh.jpg' />
                 <Typography variant='body1' className={classes.bold}>
                   Josh
                 </Typography>
@@ -565,10 +627,16 @@ const Index = () => {
       <ReferralWelcome />
       <Welcome />
       <Promotion />
+      <Why />
       <Plans />
       <HowItWorks />
       <Testimonials />
       <Footer />
+      <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+      Icons made by <a href="https://www.flaticon.com/authors/flat-icons" title="Flat Icons">Flat Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+      <div>Icons made by <a href="https://www.flaticon.com/free-icon/meal_1919230" title="Nikita Golubev">Nikita Golubev</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+      <div>Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+      <div>Icons made by <a href="https://www.flaticon.com/authors/bqlqn" title="bqlqn">bqlqn</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
     </>
   )
 }

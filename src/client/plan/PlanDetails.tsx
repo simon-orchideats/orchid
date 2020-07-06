@@ -11,7 +11,10 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    width: 250,
+    width: 260,
+    borderRadius: 50,
+    borderStyle: 'solid',
+    borderColor: theme.palette.primary.main,
   },
   cardSubtitle: {
     color: theme.palette.text.secondary,
@@ -25,6 +28,24 @@ const PlanDetails: React.FC<{
   return (
     <Card className={classes.card}>
       <CardContent>
+        {
+          tier.minMeals === 4 &&
+          <Typography variant='h6' color='primary'>
+            Personal
+          </Typography>
+        }
+        {
+          tier.minMeals === 8 &&
+          <Typography variant='h6' color='primary'>
+            Roomies
+          </Typography>
+        }
+        {
+          tier.minMeals === 12 &&
+          <Typography variant='h6' color='primary'>
+            Family
+          </Typography>
+        }
         <Typography variant='h6'>
           {tier.minMeals}{tier.MaxMeals !== null ? ` - ${tier.maxMeals} meals a week` : '+ meals a week'}
         </Typography>
