@@ -283,6 +283,7 @@ const useStyles = makeStyles(theme => ({
   },
   plansTitle: {
     paddingBottom: theme.spacing(4),
+    fontWeight: 500,
   },
   promotion: {
     backgroundColor: theme.palette.primary.main,
