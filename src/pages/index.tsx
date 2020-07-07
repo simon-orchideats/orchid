@@ -85,7 +85,7 @@ const useStyles = makeStyles(theme => ({
   plans: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: 160,
+    paddingTop: 200,
     backgroundImage: 'url(/home/friends.png)',
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
@@ -322,7 +322,7 @@ const Welcome = () => {
           A weekly meal plan delivery
         </Typography>
         <Typography variant='subtitle1' className={classes.verticalMargin}>
-          Mix n’ match meals at one flat price from different restaurants
+          Mix n’ match meals in 1 delivery from different restaurants
         </Typography>
         <Button variant='contained' color='primary' onClick={() => onClick()}>
           Explore Menu

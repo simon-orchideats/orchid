@@ -64,7 +64,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
     },
-    backgroundColor: theme.palette.secondary.main,    
+    backgroundColor: theme.palette.primary.light,    
   },
   shrinker: {
     [theme.breakpoints.down('xs')]: {
@@ -264,8 +264,8 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title="Mix n' Match"
-            description='Pick meals from different restaurants to build your weekly meal plan. Everyone gets what they
-            want.'
+            description='Pick meals from different restaurants to build your weekly delivery. Add more meals to get
+            more deliveries.'
             dividerTitle='Step'
             dividerSubtitle='1'
             img='how-it-works/burgers.jpg'
@@ -275,8 +275,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Set Delivery'
-            description="Tell us what day and time you want your meals. We confirm your exact delivery ETA a day in
-            advance. No more waiting and wondering when you get to eat."
+            description="Tell us what day and time you want your meals. We'll follow this schedule each week."
             dividerTitle='Step'
             dividerSubtitle='2'
             img='how-it-works/chef.jpg'
@@ -286,7 +285,8 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Enjoy'
-            description='Eat your meal plan at your own pace. Find comfort in having food that’s always ready.'
+            description='Eat at your own pace. Sushi on your Tuesday delivery,
+            chicken on workout Wednesday, a light lunch on Friday, and a treat-yourself dinner on Sunday.'
             dividerTitle='Step'
             dividerSubtitle='3'
             img='how-it-works/deliver.jpg'
@@ -296,8 +296,8 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Subscribe'
-            description='Pick meals each week in advance or let us choose based on your favorites. Skip a week or cancel
-            anytime with ease. '
+            description='Pick meals each week in advance or sit back and let us pick from your favorites. Skip a
+            week or cancel anytime.'
             dividerTitle='Step'
             dividerSubtitle='4'
             img='how-it-works/eating.jpg'
@@ -316,10 +316,6 @@ const HowItWorks = () => {
           className={classes.padding}
         >
           <BenefitTextBox
-            title='26-38% Off'
-            description='Enjoy affordable meal plans from restaurants via bulk pricing, free delivery, and no service fees.'
-          />
-          <BenefitTextBox
             title='Unrivaled Variety'
             description='Pick meals for your order from as many different restaurants and cuisines as you want.'
           />
@@ -328,17 +324,8 @@ const HowItWorks = () => {
             description='Know exactly when you get to eat. We confirm exact ETA’s for all your deliveries in advance.'
           />
           <BenefitTextBox
-            title='Subscription'
-            description='Enjoy weekly meals with ease. Just pick in advance or let us choose based on your favorites.'
-          />
-          <BenefitTextBox
             title='Convenient'
-            description='Get your food, ready to eat, all at once. No cooking. No cleanup. Just eat.'
-          />
-          <BenefitTextBox
-            title='Sustainable'
-            description='Other meal subscriptions come from warehouse kitchens, cross-country trucking, and ice packs.
-            Instead, our weekly meal plans are cooked same-day fresh from down the street.'
+            description='Get your food, ready to eat, all at once. No waiting for delivery. Just eat.'
           />
         </Grid>
       </div>
