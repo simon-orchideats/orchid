@@ -1,5 +1,4 @@
 import { Typography, Grid, Container, makeStyles, Hidden } from "@material-ui/core";
-import { Fragment } from "react";
 
 const useStyles = makeStyles(theme => ({
   centered: {
@@ -31,25 +30,11 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
     height: 160,
   },
-  whoImg: {
-    minHeight: 250,
-    backgroundSize: 'contain',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center'
-  },
   mediumVerticalMargin: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-  verticalMargin: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
   largeBottomMargin: {
-    marginBottom: theme.spacing(5),
-  },
-  largeVerticalMargin: {
-    marginTop: theme.spacing(5),
     marginBottom: theme.spacing(5),
   },
   subtitle: {
@@ -74,13 +59,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'center',
   },
-  col: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    textAlign: 'left',
-  },
   shrinker: {
     [theme.breakpoints.down('sm')]: {
       fontSize: '2.75rem',
@@ -98,117 +76,6 @@ const useStyles = makeStyles(theme => ({
 
 const whoWeAre = () => {
   const classes = useStyles();
-  const TextBlock: React.FC<{title: string, description: string}> = ({ title, description }) => (
-    <>
-      <Typography
-        variant='h4'
-        className={`${classes.verticalMargin} ${classes.subtitle}`}
-      >
-        {title}
-      </Typography>
-      <Typography variant='subtitle1' color='textSecondary'>
-        {description}
-      </Typography>
-    </>
-  );
-  const MobileBlock: React.FC<{title: string, description: string}> = ({ title, description }) => (
-    <div className={`${classes.centered} ${classes.largeBottomMargin}`}>
-      <div className={classes.verticalMargin}>
-        <TextBlock
-          title={title}
-          description={description}
-        />
-      </div>
-    </div>
-  );
-  const Explanation: React.FC<{
-    title: string,
-    description: string,
-    img: string,
-    imgLeft: boolean
-  }> = ({
-    title,
-    description,
-    img,
-    imgLeft,
-  }) => {
-    const classes = useStyles();
-    let left;
-    let right;
-    if (imgLeft) {
-      left = (
-        <Grid
-          item
-          xs={5}
-          className={classes.whoImg}
-          style={{
-            backgroundImage: `url(${img})`,
-          }}
-        />
-      )
-      right = (
-        <Grid item xs={5}>
-          <div className={classes.col}>
-            <TextBlock
-              title={title}
-              description={description}
-            />
-          </div>
-        </Grid>
-      )
-    } else {
-      left = (
-        <Grid item xs={12} md={5}>
-          <div className={classes.col}>
-            <TextBlock
-              title={title}
-              description={description}
-            />
-          </div>
-        </Grid>
-      );
-      right = (
-        <Grid
-          item
-          xs={12}
-          md={5}
-          className={classes.whoImg}
-          style={{
-            backgroundImage: `url(${img})`,
-          }}
-        />
-      )
-    }
-    return (
-      <>
-        {left}
-        <Grid item xs={12} md={2}/>
-        {right}
-      </>
-    )
-  }
-
-  const explanations = [
-    {
-      title: 'Neighborhood food',
-      description: `
-        Food tastes better when cooked by someone you know. Ditch the other meal-plan services with cross-country shipments,
-        ice packs, and warehouse cooks. We deliver meals same-day fresh from restaurants down the street.
-      `,
-      img: '/who-we-are/rest.jpeg',
-      imgLeft: true
-    },
-    {
-      title: 'No service charge, ever',
-      description: `
-        There's no service fee when buying in-store, so why charge one online? Neighbors don't nickle and dime each
-        other, so neither do we. Let's redefine ordering food together.
-      `,
-      img: '/who-we-are/trade.jpg',
-      imgLeft: false
-    },
-  ]
-  
   const title = (
     <>
       <Typography
@@ -317,33 +184,6 @@ const whoWeAre = () => {
         </Typography>
         <img src='/who-we-are/grove.jpeg' className={`${classes.grove} ${classes.mediumVerticalMargin}`} />
       </Container>
-      <Typography
-        variant='h3'
-        className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.shrinker}`}
-      >
-        The neighborly things
-      </Typography>
-      <Hidden xsDown>
-        <Grid container>
-          {explanations.map((e, i) => 
-            <Fragment key={i}>
-              {i !== 0 && <Grid item xs={12} className={classes.largeVerticalMargin} />}
-              <Explanation {...e} />
-            </Fragment>
-          )}
-        </Grid>
-      </Hidden>
-      <Hidden smUp>
-        <Container maxWidth='xs' className={classes.centered}>
-          {explanations.map(({ title, description }, i) => 
-            <MobileBlock
-              key={i}
-              title={title}
-              description={description}
-            />
-          )}
-        </Container>
-      </Hidden>
     </Container>
   )
 }
