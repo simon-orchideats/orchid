@@ -50,7 +50,7 @@ const Footer = () => {
           >
             <div>
               <img
-                src='/logo.png'
+                src='/fork-logo.png'
                 alt='logo'
                 className={classes.logo}
               />

@@ -249,7 +249,7 @@ const Navbar: React.FC = () => {
             {
               (isMdAndUp || !barIsStep) &&
               <Link href={indexRoute}>
-                <img src='/logo.png' alt='logo' className={classes.logo} />
+                <img src='/fork-logo.png' alt='logo' className={classes.logo} />
               </Link>
             }
             {bar}
