@@ -88,7 +88,7 @@ const RenewalChooser: React.FC<{
                     isSelected ? onTagChange(withoutCuisine) : onTagChange([...tags, tag])
                   }
                 >
-                  {isSelected && '✅ '}{tag.Name}
+                  {isSelected && '✔ '}{tag.Name}
                 </Button>
               </Grid>
             )

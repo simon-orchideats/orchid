@@ -319,7 +319,7 @@ const Welcome = () => {
         <Typography variant='h2' className={classes.welcomeTitle}>
           in your fridge
         </Typography>
-        <Typography variant='h4' className={classes.title}>
+        <Typography variant='h4' className={`${classes.title} ${classes.topMargin}`}>
           A weekly meal plan delivery
         </Typography>
         <Typography variant='subtitle1' className={classes.verticalMargin}>
