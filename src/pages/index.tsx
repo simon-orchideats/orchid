@@ -336,9 +336,11 @@ const Welcome = () => {
 const Why = () => {
   const classes = useStyles();
   const Content: React.FC<{
-    title?: string,
-    img?: string,
+    emoji: string
+    title: string,
+    img: string,
   }> = ({
+    emoji,
     title,
     img
   }) => (
@@ -352,7 +354,7 @@ const Why = () => {
         />
       }
       <Typography variant='h5' className={classes.whySubtitle}>
-        {title}
+        {title}&nbsp;{emoji}
       </Typography>
     </div>
   )
@@ -378,6 +380,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              // title="Do you order 3+ deliveries a week?"
+              emoji='👎'
               title="You order 3+ deliveries a week"
               img='home/money.png'
             />
@@ -399,6 +403,7 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='🙌'
               title='Subscribe & save'
               img='home/piggy-bank.svg'
             />
@@ -417,6 +422,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='👎'
+              // title='Do you hate waiting for delivery?'
               title='You hate waiting for delivery'
               img='home/snail.png'
             />
@@ -438,6 +445,7 @@ const Why = () => {
               md={12}
             >
             <Content
+              emoji='🙌'
               title="Just heat it up"
               img='home/omelette.png'
             />
@@ -456,6 +464,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='👎'
+              // title='Do you & roomies argue on what to eat?'
               title='You & roomies argue on what to eat'
               img='home/argue.png'
             />
@@ -477,6 +487,7 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='🙌'
               title="Mix n' match restaurants"
               img='home/eat.svg'
             />

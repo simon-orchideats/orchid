@@ -14,6 +14,11 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
+  toggle: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }));
 
 const RenewalChooser: React.FC<{
@@ -78,11 +83,12 @@ const RenewalChooser: React.FC<{
                   fullWidth
                   color='primary'
                   variant={isSelected ? 'contained' : 'outlined'}
+                  className={classes.toggle}
                   onClick={() =>
                     isSelected ? onTagChange(withoutCuisine) : onTagChange([...tags, tag])
                   }
                 >
-                  {tag.Name}
+                  {isSelected && '✅ '}{tag.Name}
                 </Button>
               </Grid>
             )

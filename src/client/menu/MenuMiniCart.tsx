@@ -6,7 +6,8 @@ import RemoveIcon from '@material-ui/icons/Remove';
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
-    color: theme.palette.warning.main,
+    fontWeight: 600,
+    color: theme.palette.warning.dark,
     paddingRight: theme.spacing(1),
     paddingLeft: theme.spacing(1),
   },
@@ -28,6 +29,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
   },
   summary: {
+    fontWeight: 600,
     whiteSpace: 'pre'
   },
   heart: {
@@ -156,7 +158,7 @@ const MenuMiniCart: React.FC<{
           summary.length > 1 && summary.map((s, i) => i === 0 ?
             ''
               :
-            `• ${s} `
+            ` ${s} `
           )
         }
         </Typography>
