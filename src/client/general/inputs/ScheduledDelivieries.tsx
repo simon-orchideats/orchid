@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%'
   },
   orange: {
-    color: theme.palette.warning.main,
+    color: theme.palette.warning.dark,
   },
   emptyDelivery: {
     paddingLeft: theme.spacing(2),

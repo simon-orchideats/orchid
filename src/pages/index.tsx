@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
       display: 'none'
     },
   },
+  check: {
+    width: 22
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -319,7 +322,7 @@ const Welcome = () => {
         <Typography variant='h2' className={classes.welcomeTitle}>
           in your fridge
         </Typography>
-        <Typography variant='h4' className={classes.title}>
+        <Typography variant='h4' className={`${classes.title} ${classes.topMargin}`}>
           A weekly meal plan delivery
         </Typography>
         <Typography variant='subtitle1' className={classes.verticalMargin}>
@@ -336,9 +339,11 @@ const Welcome = () => {
 const Why = () => {
   const classes = useStyles();
   const Content: React.FC<{
-    title?: string,
-    img?: string,
+    emoji: React.ReactNode
+    title: string,
+    img: string,
   }> = ({
+    emoji,
     title,
     img
   }) => (
@@ -352,7 +357,7 @@ const Why = () => {
         />
       }
       <Typography variant='h5' className={classes.whySubtitle}>
-        {title}
+        {title}&nbsp;{emoji}
       </Typography>
     </div>
   )
@@ -378,6 +383,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              // title="Do you order 3+ deliveries a week?"
+              emoji='❌'
               title="You order 3+ deliveries a week"
               img='home/money.png'
             />
@@ -399,6 +406,13 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title='Subscribe & save'
               img='home/piggy-bank.svg'
             />
@@ -417,6 +431,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='❌'
+              // title='Do you hate waiting for delivery?'
               title='You hate waiting for delivery'
               img='home/snail.png'
             />
@@ -438,6 +454,13 @@ const Why = () => {
               md={12}
             >
             <Content
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title="Just heat it up"
               img='home/omelette.png'
             />
@@ -456,6 +479,8 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji='❌'
+              // title='Do you & roomies argue on what to eat?'
               title='You & roomies argue on what to eat'
               img='home/argue.png'
             />
@@ -477,6 +502,13 @@ const Why = () => {
             md={12}
           >
             <Content
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title="Mix n' match restaurants"
               img='home/eat.svg'
             />
@@ -546,7 +578,7 @@ const HowItWorks = () => {
         />
         <Content
           title='Enjoy'
-          description='Eat now, share, or save for later'
+          description='Eat some now and some later'
           img='home/microwave.png'
         />
         <Content

@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
   },
   orange: {
-    color: theme.palette.warning.main,
+    color: theme.palette.warning.dark,
   },
 }));
 

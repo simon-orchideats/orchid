@@ -8,7 +8,7 @@ const leafGreen = '#538401'; //'#6ad080' //'#538401' // '#A3B95A'//'#538401'//'#
 const blue = '#0070eb';
 const white = "#ffffff";
 const powerGreen = '#3d9241';
-const powerOrange = '#ffa000';
+const powerOrange = '#ff7600';
 const powerRed = '#f44336'
 /**
  * 

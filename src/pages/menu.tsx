@@ -106,8 +106,8 @@ const menu = () => {
   const onScroll = throttle(() => {
     if (showMiniCart) setShowMiniCart(false);
     if (timer.current) clearTimeout(timer.current);     
-    timer.current = setTimeout(() => setShowMiniCart(true), 300);
-  }, 200);
+    timer.current = setTimeout(() => setShowMiniCart(true), 200);
+  }, 100);
 
   useEffect(() => {
     window.addEventListener('scroll', onScroll);

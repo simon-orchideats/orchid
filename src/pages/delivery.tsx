@@ -53,10 +53,10 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'center',
     padding: theme.spacing(1),
     marginBottom: theme.spacing(1),
-    color: theme.palette.common.warning,
+    color: theme.palette.warning.dark,
     borderStyle: 'solid',
     borderWidth: 1,
-    borderColor: theme.palette.common.warning
+    borderColor: theme.palette.warning.dark,
   }
 }));
 

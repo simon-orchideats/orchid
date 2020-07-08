@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(1)
   },
   suggestion: {
-    color: theme.palette.warning.main,
+    color: theme.palette.warning.dark,
   },
   summary: {
     whiteSpace: 'pre-line',
