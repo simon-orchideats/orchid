@@ -264,8 +264,8 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title="Mix n' Match"
-            description='Pick meals from different restaurants to build your weekly delivery. Add more meals to get
-            more deliveries.'
+            description='Pick meals from different restaurants to build your weekly delivery. More meals means more deliveries.
+            We recommend a balance of meals, some to eat fresh and some to eat later.'
             dividerTitle='Step'
             dividerSubtitle='1'
             img='how-it-works/burgers.jpg'
@@ -285,8 +285,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Enjoy'
-            description='Eat at your own pace. Sushi on your Tuesday delivery,
-            chicken on workout Wednesday, a light lunch on Friday, and a treat-yourself dinner on Sunday.'
+            description='Eat at your own pace. Spread your meals over the week or eat them all the same day.'
             dividerTitle='Step'
             dividerSubtitle='3'
             img='how-it-works/deliver.jpg'

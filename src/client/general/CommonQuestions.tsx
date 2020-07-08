@@ -106,19 +106,15 @@ const Faq = () => {
           }
         />
         <Expander
-          q='How many restaurants can I pick?'
-          a="As many as you want! Go wild."
+          q='How long will my meals last?'
+          a="While every meal is cooked the same day as it's delivered, it's probably not a good idea to eat sushi 7
+          days after you order it. That's why we recommend picking a balance, some meals for now and some for later, 
+          just as you would when meal prepping."
         />
         <Expander
           q="Do I need to pick meals every week?"
           a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Orchid to do it fo
           you. Our team will hand select your meals based on your favorite foods."
-        />
-        <Expander
-          q='How do I update my subscription or delivery?'
-          a='You can permanently update your recurring subscription in the My Plan page. These changes will
-          affect future deliveries, but the ones in your "Upcoming deliveries" remain unaffected. You can also make
-          1-time manual updates on a specific order from the Upcoming Deliveries.'
         />
         <Expander
           q='Can I skip a week of delivery?'

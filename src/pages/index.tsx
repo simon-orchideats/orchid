@@ -557,7 +557,7 @@ const HowItWorks = () => {
         />
         <Content
           title='Enjoy'
-          description='Eat now, share, or save for later'
+          description='Eat some now and some later'
           img='home/microwave.png'
         />
         <Content
