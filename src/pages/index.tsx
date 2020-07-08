@@ -34,7 +34,13 @@ const useStyles = makeStyles(theme => ({
     },
   },
   check: {
-    width: 22
+    width: 32,
+    [theme.breakpoints.down('sm')]: {
+      width: 28
+    },
+    [theme.breakpoints.down('xs')]: {
+      width: 22
+    },
   },
   centered: {
     textAlign: 'center',
@@ -383,7 +389,6 @@ const Why = () => {
             md={12}
           >
             <Content
-              // title="Do you order 3+ deliveries a week?"
               emoji='❌'
               title="You order 3+ deliveries a week"
               img='home/money.png'
@@ -432,7 +437,6 @@ const Why = () => {
           >
             <Content
               emoji='❌'
-              // title='Do you hate waiting for delivery?'
               title='You hate waiting for delivery'
               img='home/snail.png'
             />
@@ -480,7 +484,6 @@ const Why = () => {
           >
             <Content
               emoji='❌'
-              // title='Do you & roomies argue on what to eat?'
               title='You & roomies argue on what to eat'
               img='home/argue.png'
             />
