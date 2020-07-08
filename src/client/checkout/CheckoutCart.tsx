@@ -154,8 +154,8 @@ const CheckoutCart: React.FC<props> = ({
           }
         </div>
         <div className={classes.row}>
-          <Typography variant='body1'>
-            Promo {promoDuration !== 'once' && 'for 4 weeks'}
+          <Typography variant='body1' color='primary'>
+            <b>Promo {promoDuration !== 'once' && 'for 4 weeks'}</b>
           </Typography>
           <Typography variant='body1' color='primary'>
             <b>-${(amountOff / 100).toFixed(2)}</b>
@@ -169,6 +169,7 @@ const CheckoutCart: React.FC<props> = ({
             <b>${total.toFixed(2)}</b>
           </Typography>
         </div>
+        <p />
         <div className={`${classes.row}`} >
           <Typography variant='body1'>
             Other delivery apps
