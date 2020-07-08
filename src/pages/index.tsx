@@ -381,7 +381,7 @@ const Why = () => {
           >
             <Content
               // title="Do you order 3+ deliveries a week?"
-              emoji='👎'
+              emoji='❌'
               title="You order 3+ deliveries a week"
               img='home/money.png'
             />
@@ -422,7 +422,7 @@ const Why = () => {
             md={12}
           >
             <Content
-              emoji='👎'
+              emoji='❌'
               // title='Do you hate waiting for delivery?'
               title='You hate waiting for delivery'
               img='home/snail.png'
@@ -464,7 +464,7 @@ const Why = () => {
             md={12}
           >
             <Content
-              emoji='👎'
+              emoji='❌'
               // title='Do you & roomies argue on what to eat?'
               title='You & roomies argue on what to eat'
               img='home/argue.png'
