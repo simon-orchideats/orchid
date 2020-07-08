@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
       display: 'none'
     },
   },
+  check: {
+    width: 22
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -336,7 +339,7 @@ const Welcome = () => {
 const Why = () => {
   const classes = useStyles();
   const Content: React.FC<{
-    emoji: string
+    emoji: React.ReactNode
     title: string,
     img: string,
   }> = ({
@@ -403,7 +406,13 @@ const Why = () => {
             md={12}
           >
             <Content
-              emoji='🙌'
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title='Subscribe & save'
               img='home/piggy-bank.svg'
             />
@@ -445,7 +454,13 @@ const Why = () => {
               md={12}
             >
             <Content
-              emoji='🙌'
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title="Just heat it up"
               img='home/omelette.png'
             />
@@ -487,7 +502,13 @@ const Why = () => {
             md={12}
           >
             <Content
-              emoji='🙌'
+              emoji={
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+              }
               title="Mix n' match restaurants"
               img='home/eat.svg'
             />
