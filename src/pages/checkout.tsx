@@ -19,7 +19,6 @@ import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
-import RenewalChooser from '../client/general/RenewalChooser';
 import EmailInput from "../client/general/inputs/EmailInput";
 import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
@@ -30,7 +29,6 @@ import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { useGetTags } from "../rest/restService";
-import { Tag } from "../rest/tagModel";
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
 
@@ -41,6 +39,7 @@ const useStyles = makeStyles(theme => ({
   },
   inputs: {
     marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
     paddingBottom: theme.spacing(2),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
@@ -95,7 +94,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
   const [promoDuration, setPromoDuration] = useState<promoDurations>();
   const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
-  const [tags, setTags] = useState<Tag[]>([]);
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
   const accountNameInputRef = createRef<HTMLInputElement>();
@@ -105,7 +103,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [receiveTextError, setReceiveTextError] = useState<string>('');
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
-  const validateCuisineRef = useRef<() => boolean>();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
@@ -117,11 +114,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }, [router.query.a]);
 
-  useEffect(() => {
-    if (allTags.data) {
-      setTags(allTags.data)
-    }
-  }, [allTags.data])  
 
   useMutationResponseHandler(applyPromoRes, () => {
     if (!applyPromoRes.data?.res?.AmountOff) {
@@ -177,6 +169,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           setDidPlaceOrder(false);
           throw err;
         }
+        if (!allTags.data) {
+          const err = new Error('No tags');
+          console.error(err.stack)
+          setDidPlaceOrder(false);
+          throw err;
+        }
         placeOrder(
           {
             _id: signUpRes.data.res.Id,
@@ -193,7 +191,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            tags,
+            allTags.data,
             promoInputRef.current?.value,
           )
         );
@@ -236,9 +234,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
     if (!consumer.data && !password) {
       setPasswordError('Your password is incomplete');
-      isValid = false;
-    }
-    if (!validateCuisineRef.current!()) {
       isValid = false;
     }
     return isValid;
@@ -296,6 +291,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
+    if (!allTags.data) {
+      const err = new Error('No tags');
+      console.error(err.stack)
+      setDidPlaceOrder(false);
+      throw err;
+    }
     if (!consumer || !consumer.data) {
       if (!email) {
         const err = new Error('No email');
@@ -333,7 +334,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           deliveryInstructions,
-          tags,
+          allTags.data,
           promo,
         ),
       );
@@ -341,7 +342,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     sendCheckoutMetrics(
       cart,
       plans.data,
-      tags.map(t => t.Name),
+      allTags.data.map(t => t.Name),
     )
   }
 
@@ -649,14 +650,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </div>
           </div>
           <CardForm />
-          <RenewalChooser
-            allTags={allTags.data || []}
-            tags={tags}
-            validateCuisineRef={validateCuisine => {
-              validateCuisineRef.current = validateCuisine;
-            }}
-            onTagChange={tags => setTags(tags)}
-          />
         </Grid>
         {
           isMdAndUp &&
