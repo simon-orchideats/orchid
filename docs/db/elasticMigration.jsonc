@@ -1581,7 +1581,7 @@ POST rests/_doc/
       "addonGroups" : [ ],
       "optionGroups" : [ ],
       "orderNames": [
-        "Chicken Karahi and Lamb Curry Platter",
+        "Chicken Karahi and Lamb Curry Platter"
       ],
       "tags": [
         {
@@ -1596,6 +1596,7 @@ POST rests/_doc/
   "profile": {
     "name": "Shadman",
     "actor" : "Zahid & Fareed",
+    "actorImg": "/menu/shadman/owner.jpg",
     "phone" : "(201) 200-0333",
     "story" : "We started authentic Pakistani-Indian in JC since 1991. For the past 25 years, we've seen JC grow into a bustling metro and we grow with it"
   },
