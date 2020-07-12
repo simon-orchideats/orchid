@@ -1654,4 +1654,584 @@ POST _bulk
 { "index" : { "_index" : "tags" } }
 { "name" : "Pizza", "type": "form" }
 
+
+
+POST rests/_doc/
+{
+  "taxRate" : 0.06625,
+  "hours" : {
+    "Su" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "T" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "Th" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "F" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "W" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "M" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ],
+    "Sa" : [
+      {
+        "close" : "22:00",
+        "open" : "09:00"
+      }
+    ]
+  },
+  "createdDate" : 1594314829584,
+  "profile" : {
+    "phone" : "(201) 918-6599",
+    "name" : "Little Market",
+    "actor" : "Sarwat Sayed",
+    "story" : "I opened Little Market almost 15 years ago. Our name says we're little, but there's a lot to love about us. We believe every meal should be a great one."
+  },
+  "location" : {
+    "geo" : {
+      "lon" : -74.037600,
+      "lat" : 40.737290
+    },
+    "address" : {
+      "zip" : "07030",
+      "city" : "Hoboken",
+      "address1" : "400 Newark St",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
+  },
+  "menu" : [
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Grilled chicken, sliced avocado, walnut over cucumber salad and mixed greens",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-avocado-salad.jpg",
+      "originalPrice" : 999,
+      "name" : "Chicken Avocado Salad",
+      "planName" : "Standard",
+      "optionGroups" : [
+        {
+          "names" : [
+            "Blue cheese dressing",
+            "French dressing",
+            "Ranch dressing",
+            "Fat free ranch dressing",
+            "Low fat ranch dressing",
+            "Olive oil, lemon, and vinegar",
+            "Caesar dressing",
+            "Italian dressing"
+          ]
+        }
+      ],
+      "_id" : "v4RhQLXefIipft_OnNYND",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Bacon, sharp cheddar & bbq sauce",
+      "addonGroups" : [
+        {
+          "names" : [
+            "Lettuce",
+            "Tomato",
+            "Onion"
+          ],
+          "limit" : 3
+        },
+        {
+          "names" : [
+            "Ketchup",
+            "Blue cheese dressing",
+            "Mayo"
+          ],
+          "limit" : 3
+        }
+      ],
+      "img" : "/menu/little-market/western-burger.jpg",
+      "originalPrice" : 974,
+      "name" : "Western Burger w/ Fries",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "Kih8zwVJWCTxBssIWaHO4",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Buffalo sauce, blue cheese",
+      "addonGroups" : [
+        {
+          "names" : [
+            "Lettuce",
+            "Tomato",
+            "Onion"
+          ],
+          "limit" : 3
+        },
+        {
+          "names" : [
+            "Ketchup",
+            "Blue cheese dressing",
+            "Mayo"
+          ],
+          "limit" : 3
+        }
+      ],
+      "img" : "/menu/little-market/buffalo-blue-burger.jpg",
+      "originalPrice" : 974,
+      "name" : "Buffalo Blue Burger w/ Fries",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "o5X8NqaU3BcUAZ09r_rrY",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Buffalo sauce, blue cheese",
+      "addonGroups" : [
+        {
+          "names" : [
+            "Lettuce",
+            "Tomato",
+            "Onion"
+          ],
+          "limit" : 3
+        },
+        {
+          "names" : [
+            "Ketchup",
+            "Blue cheese dressing",
+            "Mayo"
+          ],
+          "limit" : 3
+        }
+      ],
+      "img" : "/menu/little-market/buffalo-blue-burger.jpg",
+      "originalPrice" : 974,
+      "name" : "Buffalo Blue Burger w/ Fries",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "o5X8NqaU3BcUAZ09r_rrY",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Buffalo sauce, blue cheese",
+      "addonGroups" : [
+        {
+          "names" : [
+            "Lettuce",
+            "Tomato",
+            "Onion"
+          ],
+          "limit" : 3
+        },
+        {
+          "names" : [
+            "Ketchup",
+            "Blue cheese dressing",
+            "Mayo"
+          ],
+          "limit" : 3
+        }
+      ],
+      "img" : "/menu/little-market/buffalo-blue-burger.jpg",
+      "originalPrice" : 974,
+      "name" : "Buffalo Blue Burger w/ Fries",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "o5X8NqaU3BcUAZ09r_rrY",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Grilled chicken w/ pita, tahini sauce & hummus over lettuce & cucumber",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-shawarma-platter.jpg",
+      "originalPrice" : 999,
+      "name" : "Chicken Shawarma Platter",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "_XXbVSr3nYvC7qrBkqHUQ",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "Mediterranean",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Grilled chicken w/ tomato, peppers, onions over rice & salad",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-kabab-platter.jpg",
+      "originalPrice" : 999,
+      "name" : "Chicken Kabab Platter",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "VRzuIFC89Ow2kc07kT95Q",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "Mediterranean",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "6oz of hot pastrami topped w/ coleslaw, melted swiss cheese & russian dressing on grilled rye bread w/ chips & pickles",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/reuben.jpg",
+      "originalPrice" : 999,
+      "name" : "The Reuben",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "rsIyWEX1eelV4rvLSTiDC",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Ham, salami, provolone cheese, lettuce, tomato, olive oil and vinegar on hero",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/italian-sub.jpg",
+      "originalPrice" : 899,
+      "name" : "Italian Sub",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "8KJVMmgOFKa9w3NLEQaES",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Melted cheddar & pepper jack cheese, grilled onions, jalapeño, green peppers, tomatoes",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-quesadilla.jpg",
+      "originalPrice" : 899,
+      "name" : "Chicken Quesadilla",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "_id" : "E_JrcgCSCohwnvLRqHQ9l",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Chicken, lettuce, parmesan cheese, tomato, mayo",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-caesar-wrap.jpg",
+      "originalPrice" : 899,
+      "name" : "Chicken Caesar Wrap",
+      "planName" : "Standard",
+      "optionGroups" : [
+        {
+          "names" : [
+            "Plain wrap",
+            "Spinach wrap",
+            "Whole wheat wrap",
+            "Sun-dried tomato wrap"
+          ]
+        }
+      ],
+      "_id" : "0F1WICw1JohfagihNzE1m",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "description": "Chicken, crispy bacon, lettuce tomato, onion",
+      "addonGroups" : [ ],
+      "img" : "/menu/little-market/chicken-blt.jpg",
+      "originalPrice" : 899,
+      "name" : "Grilled Chicken BLT Wrap",
+      "planName" : "Standard",
+      "optionGroups" : [
+        {
+          "names" : [
+            "Plain wrap",
+            "Spinach wrap",
+            "Whole wheat wrap",
+            "Sun-dried tomato wrap"
+          ]
+        }
+      ],
+      "_id" : "ppOeNcyoeXu_zJC8kezY4",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        }
+      ]
+    }
+  ],
+  "managers" : [ ],
+  "status" : "Open"
+}
+
+
+
+POST rests/_doc/
+{
+  "createdDate": 1585605623774,
+  "location": {
+    "address": {
+      "address1": "293 1/2 Grove St",
+      "city": "Jersey City",
+      "state": "NJ",
+      "zip": "07302"
+    },
+    "geo": {
+      "lat": 40.718520,
+      "lon": -74.043920
+    },
+    "timezone": "America/New_York"
+  },
+  "hours" : {
+    "Su" : [
+      {
+        "close" : "20:00",
+        "open" : "12:00"
+      }
+    ],
+    "T" : [
+      {
+        "close" : "19:00",
+        "open" : "12:00"
+      }
+    ],
+    "Th" : [
+      {
+        "close" : "19:00",
+        "open" : "12:00"
+      }
+    ],
+    "F" : [
+      {
+        "close" : "19:00",
+        "open" : "12:00"
+      }
+    ],
+    "W" : [
+      {
+        "close" : "19:00",
+        "open" : "12:00"
+      }
+    ],
+    "M" : [
+      {
+        "close" : "19:00",
+        "open" : "12:00"
+      }
+    ],
+    "Sa" : [
+      {
+        "close" : "20:00",
+        "open" : "12:00"
+      }
+    ]
+  },
+  "taxRate": 0.06625,
+  "managers": [],
+  "menu": [
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "_Kd1x3O4mEABkROx7qoYm",
+      "img": "/menu/shadman/kebab-rolls.png",
+      "name": "3x Chicken Kebab Rolls & 1 Somosa",
+      "originalPrice": 1050,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        }
+      ],
+      "isActive" : true,
+      "description": "kebabs wrapped in a fluffy naan, topped with salad & coriander yogurt w/ crisp cumin pastry stuffed with potato, & peas"
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "pscX2KLhfmEMuIj_Xj1kL",
+      "img": "/menu/shadman/kebab-rolls.png",
+      "name": "3x Beef Kebab Rolls",
+      "originalPrice": 1000,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        }
+      ],
+      "isActive" : true,
+      "description": "kebabs wrapped in a fluffy naan, topped with salad & coriander yogurt"
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "rKW6c14bAp9Ruelt4zQ5C",
+      "img": "/menu/shadman/chana-curry-pakora-platter.png",
+      "name": "Chana & Curry Pakora Platter w/ Garlic Naan",
+      "originalPrice": 1050,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Vegetarian",
+          "type" : "diet"
+        }
+      ],
+      "isActive" : true,
+      "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "dJDbVkelvsJjy28slHRW0",
+      "img": "/menu/shadman/palak-paneer-curry-pakora-platter.png",
+      "name": "Palak Paneer & Curry Pakora Platter w/ Garlic Naan",
+      "originalPrice": 1050,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Vegetarian",
+          "type" : "diet"
+        }
+      ],
+      "isActive" : true,
+      "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "vpsuG02HBkhEwhfTFm_kw",
+      "img": "/menu/shadman/chicken-masala-curry-platter.png",
+      "name": "Chicken Tikki Masala & Curry Pakora Platter w/ Naan",
+      "originalPrice": 1025,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        }
+      ],
+      "isActive" : true,
+      "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
+    },
+    {
+      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "planName": "Standard",
+      "_id": "cerbwhVozaWN00zTPggJm",
+      "img": "/menu/shadman/chicken-karahi-lamb-curry-platter.png",
+      "name": "Chicken Karahi and Lamb Curry Platter",
+      "originalPrice": 1000,
+      "addonGroups" : [ ],
+      "optionGroups" : [ ],
+      "tags": [
+        {
+          "name" : "Indian",
+          "type" : "cuisine"
+        }
+      ],
+      "isActive" : true,
+      "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
+    }
+  ],
+  "profile": {
+    "name": "Shadman",
+    "actor" : "Zahid & Fareed",
+    "phone" : "(201) 200-0333",
+    "story" : "We started authentic Pakistani-Indian in JC since 1991. For the past 25 years, we've seen JC grow into a bustling metro and we grow with it"
+  },
+  "status" : "Open"
+}
 ###############################
