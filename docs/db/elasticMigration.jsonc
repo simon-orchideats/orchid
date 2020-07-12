@@ -1035,7 +1035,7 @@ POST rests/_doc/
   },
   "menu" : [
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Bacon, sharp cheddar & bbq sauce",
       "orderNames": [],
       "addonGroups" : [
@@ -1078,7 +1078,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Buffalo sauce, blue cheese",
       "addonGroups" : [
         {
@@ -1121,7 +1121,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Feta cheese & tzatziki sauce, lettuce, onion, tomato",
       "orderNames": [],
       "addonGroups" : [
@@ -1164,7 +1164,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Sautéed mushrooms, swiss & avocado",
       "addonGroups" : [
         {
@@ -1200,7 +1200,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Grilled chicken, sliced avocado, walnut over cucumber salad and mixed greens",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1232,7 +1232,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Grilled chicken w/ pita, tahini sauce & hummus over lettuce & cucumber",
       "orderNames": [],
       "addonGroups" : [ ],
@@ -1251,7 +1251,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Grilled chicken w/ tomato, peppers, onions over rice & salad",
       "orderNames": [],
       "addonGroups" : [ ],
@@ -1270,7 +1270,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "6oz of hot pastrami topped w/ coleslaw, melted swiss cheese & russian dressing on grilled rye bread w/ chips & pickles",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1289,7 +1289,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Ham, salami, provolone cheese, lettuce, tomato, olive oil and vinegar on hero",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1308,7 +1308,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Melted cheddar & pepper jack cheese, grilled onions, jalapeño, green peppers, tomatoes",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1327,7 +1327,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Chicken, lettuce, parmesan cheese, tomato, mayo",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1355,7 +1355,7 @@ POST rests/_doc/
       ]
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "description": "Chicken, crispy bacon, lettuce tomato, onion",
       "addonGroups" : [ ],
       "orderNames": [],
@@ -1453,7 +1453,7 @@ POST rests/_doc/
   "managers": [],
   "menu": [
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "_Kd1x3O4mEABkROx7qoYm",
       "img": "/menu/shadman/kebab-rolls.png",
@@ -1476,7 +1476,7 @@ POST rests/_doc/
       "description": "kebabs wrapped in a fluffy naan, topped with salad & coriander yogurt w/ crisp cumin pastry stuffed with potato, & peas"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "pscX2KLhfmEMuIj_Xj1kL",
       "img": "/menu/shadman/kebab-rolls.png",
@@ -1498,7 +1498,7 @@ POST rests/_doc/
       "description": "kebabs wrapped in a fluffy naan, topped with salad & coriander yogurt"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "rKW6c14bAp9Ruelt4zQ5C",
       "img": "/menu/shadman/chana-curry-pakora-platter.png",
@@ -1524,7 +1524,7 @@ POST rests/_doc/
       "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "dJDbVkelvsJjy28slHRW0",
       "img": "/menu/shadman/palak-paneer-curry-pakora-platter.png",
@@ -1550,7 +1550,7 @@ POST rests/_doc/
       "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "vpsuG02HBkhEwhfTFm_kw",
       "img": "/menu/shadman/chicken-masala-curry-platter.png",
@@ -1572,7 +1572,7 @@ POST rests/_doc/
       "description": "w/ Basmati rice, salad, & coriander yogurt chutney"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "cerbwhVozaWN00zTPggJm",
       "img": "/menu/shadman/chicken-karahi-lamb-curry-platter.png",
@@ -1668,7 +1668,7 @@ POST rests/_doc/
   "managers": [],
   "menu": [
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "E0Tchk3FWPWncC99E98PY",
       "img": "/menu/satay/chicken-pad-thai.jpg",
@@ -1698,7 +1698,7 @@ POST rests/_doc/
       "description": "stir-fried flat noodle w/ tofu, bean sprouts, basil leaves, ground peanut in spicy Thai chili sauce"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "ylIKnMxR9H42cPCwhQovS",
       "img": "/menu/satay/beef-chow-fun.jpg",
@@ -1728,7 +1728,7 @@ POST rests/_doc/
       "description": "stir-fried flat noodles in a special sauce with beef, scallion, egg and bean sprouts"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "p_Cw-vYBYRp67CUeqhcDE",
       "img": "/menu/satay/singapore-rice-noodle.jpg",
@@ -1758,7 +1758,7 @@ POST rests/_doc/
       "description": "Singapore style stir-fried rice noodles in special mild sauce w/ shrimp, Chinese sausage & cabbage, bean sprouts, & eggs"
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "HUMlEpNT7aDTJB2LKtSY6",
       "img": "/menu/satay/hainanese-chicken.jpg",
@@ -1795,7 +1795,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "LxVpbNxhS8zCP8Ne-Xsr1",
       "img": "/menu/satay/mango-chicken.jpg",
@@ -1840,7 +1840,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "XFIg2hMMY_UQQQJtqPHkm",
       "img": "/menu/satay/pineapple-chicken.jpg",
@@ -1885,7 +1885,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "9ej6N5DLQz0hyRhvUKfBz",
       "img": "/menu/satay/eggplant-blackbean.jpg",
@@ -1922,7 +1922,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "VlfMs4M281UnXzzunAwbx",
       "img": "/menu/satay/malaysian-pork-chop.jpg",
@@ -1960,7 +1960,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "JI4PzkelUUzqlmg6ONL_6",
       "img": "/menu/satay/sesame-spareribs.jpg",
@@ -1997,7 +1997,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "m32BWLqGWQwxr92OF4na5",
       "img": "/menu/satay/nasi-halia.jpg",
@@ -2016,7 +2016,7 @@ POST rests/_doc/
       "isActive" : true
     },
     {
-      "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
       "planName": "Standard",
       "_id": "0NrnvTXTADtqUt2lrWX71",
       "img": "/menu/satay/nasi-lemak.jpg",
@@ -2064,7 +2064,7 @@ POST rests/_update_by_query
       }
       if (ctx._source.profile.name.equals("Gypsy Grill")) {
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "hZ3-ZOl901mGh_GxMLFVT",
           "img": "/menu/gypsy-grill/chicken-shawarma.jpg",
@@ -2083,7 +2083,7 @@ POST rests/_update_by_query
           "isActive" : true
         ]);
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "NEj1_D4omVrODqkU6KF5I",
           "img": "/menu/gypsy-grill/lamb-beef-shawafel.jpg",
@@ -2109,7 +2109,7 @@ POST rests/_update_by_query
           "isActive" : true
         ]);
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "edYPg-vKfpocXM6TM90_v",
           "img": "/menu/gypsy-grill/mixed-shawarma.jpg",
@@ -2135,7 +2135,7 @@ POST rests/_update_by_query
           "isActive" : true
         ]);
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "dRhMr6z4lRs7m5YtL4lB4",
           "img": "/menu/gypsy-grill/lamb-beef-sandwich.jpg",
@@ -2204,7 +2204,7 @@ POST rests/_update_by_query
       }
       if (ctx._source.profile.name.equals("La Taqueria Downtown")) {
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "j1xMItwLp3Wfi4T6InfxD",
           "img": "/menu/taqueria/bistec-tortas.jpg",
@@ -2223,7 +2223,7 @@ POST rests/_update_by_query
           "isActive" : true
         ]);
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "-3QWlgEomysWF3UzYvu_s",
           "img": "/menu/taqueria/bistec-quesadilla.jpg",
@@ -2241,7 +2241,7 @@ POST rests/_update_by_query
           "isActive" : true
         ]);
         ctx._source.menu.add([
-          "stripePlanId" : "plan_HDGgkmXFCPQTlq",
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
           "planName": "Standard",
           "_id": "4ejaWxsefDiTufB9xgnhR",
           "img": "/menu/taqueria/chorizo-quesadilla.jpg",

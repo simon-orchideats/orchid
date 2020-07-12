@@ -364,11 +364,54 @@ POST orders/_update_by_query
 {
   "script" : {
     "source": """
-      //for (int i = 0; i < ctx._source.deliveries.length; i++) {
-      //  ctx._source.deliveries[i].status = 'Open';
-      //  ctx._source.deliveries[i].deliveryDate = 1589775160000L;
-      //}
-      ctx._source.invoiceDate = 1589822088000L
+      for (int i = 0; i < ctx._source.deliveries.size(); i++) {
+        for (int j = 0; j < ctx._source.deliveries[i].meals.size(); j++) {
+          ctx._source.deliveries[i].meals[j].hours = [
+            "Su": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "M": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "T": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "W": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "Th": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "F": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ],
+            "Sa": [
+              [
+                "open": "00:00",
+                "close": "23:59"
+              ]
+            ]
+          ];
+        }
+      }
     """,
     "lang": "painless"
   },
@@ -519,6 +562,23 @@ POST rests/_update_by_query
   }
 }
 
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      ctx._source.profile.
+      ctx._source.actor = "Magdy",
+      ctx._source.actorImg" = /menu/wings-to-go/owner.jpg",
+      ctx._source.story = "There's family. There's soccer. Then there's good wings. They're cooked fresh every day. I hope you like them."
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match": {
+      "profile.name.keyword": "Wings To Go"
+    }
+  }
+}
 
 
 
