@@ -640,24 +640,56 @@ POST rests/_update/lRACoHEB4E-MhTTB7Wtq
 
 
 
-"originalPrice": 998,
+
 "optionGroups" : new def[] {
   [
     "names" : new def[] {
-      "2pc Kunafa",
-      "2pc Baklava"
+      "Acai",
+      "Pitaya",
+      "Greek yogurt parfait"
     }
   ]
 },
-"addonGroups" : new def[] {},
-"orderNames" : new def[] {},
-"tags": new def[] {
+"addonGroups" : new def[] {
   [
-    "name" : "Mediterranean",
-    "type" : "cuisine"
+    "names": new def[] {
+      "Banana",
+      "Strawberry",
+      "Pineapple",
+      "Blueberry",
+      "Mango"
+    },
+    "limit": 3
+  ],
+  [
+    "names": new def[] {
+      "Granola",
+      "Coconut Shavings",
+      "Hemp Seeds",
+      "Chia Seeds",
+      "Flax Seeds",
+      "Goji Berries",
+      "Almonds",
+      "Walnuts",
+      "Cacao Nibs",
+      "Chocolate Chips",
+      "Raisins"
+    }
+  ],
+  [
+    "names": new def[] {
+      "Peanut Butter",
+      "Almond Butter",
+      "Honey",
+      "Nutella",
+      "Agave"
+    },
+    "limit": 2
   ]
 },
-"isActive" : true
+"orderNames" : new def[] {
+  "Build your own"
+},
 
 ############################
 
