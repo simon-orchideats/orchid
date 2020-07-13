@@ -639,6 +639,26 @@ POST rests/_update/lRACoHEB4E-MhTTB7Wtq
 }
 
 
+
+"originalPrice": 998,
+"optionGroups" : new def[] {
+  [
+    "names" : new def[] {
+      "2pc Kunafa",
+      "2pc Baklava"
+    }
+  ]
+},
+"addonGroups" : new def[] {},
+"orderNames" : new def[] {},
+"tags": new def[] {
+  [
+    "name" : "Mediterranean",
+    "type" : "cuisine"
+  ]
+},
+"isActive" : true
+
 ############################
 
 
