@@ -1,8 +1,8 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper, Button } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper, Button, Slide, Fab } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetTags } from "../rest/restService";
 import ZipModal from "../client/menu/ZipModal";
@@ -18,8 +18,10 @@ import { sendZipMetrics } from "../client/menu/menuMetrics";
 import { getItemChooser } from "../utils/utils";
 import { Meal } from "../rest/mealModel";
 import { DeliveryMeal } from "../order/deliveryModel";
-import { throttle } from 'lodash';
 import { Hours } from "../rest/restModel";
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
+import { Cart } from "../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -37,6 +39,20 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     marginRight: theme.spacing(1),
+  },
+  fab: {
+    zIndex: 1,
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+  },
+  removeCart: {
+    backgroundColor: `${theme.palette.common.white} !important`,
+    color: theme.palette.primary.main,
+  },
+  showCart: {
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    color: theme.palette.common.white,
   },
   row: {
     display: 'flex',
@@ -86,7 +102,6 @@ const menu = () => {
   const rests = useGetNearbyRests(zip);
   const clearCartMeals = useClearCartMeals();
   const addMeal = useAddMealToCart();
-  const timer = useRef<NodeJS.Timeout | null>(null);
   const [showMiniCart, setShowMiniCart] = useState(true);
   const onFilterCuisines = (cuisines: string[]) => {
     setCuisines(cuisines);
@@ -103,16 +118,9 @@ const menu = () => {
     setZipInput(zip);
   }, [zip]);
 
-  const onScroll = throttle(() => {
-    if (showMiniCart) setShowMiniCart(false);
-    if (timer.current) clearTimeout(timer.current);     
-    timer.current = setTimeout(() => setShowMiniCart(true), 200);
-  }, 100);
-
-  useEffect(() => {
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll)
-  }, []);
+  const onClickFab = () => {
+    setShowMiniCart(!showMiniCart);
+  }
 
   const onSearchZip = () => {
     if (zipInput) {
@@ -194,6 +202,33 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
+      {
+        !isMdAndUp &&
+        <Fab
+          onClick={onClickFab}
+          className={`
+            ${classes.fab}
+            ${showMiniCart ? classes.removeCart : classes.showCart}
+          `}
+        >
+          {
+            showMiniCart ?
+            <>
+              <RemoveShoppingCartIcon />
+              <Typography variant='body1'>
+                {cart ? Cart.getNumMeals(cart.AllMeals) : 0}
+              </Typography>
+            </>
+            :
+            <>
+              <ShoppingCartIcon />
+              <Typography variant='body1'>
+                {cart ? Cart.getNumMeals(cart.AllMeals) : 0}
+              </Typography>
+            </>
+          }
+        </Fab>
+      }
       <ZipModal
         open={isZipModalOpen}
         defaultZip={zip}
@@ -209,36 +244,45 @@ const menu = () => {
           lg={8}
           className={classes.menu}
         >
-          <Paper className={classes.filters} style={{ position: isMdAndUp || showMiniCart ? 'sticky' : 'static' }}>
-            {
-              isMdAndUp ?
-              <div className={classes.row}>
-                {zipButton}
-                <Filter
-                  allCuisines={allCuisines}
-                  cuisines={cuisines}
-                  onClickCuisine={onFilterCuisines}
-                />
-                <div className={classes.right}>
-                  {SurpriseMe}
+          <Slide
+            direction='down'
+            in={isMdAndUp || showMiniCart}
+            timeout={{
+              enter: 0,
+              exit: 400,
+            }}
+          >
+            <Paper className={classes.filters}>
+              {
+                isMdAndUp ?
+                <div className={classes.row}>
+                  {zipButton}
+                  <Filter
+                    allCuisines={allCuisines}
+                    cuisines={cuisines}
+                    onClickCuisine={onFilterCuisines}
+                  />
+                  <div className={classes.right}>
+                    {SurpriseMe}
+                  </div>
                 </div>
-              </div>
-              :
-              <MenuMiniCart
-                filter={
-                  <>
-                    <Filter
-                      allCuisines={allCuisines}
-                      cuisines={cuisines}
-                      onClickCuisine={onFilterCuisines}
-                      zip={zipButton}
-                    />
-                    {rests.data && SurpriseMe}
-                  </>
-                }
-              />
-            }
-          </Paper>
+                :
+                <MenuMiniCart
+                  filter={
+                    <>
+                      <Filter
+                        allCuisines={allCuisines}
+                        cuisines={cuisines}
+                        onClickCuisine={onFilterCuisines}
+                        zip={zipButton}
+                      />
+                      {rests.data && SurpriseMe}
+                    </>
+                  }
+                />
+              }
+            </Paper>
+          </Slide>
           {rests.loading && <Typography>Loading...</Typography>}
           {
             hasNoRests &&
