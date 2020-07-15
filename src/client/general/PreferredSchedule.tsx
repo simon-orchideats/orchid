@@ -115,6 +115,11 @@ const PreferredSchedule: React.FC<{
           />
         </div>
       ))}
+      <Typography variant='body1'>
+        <b>
+          *Your personal server will text you an exact ETA the morning of each delivery
+        </b>
+      </Typography>
       {extraDeliveries}
     </>
   );
