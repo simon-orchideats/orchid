@@ -341,17 +341,17 @@ D8hc31R0UA==
 
 const getConfig = (env?: string) => {
   if (env === 'development') {
-    console.log('running development');
-    return development;
+    console.log('running stage');
+    return stage;
   } else if (env === 'stage') {
     console.log('running stage');
     return stage;
   } else if (env === 'production') {
-    console.log('running production');
-    return production;
+    console.log('running stage');
+    return stage;
   }
-  console.log('running development');
-  return development;
+  console.log('running stage');
+  return stage;
 }
 
 const activeConfig = getConfig(env);
