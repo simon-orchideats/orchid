@@ -102,8 +102,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: 32,
     alignItems: 'center',
     [theme.breakpoints.down('md')]: {
-      paddingTop: theme.spacing(4),
-      height: 650,
+      paddingTop: 100, // determined by inspection
     },
   },
   testimonialsTitle: {
@@ -233,12 +232,15 @@ const useStyles = makeStyles(theme => ({
       marginLeft: 0,
     },
   },
+  quote: {
+    height: 20
+  },
   lowWidth: {
     maxWidth: 200,
   },
   icon: {
     maxWidth: 135,
-    height: 78,
+    height: 85,
     marginBottom: theme.spacing(1),
   },
   arrow: {
@@ -256,12 +258,6 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.15rem',
-    },
-  },
-  howIcon: {
-    fontSize: 90,
-    [theme.breakpoints.down('xs')]: {
-      fontSize: 59,
     },
   },
   whySubtitle: {
@@ -291,8 +287,15 @@ const useStyles = makeStyles(theme => ({
     },
   },
   plansTitle: {
-    paddingBottom: theme.spacing(4),
-    fontWeight: 500,
+    backgroundColor: theme.palette.common.white,
+    marginBottom: theme.spacing(4),
+    paddingTop: theme.spacing(3),
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    borderRadius: 50,
+    borderStyle: 'solid',
+    borderColor: theme.palette.primary.main,
   },
   promotion: {
     backgroundColor: theme.palette.primary.main,
@@ -332,9 +335,14 @@ const Welcome = () => {
           A weekly meal plan delivery
         </Typography>
         <Typography variant='subtitle1' className={classes.verticalMargin}>
-          Mix n’ match meals in 1 delivery from different restaurants
+          Mix n’ match different restaurants in each delivery
         </Typography>
-        <Button variant='contained' color='primary' onClick={() => onClick()}>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={() => onClick()}
+          size='large'
+        >
           Explore Menu
         </Button>
       </div>
@@ -391,7 +399,7 @@ const Why = () => {
             <Content
               emoji='❌'
               title="You order 3+ deliveries a week"
-              img='home/money.png'
+              img='home/cash.png'
             />
           </Grid>
           <Grid
@@ -438,7 +446,7 @@ const Why = () => {
             <Content
               emoji='❌'
               title='You hate waiting for delivery'
-              img='home/snail.png'
+              img='home/snail2.png'
             />
           </Grid>
           <Grid
@@ -466,7 +474,7 @@ const Why = () => {
                 />
               }
               title="Just heat it up"
-              img='home/omelette.png'
+              img='home/buffet.svg'
             />
           </Grid>
         </Grid>
@@ -485,7 +493,7 @@ const Why = () => {
             <Content
               emoji='❌'
               title='You & roomies argue on what to eat'
-              img='home/argue.png'
+              img='home/argue2.png'
             />
           </Grid>
           <Grid
@@ -523,6 +531,7 @@ const Why = () => {
           className={classes.topMargin}
           variant='contained'
           color='primary'
+          size='large'
         >
           Start mixing
         </Button>
@@ -546,7 +555,7 @@ const HowItWorks = () => {
       item
       xs={12}
       sm={12}
-      md={3}
+      md={4}
     >
       <div className={`${classes.verticalMargin} ${classes.centered}`}>
         <img
@@ -570,31 +579,29 @@ const HowItWorks = () => {
       </Typography>
       <Grid container className={classes.verticalMargin}>
         <Content
+          title='Subscribe'
+          description='Tell us a time and day to deliver'
+          img='home/calendar.png'
+        />
+        <Content
           title="Mix n' Match"
           description='Pick meals from different restaurants'
           img='home/mix.png'
-        />
-        <Content
-          title='Save time'
-          description='Tell us a time and day to deliver'
-          img='home/calendar.png'
         />
         <Content
           title='Enjoy'
           description='Eat some now and some later'
           img='home/microwave.png'
         />
-        <Content
-          title='Subscribe'
-          description='Pick meals each week or let us pick'
-          img='home/sofa.png'
-        />
       </Grid>
-      <Typography variant='subtitle1' className={classes.title}>
-        Questions or comments? Email us at simon@orchideats.com
-      </Typography>
       <Link href={howItWorksRoute}>
-        <Button variant='contained' color='primary'>Learn More</Button>
+        <Button
+          variant='contained'
+          color='primary'
+          size='large'
+        >
+          Learn More
+        </Button>
       </Link>
     </div>
   );
@@ -604,15 +611,21 @@ const Plans = withClientApollo(() => {
   const classes = useStyles();
   return (
     <div className={`${classes.plans}`}>
-      <Typography variant='h3' className={`${classes.shrinker} ${classes.plansTitle} ${classes.centered} ${classes.title}`}>
-        Choose a Plan
-      </Typography>
+      <div className={`${classes.plansTitle} ${classes.centered}`}>
+        <Typography variant='h3' className={`${classes.shrinker} ${classes.title}`}>
+          Weekly Plans
+        </Typography>
+        <Typography variant='h6'>
+          Change, skip, cancel anytime
+        </Typography>
+      </div>
       <PlanCards />
       <Link href={menuRoute}>
         <Button
           className={`${classes.topMargin} ${classes.centered}`}
           variant='contained'
           color='primary'
+          size='large'
         >
           SEE MENU
         </Button>
@@ -729,7 +742,7 @@ const Testimonials = () => {
                   Brandon
                 </Typography>
               </div>
-              <Typography variant='body1' >
+              <Typography variant='body1'>
                 Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid
               </Typography>
             </div>

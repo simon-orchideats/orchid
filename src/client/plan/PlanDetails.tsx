@@ -25,33 +25,58 @@ const PlanDetails: React.FC<{
   tier: Tier;
 }> = ({ tier }) => {
   const classes = useStyles();
+  const meals = (
+    <Typography variant='h6'>
+      {tier.minMeals}{tier.MaxMeals !== null ? ` - ${tier.maxMeals} meals / wk` : '+ meals / wk'}
+    </Typography>
+  );
+  const price = (
+    <Typography variant='body1' className={classes.cardSubtitle}>
+      ${(tier.MealPrice / 100).toFixed(2)}/meal
+    </Typography>
+  )
   return (
     <Card className={classes.card}>
       <CardContent>
         {
           tier.minMeals === 4 &&
-          <Typography variant='h6' color='primary'>
-            Personal
-          </Typography>
+          <>
+            <Typography variant='h6' color='primary'>
+              Personal
+            </Typography>
+            {meals}
+            <Typography variant='h6'>
+              1 free delivery / wk
+            </Typography>
+            {price}
+          </>
         }
         {
           tier.minMeals === 8 &&
-          <Typography variant='h6' color='primary'>
-            Roomies
-          </Typography>
+          <>
+            <Typography variant='h6' color='primary'>
+              Roomies
+            </Typography>
+            {meals}
+            <Typography variant='h6'>
+              2 deliveries / wk
+            </Typography>
+            {price}
+          </>
         }
         {
           tier.minMeals === 12 &&
-          <Typography variant='h6' color='primary'>
-            Family
-          </Typography>
+          <>
+            <Typography variant='h6' color='primary'>
+              Family
+            </Typography>
+            {meals}
+            <Typography variant='h6'>
+              3+ deliveries / wk
+            </Typography>
+            {price}
+          </>
         }
-        <Typography variant='h6'>
-          {tier.minMeals}{tier.MaxMeals !== null ? ` - ${tier.maxMeals} meals a week` : '+ meals a week'}
-        </Typography>
-        <Typography variant='body1' className={classes.cardSubtitle}>
-          ${(tier.MealPrice / 100).toFixed(2)}/meal
-        </Typography>
       </CardContent>
     </Card>
   );

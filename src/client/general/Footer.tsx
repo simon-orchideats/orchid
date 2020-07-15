@@ -120,7 +120,6 @@ const Footer = () => {
             item
             xs={6}
             sm={2}
-            className={classes.item}
           >
             <div className={classes.item}>
               <IconButton onClick={onClickFb}>
@@ -130,6 +129,9 @@ const Footer = () => {
                 <InstagramIcon />
               </IconButton>
             </div>
+            <Typography variant='body1'>
+              Contact us at simon@orchideats.com
+            </Typography>
           </Grid>
         </Grid>
       </Container>
