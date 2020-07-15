@@ -43,7 +43,8 @@ const useStyles = makeStyles(theme => ({
   fab: {
     zIndex: 1,
     position: 'fixed',
-    bottom: theme.spacing(2),
+    top: '50%',
+    // bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
   removeCart: {
