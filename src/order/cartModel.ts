@@ -245,7 +245,7 @@ export class Cart implements ICart {
       }
       const index = restMeal.meals.findIndex(meal => DeliveryMeal.isSameMeal(newMeal, meal));
       if (index === -1) {
-        restMeal.meals.push(new DeliveryMeal(newMeal));
+        restMeal.meals.unshift(new DeliveryMeal(newMeal));
       } else {
         restMeal.meals[index] = new DeliveryMeal({
           ...newMeal,

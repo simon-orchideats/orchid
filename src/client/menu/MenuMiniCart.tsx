@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button, Slide } from "@material-ui/core";
 import MenuCart from "./MenuCart";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import AddIcon from '@material-ui/icons/Add';
@@ -98,43 +98,52 @@ const MenuMiniCart: React.FC<{
         </div>
         <div className={`${classes.bar} ${classes.scrollable}`}>
           {cart && cart.AllMeals.map(deliveryMeal => (
-            <div className={classes.meals} key={deliveryMeal.IdKey}>
-              <div className={classes.bar}>
-                <Button
-                  size='small'
-                  variant='text'
-                  color='primary'
-                  onClick={() => addMealToCart(
-                    deliveryMeal.MealId,
-                    deliveryMeal,
-                    deliveryMeal.Choices,
-                    deliveryMeal.RestId,
-                    deliveryMeal.RestName,
-                    deliveryMeal.TaxRate,
-                    deliveryMeal.Hours,
-                  )}
-                >
-                  <AddIcon />
+            <Slide
+              key={deliveryMeal.IdKey}
+              direction='up'
+              in={true}
+              timeout={{
+                enter: 500,
+              }}
+            >
+              <div className={classes.meals}>
+                <div className={classes.bar}>
+                  <Button
+                    size='small'
+                    variant='text'
+                    color='primary'
+                    onClick={() => addMealToCart(
+                      deliveryMeal.MealId,
+                      deliveryMeal,
+                      deliveryMeal.Choices,
+                      deliveryMeal.RestId,
+                      deliveryMeal.RestName,
+                      deliveryMeal.TaxRate,
+                      deliveryMeal.Hours,
+                    )}
+                  >
+                    <AddIcon />
+                    </Button>
+                  <Typography variant='subtitle2'>
+                    {deliveryMeal.Quantity}
+                  </Typography>
+                  <Button
+                    size='small'
+                    variant='text'
+                    onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                  >
+                    <RemoveIcon />
                   </Button>
-                <Typography variant='subtitle2'>
-                  {deliveryMeal.Quantity}
-                </Typography>
-                <Button
-                  size='small'
-                  variant='text'
-                  onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                </div>
+                <Typography
+                  className={classes.name}
+                  variant='body2'
+                  align='center'
                 >
-                  <RemoveIcon />
-                </Button>
+                  {deliveryMeal.Name}
+                </Typography>
               </div>
-              <Typography
-                className={classes.name}
-                variant='body2'
-                align='center'
-              >
-                {deliveryMeal.name.toUpperCase()}
-              </Typography>
-            </div>
+            </Slide>
           ))}
         </div>
         {(!cart || !cart.Zip) && (

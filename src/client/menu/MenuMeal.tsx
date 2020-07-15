@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Meal } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
 import ShortTextIcon from '@material-ui/icons/ShortText';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -90,6 +90,7 @@ const MenuMeal: React.FC<{
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
   const [choicesAnchor, setChoicesAnchor] = useState<null | HTMLElement>(null);
+  const [isTooltipOpen, setIsTooltipOpen] = React.useState(false);
   const [desc, setDesc] = useState<string>();
   const [optionGroupIndex, setOptionGroupIndex] = useState<number>(0);
   const [addonGroupIndex, setAddonGroupIndex] = useState<number>(0);
@@ -126,6 +127,7 @@ const MenuMeal: React.FC<{
         taxRate,
         hours,
       );
+      openTooltip();
       setChoicesAnchor(null);
     } else {
       setChoicesAnchor(event.currentTarget);
@@ -169,6 +171,7 @@ const MenuMeal: React.FC<{
         taxRate,
         hours,
       );
+      openTooltip();
       onCloseChoices();
     } else {
       setAddonGroupIndex(nextIndex);
@@ -197,6 +200,7 @@ const MenuMeal: React.FC<{
         taxRate,
         hours
       );
+      openTooltip();
       onCloseChoices();
     } else {
       setOptions({
@@ -205,6 +209,13 @@ const MenuMeal: React.FC<{
       });
       setOptionGroupIndex(newGroupIndex);
     }
+  }
+  const openTooltip = () => {
+    setIsTooltipOpen(true);
+    setTimeout(closeTooltip, 1500);
+  }
+  const closeTooltip = () => {
+    setIsTooltipOpen(false);
   }
   return (
     <Card elevation={0} className={classes.card}>
@@ -329,22 +340,36 @@ const MenuMeal: React.FC<{
           </Typography>
         </Paper>
       </Popover>
-      <div className={classes.scaler} onClick={onClickAdd}>
-        {
-          meal.Img ?
-            <CardMedia
-              className={classes.img}
-              image={meal.Img}
-              title={meal.Img}
-            >
-              <AddBoxIcon className={classes.imgAdd} />
-            </CardMedia>
-            :
-            <Typography>
-              No picture
-            </Typography>
-        }
-      </div>
+      <ClickAwayListener onClickAway={closeTooltip}>
+        <Tooltip
+          arrow
+          disableFocusListener
+          disableHoverListener
+          disableTouchListener
+          onClose={closeTooltip}
+          open={isTooltipOpen}
+          title='Added'
+          enterDelay={500}
+          leaveDelay={200}
+        >
+          <div className={classes.scaler} onClick={onClickAdd}>
+            {
+              meal.Img ?
+                <CardMedia
+                  className={classes.img}
+                  image={meal.Img}
+                  title={meal.Img}
+                >
+                  <AddBoxIcon className={classes.imgAdd} />
+                </CardMedia>
+                :
+                <Typography>
+                  No picture
+                </Typography>
+            }
+          </div>
+        </Tooltip>
+      </ClickAwayListener>
       <CardContent className={classes.content} onClick={e => onClickContent(e, meal.Description)}>
         <Typography
           gutterBottom

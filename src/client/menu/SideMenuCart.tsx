@@ -10,16 +10,15 @@ const useStyles = makeStyles(theme => ({
   },
   suggestion: {
     color: theme.palette.warning.dark,
+    fontWeight: 600,
   },
   summary: {
     whiteSpace: 'pre-line',
+    fontWeight: 600,
   },
   button: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
-  },
-  bottom: {
-    marginTop: 'auto',
   },
   heart: {
     height: 24,
@@ -28,6 +27,11 @@ const useStyles = makeStyles(theme => ({
     width: 300,
     padding: theme.spacing(2),
   },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  }
 }));
 
 const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
@@ -50,32 +54,35 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
     ) => {
       const meals = (
         <>
-          {cart && Object.entries(cart.RestMeals).map(([restId, restMeals]) => (
-            <div key={restId}>
-              <Typography variant='h6'>
-                {restMeals.meals[0].restName}
-              </Typography>
-              {restMeals.meals.map(deliveryMeal => (
-                <CartMealGroup
-                  key={deliveryMeal.IdKey}
-                  onAddMeal={() => addMealToCart(
-                    deliveryMeal.mealId,
-                    deliveryMeal,
-                    deliveryMeal.Choices,
-                    restId,
-                    deliveryMeal.RestName,
-                    deliveryMeal.TaxRate,
-                    deliveryMeal.Hours,
-                  )}
-                  choices={deliveryMeal.Choices}
-                  onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal)}
-                  name={deliveryMeal.Name}
-                  img={deliveryMeal.Img}
-                  quantity={deliveryMeal.Quantity}
-                />
-              ))}
-            </div>
-          ))}
+          {cart && Object.entries(cart.RestMeals)
+            .map(([restId, restMeals]) => (
+              <div key={restId}>
+                <Typography variant='h6'>
+                  {restMeals.meals[0].restName}
+                </Typography>
+                {restMeals.meals.map(deliveryMeal => (
+                  <CartMealGroup
+                    key={deliveryMeal.IdKey}
+                    onAddMeal={() => addMealToCart(
+                      deliveryMeal.mealId,
+                      deliveryMeal,
+                      deliveryMeal.Choices,
+                      restId,
+                      deliveryMeal.RestName,
+                      deliveryMeal.TaxRate,
+                      deliveryMeal.Hours,
+                    )}
+                    choices={deliveryMeal.Choices}
+                    onRemoveMeal={() => removeMealFromCart(restId, deliveryMeal)}
+                    name={deliveryMeal.Name}
+                    img={deliveryMeal.Img}
+                    quantity={deliveryMeal.Quantity}
+                  />
+                ))}
+              </div>
+            ))
+            .reverse()
+          }
           {
             donationCount > 0 &&
             <CartMealGroup
@@ -88,22 +95,13 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       );
       return (
         <>
-          <Typography
-            variant='h4'
-            color='primary'
-            className={classes.title}
-          >
-            {title}
-          </Typography>
-          {hideNext && meals}
           {
             !hideNext &&
-            <div className={classes.bottom}>
-              {meals}
+            <>
               {summary.map((s, i) => (
                 <Typography
                   key={i}
-                  variant='body1'
+                  variant={i === 0 ? 'h6' : 'body1'}
                   color='primary'
                   className={classes.summary}
                 >
@@ -132,8 +130,16 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
                   {suggestion}
                 </Typography>
               ))}
-            </div>
+            </>
           }
+          <Typography
+            variant='h4'
+            color='primary'
+            className={classes.title}
+          >
+            {title}
+          </Typography>
+          {meals}
         </>
       )
     }} />
