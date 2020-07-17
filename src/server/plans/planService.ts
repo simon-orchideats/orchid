@@ -16,7 +16,7 @@ class PlanService implements IPlanService {
   async getAvailablePlans(): Promise<IPlan[]> {
     try {
       const plans = await this.stripe.plans.list({
-        limit: 10,
+        limit: 3,
       });
       return plans.data.map(p => {
         let min: number | null = MIN_MEALS;
