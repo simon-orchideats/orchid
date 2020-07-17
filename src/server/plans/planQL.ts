@@ -11,6 +11,7 @@ export const PlanQL = gql`
     maxMeals: Int
   }
   type Plan {
+    isActive: Boolean!
     name: PlanName!
     stripePlanId: ID!
     tiers: [Tier!]!

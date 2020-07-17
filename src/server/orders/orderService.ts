@@ -1416,7 +1416,8 @@ class OrderService {
         const orderSpent = _source.deliveries.reduce<ISpent>((orderSpent, d) => {
           if (d.status !== 'Confirmed') return orderSpent;
           const deliverySpent = d.meals.reduce<ISpent>((deliverySpent, m) => {
-            const mealPrice = _source.costs.mealPrices.find(mp => mp.stripePlanId === m.stripePlanId);
+            // compare plan names instead of planIds because ids may be different for consumers with grandfathered pricing
+            const mealPrice = _source.costs.mealPrices.find(mp => mp.planName === m.planName);
             if (!mealPrice) throw new Error('Missing meal price');
             return {
               amount: deliverySpent.amount + mealPrice.mealPrice * m.quantity,
@@ -1830,14 +1831,17 @@ class OrderService {
         ...delivery,
         status: 'Open',
         meals: delivery.meals.map(m => {
-          const sub = targetOrder.plans.find(p => p.stripePlanId === m.stripePlanId);
+          // compare plan name because stripePlanIds could be different for consumers with grandfathered plans
+          const sub = targetOrder.plans.find(p => p.planName === m.planName);
           if (!sub) {
-            const err = new Error(`Missing order meal plan for stripePlanId ${m.stripePlanId}`);
+            const err = new Error(`Missing order meal plan for planName ${m.planName}`);
             console.error(err.stack);
             throw err;
           }
           return {
             ...m,
+            // overwrite the stripePlanId with consumers planId incase consumer has a grandfathered planId
+            stripePlanId: sub.stripePlanId,
             stripeSubscriptionItemId: sub.stripeSubscriptionItemId
           }
         })

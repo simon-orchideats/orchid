@@ -22,6 +22,7 @@ import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
 import Notifier from "../client/notification/Notifier";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
+import { useGetConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -64,6 +65,7 @@ const delivery = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const notify = useNotify();
+  const consumer = useGetConsumer();
   const clearCartMeals = useClearCartMeals();
   const [expanded, setExpanded] = useState<'deliveries' | 'assignments'>('deliveries');
   const [schedules, setSchedules] = useState<Schedule[]>(
@@ -126,6 +128,11 @@ const delivery = () => {
       console.error(err.stack);
       throw err;
     }
+    if (!consumer.data || !consumer.data.Plan) {
+      const err = new Error('No consumer plan');
+      console.error(err.stack);
+      throw err;
+    }
     if (!order.data) {
       const err = new Error('No order');
       console.error(err.stack);
@@ -138,6 +145,7 @@ const delivery = () => {
         deliveries: cart.Deliveries,
         donationCount: cart.DonationCount ? cart.DonationCount : 0 
       },
+      consumer.data.Plan.MealPlans,
       plans.data,
     ) 
   }

@@ -3,7 +3,7 @@ import { useGetCart } from "../global/state/cartState";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { Tier, PlanNames } from "../../plan/planModel";
+import { Tier, PlanNames, Plan } from "../../plan/planModel";
 import moment from "moment";
 import { Schedule } from "../../consumer/consumerPlanModel";
 import { Cost, competitorMealPrice } from "../../order/costModel";
@@ -65,7 +65,8 @@ const CheckoutCart: React.FC<props> = ({
   if (!cart || !plans.data) return null;
   const mealCount = Cart.getStandardMealCount(cart);
   const mealPrices = MealPrice.getMealPriceFromDeliveries(plans.data, cart.Deliveries, cart.DonationCount);
-  const planPrice = Tier.getPlanPrice(PlanNames.Standard, mealCount, plans.data);
+  const standard = Plan.getActivePlan(PlanNames.Standard, plans.data);
+  const planPrice = Tier.getPlanPrice(standard.stripePlanId, mealCount, plans.data);
   const orderButton = (
     <Button
       variant='contained'

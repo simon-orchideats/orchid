@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 import { orderFragment } from '../../order/orderFragment';
 import { ISpent, Spent } from '../../order/costModel';
+import { MealPlan } from '../../consumer/consumerPlanModel';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -310,7 +311,12 @@ export const useSkipDelivery = (): [
 }
 
 export const useUpdateDeliveries = (): [
-  (orderId: string, updateOptions: IUpdateDeliveryInput, plans: IPlan[]) => void,
+  (
+    orderId: string,
+    updateOptions: IUpdateDeliveryInput,
+    consumerMealPlan: MealPlan[],
+    plans: IPlan[],
+  ) => void,
   {
     error?: ApolloError 
     data?: MutationBoolRes
@@ -326,7 +332,12 @@ export const useUpdateDeliveries = (): [
       }
     }
   `);
-  const updateDeliveries = (orderId: string, updateOptions: IUpdateDeliveryInput, plans: IPlan[]) => {
+  const updateDeliveries = (
+    orderId: string,
+    updateOptions: IUpdateDeliveryInput,
+    consumerMealPlan: MealPlan[],
+    plans: IPlan[]
+  ) => {
     mutate({ 
       variables: {
         orderId,
@@ -365,7 +376,8 @@ export const useUpdateDeliveries = (): [
             plans,
             newDeliveries,
             updateOptions.donationCount,
-          )
+            consumerMealPlan,
+          );
           const newOrder: IOrder = {
             ...copy,
             costs: {

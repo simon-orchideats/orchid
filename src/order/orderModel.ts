@@ -52,7 +52,7 @@ export class MealPrice implements IMealPrice {
         stripePlanId: mp.stripePlanId,
         planName: mp.planName,
         mealPrice: Tier.getMealPrice(
-          mp.planName,
+          mp.stripePlanId,
           mp.mealCount,
           plans
         )
@@ -71,7 +71,8 @@ export class MealPrice implements IMealPrice {
   public static getMealPriceFromDeliveries(
     plans: IPlan[],
     newDeliveries: IDeliveryInput[],
-    donationCount: number
+    donationCount: number,
+    activeMealPlans?: IMealPlan[],
   ): IMealPrice[] {
     type mealCounts = {
       [key: string]: {
@@ -80,12 +81,14 @@ export class MealPrice implements IMealPrice {
         quantity: number
       }
     }
-    const standardPlan = plans.find(p => p.name === PlanNames.Standard);
-    if (!standardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
+    const defaultStandardPlan = plans.find(p => p.name === PlanNames.Standard);
+    if (!defaultStandardPlan) throw new Error(`Missing ${PlanNames.Standard} plan from plans ${JSON.stringify(plans)}`)
+    const targetStandardPlan = activeMealPlans?.find(mp => mp.planName === PlanNames.Standard);
+    const donationPlanId = targetStandardPlan ? targetStandardPlan.stripePlanId : defaultStandardPlan.stripePlanId
     const intialMealCounts: mealCounts = donationCount > 0 ?
       {
-        [standardPlan.stripePlanId]: {
-          stripePlanId: standardPlan.stripePlanId,
+        [donationPlanId]: {
+          stripePlanId: donationPlanId,
           planName: PlanNames.Standard,
           quantity: donationCount
         }
@@ -95,15 +98,16 @@ export class MealPrice implements IMealPrice {
  
     const mealCounts = newDeliveries.reduce<mealCounts>((counts, d) => {
       return d.meals.reduce((counts, m) => {
-        if (counts[m.stripePlanId]) {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
+        const planId = activeMealPlans?.find(mp => mp.planName === m.planName)?.stripePlanId || m.stripePlanId;
+        if (counts[planId]) {
+          counts[planId] = {
+            stripePlanId: planId,
             planName: m.planName,
-            quantity: counts[m.stripePlanId].quantity + m.quantity,
+            quantity: counts[planId].quantity + m.quantity,
           }
         } else {
-          counts[m.stripePlanId] = {
-            stripePlanId: m.stripePlanId,
+          counts[planId] = {
+            stripePlanId: planId,
             planName: m.planName,
             quantity: m.quantity,
           }
@@ -117,7 +121,7 @@ export class MealPrice implements IMealPrice {
         stripePlanId: c.stripePlanId,
         planName: c.planName,
         mealPrice: Tier.getMealPrice(
-          c.planName,
+          c.stripePlanId,
           c.quantity,
           plans
         )
@@ -201,6 +205,36 @@ export class Order implements IOrder{
           //@ts-ignore
           t.__typename = 'Tag'
         })
+        //@ts-ignore
+        m.hours.__typename = 'Hours';
+        m.hours.M.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.T.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.W.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.Th.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.F.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.Sa.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
+        m.hours.Su.forEach(h => {
+          // @ts-ignore
+          h.__typename = 'DayHours';
+        });
       });
     });
     // @ts-ignore
@@ -300,7 +334,8 @@ export class Order implements IOrder{
       deliveries: deliveries.map<EDelivery>(delivery => ({
         ...delivery,
         meals: delivery.meals.map(m => {
-          const plan = plans.find(mp => mp.stripePlanId === m.stripePlanId);
+          // compare plan name because stripePlanIds could be different for consumers with grandfathered plans
+          const plan = plans.find(mp => mp.planName === m.planName);
           if (!plan) {
             const err = new Error(`Missing order plan for stripePlanId ${m.stripePlanId}`);
             console.error(err);
@@ -308,6 +343,8 @@ export class Order implements IOrder{
           }
           return {
             ...m,
+            // overwrite meal's planId with consumer's incase consumer has a grandfathered plan
+            stripePlanId: plan.stripePlanId,
             stripeSubscriptionItemId: plan.stripeSubscriptionItemId
           }
         }),

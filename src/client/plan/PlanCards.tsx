@@ -18,7 +18,7 @@ const PlanCards: React.FC = () => {
   }
   return (
     <>
-      {plans.data.map(plan => (
+      {plans.data.filter(p => p.IsActive).map(plan => (
         <Grid
           key={plan.StripePlanId}
           container
