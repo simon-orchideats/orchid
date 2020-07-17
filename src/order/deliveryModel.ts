@@ -102,7 +102,7 @@ export class DeliveryMeal implements IDeliveryMeal {
     restName: string,
     taxRate: number,
     hours: IHours,
-    quantity: number = 1
+    quantity: number = 1,
   ) {
     return new DeliveryMeal({
       mealId,

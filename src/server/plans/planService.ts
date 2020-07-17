@@ -17,14 +17,14 @@ class PlanService implements IPlanService {
     try {
       const plans = await this.stripe.plans.list({
         limit: 3,
-        active: true,
       });
-      let min: number | null = MIN_MEALS;
       return plans.data.map(p => {
+        let min: number | null = MIN_MEALS;
         if (!p.tiers) throw new Error('Could not get tiers');
         if (!p.nickname) throw new Error('No plan nickname');
         return {
           stripePlanId: p.id,
+          isActive: p.active,
           name: p.nickname as PlanName,
           tiers: p.tiers.map(tier => {
             if (!tier.unit_amount) throw new Error(`Tier up_to '${tier.up_to}' missing unit amount`);

@@ -60,7 +60,7 @@ const copyMealPlansWithPriceAndCount = (mealPlans: MealPlan[], plans: IPlan[]) =
     { [key: string]: number }
   >((sum, rm) => {
     sum[rm.PlanName + '-Count'] = rm.MealCount;
-    sum[rm.PlanName + '-Price'] = Tier.getMealPrice(rm.PlanName, rm.MealCount, plans);
+    sum[rm.PlanName + '-Price'] = Tier.getMealPrice(rm.StripePlanId, rm.MealCount, plans);
     return sum;
   }, {});
 

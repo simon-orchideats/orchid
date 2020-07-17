@@ -13,7 +13,7 @@ import Counter from "../../client/menu/Counter";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import PreferredSchedule from "../../client/general/PreferredSchedule";
-import { MIN_MEALS, Tier, PlanNames } from "../../plan/planModel";
+import { MIN_MEALS, Tier } from "../../plan/planModel";
 import { menuRoute } from "../menu";
 import Link from "next/link";
 import { debounce } from 'lodash';
@@ -312,7 +312,7 @@ const myPlan = () => {
                 color='textSecondary'
                 className={classes.price}
               >
-                {plans.data && `($${(Tier.getMealPrice(PlanNames.Standard, count, plans.data) / 100).toFixed(2)} ea)`}
+                {plans.data && `($${(Tier.getMealPrice(plan.MealPlans[0].StripePlanId, count, plans.data) / 100).toFixed(2)} ea)`}
               </Typography>
             </div>
             {

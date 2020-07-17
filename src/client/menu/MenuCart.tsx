@@ -6,7 +6,7 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
-import { Tier, MIN_MEALS, PlanNames } from "../../plan/planModel";
+import { Tier, MIN_MEALS, PlanNames, Plan } from "../../plan/planModel";
 
 export const getSuggestion = (cart: Cart | null, minMeals: number, cost: number) => {
   if (!cart) return [];
@@ -81,11 +81,16 @@ const MenuCart: React.FC<{
   let summary = [];
   let suggestions: string[] = [];
   if (plans.data) {
-    const minPrice = Tier.getMealPrice(PlanNames.Standard, MIN_MEALS, plans.data)
+    let planId = Plan.getActivePlan(PlanNames.Standard, plans.data).stripePlanId;
+    if (consumer && consumer.data && consumer.data.Plan) {
+      const activeStandard = consumer.data.Plan.MealPlans.find(mp => mp.PlanName === PlanNames.Standard);
+      if (activeStandard && activeStandard.StripePlanId !== planId) planId = activeStandard.StripePlanId;
+    }
+    const minPrice = Tier.getMealPrice(planId, MIN_MEALS, plans.data);
     suggestions = getSuggestion(cart, MIN_MEALS, minPrice);
-    const moreToNext = Tier.getNextPlans(PlanNames.Standard, mealCount, plans.data);
+    const moreToNext = Tier.getNextTier(planId, mealCount, plans.data);
     if (mealCount >= MIN_MEALS) {
-      summary.push(`${mealCount} meal plan (${(Tier.getMealPrice(PlanNames.Standard, mealCount, plans.data) / 100).toFixed(2)} ea)`);
+      summary.push(`${mealCount} meal plan (${(Tier.getMealPrice(planId, mealCount, plans.data) / 100).toFixed(2)} ea)`);
       for (let i = 0; i < moreToNext.length; i++) {
         const nextPrice = moreToNext[i].price;
         const nextCount = moreToNext[i].count;
