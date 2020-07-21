@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -10,6 +10,7 @@ import React from 'react';
 import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
 import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
+import { Carousel } from 'react-responsive-carousel';
 
 const useStyles = makeStyles(theme => ({
   avatar: {
@@ -49,6 +50,14 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  row: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  carouselRow: {
+    display: 'flex',
+    justifyContent: 'space-around',
+  },
   welcome: {
     [theme.breakpoints.down('lg')]: {
       background: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-plating.png)',
@@ -58,7 +67,7 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(/home/yellow-plating.png)`,
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
-    height: 400,
+    height: 410,
     marginTop: -theme.mixins.navbar.marginBottom
   },
   welcomeTitle: {
@@ -71,7 +80,11 @@ const useStyles = makeStyles(theme => ({
     },
   },
   welcomeText: {
-    maxWidth: 600 // chosen by inspection
+    maxWidth: 600, // chosen by inspection
+    minWidth: 375,
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: 50,
+    },
   },
   verticalMargin: {
     marginTop: theme.spacing(1),
@@ -94,16 +107,19 @@ const useStyles = makeStyles(theme => ({
   plans: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: 200,
+    paddingTop: 100,
     backgroundImage: 'url(/home/friends.png)',
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
-    height: 900,
+    height: 750,
     paddingBottom: 32,
     alignItems: 'center',
     [theme.breakpoints.down('md')]: {
-      paddingTop: 100, // determined by inspection
+      paddingTop: 50, // determined by inspection
     },
+    [theme.breakpoints.down('sm')]: {
+      height: 900,
+    }
   },
   testimonialsTitle: {
     [theme.breakpoints.down(1250)]: {
@@ -176,6 +192,8 @@ const useStyles = makeStyles(theme => ({
   testimonialHeader: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%'
   },
   headerAvatar: {
     marginBottom: theme.spacing(1),
@@ -239,7 +257,7 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 200,
   },
   icon: {
-    maxWidth: 135,
+    maxWidth: 85,
     height: 85,
     marginBottom: theme.spacing(1),
   },
@@ -273,7 +291,7 @@ const useStyles = makeStyles(theme => ({
   howSubtitle: {
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.25rem',
-      fontWeight: 400,
+      fontWeight: 500,
     },
   },
   title: {
@@ -294,7 +312,7 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(3),
     paddingBottom: theme.spacing(3),
     borderStyle: 'solid',
-    borderColor: theme.palette.primary.main,
+    borderColor: '#ed8d81',
   },
   promotion: {
     backgroundColor: theme.palette.primary.main,
@@ -305,6 +323,11 @@ const useStyles = makeStyles(theme => ({
   bold: {
     fontWeight: 600,
   },
+  owner: {
+    width: 150,
+    height: 150,
+    backgroundSize: 'cover',
+  },
   who: {
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
@@ -313,6 +336,42 @@ const useStyles = makeStyles(theme => ({
   },
   referralBottom: {
     marginBottom: theme.mixins.navbar.marginBottom
+  },
+  cloud: {
+    width: 180,
+    minHeight: 70,
+    background: theme.palette.common.white,
+    borderRadius: 100,
+    position: 'relative',
+    '&::before': {
+      top: -20,
+      right: 95,
+      width: 60,
+      height: 60,
+      borderRadius: 200,
+      content: '" "',
+      position: 'absolute',
+      background: theme.palette.common.white,
+      zIndex: 1,
+    },
+    '&::after': {
+      top: -30,
+      left: 70,
+      width: 80,
+      height: 80,
+      borderRadius: 100,
+      content: '" "',
+      position: 'absolute',
+      background: theme.palette.common.white,
+      zIndex: 1,
+    },
+  },
+  cloudText: {
+    position: 'absolute',
+    zIndex: 2,
+  },
+  marginLeft: {
+    marginLeft: theme.spacing(1),
   }
 }));
 
@@ -323,28 +382,81 @@ const Welcome = () => {
   }
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
-      <div className={classes.welcomeText}>
-        <Typography variant='h2' className={classes.welcomeTitle}>
-          Restaurants
-        </Typography>
-        <Typography variant='h2' className={classes.welcomeTitle}>
-          in your fridge
-        </Typography>
-        <Typography variant='h4' className={`${classes.title} ${classes.topMargin}`}>
-          A weekly meal plan delivery
-        </Typography>
-        <Typography variant='subtitle1' className={classes.verticalMargin}>
-          Mix n’ match different restaurants in each delivery
-        </Typography>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={() => onClick()}
-          size='large'
+      <Grid container alignItems='center'>
+        <Hidden smDown>
+          <Grid
+            item
+            md={4}
+            className={classes.centered}
+          >
+            <div className={classes.cloud}>
+              <Typography variant='h5' className={classes.cloudText}>
+                Free weekly delivery
+              </Typography>
+            </div>
+          </Grid>
+        </Hidden>
+        <Grid
+          item
+          xs={12}
+          md={4}
+          className={classes.centered}
         >
-          Explore Menu
-        </Button>
-      </div>
+          <div className={classes.welcomeText}>
+            <Typography variant='h2' className={classes.welcomeTitle}>
+              Restaurants
+            </Typography>
+            <Typography variant='h2' className={`${classes.welcomeTitle} ${classes.largeBottomMargin}`}>
+              in your fridge
+            </Typography>
+            <Typography variant='h5' className={`${classes.title}`}>
+              A meal plan subscription to restaurants
+            </Typography>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={() => onClick()}
+              size='large'
+            >
+              Explore Menu
+            </Button>
+          </div>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={4}
+        >
+          <Grid container>
+            <Grid
+              item
+              xs={6}
+              md={12}
+              className={classes.centered}
+            >
+              <div className={classes.cloud}>
+                <Typography variant='h5' className={classes.cloudText}>
+                  One low, flat price
+                </Typography>
+              </div>
+            </Grid>
+            <Grid
+              item
+              xs={6}
+              md={12}
+              className={classes.centered}
+            >
+              <Hidden mdUp>
+                <div className={classes.cloud}>
+                  <Typography variant='h5' className={classes.cloudText}>
+                    Free weekly delivery
+                  </Typography>
+                </div>
+              </Hidden>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
     </div>
   );
 };
@@ -352,12 +464,12 @@ const Welcome = () => {
 const Why = () => {
   const classes = useStyles();
   const Content: React.FC<{
-    emoji: React.ReactNode
-    title: string,
+    badTitle: string
+    goodTitle: string
     img: string,
   }> = ({
-    emoji,
-    title,
+    badTitle,
+    goodTitle,
     img
   }) => (
     <div className={`${classes.centered} ${classes.verticalMargin}`}>
@@ -370,7 +482,16 @@ const Why = () => {
         />
       }
       <Typography variant='h5' className={classes.whySubtitle}>
-        {title}&nbsp;{emoji}
+        ❌&nbsp;{badTitle}
+      </Typography>
+      <Typography variant='h5' className={classes.whySubtitle}>
+        {<img
+          src='/home/check.png'
+          alt='check'
+          className={classes.check}
+        />}
+        &nbsp;
+        {goodTitle}
       </Typography>
     </div>
   )
@@ -384,145 +505,43 @@ const Why = () => {
         className={classes.verticalMargin}
       >
         <Grid
-          container
           item
+          className={classes.centered}
           xs={12} 
           sm={12}
           md={4}
         >
-          <Grid
-            item
-            xs={4}
-            md={12}
-          >
-            <Content
-              emoji='❌'
-              title="You order 3+ deliveries a week"
-              img='home/cash.png'
-            />
-          </Grid>
-          <Grid
-            item 
-            xs={4}
-            md={12}
-          >
-            <img
-              src='/home/down.svg'
-              alt='logo'
-              className={`${classes.icon} ${classes.arrow}`}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={4}
-            md={12}
-          >
-            <Content
-              emoji={
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-              }
-              title='Subscribe & save'
-              img='home/piggy-bank.svg'
-            />
-          </Grid>
+          <Content
+            badTitle='You order 3+ deliveries a week'
+            goodTitle='Subscribe & save'
+            img='home/piggy-bank.svg'
+          />
         </Grid>
         <Grid
-          container
           item
+          className={classes.centered}
           xs={12} 
           sm={12}
           md={4}
         >
-          <Grid
-            item
-            xs={4}
-            md={12}
-          >
-            <Content
-              emoji='❌'
-              title='You hate waiting for delivery'
-              img='home/snail2.png'
-            />
-          </Grid>
-          <Grid
-            item 
-            xs={4}
-            md={12}
-          >
-            <img
-              src='/home/down.svg'
-              alt='logo'
-              className={`${classes.icon} ${classes.arrow}`}
-            />
-          </Grid>
-            <Grid
-              item
-              xs={4}
-              md={12}
-            >
-            <Content
-              emoji={
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-              }
-              title="Just heat it up"
-              img='home/buffet.svg'
-            />
-          </Grid>
+          <Content
+            badTitle='You hate waiting for delivery'
+            goodTitle='Just heat it up'
+            img='home/buffet.svg'
+          />
         </Grid>
         <Grid
-          container
           item
+          className={classes.centered}
           xs={12} 
           sm={12}
           md={4}
         >
-          <Grid
-            item
-            xs={4}
-            md={12}
-          >
-            <Content
-              emoji='❌'
-              title='You & roomies argue on what to eat'
-              img='home/argue2.png'
-            />
-          </Grid>
-          <Grid
-            item 
-            xs={4}
-            md={12}
-          >
-            <img
-              src='/home/down.svg'
-              alt='logo'
-              className={`${classes.icon} ${classes.arrow}`}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={4}
-            md={12}
-          >
-            <Content
-              emoji={
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-              }
-              title="Mix n' match restaurants"
-              img='home/eat.svg'
-            />
-          </Grid>
+          <Content
+            badTitle='You & roomies argue on what to eat'
+            goodTitle="Mix n' match restaurants"
+            img='home/eat.svg'
+          />
         </Grid>
       </Grid>
       <Link href={menuRoute}>
@@ -538,6 +557,113 @@ const Why = () => {
     </div>
   );
 };
+
+const Slider = () => {
+  const classes = useStyles();
+  return (
+    <>
+      <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
+        Our partners
+      </Typography>
+      <Carousel
+        className={classes.topMargin}
+        autoPlay
+        infiniteLoop
+        showArrows
+        showStatus={false}
+        interval={5000}
+      >
+        <div className={classes.carouselRow}>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/china-meal.jpg)" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/canteen-owner.jpg)" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              China Spice by Hanish & Peter
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/gypsy-meal.jpg)" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/gypsy-owner.png" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Gypsy Grill by Moudy
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/marg-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/marg-owner.jpg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Margherita's by Matt
+            </Typography>
+          </div>
+        </div>
+        <div className={classes.carouselRow}>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/greens-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/quality-greens-owner.jpg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Quality Greens Kitchen by Steven
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/rumba-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/rumba-owner.jpg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Rumba Cubana by ALan & Nairelys
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/shaka-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/shaka-owner.jpeg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Shaka Bowl by Kiersten & Krista
+            </Typography>
+          </div>
+        </div>
+        <div className={classes.carouselRow}>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/taq-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/taq-owner.png" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              La Taqueria Downtown by Andrea & Phil
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/tonys-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/tonys-owner.jpg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Tony Boloney's by Mike
+            </Typography>
+          </div>
+          <div>
+            <div className={classes.row}>
+              <div style={{ backgroundImage: "url(/home/wurst-meal.jpg" }} className={classes.owner} />
+              <div style={{ backgroundImage: "url(/home/wurst-owner.jpg" }} className={classes.owner} />
+            </div>
+            <Typography variant='h6'>
+              Würstbar by Aaron
+            </Typography>
+          </div>
+        </div>
+      </Carousel>
+    </>
+  )
+}
 
 const HowItWorks = () => {
   const classes = useStyles();
@@ -556,18 +682,20 @@ const HowItWorks = () => {
       sm={12}
       md={4}
     >
-      <div className={`${classes.verticalMargin} ${classes.centered}`}>
+      <div className={`${classes.verticalMargin} ${classes.row}`}>
         <img
           src={img}
           alt='logo'
           className={classes.icon}
         />
-        <Typography variant='h5' className={classes.howSubtitle}>
-          {title}
-        </Typography>
-        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-          {description}
-        </Typography>
+        <div className={classes.marginLeft}>
+          <Typography variant='h5' className={classes.howSubtitle}>
+            {title}
+          </Typography>
+          <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+            {description}
+          </Typography>
+        </div>
       </div>
     </Grid>
   )
@@ -578,19 +706,19 @@ const HowItWorks = () => {
       </Typography>
       <Grid container className={classes.verticalMargin}>
         <Content
-          title='Subscribe'
-          description='Tell us a time and day to deliver'
-          img='home/calendar.png'
-        />
-        <Content
           title="Mix n' Match"
           description='Pick meals from different restaurants'
           img='home/mix.png'
         />
         <Content
           title='Enjoy'
-          description='Eat some now and some later'
-          img='home/microwave.png'
+          description='Eat fresh meals now or save for later'
+          img='home/microwave2.png'
+        />
+        <Content
+          title='Subscribe'
+          description='Tell when and what to deliver each week'
+          img='home/calendar.png'
         />
       </Grid>
       <Link href={howItWorksRoute}>
@@ -706,13 +834,21 @@ const Testimonials = () => {
             <Avatar className={classes.avatar} src='/home/alma.png' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/alma.png' />
-                <Typography variant='body1' className={classes.bold}>
-                  Alma
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/alma.png' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Alma
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  May 15
                 </Typography>
               </div>
+              <Typography variant='body1' className={classes.bold}>
+                "I'm so thankful for this 😭"
+              </Typography>
               <Typography variant='body1'>
-                I'm so thankful for this 😭
+                It's like Christmas every Tuesday
               </Typography>
               <img src='/home/orchidFood.png' className={classes.orchidFood} />
             </div>
@@ -721,13 +857,21 @@ const Testimonials = () => {
             <Avatar className={classes.avatar} src='/home/josh.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/josh.jpg' />
-                <Typography variant='body1' className={classes.bold}>
-                  Josh
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/josh.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Josh
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  June 23
                 </Typography>
               </div>
+              <Typography variant='body1' className={classes.bold}>
+                "It's honestly a no-brainer"
+              </Typography>
               <Typography variant='body1' >
-                I do love it, it's honestly a no-brainer, were are tired of having to work, cook and do dishes, so this
+                I do love it. We're tired of having to work, cook and do dishes, so this
                 is a great opportunity to support our restaurants plus making things more convenient for us
               </Typography>
             </div>
@@ -736,13 +880,21 @@ const Testimonials = () => {
             <Avatar className={classes.avatar} src='/home/brandon.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
-                <Typography variant='body1' className={classes.bold}>
-                  Brandon
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Brandon
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  March 24
                 </Typography>
               </div>
+              <Typography variant='body1'className={classes.bold}>
+                "Other apps cost way too much"
+              </Typography>
               <Typography variant='body1'>
-                Other apps cost way too much. Even small orders. The delivery and service fees add up. That's why I use Orchid
+                Even small orders. The delivery and service fees add up. That's why I use Orchid
               </Typography>
             </div>
           </div>
@@ -750,13 +902,21 @@ const Testimonials = () => {
             <Avatar className={classes.avatar} src='/home/arv.jpg' />
             <div className={`${classes.testimonial} ${classes.centered}`}>
               <div className={classes.testimonialHeader}>
-                <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
-                <Typography variant='body1' className={classes.bold}>
-                  Arvinder
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Arvinder
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  June 4
                 </Typography>
               </div>
+              <Typography variant='body1' className={classes.bold}>
+                "It's so convenient"
+              </Typography>
               <Typography variant='body1'>
-                It's so convenient. I don't have to think about food
+                I don't have to think about food
               </Typography>
             </div>
           </div>
@@ -773,6 +933,7 @@ const Index = () => {
       <Welcome />
       <Promotion />
       <Why />
+      <Slider />
       <Plans />
       <HowItWorks />
       <Testimonials />
