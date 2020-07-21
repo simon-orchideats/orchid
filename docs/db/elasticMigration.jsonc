@@ -1,11 +1,543 @@
+POST rests/_doc/
+{
+  "taxRate" : 0.06625,
+  "hours" : {
+    "Su" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "T" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "Th" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "F" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "W" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "M" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ],
+    "Sa" : [
+      {
+        "close" : "21:30",
+        "open" : "11:00"
+      }
+    ]
+  },
+  "createdDate" : 1594671933343,
+  "profile" : {
+    "phone" : "(201) 659-4361",
+    "name" : "Quality Greens Kitchen",
+    "actor" : "Steven",
+    "actorImg": "/menu/quality-greens/owner.jpg",
+    "story" : "Born and raised in NJ. I opened Quality Greens to bring together quick eating and fine dining. We're fast, but many of our chefs have culinary degrees. We're finding the perfect balance."
+  },
+  "location" : {
+    "geo" : {
+      "lon" : -74.029880,
+      "lat" : 40.739480
+    },
+    "address" : {
+      "zip" : "07030",
+      "city" : "Hoboken",
+      "address1" : "227 Washington Street",
+      "state" : "NJ"
+    },
+    "timezone" : "America/New_York"
+  },
+  "menu" : [
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "Shredded kale, chopped romaine, avocado, tomatoes, scallions, corn, cucumbers, corn tortilla chips, avocado chimichurri dressing",
+      "addonGroups" : [ ],
+      "img" : "/menu/quality-greens/avo-salad.jpg",
+      "originalPrice" : 950,
+      "name" : "Avo",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "gz2rZtZpZKAUGGloTA9S2",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Keto",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Cal",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Carb",
+          "type" : "diet"
+        },
+        {
+          "name" : "Vegetarian",
+          "type" : "diet"
+        },
+        {
+          "name" : "Vegan",
+          "type" : "diet"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "Chopped romaine, roasted chicken, carrots, edamame, shredded cabbage, wonton strips, ginger soy dressing",
+      "addonGroups" : [ ],
+      "img" : "/menu/quality-greens/umami-crunch.jpg",
+      "originalPrice" : 999,
+      "name" : "Umami Crunch",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "gYVqp9dtvqKSYpRGoHAz-",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Keto",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Cal",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Carb",
+          "type" : "diet"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "Shredded kale, chopped romaine, house-made parmesan crisps, freshly-grated parmesan, roasted chicken, grape tomatoes, greek yogurt caesar dressing",
+      "addonGroups" : [ ],
+      "img" : "/menu/quality-greens/kale-caesar.jpg",
+      "originalPrice" : 1050,
+      "name" : "Kale Caesar",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "Ou58OplTqMFf2q0AD3-qX",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Keto",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Cal",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Carb",
+          "type" : "diet"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "",
+      "addonGroups" : [ ],
+      "img" : "/menu/quality-greens/balsamic-blue.jpg",
+      "description": "Mesclun, apples, blue cheese, walnuts, dried cranberries, balsamic vinaigrette",
+      "originalPrice" : 950,
+      "name" : "Balsamic Blue",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "XefwJG_80EBKlSdNh9QAu",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Keto",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Cal",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Carb",
+          "type" : "diet"
+        },
+        {
+          "name" : "Vegetarian",
+          "type" : "diet"
+        },
+        {
+          "name" : "Vegan",
+          "type" : "diet"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "Natural and certified organic, crisped skin-on chicken breast, seared and finished in the oven",
+      "addonGroups" : [ ],
+      "img" : "/menu/quality-greens/rosemary-roasted-chicken.jpg",
+      "originalPrice" : 1165,
+      "name" : "Rosemary Roasted Chicken",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "Bo_rwD7HAtUeH4zimmYBL",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Keto",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Cal",
+          "type" : "diet"
+        },
+        {
+          "name" : "Low Carb",
+          "type" : "diet"
+        }
+      ]
+    },
+    {
+      "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+      "description": "Skip the protein & choose 3 sides",
+      "addonGroups" : [
+        {
+          "names" : [
+            "Mac & Cheese",
+            "Carrot Fries",
+            "Roasted Sweet Potato",
+            "Three Bean Ceviche",
+            "Roasted Beets & Grilled Aples",
+            "Umami Kale Slaw",
+            "Sautéed Broccoli",
+            "Broccoli Stem Slaw"
+          ],
+          "limit" : 3
+        }
+      ],
+      "img" : "/menu/quality-greens/vegetable-trio.jpg",
+      "originalPrice" : 995,
+      "name" : "Vegetable Trio",
+      "planName" : "Standard",
+      "optionGroups" : [ ],
+      "orderNames" : [ ],
+      "_id" : "fsE-_yYtX-dz_a9FQs9v4",
+      "isActive" : true,
+      "tags" : [
+        {
+          "name" : "American",
+          "type" : "cuisine"
+        },
+        {
+          "name" : "Vegetarian",
+          "type" : "diet"
+        },
+        {
+          "name" : "Vegan",
+          "type" : "diet"
+        }
+      ]
+    }
+  ],
+  "managers" : [ ],
+  "status" : "Open"
+}
+
+
+
+
+
+
 POST rests/_update_by_query
 {
   "script" : {
     "source": """
+<<<<<<< HEAD
       def menu = ctx._source.menu;
       for (int i = 0; i < menu.length; i++) {
         menu[i].planName = 'Standard';
         menu[i].stripePlanId = 'price_1H5eIMChNVhU1EK6a5H2QWUw';
+=======
+      if (ctx._source.profile.name.equals("Shaka Bowl")) {
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "aDhvdjbk6eGnbE2GwYI2b",
+          "img": "/menu/shaka/big-island.jpg",
+          "name": "Big Island (16oz)",
+          "description": "acai, granola, banana, strawberry, blueberries, bee pollen, honey",
+          "originalPrice": 1000,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {},
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+        
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "3vL5oDDHMjCcZ-ucHuQII",
+          "img": "/menu/shaka/molokai-cacao.jpg",
+          "name": "Molokai Cacao (16oz)",
+          "description": "acai, granola, banana, strawberry, cacao nibs, goji berries, chopped almonds, nutella",
+          "originalPrice": 1075,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {},
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "ZvP1OP9HFpgqON7TeKHl_",
+          "img": "/menu/shaka/brave.jpg",
+          "name": "Brave (16oz)",
+          "description": "Orchid special - pitaya, granola, banana, strawberry, mango, flax seeds, chia seeds, nutella",
+          "originalPrice": 1000,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "pHrf0Yy88ZCjspdSRlRNM",
+          "img": "/menu/shaka/earth.jpg",
+          "name": "Earth (16oz)",
+          "description": "Orchid special - pitaya, granola, banana, strawberry, mango, bee pollen, choco chips, walnuts, nutella",
+          "originalPrice": 1000,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "b7z-6z6IDOBfWoOvgbEzi",
+          "img": "/menu/shaka/hula.jpg",
+          "name": "Hula (16oz)",
+          "description": "Orchid special - acai, granola, banana, strawberry, mango, coconut shavings, chia seeds, hemp seeds, almonds",
+          "originalPrice": 1025,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "qhtwkeMNZ1Uu6P8Dti4WM",
+          "img": "/menu/shaka/kong.jpg",
+          "name": "Kong (16oz)",
+          "description": "Orchid special - acai, granola, banana, blueberry, mango, chia seeds, cacao nibs, goji berries, almond butter",
+          "originalPrice": 1050,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "LyuiKQXkyB4cyLJhHtFCu",
+          "img": "/menu/shaka/maha.jpg",
+          "name": "Maha (16oz)",
+          "description": "Orchid special - acai, granola, banana, mango, coconut shavings, chia seeds, cacao nibs, nutella",
+          "originalPrice": 1025,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "58d4GKTE-Eh6kaQ_F9-Qi",
+          "img": "/menu/shaka/ono.jpg",
+          "name": "Ono (16oz)",
+          "description": "Orchid special - acai, granola, strawberry, pineapple, blueberry, coconut shavings, choco chips, flax seeds",
+          "originalPrice": 1000,
+          "optionGroups" : new def[] {},
+          "addonGroups" : new def[] {},
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+
+        ctx._source.menu.add([
+          "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+          "planName": "Standard",
+          "_id": "dtS3e41CxUS3m15zEy1vW",
+          "img": "/menu/shaka/byo.jpg",
+          "name": "Build your own (16oz)",
+          "originalPrice": 1050,
+          "optionGroups" : new def[] {
+            [
+              "names" : new def[] {
+                "Acai",
+                "Pitaya",
+                "Greek yogurt parfait"
+              }
+            ]
+          },
+          "addonGroups" : new def[] {
+            [
+              "names": new def[] {
+                "Banana",
+                "Strawberry",
+                "Pineapple",
+                "Blueberry",
+                "Mango"
+              },
+              "limit": 3
+            ],
+            [
+              "names": new def[] {
+                "Granola",
+                "Coconut Shavings",
+                "Hemp Seeds",
+                "Chia Seeds",
+                "Flax Seeds",
+                "Goji Berries",
+                "Almonds",
+                "Walnuts",
+                "Cacao Nibs",
+                "Chocolate Chips",
+                "Raisins"
+              }
+            ],
+            [
+              "names": new def[] {
+                "Peanut Butter",
+                "Almond Butter",
+                "Honey",
+                "Nutella",
+                "Agave"
+              },
+              "limit": 2
+            ]
+          },
+          "orderNames" : new def[] {
+            "Build your own"
+          },
+          "tags": new def[] {
+            [
+              "name" : "Japanese",
+              "type" : "cuisine"
+            ]
+          },
+          "isActive" : true
+        ]);
+>>>>>>> 3c9d3a3d451dfa421fd3bb66cc895fa4a8307f73
       }
     """,
     "lang": "painless"
@@ -14,3 +546,49 @@ POST rests/_update_by_query
     "match_all": {}
   }
 }
+
+"addonGroups" : [
+  {
+    "names" : [
+      "Lettuce",
+      "Tomato",
+      "Onion"
+    ],
+    "limit" : 3
+  },
+  {
+    "names" : [
+      "Ketchup",
+      "Blue cheese dressing",
+      "Mayo"
+    ],
+    "limit" : 3
+  }
+],
+
+ctx._source.menu.add([
+  "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+  "planName": "Standard",
+  "_id": "NEj1_D4omVrODqkU6KF5I",
+  "img": "/menu/gypsy-grill/lamb-beef-shawafel.jpg",
+  "name": "Lamb & Beef Shawafel",
+  "description": "Lamb & beef shawarma and falafel stuffed in pita with salad & tahini sauce",
+  "originalPrice": 1050,
+  "optionGroups" : new def[] {
+    [
+      "names" : new def[] {
+        "2pc Kunafa",
+        "2pc Baklava"
+      }
+    ]
+  },
+  "addonGroups" : new def[] {},
+  "orderNames" : new def[] {},
+  "tags": new def[] {
+    [
+      "name" : "Mediterranean",
+      "type" : "cuisine"
+    ]
+  },
+  "isActive" : true
+]);

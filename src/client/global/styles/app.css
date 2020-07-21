@@ -2,3 +2,16 @@
 #tl_popupCL1 {
   z-index: 9999999 !important;
 }
+
+/* for the home carousel. determined by inspection */
+.carousel .slide {
+  background: none !important
+}
+
+.carousel.carousel-slider {
+  padding-bottom: 30px
+}
+
+.carousel.carousel-slider .control-arrow {
+  background-color: #bdbdbd !important
+}

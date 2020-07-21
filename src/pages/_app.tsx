@@ -1,4 +1,5 @@
 import '../client/global/styles/app.css';
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import React from 'react';
 import App from 'next/app';
 import Head from 'next/head';

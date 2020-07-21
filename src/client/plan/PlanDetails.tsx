@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(2),
     width: 260,
     borderStyle: 'solid',
-    borderColor: theme.palette.primary.main,
+    borderColor: '#ed8d81',
   },
   cardSubtitle: {
     color: theme.palette.text.secondary,
@@ -26,7 +26,7 @@ const PlanDetails: React.FC<{
   const classes = useStyles();
   const meals = (
     <Typography variant='h6'>
-      {tier.minMeals}{tier.MaxMeals !== null ? ` - ${tier.maxMeals} meals / wk` : '+ meals / wk'}
+      {tier.minMeals}+ meals
     </Typography>
   );
   const price = (
@@ -45,7 +45,7 @@ const PlanDetails: React.FC<{
             </Typography>
             {meals}
             <Typography variant='h6'>
-              1 free delivery / wk
+              1 free delivery
             </Typography>
             {price}
           </>
@@ -58,7 +58,7 @@ const PlanDetails: React.FC<{
             </Typography>
             {meals}
             <Typography variant='h6'>
-              2 deliveries / wk
+              2 deliveries
             </Typography>
             {price}
           </>
@@ -71,7 +71,7 @@ const PlanDetails: React.FC<{
             </Typography>
             {meals}
             <Typography variant='h6'>
-              3+ deliveries / wk
+              3+ deliveries
             </Typography>
             {price}
           </>
