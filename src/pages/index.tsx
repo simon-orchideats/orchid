@@ -618,7 +618,7 @@ const Slider = () => {
               <div style={{ backgroundImage: "url(/home/rumba-owner.jpg" }} className={classes.owner} />
             </div>
             <Typography variant='h6'>
-              Rumba Cubana by ALan & Nairelys
+              Rumba Cubana by Alan & Nairelys
             </Typography>
           </div>
           <div>
