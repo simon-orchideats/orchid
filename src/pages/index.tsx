@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, GridList, GridListTile, GridListTileBar } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -43,6 +43,12 @@ const useStyles = makeStyles(theme => ({
       width: 22
     },
   },
+  titleBar: {
+    background: 'rgba(255, 255, 255, 0.9)',
+  },
+  titleBarText: {
+    color: theme.palette.text.primary,
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -53,10 +59,6 @@ const useStyles = makeStyles(theme => ({
   row: {
     display: 'flex',
     justifyContent: 'center',
-  },
-  carouselRow: {
-    display: 'flex',
-    justifyContent: 'space-around',
   },
   welcome: {
     [theme.breakpoints.down('lg')]: {
@@ -250,9 +252,6 @@ const useStyles = makeStyles(theme => ({
       marginLeft: 0,
     },
   },
-  quote: {
-    height: 20
-  },
   lowWidth: {
     maxWidth: 200,
   },
@@ -323,10 +322,18 @@ const useStyles = makeStyles(theme => ({
   bold: {
     fontWeight: 600,
   },
-  owner: {
-    width: 150,
-    height: 150,
+  how: {
+    backgroundImage: 'url(/home/how.jpg)',
     backgroundSize: 'cover',
+    backgroundPosition: '50%',
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    [theme.breakpoints.up('md')]: {
+      height: 400,
+    },
+    [theme.breakpoints.down('sm')]: {
+      backgroundImage: 'url(/home/howSmall.jpg)',
+    },
   },
   who: {
     [theme.breakpoints.down('xs')]: {
@@ -338,8 +345,10 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.mixins.navbar.marginBottom
   },
   cloud: {
+    display: 'flex',
+    alignItems: 'center',
     width: 180,
-    minHeight: 70,
+    minHeight: 80,
     background: theme.palette.common.white,
     borderRadius: 100,
     position: 'relative',
@@ -384,9 +393,10 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <Grid container alignItems='center'>
         <Hidden smDown>
+          <Grid item md={1}/>
           <Grid
             item
-            md={4}
+            md={3}
             className={classes.centered}
           >
             <div className={classes.cloud}>
@@ -425,7 +435,7 @@ const Welcome = () => {
         <Grid
           item
           xs={12}
-          md={4}
+          md={3}
         >
           <Grid container>
             <Grid
@@ -456,6 +466,7 @@ const Welcome = () => {
             </Grid>
           </Grid>
         </Grid>
+        <Grid item md={1} xs={12} />
       </Grid>
     </div>
   );
@@ -512,7 +523,7 @@ const Why = () => {
           md={4}
         >
           <Content
-            badTitle='You order 3+ deliveries a week'
+            badTitle='You order out $40 each week'
             goodTitle='Subscribe & save'
             img='home/piggy-bank.svg'
           />
@@ -560,10 +571,76 @@ const Why = () => {
 
 const Slider = () => {
   const classes = useStyles();
+  const Slide: React.FC<{
+    ownerImg: string,
+    title: string,
+    subtitle: string,
+    m1: string,
+    m2: string,
+    m3: string,
+    m4: string,
+    m5: string,
+    m6: string
+  }> = ({
+    ownerImg,
+    title,
+    subtitle,
+    m1,
+    m2,
+    m3,
+    m4,
+    m5,
+    m6,
+  }) => (
+    <Grid container>
+      <Grid item md={3}>
+        <GridList cols={1}>
+          <GridListTile rows={2}>
+            <img src={ownerImg} />
+            <GridListTileBar
+              className={classes.titleBar}
+              title={
+                <Typography variant='h5' className={classes.titleBarText}>
+                  {title}
+                </Typography>
+              }
+              subtitle={
+                <Typography variant='h6' className={classes.titleBarText}>
+                  {subtitle}
+                </Typography>
+              }
+            />
+          </GridListTile>
+        </GridList>
+      </Grid>
+      <Grid item md={9}>
+        <GridList cols={3}>
+          <GridListTile>
+            <img src={m1} />
+          </GridListTile>
+          <GridListTile>
+            <img src={m2} />
+          </GridListTile>
+          <GridListTile>
+            <img src={m3} />
+          </GridListTile>
+          <GridListTile>
+            <img src={m4} />
+          </GridListTile>
+          <GridListTile>
+            <img src={m5} />
+          </GridListTile>
+          <GridListTile>
+            <img src={m6} />
+          </GridListTile>
+        </GridList>
+      </Grid>
+    </Grid>
+  )
   return (
     <>
       <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
-        Our partners
+        Featured Partners
       </Typography>
       <Carousel
         className={classes.topMargin}
@@ -573,93 +650,105 @@ const Slider = () => {
         showStatus={false}
         interval={5000}
       >
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/china-meal.jpg)" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/canteen-owner.jpg)" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              China Spice by Hanish & Peter
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/gypsy-meal.jpg)" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/gypsy-owner.png" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Gypsy Grill by Moudy
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/marg-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/marg-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Margherita's by Matt
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/greens-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/quality-greens-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Quality Greens Kitchen by Steven
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/rumba-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/rumba-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Rumba Cubana by Alan & Nairelys
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/shaka-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/shaka-owner.jpeg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Shaka Bowl by Kiersten & Krista
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/taq-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/taq-owner.png" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              La Taqueria Downtown by Andrea & Phil
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/tonys-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/tonys-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Tony Boloney's by Mike
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/wurst-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/wurst-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Würstbar by Aaron
-            </Typography>
-          </div>
-        </div>
+        <Slide
+          ownerImg='/home/canteen/owner.jpg'
+          title='Hanish & Peter'
+          subtitle='Owners of Canteen Desi Dhaba'
+          m1='/home/canteen/baigan-bartha.jpg'
+          m2='/home/canteen/butter-chicken.jpg'
+          m3='/home/canteen/chicken-biryani.jpg'
+          m4='/home/canteen/chicken-tikka.jpg'
+          m5='/home/canteen/lamb-rogan-josh.jpg'
+          m6='/home/canteen/paneer-tikka-masala.jpg'
+        />
+        <Slide
+          ownerImg='/home/greens/owner.jpg'
+          title='Steven'
+          subtitle='Owner of Quality Greens Kitchen'
+          m1='/home/greens/avo-salad.jpg'
+          m2='/home/greens/balsamic-blue.jpg'
+          m3='/home/greens/grilled-organic-tofu.jpg'
+          m4='/home/greens/kale-caesar.jpg'
+          m5='/home/greens/rosemary-roasted-chicken.jpg'
+          m6='/home/greens/vegetable-trio.jpg'
+        />
+        <Slide
+          ownerImg='/home/gypsy/owner.png'
+          title='Moudy'
+          subtitle='Owner of Gypsy Grill'
+          m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
+          m2='/home/gypsy/chicken-shawarma.jpg'
+          m3='/home/gypsy/fattoush.jpg'
+          m4='/home/gypsy/feta.jpg'
+          m5='/home/gypsy/lamb-beef-shawafel.jpg'
+          m6='/home/gypsy/m1.jpg'
+        />
+        <Slide
+          ownerImg='/home/marg/owner.jpg'
+          title='Matt'
+          subtitle="Owner of Margherita's"
+          m1='/home/marg/eggplant-parm.jpg'
+          m2='/home/marg/m1.jpg'
+          m3='/home/marg/meatball-parm.jpg'
+          m4='/home/marg/penne-vodka.jpg'
+          m5='/home/marg/sausage-peppers.jpg'
+          m6='/home/marg/rigatoni-meat.jpg'
+        />
+        <Slide
+          ownerImg='/home/rumba/owner.jpg'
+          title='Alan & Nairelys'
+          subtitle="Owners of Rumba Cubana"
+          m1='/home/rumba/el-revolico.jpg'
+          m2='/home/rumba/fritas.jpg'
+          m3='/home/rumba/ropa-vieja.jpg'
+          m4='/home/rumba/rumba-meal.jpg'
+          m5='/home/rumba/sandwich-cubano.jpg'
+          m6='/home/rumba/trio-de-empanadas.jpg'
+        />
+        <Slide
+          ownerImg='/home/shaka/owner.jpeg'
+          title='Kiersten & Krista'
+          subtitle="Owners of Shaka Bowl"
+          m1='/home/shaka/earth.jpg'
+          m2='/home/shaka/hilo.jpg'
+          m3='/home/shaka/kong.jpg'
+          m4='/home/shaka/molokai-cacao.jpg'
+          m5='/home/shaka/ono.jpg'
+          m6='/home/shaka/shaka-meal.jpg'
+        />
+        <Slide
+          ownerImg='/home/taqueria/owner.png'
+          title='Andrea & Phil'
+          subtitle="Owners of La Taqueria"
+          m1='/home/taqueria/barbocoa-taco.png'
+          m2='/home/taqueria/bistec-quesadilla.jpg'
+          m3='/home/taqueria/chorizo-quesadilla.jpg'
+          m4='/home/taqueria/flauta-plate.png'
+          m5='/home/taqueria/pescado-taco.png'
+          m6='/home/taqueria/taq-meal.jpg'
+        />
+        <Slide
+          ownerImg='/home/tonys/owner.jpg'
+          title='Mike'
+          subtitle="Owner of Tony Boloney's"
+          m1='/home/tonys/aloo-fries.jpg'
+          m2='/home/tonys/casino.jpg'
+          m3='/home/tonys/general.jpg'
+          m4='/home/tonys/magic-fries.jpg'
+          m5='/home/tonys/tonys-meal.jpg'
+          m6='/home/tonys/winger.jpg'
+        />
+        <Slide
+          ownerImg='/home/wurst/owner.jpg'
+          title='Aaron'
+          subtitle="Owner of Würstbar"
+          m1='/home/wurst/blue-nose.jpg'
+          m2='/home/wurst/haus-brat.jpg'
+          m3='/home/wurst/haus-poutine.jpg'
+          m4='/home/wurst/king-brat.jpg'
+          m5='/home/wurst/king-marcus.jpg'
+          m6='/home/wurst/the-general.jpg'
+        />
       </Carousel>
     </>
   )
@@ -700,7 +789,7 @@ const HowItWorks = () => {
     </Grid>
   )
   return (
-    <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
+    <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         How it Works
       </Typography>
@@ -932,10 +1021,10 @@ const Index = () => {
       <ReferralWelcome />
       <Welcome />
       <Promotion />
-      <Why />
+      <HowItWorks />
       <Slider />
       <Plans />
-      <HowItWorks />
+      <Why />
       <Testimonials />
       <Footer />
     </>
