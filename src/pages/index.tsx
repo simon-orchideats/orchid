@@ -69,8 +69,17 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(/home/yellow-plating.png)`,
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
-    height: 410,
-    marginTop: -theme.mixins.navbar.marginBottom
+    marginTop: -theme.mixins.navbar.marginBottom,
+    minHeight: 400,
+    height: 700,
+    // - the promo banner then the top margin of how-it-works
+    maxHeight: `calc(100vh - ${theme.mixins.toolbar.height}px - 115.5px - 150px)`,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px - 115.5px - 150px)`,
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px - 115.5px - 150px)`,
+    },
   },
   welcomeTitle: {
     fontWeight: 500,
@@ -132,6 +141,9 @@ const useStyles = makeStyles(theme => ({
     },
     paddingLeft: 100,
   },
+  why: {
+    minHeight: 400,
+  },
   testimonialsContainer: {
     [theme.breakpoints.down(1200)]: {
       paddingRight: theme.spacing(1),
@@ -153,7 +165,6 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     minHeight: 600,
     padding: theme.spacing(4),
-    marginBottom: theme.spacing(3),
   },
   orchidFood: {
     width: '100%',
@@ -293,7 +304,7 @@ const useStyles = makeStyles(theme => ({
       fontWeight: 500,
     },
   },
-  title: {
+  welcomeSub: {
     paddingBottom: theme.spacing(2),
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
@@ -302,6 +313,34 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.50rem',
     },
+  },
+  ctaButton: {
+    marginTop: theme.spacing(4),
+  },
+  title: {
+    paddingBottom: theme.spacing(6),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
+    },
+  },
+  weeklyPlans: {
+    paddingBottom: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
+    },
+  },
+  partners: {
+    backgroundColor: theme.palette.common.white,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(2),
   },
   plansTitle: {
     backgroundColor: theme.palette.common.white,
@@ -323,17 +362,9 @@ const useStyles = makeStyles(theme => ({
     fontWeight: 600,
   },
   how: {
-    backgroundImage: 'url(/home/how.jpg)',
-    backgroundSize: 'cover',
-    backgroundPosition: '50%',
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
-    [theme.breakpoints.up('md')]: {
-      height: 400,
-    },
-    [theme.breakpoints.down('sm')]: {
-      backgroundImage: 'url(/home/howSmall.jpg)',
-    },
+    minHeight: 400,
   },
   who: {
     [theme.breakpoints.down('xs')]: {
@@ -419,7 +450,7 @@ const Welcome = () => {
             <Typography variant='h2' className={`${classes.welcomeTitle} ${classes.largeBottomMargin}`}>
               in your fridge
             </Typography>
-            <Typography variant='h5' className={`${classes.title}`}>
+            <Typography variant='h5' className={`${classes.welcomeSub}`}>
               A meal plan subscription to restaurants
             </Typography>
             <Button
@@ -507,7 +538,7 @@ const Why = () => {
     </div>
   )
   return (
-    <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
+    <div className={`${classes.why} ${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         Why Orchid?
       </Typography>
@@ -557,7 +588,7 @@ const Why = () => {
       </Grid>
       <Link href={menuRoute}>
         <Button
-          className={classes.topMargin}
+          className={classes.ctaButton}
           variant='contained'
           color='primary'
           size='large'
@@ -593,8 +624,8 @@ const Slider = () => {
     m6,
   }) => (
     <Grid container>
-      <Grid item md={3}>
-        <GridList cols={1}>
+      <Grid item md={4}>
+        <GridList cols={1} cellHeight={275}>
           <GridListTile rows={2}>
             <img src={ownerImg} />
             <GridListTileBar
@@ -613,8 +644,8 @@ const Slider = () => {
           </GridListTile>
         </GridList>
       </Grid>
-      <Grid item md={9}>
-        <GridList cols={3}>
+      <Grid item md={8}>
+        <GridList cols={3} cellHeight={275}>
           <GridListTile>
             <img src={m1} />
           </GridListTile>
@@ -638,7 +669,7 @@ const Slider = () => {
     </Grid>
   )
   return (
-    <>
+    <div className={`${classes.partners}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
         Featured Partners
       </Typography>
@@ -666,7 +697,7 @@ const Slider = () => {
           title='Steven'
           subtitle='Owner of Quality Greens Kitchen'
           m1='/home/greens/avo-salad.jpg'
-          m2='/home/greens/balsamic-blue.jpg'
+          m2='/home/greens/umami-crunch.jpg'
           m3='/home/greens/grilled-organic-tofu.jpg'
           m4='/home/greens/kale-caesar.jpg'
           m5='/home/greens/rosemary-roasted-chicken.jpg'
@@ -714,7 +745,7 @@ const Slider = () => {
           m3='/home/shaka/kong.jpg'
           m4='/home/shaka/molokai-cacao.jpg'
           m5='/home/shaka/ono.jpg'
-          m6='/home/shaka/shaka-meal.jpg'
+          m6='/home/shaka/big-island.jpg'
         />
         <Slide
           ownerImg='/home/taqueria/owner.png'
@@ -750,7 +781,7 @@ const Slider = () => {
           m6='/home/wurst/the-general.jpg'
         />
       </Carousel>
-    </>
+    </div>
   )
 }
 
@@ -796,12 +827,12 @@ const HowItWorks = () => {
       <Grid container className={classes.verticalMargin}>
         <Content
           title="Mix n' Match"
-          description='Pick meals from different restaurants'
+          description='Pick meals from different restaurants for 1 delivery'
           img='home/mix.png'
         />
         <Content
           title='Enjoy'
-          description='Eat fresh meals now or save for later'
+          description='Eat meals now or save for later'
           img='home/microwave2.png'
         />
         <Content
@@ -812,6 +843,7 @@ const HowItWorks = () => {
       </Grid>
       <Link href={howItWorksRoute}>
         <Button
+          className={classes.ctaButton}
           variant='contained'
           color='primary'
           size='large'
@@ -828,7 +860,7 @@ const Plans = withClientApollo(() => {
   return (
     <div className={`${classes.plans}`}>
       <div className={`${classes.plansTitle} ${classes.centered}`}>
-        <Typography variant='h3' className={`${classes.shrinker} ${classes.title}`}>
+        <Typography variant='h3' className={`${classes.shrinker} ${classes.weeklyPlans}`}>
           Weekly Plans
         </Typography>
         <Typography variant='h6'>
@@ -838,7 +870,7 @@ const Plans = withClientApollo(() => {
       <PlanCards />
       <Link href={menuRoute}>
         <Button
-          className={`${classes.topMargin} ${classes.centered}`}
+          className={`${classes.ctaButton} ${classes.centered}`}
           variant='contained'
           color='primary'
           size='large'
@@ -911,7 +943,6 @@ const Testimonials = () => {
           variant='h3'
           className={`
             ${classes.title}
-            ${classes.largeBottomMargin}
             ${classes.shrinker}
             ${classes.centered}
             ${classes.testimonialsTitle}
@@ -1022,15 +1053,25 @@ const Index = () => {
       <Welcome />
       <Promotion />
       <HowItWorks />
-      <Slider />
       <Plans />
       <Why />
+      <Slider />
       <Testimonials />
       <Footer />
     </>
   )
 }
-
+/**
+ * for all screens, welcome banner, needs to show title of how it works
+ * 
+ * make dots green,
+ * make why orchid same height as how orchid
+ * 
+ * remove extra margins
+ * 
+ * 
+ * for how and why, inrease space between button and title
+ */
 export default Index;
 
 export const indexRoute = '/';
