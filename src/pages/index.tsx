@@ -429,7 +429,11 @@ const useStyles = makeStyles(theme => ({
   },
   stretch: {
     width: '100%',
-    height: '100%'
+    height: '100%',
+    [theme.breakpoints.down('sm')]: {
+      transform: 'none',
+      left: 'auto',
+    },
   },
 }));
 
@@ -680,7 +684,7 @@ const Slider = () => {
           <Hidden smDown>
             <GridList
               cols={1}
-              cellHeight='auto'
+              cellHeight={isSm ? 'auto' : 250}
               className={classes.stretch}
             >
               <GridListTile rows={2}>
@@ -690,9 +694,9 @@ const Slider = () => {
           </Hidden>
         </Grid>
         <Grid item md={8} sm={12}>
-          <GridList cols={3} cellHeight='auto'>
+          <GridList cols={3} cellHeight={isSm ? 'auto' : 250}>
             <GridListTile>
-              {isSm ? owner : <img src={m1} />}
+              {isSm ? owner : <img src={m1} className={classes.stretch} />}
             </GridListTile>
             <GridListTile>
               <img src={m2} className={classes.stretch} />
@@ -721,7 +725,7 @@ const Slider = () => {
       </Typography>
       <Carousel
         className={classes.topMargin}
-        autoPlay
+        // autoPlay
         stopOnHover
         infiniteLoop
         showArrows
