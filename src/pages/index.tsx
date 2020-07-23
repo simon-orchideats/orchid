@@ -45,9 +45,23 @@ const useStyles = makeStyles(theme => ({
   },
   titleBar: {
     background: 'rgba(255, 255, 255, 0.9)',
+    height: 60,
+    [theme.breakpoints.down('sm')]: {
+      height: 40
+    },
+    [theme.breakpoints.down('xs')]: {
+      height: 20
+    },
+  },
+  titleWrap: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
   },
   titleBarText: {
     color: theme.palette.text.primary,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
   },
   centered: {
     textAlign: 'center',
@@ -70,7 +84,7 @@ const useStyles = makeStyles(theme => ({
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
     marginTop: -theme.mixins.navbar.marginBottom,
-    minHeight: 400,
+    minHeight: 475,
     height: 700,
     // - the promo banner then the top margin of how-it-works
     maxHeight: `calc(100vh - ${theme.mixins.toolbar.height}px - 115.5px - 150px)`,
@@ -412,7 +426,11 @@ const useStyles = makeStyles(theme => ({
   },
   marginLeft: {
     marginLeft: theme.spacing(1),
-  }
+  },
+  stretch: {
+    width: '100%',
+    height: '100%'
+  },
 }));
 
 const Welcome = () => {
@@ -602,6 +620,8 @@ const Why = () => {
 
 const Slider = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
   const Slide: React.FC<{
     ownerImg: string,
     title: string,
@@ -622,52 +642,78 @@ const Slider = () => {
     m4,
     m5,
     m6,
-  }) => (
-    <Grid container>
-      <Grid item md={4}>
-        <GridList cols={1} cellHeight={275}>
-          <GridListTile rows={2}>
-            <img src={ownerImg} />
-            <GridListTileBar
-              className={classes.titleBar}
-              title={
-                <Typography variant='h5' className={classes.titleBarText}>
-                  {title}
-                </Typography>
-              }
-              subtitle={
-                <Typography variant='h6' className={classes.titleBarText}>
-                  {subtitle}
-                </Typography>
-              }
-            />
-          </GridListTile>
-        </GridList>
+  }) => {
+    const owner = (
+      <>
+        <img src={ownerImg} className={classes.stretch} />
+        <GridListTileBar
+          className={classes.titleBar}
+          classes={{
+            titleWrap: classes.titleWrap
+          }}
+          title={
+            !isSm &&
+            <Typography
+              variant='h5'
+              className={classes.titleBarText}
+            >
+              {title}
+            </Typography>
+          }
+          subtitle={
+            <Typography
+              variant={isSm ? 'body1' : 'h6'}
+              className={classes.titleBarText}
+            >
+              {!isSm && 'from '}{subtitle}
+            </Typography>
+          }
+        />
+      </>
+    )
+    return (
+      <Grid container>
+        <Grid
+          item
+          md={4}
+        >
+          <Hidden smDown>
+            <GridList
+              cols={1}
+              cellHeight='auto'
+              className={classes.stretch}
+            >
+              <GridListTile rows={2}>
+                {owner}
+              </GridListTile>
+            </GridList>
+          </Hidden>
+        </Grid>
+        <Grid item md={8} sm={12}>
+          <GridList cols={3} cellHeight='auto'>
+            <GridListTile>
+              {isSm ? owner : <img src={m1} />}
+            </GridListTile>
+            <GridListTile>
+              <img src={m2} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m3} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m4} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m5} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m6} className={classes.stretch} />
+            </GridListTile>
+          </GridList>
+        </Grid>
       </Grid>
-      <Grid item md={8}>
-        <GridList cols={3} cellHeight={275}>
-          <GridListTile>
-            <img src={m1} />
-          </GridListTile>
-          <GridListTile>
-            <img src={m2} />
-          </GridListTile>
-          <GridListTile>
-            <img src={m3} />
-          </GridListTile>
-          <GridListTile>
-            <img src={m4} />
-          </GridListTile>
-          <GridListTile>
-            <img src={m5} />
-          </GridListTile>
-          <GridListTile>
-            <img src={m6} />
-          </GridListTile>
-        </GridList>
-      </Grid>
-    </Grid>
-  )
+    );
+  }
   return (
     <div className={`${classes.partners}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
@@ -676,15 +722,21 @@ const Slider = () => {
       <Carousel
         className={classes.topMargin}
         autoPlay
+        stopOnHover
         infiniteLoop
         showArrows
+        showThumbs={false}
+        dynamicHeight={false}
+        swipeable={false}
         showStatus={false}
         interval={5000}
+        transitionTime={300}
+        swipeScrollTolerance={500}
       >
         <Slide
           ownerImg='/home/canteen/owner.jpg'
           title='Hanish & Peter'
-          subtitle='Owners of Canteen Desi Dhaba'
+          subtitle='Canteen Desi Dhaba'
           m1='/home/canteen/baigan-bartha.jpg'
           m2='/home/canteen/butter-chicken.jpg'
           m3='/home/canteen/chicken-biryani.jpg'
@@ -695,7 +747,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/greens/owner.jpg'
           title='Steven'
-          subtitle='Owner of Quality Greens Kitchen'
+          subtitle='Quality Greens Kitchen'
           m1='/home/greens/avo-salad.jpg'
           m2='/home/greens/umami-crunch.jpg'
           m3='/home/greens/grilled-organic-tofu.jpg'
@@ -706,7 +758,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/gypsy/owner.png'
           title='Moudy'
-          subtitle='Owner of Gypsy Grill'
+          subtitle='Gypsy Grill'
           m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
           m2='/home/gypsy/chicken-shawarma.jpg'
           m3='/home/gypsy/fattoush.jpg'
@@ -717,7 +769,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/marg/owner.jpg'
           title='Matt'
-          subtitle="Owner of Margherita's"
+          subtitle="Margherita's"
           m1='/home/marg/eggplant-parm.jpg'
           m2='/home/marg/m1.jpg'
           m3='/home/marg/meatball-parm.jpg'
@@ -728,7 +780,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/rumba/owner.jpg'
           title='Alan & Nairelys'
-          subtitle="Owners of Rumba Cubana"
+          subtitle="Rumba Cubana"
           m1='/home/rumba/el-revolico.jpg'
           m2='/home/rumba/fritas.jpg'
           m3='/home/rumba/ropa-vieja.jpg'
@@ -739,7 +791,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/shaka/owner.jpeg'
           title='Kiersten & Krista'
-          subtitle="Owners of Shaka Bowl"
+          subtitle="Shaka Bowl"
           m1='/home/shaka/earth.jpg'
           m2='/home/shaka/hilo.jpg'
           m3='/home/shaka/kong.jpg'
@@ -750,7 +802,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/taqueria/owner.png'
           title='Andrea & Phil'
-          subtitle="Owners of La Taqueria"
+          subtitle="La Taqueria"
           m1='/home/taqueria/barbocoa-taco.png'
           m2='/home/taqueria/bistec-quesadilla.jpg'
           m3='/home/taqueria/chorizo-quesadilla.jpg'
@@ -761,7 +813,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/tonys/owner.jpg'
           title='Mike'
-          subtitle="Owner of Tony Boloney's"
+          subtitle="Tony Boloney's"
           m1='/home/tonys/aloo-fries.jpg'
           m2='/home/tonys/casino.jpg'
           m3='/home/tonys/general.jpg'
@@ -772,7 +824,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/wurst/owner.jpg'
           title='Aaron'
-          subtitle="Owner of Würstbar"
+          subtitle="Würstbar"
           m1='/home/wurst/blue-nose.jpg'
           m2='/home/wurst/haus-brat.jpg'
           m3='/home/wurst/haus-poutine.jpg'
