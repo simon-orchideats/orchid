@@ -65,6 +65,9 @@ const useStyles = makeStyles(theme => ({
   paddingTop: {
     paddingTop: theme.spacing(2),
   },
+  marginLeft: {
+    marginLeft: theme.spacing(1),
+  },
   filters: {
     [theme.breakpoints.up('md')]: {
       paddingLeft: theme.spacing(2),
@@ -146,7 +149,6 @@ const menu = () => {
   const SurpriseMe = allRests && allRests.length > 0 ? 
     <Button
       variant='outlined'
-      size='small'
       color='primary'
       onClick={() => {
         clearCartMeals();
@@ -258,6 +260,7 @@ const menu = () => {
                 <div className={classes.row}>
                   {zipButton}
                   <Filter
+                    label='Cuisines'
                     allCuisines={allCuisines}
                     cuisines={cuisines}
                     onClickCuisine={onFilterCuisines}
@@ -271,12 +274,18 @@ const menu = () => {
                   filter={
                     <>
                       <Filter
+                        label='Filter'
                         allCuisines={allCuisines}
                         cuisines={cuisines}
                         onClickCuisine={onFilterCuisines}
                         zip={zipButton}
                       />
-                      {rests.data && SurpriseMe}
+                      {
+                        rests.data && 
+                        <div className={classes.marginLeft}>
+                          {SurpriseMe}
+                        </div>
+                      }
                     </>
                   }
                 />

@@ -3,6 +3,8 @@ import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
+import { useGetAvailablePlans } from "../../plan/planService";
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -31,11 +33,19 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-  }
+  },
+  count: {
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    borderRadius: 20,
+  },
 }));
 
 const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
+  const plans = useGetAvailablePlans();
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   return (
@@ -45,7 +55,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       disabled,
       onNext,
       suggestions,
-      summary,
+      _summary,
       donationCount,
       _incrementDonationCount,
       _decrementDonationCount,
@@ -93,21 +103,32 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           }
         </>
       );
+      const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
+      const planPrices = 
+        plans.data &&
+        plans.data.filter(p => p.IsActive)
+          .map(p => p.Tiers.map(t => (
+            <div className={classes.row}>
+              <Typography
+                color='primary'
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h6' : 'body1'}
+              >
+                {t.minMeals}+ meals
+              </Typography>
+              <Typography
+                color='primary'
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h6' : 'body1'}
+              >
+                ${(t.MealPrice / 100).toFixed(2)}/meal
+              </Typography>
+            </div>
+          )));
       return (
         <>
           {
             !hideNext &&
             <>
-              {summary.map((s, i) => (
-                <Typography
-                  key={i}
-                  variant={i === 0 ? 'h6' : 'body1'}
-                  color='primary'
-                  className={classes.summary}
-                >
-                  {s}
-                </Typography>
-              ))}
+              {planPrices}
               <Button
                 disabled={disabled}
                 variant='contained'
@@ -132,13 +153,18 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               ))}
             </>
           }
-          <Typography
-            variant='h4'
-            color='primary'
-            className={classes.title}
-          >
-            {title}
-          </Typography>
+          <div className={`${classes.row} ${classes.title}`}>
+            <Typography variant='h4' color='primary'>
+              {title}
+            </Typography>
+            <Typography
+              variant='h4'
+              color='primary'
+              className={classes.count}
+            >
+              {mealCount}
+            </Typography>
+          </div>
           {meals}
         </>
       )

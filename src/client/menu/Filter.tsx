@@ -13,17 +13,20 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
   },
   link: {
+    border: `1px solid ${theme.palette.common.link}`,
     color: theme.palette.common.link,
   },
 }));
 
 const Filter: React.FC<{
+  label: string
   allCuisines: string[]
   zip?: React.ReactNode,
   cuisines: string[],
   onClickCuisine: (cuisines: string[]) => void
 }> = ({
   allCuisines,
+  label,
   zip,
   cuisines,
   onClickCuisine
@@ -69,7 +72,8 @@ const Filter: React.FC<{
                   const withoutCuisine = cuisines.filter(c => cuisine !== c);
                   const isSelected = withoutCuisine.length !== cuisines.length;
                   return (
-                    <FormControlLabel key={cuisine}
+                    <FormControlLabel
+                      key={cuisine}
                       control={
                         <Checkbox
                           color='primary'
@@ -87,11 +91,11 @@ const Filter: React.FC<{
         </Paper>
       </Popover>
       <Button
-        variant='text'
+        variant='outlined'
         className={classes.link}
         onClick={onClickFilter}
       >
-        Filter
+        {label}
         <ArrowDropDownIcon />
       </Button>
     </>
