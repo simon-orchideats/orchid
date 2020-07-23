@@ -3,15 +3,17 @@ import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 
 const useStyles = makeStyles(theme => ({
-  group: ({ img }: { img?: string }) => ({
+  group: {
     display: 'flex',
     alignItems: 'center',
-    paddingBottom: img ? theme.spacing(2) : 0,
-  }),
+  },
   img: {
     width: 55,
     marginRight: theme.spacing(1),
     marginLeft: theme.spacing(1),
+  },
+  icon: {
+    fontSize: '1.8rem',
   },
   col: {
     display: 'flex',
@@ -53,25 +55,23 @@ const CartMealGroup: React.FC<{
         {
           onAddMeal &&
           <Button
-            size='small'
             variant='text'
             color='primary'
             onClick={onAddMeal}
           >
-            <AddIcon />
+            <AddIcon className={classes.icon} />
           </Button>
         }
-        <Typography variant='subtitle2'>
+        <Typography variant='subtitle1'>
           {quantity}
         </Typography>
         {
           onRemoveMeal &&
           <Button
-            size='small'
             variant='text'
             onClick={onRemoveMeal}
           >
-            <RemoveIcon />
+            <RemoveIcon className={classes.icon} />
           </Button>
         }
       </Grid>
@@ -87,7 +87,7 @@ const CartMealGroup: React.FC<{
       }
       <Grid item sm={nameCol}>
         <Typography variant='subtitle1'>
-          {name.toUpperCase()}
+          {name}
         </Typography>
         <Typography variant='body1' color='textSecondary'>
           {choices && choices.join(', ')}
