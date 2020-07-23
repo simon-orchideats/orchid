@@ -13,5 +13,9 @@
 }
 
 .carousel.carousel-slider .control-arrow {
-  background-color: #bdbdbd !important
+  background-color: rgba(0, 0, 0, 0.38) !important
+}
+
+.carousel .control-dots .dot {
+  background: #3c3c3c !important
 }

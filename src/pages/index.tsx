@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, GridList, GridListTile, GridListTileBar } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -43,6 +43,26 @@ const useStyles = makeStyles(theme => ({
       width: 22
     },
   },
+  titleBar: {
+    background: 'rgba(255, 255, 255, 0.9)',
+    height: 60,
+    [theme.breakpoints.down('sm')]: {
+      height: 40
+    },
+    [theme.breakpoints.down('xs')]: {
+      height: 20
+    },
+  },
+  titleWrap: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+  },
+  titleBarText: {
+    color: theme.palette.text.primary,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -54,10 +74,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'center',
   },
-  carouselRow: {
-    display: 'flex',
-    justifyContent: 'space-around',
-  },
   welcome: {
     [theme.breakpoints.down('lg')]: {
       background: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-plating.png)',
@@ -67,8 +83,17 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(/home/yellow-plating.png)`,
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
-    height: 410,
-    marginTop: -theme.mixins.navbar.marginBottom
+    marginTop: -theme.mixins.navbar.marginBottom,
+    minHeight: 475,
+    height: 700,
+    // - the promo banner then the top margin of how-it-works
+    maxHeight: `calc(100vh - ${theme.mixins.toolbar.height}px - 115.5px - 150px)`,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
+      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px - 115.5px - 150px)`,
+    },
+    [theme.mixins.customToolbar.toolbarWidthQuery]: {
+      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px - 115.5px - 150px)`,
+    },
   },
   welcomeTitle: {
     fontWeight: 500,
@@ -130,6 +155,9 @@ const useStyles = makeStyles(theme => ({
     },
     paddingLeft: 100,
   },
+  why: {
+    minHeight: 400,
+  },
   testimonialsContainer: {
     [theme.breakpoints.down(1200)]: {
       paddingRight: theme.spacing(1),
@@ -151,7 +179,6 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     minHeight: 600,
     padding: theme.spacing(4),
-    marginBottom: theme.spacing(3),
   },
   orchidFood: {
     width: '100%',
@@ -250,9 +277,6 @@ const useStyles = makeStyles(theme => ({
       marginLeft: 0,
     },
   },
-  quote: {
-    height: 20
-  },
   lowWidth: {
     maxWidth: 200,
   },
@@ -294,7 +318,7 @@ const useStyles = makeStyles(theme => ({
       fontWeight: 500,
     },
   },
-  title: {
+  welcomeSub: {
     paddingBottom: theme.spacing(2),
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
@@ -303,6 +327,34 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.50rem',
     },
+  },
+  ctaButton: {
+    marginTop: theme.spacing(4),
+  },
+  title: {
+    paddingBottom: theme.spacing(6),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
+    },
+  },
+  weeklyPlans: {
+    paddingBottom: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
+    },
+  },
+  partners: {
+    backgroundColor: theme.palette.common.white,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(2),
   },
   plansTitle: {
     backgroundColor: theme.palette.common.white,
@@ -323,10 +375,10 @@ const useStyles = makeStyles(theme => ({
   bold: {
     fontWeight: 600,
   },
-  owner: {
-    width: 150,
-    height: 150,
-    backgroundSize: 'cover',
+  how: {
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    minHeight: 400,
   },
   who: {
     [theme.breakpoints.down('xs')]: {
@@ -338,8 +390,10 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.mixins.navbar.marginBottom
   },
   cloud: {
+    display: 'flex',
+    alignItems: 'center',
     width: 180,
-    minHeight: 70,
+    minHeight: 80,
     background: theme.palette.common.white,
     borderRadius: 100,
     position: 'relative',
@@ -372,7 +426,11 @@ const useStyles = makeStyles(theme => ({
   },
   marginLeft: {
     marginLeft: theme.spacing(1),
-  }
+  },
+  stretch: {
+    width: '100%',
+    height: '100%'
+  },
 }));
 
 const Welcome = () => {
@@ -384,9 +442,10 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <Grid container alignItems='center'>
         <Hidden smDown>
+          <Grid item md={1}/>
           <Grid
             item
-            md={4}
+            md={3}
             className={classes.centered}
           >
             <div className={classes.cloud}>
@@ -409,7 +468,7 @@ const Welcome = () => {
             <Typography variant='h2' className={`${classes.welcomeTitle} ${classes.largeBottomMargin}`}>
               in your fridge
             </Typography>
-            <Typography variant='h5' className={`${classes.title}`}>
+            <Typography variant='h5' className={`${classes.welcomeSub}`}>
               A meal plan subscription to restaurants
             </Typography>
             <Button
@@ -425,7 +484,7 @@ const Welcome = () => {
         <Grid
           item
           xs={12}
-          md={4}
+          md={3}
         >
           <Grid container>
             <Grid
@@ -456,6 +515,7 @@ const Welcome = () => {
             </Grid>
           </Grid>
         </Grid>
+        <Grid item md={1} xs={12} />
       </Grid>
     </div>
   );
@@ -496,7 +556,7 @@ const Why = () => {
     </div>
   )
   return (
-    <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
+    <div className={`${classes.why} ${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         Why Orchid?
       </Typography>
@@ -512,7 +572,7 @@ const Why = () => {
           md={4}
         >
           <Content
-            badTitle='You order 3+ deliveries a week'
+            badTitle='You order out $40 each week'
             goodTitle='Subscribe & save'
             img='home/piggy-bank.svg'
           />
@@ -546,7 +606,7 @@ const Why = () => {
       </Grid>
       <Link href={menuRoute}>
         <Button
-          className={classes.topMargin}
+          className={classes.ctaButton}
           variant='contained'
           color='primary'
           size='large'
@@ -560,108 +620,220 @@ const Why = () => {
 
 const Slider = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const Slide: React.FC<{
+    ownerImg: string,
+    title: string,
+    subtitle: string,
+    m1: string,
+    m2: string,
+    m3: string,
+    m4: string,
+    m5: string,
+    m6: string
+  }> = ({
+    ownerImg,
+    title,
+    subtitle,
+    m1,
+    m2,
+    m3,
+    m4,
+    m5,
+    m6,
+  }) => {
+    const owner = (
+      <>
+        <img src={ownerImg} className={classes.stretch} />
+        <GridListTileBar
+          className={classes.titleBar}
+          classes={{
+            titleWrap: classes.titleWrap
+          }}
+          title={
+            !isSm &&
+            <Typography
+              variant='h5'
+              className={classes.titleBarText}
+            >
+              {title}
+            </Typography>
+          }
+          subtitle={
+            <Typography
+              variant={isSm ? 'body1' : 'h6'}
+              className={classes.titleBarText}
+            >
+              {!isSm && 'from '}{subtitle}
+            </Typography>
+          }
+        />
+      </>
+    )
+    return (
+      <Grid container>
+        <Grid
+          item
+          md={4}
+        >
+          <Hidden smDown>
+            <GridList
+              cols={1}
+              cellHeight='auto'
+              className={classes.stretch}
+            >
+              <GridListTile rows={2}>
+                {owner}
+              </GridListTile>
+            </GridList>
+          </Hidden>
+        </Grid>
+        <Grid item md={8} sm={12}>
+          <GridList cols={3} cellHeight='auto'>
+            <GridListTile>
+              {isSm ? owner : <img src={m1} />}
+            </GridListTile>
+            <GridListTile>
+              <img src={m2} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m3} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m4} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m5} className={classes.stretch} />
+            </GridListTile>
+            <GridListTile>
+              <img src={m6} className={classes.stretch} />
+            </GridListTile>
+          </GridList>
+        </Grid>
+      </Grid>
+    );
+  }
   return (
-    <>
+    <div className={`${classes.partners}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
-        Our partners
+        Featured Partners
       </Typography>
       <Carousel
         className={classes.topMargin}
         autoPlay
+        stopOnHover
         infiniteLoop
         showArrows
+        showThumbs={false}
+        dynamicHeight={false}
+        swipeable={false}
         showStatus={false}
         interval={5000}
+        transitionTime={300}
+        swipeScrollTolerance={500}
       >
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/china-meal.jpg)" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/canteen-owner.jpg)" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              China Spice by Hanish & Peter
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/gypsy-meal.jpg)" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/gypsy-owner.png" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Gypsy Grill by Moudy
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/marg-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/marg-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Margherita's by Matt
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/greens-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/quality-greens-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Quality Greens Kitchen by Steven
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/rumba-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/rumba-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Rumba Cubana by Alan & Nairelys
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/shaka-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/shaka-owner.jpeg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Shaka Bowl by Kiersten & Krista
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.carouselRow}>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/taq-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/taq-owner.png" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              La Taqueria Downtown by Andrea & Phil
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/tonys-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/tonys-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Tony Boloney's by Mike
-            </Typography>
-          </div>
-          <div>
-            <div className={classes.row}>
-              <div style={{ backgroundImage: "url(/home/wurst-meal.jpg" }} className={classes.owner} />
-              <div style={{ backgroundImage: "url(/home/wurst-owner.jpg" }} className={classes.owner} />
-            </div>
-            <Typography variant='h6'>
-              Würstbar by Aaron
-            </Typography>
-          </div>
-        </div>
+        <Slide
+          ownerImg='/home/canteen/owner.jpg'
+          title='Hanish & Peter'
+          subtitle='Canteen Desi Dhaba'
+          m1='/home/canteen/baigan-bartha.jpg'
+          m2='/home/canteen/butter-chicken.jpg'
+          m3='/home/canteen/chicken-biryani.jpg'
+          m4='/home/canteen/chicken-tikka.jpg'
+          m5='/home/canteen/lamb-rogan-josh.jpg'
+          m6='/home/canteen/paneer-tikka-masala.jpg'
+        />
+        <Slide
+          ownerImg='/home/greens/owner.jpg'
+          title='Steven'
+          subtitle='Quality Greens Kitchen'
+          m1='/home/greens/avo-salad.jpg'
+          m2='/home/greens/umami-crunch.jpg'
+          m3='/home/greens/grilled-organic-tofu.jpg'
+          m4='/home/greens/kale-caesar.jpg'
+          m5='/home/greens/rosemary-roasted-chicken.jpg'
+          m6='/home/greens/vegetable-trio.jpg'
+        />
+        <Slide
+          ownerImg='/home/gypsy/owner.png'
+          title='Moudy'
+          subtitle='Gypsy Grill'
+          m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
+          m2='/home/gypsy/chicken-shawarma.jpg'
+          m3='/home/gypsy/fattoush.jpg'
+          m4='/home/gypsy/feta.jpg'
+          m5='/home/gypsy/lamb-beef-shawafel.jpg'
+          m6='/home/gypsy/m1.jpg'
+        />
+        <Slide
+          ownerImg='/home/marg/owner.jpg'
+          title='Matt'
+          subtitle="Margherita's"
+          m1='/home/marg/eggplant-parm.jpg'
+          m2='/home/marg/m1.jpg'
+          m3='/home/marg/meatball-parm.jpg'
+          m4='/home/marg/penne-vodka.jpg'
+          m5='/home/marg/sausage-peppers.jpg'
+          m6='/home/marg/rigatoni-meat.jpg'
+        />
+        <Slide
+          ownerImg='/home/rumba/owner.jpg'
+          title='Alan & Nairelys'
+          subtitle="Rumba Cubana"
+          m1='/home/rumba/el-revolico.jpg'
+          m2='/home/rumba/fritas.jpg'
+          m3='/home/rumba/ropa-vieja.jpg'
+          m4='/home/rumba/rumba-meal.jpg'
+          m5='/home/rumba/sandwich-cubano.jpg'
+          m6='/home/rumba/trio-de-empanadas.jpg'
+        />
+        <Slide
+          ownerImg='/home/shaka/owner.jpeg'
+          title='Kiersten & Krista'
+          subtitle="Shaka Bowl"
+          m1='/home/shaka/earth.jpg'
+          m2='/home/shaka/hilo.jpg'
+          m3='/home/shaka/kong.jpg'
+          m4='/home/shaka/molokai-cacao.jpg'
+          m5='/home/shaka/ono.jpg'
+          m6='/home/shaka/big-island.jpg'
+        />
+        <Slide
+          ownerImg='/home/taqueria/owner.png'
+          title='Andrea & Phil'
+          subtitle="La Taqueria"
+          m1='/home/taqueria/barbocoa-taco.png'
+          m2='/home/taqueria/bistec-quesadilla.jpg'
+          m3='/home/taqueria/chorizo-quesadilla.jpg'
+          m4='/home/taqueria/flauta-plate.png'
+          m5='/home/taqueria/pescado-taco.png'
+          m6='/home/taqueria/taq-meal.jpg'
+        />
+        <Slide
+          ownerImg='/home/tonys/owner.jpg'
+          title='Mike'
+          subtitle="Tony Boloney's"
+          m1='/home/tonys/aloo-fries.jpg'
+          m2='/home/tonys/casino.jpg'
+          m3='/home/tonys/general.jpg'
+          m4='/home/tonys/magic-fries.jpg'
+          m5='/home/tonys/tonys-meal.jpg'
+          m6='/home/tonys/winger.jpg'
+        />
+        <Slide
+          ownerImg='/home/wurst/owner.jpg'
+          title='Aaron'
+          subtitle="Würstbar"
+          m1='/home/wurst/blue-nose.jpg'
+          m2='/home/wurst/haus-brat.jpg'
+          m3='/home/wurst/haus-poutine.jpg'
+          m4='/home/wurst/king-brat.jpg'
+          m5='/home/wurst/king-marcus.jpg'
+          m6='/home/wurst/the-general.jpg'
+        />
       </Carousel>
-    </>
+    </div>
   )
 }
 
@@ -700,19 +872,19 @@ const HowItWorks = () => {
     </Grid>
   )
   return (
-    <div className={`${classes.largeVerticalMargin} ${classes.centered}`}>
+    <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         How it Works
       </Typography>
       <Grid container className={classes.verticalMargin}>
         <Content
           title="Mix n' Match"
-          description='Pick meals from different restaurants'
+          description='Pick meals from different restaurants for 1 delivery'
           img='home/mix.png'
         />
         <Content
           title='Enjoy'
-          description='Eat fresh meals now or save for later'
+          description='Eat meals now or save for later'
           img='home/microwave2.png'
         />
         <Content
@@ -723,6 +895,7 @@ const HowItWorks = () => {
       </Grid>
       <Link href={howItWorksRoute}>
         <Button
+          className={classes.ctaButton}
           variant='contained'
           color='primary'
           size='large'
@@ -739,7 +912,7 @@ const Plans = withClientApollo(() => {
   return (
     <div className={`${classes.plans}`}>
       <div className={`${classes.plansTitle} ${classes.centered}`}>
-        <Typography variant='h3' className={`${classes.shrinker} ${classes.title}`}>
+        <Typography variant='h3' className={`${classes.shrinker} ${classes.weeklyPlans}`}>
           Weekly Plans
         </Typography>
         <Typography variant='h6'>
@@ -749,7 +922,7 @@ const Plans = withClientApollo(() => {
       <PlanCards />
       <Link href={menuRoute}>
         <Button
-          className={`${classes.topMargin} ${classes.centered}`}
+          className={`${classes.ctaButton} ${classes.centered}`}
           variant='contained'
           color='primary'
           size='large'
@@ -822,7 +995,6 @@ const Testimonials = () => {
           variant='h3'
           className={`
             ${classes.title}
-            ${classes.largeBottomMargin}
             ${classes.shrinker}
             ${classes.centered}
             ${classes.testimonialsTitle}
@@ -932,16 +1104,26 @@ const Index = () => {
       <ReferralWelcome />
       <Welcome />
       <Promotion />
+      <HowItWorks />
+      <Plans />
       <Why />
       <Slider />
-      <Plans />
-      <HowItWorks />
       <Testimonials />
       <Footer />
     </>
   )
 }
-
+/**
+ * for all screens, welcome banner, needs to show title of how it works
+ * 
+ * make dots green,
+ * make why orchid same height as how orchid
+ * 
+ * remove extra margins
+ * 
+ * 
+ * for how and why, inrease space between button and title
+ */
 export default Index;
 
 export const indexRoute = '/';
