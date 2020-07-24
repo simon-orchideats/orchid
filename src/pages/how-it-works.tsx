@@ -3,7 +3,6 @@ import Faq from '../client/general/CommonQuestions';
 import Link from 'next/link';
 import { menuRoute } from './menu';
 import Footer from '../client/general/Footer';
-import CheckIcon from '@material-ui/icons/Check';
 
 const useStyles = makeStyles(theme => ({
   img: {
@@ -14,6 +13,15 @@ const useStyles = makeStyles(theme => ({
   },
   explainations: {
     backgroundColor: theme.palette.background.default,
+  },
+  check: {
+    width: 32,
+    [theme.breakpoints.down('sm')]: {
+      width: 28
+    },
+    [theme.breakpoints.down('xs')]: {
+      width: 22
+    },
   },
   centered: {
     textAlign: 'center',
@@ -116,17 +124,10 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
   },
   benefitBox: {
-    maxWidth: 300
-  },
-  check: {
-    paddingRight: theme.spacing(1),
-    color: 'green',
-  },
-  row: {
-    [theme.breakpoints.down('xs')]: {
-      justifyContent: 'center',
-    },
+    maxWidth: 300,
     display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   sandwich: {
     [theme.breakpoints.down('lg')]: {
@@ -142,9 +143,22 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     position: 'absolute',
   },
+  icon: {
+    maxWidth: 85,
+    height: 85,
+    marginBottom: theme.spacing(1),
+  },
 }))
 
-const BenefitTextBox: React.FC<{title: string, description: string}> = ({ title, description }) => {
+const BenefitTextBox: React.FC<{
+  title: string,
+  description: string,
+  img: string
+}> = ({
+  title,
+  description,
+  img,
+}) => {
   const classes = useStyles();
   return (
     <>
@@ -156,12 +170,24 @@ const BenefitTextBox: React.FC<{title: string, description: string}> = ({ title,
         className={classes.gridBox}
       >
         <div className={classes.benefitBox}>
-          <div className={classes.row}>
-            <CheckIcon fontSize='large' className={classes.check} />
-            <Typography variant='h6' className={classes.smallBottomMargin}>
-              {title}
-            </Typography>
-          </div>
+          <img
+            src={img}
+            alt='logo'
+            className={classes.icon}
+          />
+          <Typography
+            variant='h6'
+            className={classes.smallBottomMargin}
+            align='center'
+          >
+            <img
+              src='/home/check.png'
+              alt='check'
+              className={classes.check}
+            />
+            &nbsp;
+            {title}
+          </Typography>
           <Typography variant='body1'>
             {description}
           </Typography>
@@ -264,39 +290,41 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title="Mix n' Match"
-            description='Pick meals from different restaurants to build your weekly delivery. More meals means more deliveries.
-            We recommend a balance of meals, some to eat fresh and some to eat later.'
+            description='Pick meals from different restaurants to build your order for delivery. Try all different types
+            of cuisines and restaurants like never before all in one convenient order. '
             dividerTitle='Step'
             dividerSubtitle='1'
-            img='how-it-works/burgers.jpg'
+            img='how-it-works/mix.jpg'
             imgLeft={true}
             imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Set Delivery'
-            description="Tell us what day and time you want your meals. We'll follow this schedule each week."
+            description="Tell us your delivery schedule and we'll deliver at that time each week. Your personal server
+            delivers all your fresh meals together after notifying you of an exact ETA."
             dividerTitle='Step'
             dividerSubtitle='2'
-            img='how-it-works/chef.jpg'
+            img='how-it-works/deliver.jpg'
             imgLeft={false}
             imgBackground={<img src='how-it-works/fruits.png' className={classes.fruits} alt='fruits' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Enjoy'
-            description='Eat at your own pace. Spread your meals over the week or eat them all the same day.'
+            description='Enjoy your batch of cooked meals when delivered or save them for later.'
             dividerTitle='Step'
             dividerSubtitle='3'
-            img='how-it-works/deliver.jpg'
+            img='how-it-works/chef.jpg'
             imgLeft={true}
             imgBackground={<img src='how-it-works/potatoes.png' className={classes.potatoes} alt='potatoes' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Subscribe'
-            description='Pick meals each week in advance or sit back and let us pick from your favorites. Skip a
-            week or cancel anytime.'
+            description="You can customize meals for specific weeks, but on weeks you forget, we'll pick meals for you 
+            based on your favorite foods. You can change delivery times for specific weeks too. Orders are easy
+            to change, skip, and cancel."
             dividerTitle='Step'
             dividerSubtitle='4'
             img='how-it-works/eating.jpg'
@@ -316,15 +344,21 @@ const HowItWorks = () => {
         >
           <BenefitTextBox
             title='Unrivaled Variety'
-            description='Pick meals for your order from as many different restaurants and cuisines as you want.'
+            img='home/eat.svg'
+            description="Pick meals for your order from as many different restaurants and cuisines as you want.
+            Don't limit yourself ever again."
           />
           <BenefitTextBox
             title='Reliable, Exact Delivery'
-            description='Know exactly when you get to eat. We confirm exact ETA’s for all your deliveries in advance.'
+            img='how-it-works/delivery-man.png'
+            description="Know exactly when you get your food and who delivers it. Your personal weekly server confirms exact
+            ETA's for all your deliveries in advance."
           />
           <BenefitTextBox
             title='Convenient'
-            description='Get your food, ready to eat, all at once. No waiting for delivery. Just eat.'
+            img='home/piggy-bank.svg'
+            description='Get the convenience of subscription by getting weekly delicious meals while enjoying free
+            delivery and no hidden service fees.'
           />
         </Grid>
       </div>

@@ -98,9 +98,9 @@ const whoWeAre = () => {
           align='left'
           className={classes.regularShrinker}
         >
-          We used to know our neighbors. We used to know the chefs who cooked our food. But in today's busy lifestyle,
-          we lost touch. We want our food now, and if it's not perfect, we leave a bad review. We forget these are moms and
-          pops and brothers and sisters trying their best.
+          We used to know our neighbors. We used to know who cooked our favorite local foods. But in today's busy
+          lifestyle, we lost touch. Today, we all want our food now, and if it's not perfect, we leave a bad review. We
+          don’t know nor even care about the people behind the food.
         </Typography>
         <Hidden xsDown mdUp>
           <img src='/who-we-are/mdReview.png' className={classes.mdReview} />
@@ -116,8 +116,8 @@ const whoWeAre = () => {
           align='left' 
           className={classes.regularShrinker}
         >
-          This isn't how we treat neighbors. Food doesn't cook and deliver itself. Every step is made possible by the
-          community. Orchid brings back humanity in every bite by putting people first.
+          This isn't how we treat neighbors? These mom and pops are working hard behind the scenes to cook for you.
+          Orchid brings back love in every bite by putting people first.
         </Typography>
         <Grid
           container
@@ -179,8 +179,8 @@ const whoWeAre = () => {
           align='left'
         >
           Connecting people through food guides everything we do. We're not a food company. We're a people company.
-          Putting a name to a restaurant is only step 1. We envision a community where strangers become
-          friends through food.
+          Sharing the personal side behind every meal is just the first step. We envision a community where strangers
+          become friends through food.
         </Typography>
         <img src='/who-we-are/grove.jpeg' className={`${classes.grove} ${classes.mediumVerticalMargin}`} />
       </Container>
