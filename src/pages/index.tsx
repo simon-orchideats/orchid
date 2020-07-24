@@ -96,6 +96,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   welcomeTitle: {
+    fontSize: '4.25rem',
     fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
       fontSize: '3.25rem',
@@ -211,11 +212,6 @@ const useStyles = makeStyles(theme => ({
       justifyContent: 'center',
     },
   },
-  subtitle: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '1.35rem'
-    },
-  },
   testimonialHeader: {
     display: 'flex',
     alignItems: 'center',
@@ -302,17 +298,7 @@ const useStyles = makeStyles(theme => ({
       fontSize: '2.15rem',
     },
   },
-  whySubtitle: {
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.25rem',
-      fontWeight: 400,
-    },
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '1rem',
-      fontWeight: 400,
-    },
-  },
-  howSubtitle: {
+  subtitle: {
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.25rem',
       fontWeight: 500,
@@ -320,6 +306,7 @@ const useStyles = makeStyles(theme => ({
   },
   welcomeSub: {
     paddingBottom: theme.spacing(2),
+    fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
       fontWeight: 500,
@@ -446,7 +433,7 @@ const Welcome = () => {
     <div className={`${classes.welcome} ${classes.centered}`}>
       <Grid container alignItems='center'>
         <Hidden smDown>
-          <Grid item md={1}/>
+          <Grid item md={1} />
           <Grid
             item
             md={3}
@@ -472,7 +459,7 @@ const Welcome = () => {
             <Typography variant='h2' className={`${classes.welcomeTitle} ${classes.largeBottomMargin}`}>
               in your fridge
             </Typography>
-            <Typography variant='h5' className={`${classes.welcomeSub}`}>
+            <Typography variant='h4' className={`${classes.welcomeSub}`}>
               A meal plan subscription to restaurants
             </Typography>
             <Button
@@ -545,10 +532,10 @@ const Why = () => {
           className={classes.icon}
         />
       }
-      <Typography variant='h5' className={classes.whySubtitle}>
+      <Typography variant='h5' className={classes.subtitle}>
         ❌&nbsp;{badTitle}
       </Typography>
-      <Typography variant='h5' className={classes.whySubtitle}>
+      <Typography variant='h5' className={classes.subtitle}>
         {<img
           src='/home/check.png'
           alt='check'
@@ -571,7 +558,7 @@ const Why = () => {
         <Grid
           item
           className={classes.centered}
-          xs={12} 
+          xs={12}
           sm={12}
           md={4}
         >
@@ -584,7 +571,7 @@ const Why = () => {
         <Grid
           item
           className={classes.centered}
-          xs={12} 
+          xs={12}
           sm={12}
           md={4}
         >
@@ -597,7 +584,7 @@ const Why = () => {
         <Grid
           item
           className={classes.centered}
-          xs={12} 
+          xs={12}
           sm={12}
           md={4}
         >
@@ -626,6 +613,8 @@ const Slider = () => {
   const classes = useStyles();
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMd = useMediaQuery(theme.breakpoints.down('md'));
+  const isLg = useMediaQuery(theme.breakpoints.down('lg'));
   const Slide: React.FC<{
     ownerImg: string,
     title: string,
@@ -647,77 +636,88 @@ const Slider = () => {
     m5,
     m6,
   }) => {
-    const owner = (
-      <>
-        <img src={ownerImg} className={classes.stretch} />
-        <GridListTileBar
-          className={classes.titleBar}
-          classes={{
-            titleWrap: classes.titleWrap
-          }}
-          title={
-            !isSm &&
-            <Typography
-              variant='h5'
-              className={classes.titleBarText}
-            >
-              {title}
-            </Typography>
-          }
-          subtitle={
-            <Typography
-              variant={isSm ? 'body1' : 'h6'}
-              className={classes.titleBarText}
-            >
-              {!isSm && 'from '}{subtitle}
-            </Typography>
-          }
-        />
-      </>
-    )
-    return (
-      <Grid container>
-        <Grid
-          item
-          md={4}
-        >
-          <Hidden smDown>
-            <GridList
-              cols={1}
-              cellHeight={isSm ? 'auto' : 250}
-              className={classes.stretch}
-            >
-              <GridListTile rows={2}>
-                {owner}
+      const owner = (
+        <>
+          <img src={ownerImg} className={classes.stretch} />
+          <GridListTileBar
+            className={classes.titleBar}
+            classes={{
+              titleWrap: classes.titleWrap
+            }}
+            title={
+              !isSm &&
+              <Typography
+                variant='h5'
+                className={classes.titleBarText}
+              >
+                {title}
+              </Typography>
+            }
+            subtitle={
+              <Typography
+                variant={isSm ? 'body1' : 'h6'}
+                className={classes.titleBarText}
+              >
+                {!isSm && 'from '}{subtitle}
+              </Typography>
+            }
+          />
+        </>
+      )
+      let height: 'auto' | number;
+      if (isSm) {
+        height = 'auto';
+      } else if (isMd) {
+        height = 225;
+      } else if (isLg) {
+        height = 275;
+      } else {
+        height = 375;
+      }
+      console.log(height);
+      return (
+        <Grid container>
+          <Grid
+            item
+            md={4}
+          >
+            <Hidden smDown>
+              <GridList
+                cols={1}
+                cellHeight={height}
+                className={classes.stretch}
+              >
+                <GridListTile rows={2}>
+                  {owner}
+                </GridListTile>
+              </GridList>
+            </Hidden>
+          </Grid>
+          <Grid item md={8} sm={12}>
+            <GridList cols={3} cellHeight={height}>
+              <GridListTile>
+                {isSm ? owner : <img src={m1} className={classes.stretch} />}
+              </GridListTile>
+              <GridListTile>
+                <img src={m2} className={classes.stretch} />
+              </GridListTile>
+              <GridListTile>
+                <img src={m3} className={classes.stretch} />
+              </GridListTile>
+              <GridListTile>
+                <img src={m4} className={classes.stretch} />
+              </GridListTile>
+              <GridListTile>
+                <img src={m5} className={classes.stretch} />
+              </GridListTile>
+              <GridListTile>
+                <img src={m6} className={classes.stretch} />
               </GridListTile>
             </GridList>
-          </Hidden>
+          </Grid>
         </Grid>
-        <Grid item md={8} sm={12}>
-          <GridList cols={3} cellHeight={isSm ? 'auto' : 250}>
-            <GridListTile>
-              {isSm ? owner : <img src={m1} className={classes.stretch} />}
-            </GridListTile>
-            <GridListTile>
-              <img src={m2} className={classes.stretch} />
-            </GridListTile>
-            <GridListTile>
-              <img src={m3} className={classes.stretch} />
-            </GridListTile>
-            <GridListTile>
-              <img src={m4} className={classes.stretch} />
-            </GridListTile>
-            <GridListTile>
-              <img src={m5} className={classes.stretch} />
-            </GridListTile>
-            <GridListTile>
-              <img src={m6} className={classes.stretch} />
-            </GridListTile>
-          </GridList>
-        </Grid>
-      </Grid>
-    );
-  }
+      );
+    }
   return (
     <div className={`${classes.partners}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
@@ -725,7 +725,7 @@ const Slider = () => {
       </Typography>
       <Carousel
         className={classes.topMargin}
-        // autoPlay
+        autoPlay
         stopOnHover
         infiniteLoop
         showArrows
@@ -852,29 +852,29 @@ const HowItWorks = () => {
     description,
     img
   }) => (
-    <Grid
-      item
-      xs={12}
-      sm={12}
-      md={4}
-    >
-      <div className={`${classes.verticalMargin} ${classes.row}`}>
-        <img
-          src={img}
-          alt='logo'
-          className={classes.icon}
-        />
-        <div className={classes.marginLeft}>
-          <Typography variant='h5' className={classes.howSubtitle}>
-            {title}
-          </Typography>
-          <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-            {description}
-          </Typography>
-        </div>
-      </div>
-    </Grid>
-  )
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          md={4}
+        >
+          <div className={`${classes.verticalMargin} ${classes.row}`}>
+            <img
+              src={img}
+              alt='logo'
+              className={classes.icon}
+            />
+            <div className={classes.marginLeft}>
+              <Typography variant='h5' className={classes.subtitle}>
+                {title}
+              </Typography>
+              <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+                {description}
+              </Typography>
+            </div>
+          </div>
+        </Grid>
+      )
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
@@ -1066,7 +1066,7 @@ const Testimonials = () => {
                   March 24
                 </Typography>
               </div>
-              <Typography variant='body1'className={classes.bold}>
+              <Typography variant='body1' className={classes.bold}>
                 "Other apps cost way too much"
               </Typography>
               <Typography variant='body1'>

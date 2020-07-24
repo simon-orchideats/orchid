@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper, Button, Slide, Fab } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, Link, useMediaQuery, Theme, Paper, Slide, Fab } from "@material-ui/core";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useTheme } from "@material-ui/styles";
@@ -9,16 +9,12 @@ import ZipModal from "../client/menu/ZipModal";
 import SideMenuCart from "../client/menu/SideMenuCart";
 import RestMenu from "../client/menu/RestMenu";
 import MenuMiniCart from "../client/menu/MenuMiniCart";
-import { useGetCart, useUpdateZip, useClearCartMeals, useAddMealToCart } from "../client/global/state/cartState";
+import { useGetCart, useUpdateZip } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
 import SearchInput from "../client/general/inputs/SearchInput";
 import { sendZipMetrics } from "../client/menu/menuMetrics";
-import { getItemChooser } from "../utils/utils";
-import { Meal } from "../rest/mealModel";
-import { DeliveryMeal } from "../order/deliveryModel";
-import { Hours } from "../rest/restModel";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
 import { Cart } from "../order/cartModel";
@@ -103,8 +99,6 @@ const menu = () => {
   const allTags = useGetTags();
   const [cuisines, setCuisines] = useState<string[]>([]);
   const rests = useGetNearbyRests(zip);
-  const clearCartMeals = useClearCartMeals();
-  const addMeal = useAddMealToCart();
   const [showMiniCart, setShowMiniCart] = useState(true);
   const onFilterCuisines = (cuisines: string[]) => {
     setCuisines(cuisines);
@@ -146,39 +140,39 @@ const menu = () => {
   const onClickZip = () => {
     setShowZipInput(true);
   }
-  const SurpriseMe = allRests && allRests.length > 0 ? 
-    <Button
-      variant='outlined'
-      color='primary'
-      onClick={() => {
-        clearCartMeals();
-        for (let i = 0; i < 4; i++) {
-          const chooseRandomRest = getItemChooser(allRests);
-          const rest = chooseRandomRest();
-          const m = Meal.chooseRandomMeals(
-            rest.menu,
-            1,
-            rest._id,
-            rest.profile.name,
-            rest.taxRate,
-            rest.Hours,
-          )[0];
-          addMeal(
-            m.mealId,
-            new DeliveryMeal(m),
-            m.choices,
-            m.restId,
-            m.restName,
-            m.taxRate,
-            new Hours(m.hours),
-          );
-        }
-      }}
-    >
-      Surprise me
-    </Button>
-  :
-    null
+  // const SurpriseMe = allRests && allRests.length > 0 ? 
+  //   <Button
+  //     variant='outlined'
+  //     color='primary'
+  //     onClick={() => {
+  //       clearCartMeals();
+  //       for (let i = 0; i < 4; i++) {
+  //         const chooseRandomRest = getItemChooser(allRests);
+  //         const rest = chooseRandomRest();
+  //         const m = Meal.chooseRandomMeals(
+  //           rest.menu,
+  //           1,
+  //           rest._id,
+  //           rest.profile.name,
+  //           rest.taxRate,
+  //           rest.Hours,
+  //         )[0];
+  //         addMeal(
+  //           m.mealId,
+  //           new DeliveryMeal(m),
+  //           m.choices,
+  //           m.restId,
+  //           m.restName,
+  //           m.taxRate,
+  //           new Hours(m.hours),
+  //         );
+  //       }
+  //     }}
+  //   >
+  //     Surprise me
+  //   </Button>
+  // :
+  //   null
   const zipButton = isShowingZipInput ?
     <SearchInput 
       search={zipInput}
@@ -265,28 +259,17 @@ const menu = () => {
                     cuisines={cuisines}
                     onClickCuisine={onFilterCuisines}
                   />
-                  <div className={classes.right}>
-                    {SurpriseMe}
-                  </div>
                 </div>
                 :
                 <MenuMiniCart
                   filter={
-                    <>
-                      <Filter
-                        label='Filter'
-                        allCuisines={allCuisines}
-                        cuisines={cuisines}
-                        onClickCuisine={onFilterCuisines}
-                        zip={zipButton}
-                      />
-                      {
-                        rests.data && 
-                        <div className={classes.marginLeft}>
-                          {SurpriseMe}
-                        </div>
-                      }
-                    </>
+                    <Filter
+                      label='Filter'
+                      allCuisines={allCuisines}
+                      cuisines={cuisines}
+                      onClickCuisine={onFilterCuisines}
+                      zip={zipButton}
+                    />
                   }
                 />
               }

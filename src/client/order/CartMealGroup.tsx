@@ -62,7 +62,7 @@ const CartMealGroup: React.FC<{
             <AddIcon className={classes.icon} />
           </Button>
         }
-        <Typography variant='subtitle1'>
+        <Typography variant='h6'>
           {quantity}
         </Typography>
         {
