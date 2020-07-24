@@ -5,6 +5,7 @@ import MenuCart from "./MenuCart";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Cart } from "../../order/cartModel";
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -40,6 +41,8 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
     borderRadius: 20,
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
@@ -111,13 +114,13 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
             <div className={classes.row}>
               <Typography
                 color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h6' : 'body1'}
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
               >
                 {t.minMeals}+ meals
               </Typography>
               <Typography
                 color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h6' : 'body1'}
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
               >
                 ${(t.MealPrice / 100).toFixed(2)}/meal
               </Typography>
@@ -162,6 +165,7 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
               color='primary'
               className={classes.count}
             >
+              <ShoppingCartIcon />
               {mealCount}
             </Typography>
           </div>
