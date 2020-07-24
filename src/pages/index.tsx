@@ -536,11 +536,11 @@ const Why = () => {
         ❌&nbsp;{badTitle}
       </Typography>
       <Typography variant='h5' className={classes.subtitle}>
-        {<img
+        <img
           src='/home/check.png'
           alt='check'
           className={classes.check}
-        />}
+        />
         &nbsp;
         {goodTitle}
       </Typography>

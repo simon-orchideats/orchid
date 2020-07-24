@@ -10,7 +10,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PlanCards: React.FC = () => {
+const PlanCards: React.FC<{
+  color?: string,
+  small?: boolean,
+}> = ({
+  color,
+  small,
+}) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
   if (!plans.data) {
@@ -28,11 +34,16 @@ const PlanCards: React.FC = () => {
             <Grid
               key={t.MealPrice}
               item
-              sm={12}
+              xs={12}
+              sm={small ? 5 : 12}
               md={4}
               className={classes.item}
             >
-              <PlanDetails tier={t} />
+              <PlanDetails
+                tier={t}
+                color={color}
+                small={small}
+              />
             </Grid>
           ))}
         </Grid>

@@ -5,6 +5,7 @@ import Slide from '@material-ui/core/Slide';
 import { TextField, Paper, Typography, Grid, Button } from '@material-ui/core';
 import { useUpdateZip } from '../global/state/cartState';
 import { sendZipMetrics } from './menuMetrics';
+import PlanCards from '../plan/PlanCards';
 
 const useStyles = makeStyles(theme => ({
   modal: {
@@ -21,12 +22,14 @@ const useStyles = makeStyles(theme => ({
   },
   img: {
     [theme.breakpoints.down('sm')]: {
-      backgroundPosition: '75% 50%',
+      height: '15%',
+      backgroundPosition: '50% 85%',
     },
     [theme.breakpoints.down('xs')]: {
       height: '30%',
       backgroundPosition: '50% 100%',
       top: 0,
+      backgroundImage: `url(menu/chef.jpg)`,
     },
     backgroundImage: `url(menu/chef.jpg)`,
     backgroundPosition: '50% 50%',
@@ -55,7 +58,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('sm')]: {
       fontSize: '2.5rem'
     },
-    paddingBottom: theme.spacing(4)
+    paddingBottom: theme.spacing(2)
   },
   paper: {
     height: '100%',
@@ -99,11 +102,11 @@ const ZipModal: React.FC<{
       <Slide in={open} direction='down'>
         <Paper className={classes.paper}>
           <Grid container className={classes.gridContainer}>
-            <Grid item xs={12} sm={5} md={7} className={classes.img} />
-            <Grid item xs={12} sm={7} md={5} className={classes.input}>
+            <Grid item xs={12} md={5} lg={6} className={classes.img} />
+            <Grid item xs={12} md={7} lg={6}  className={classes.input}>
               <form onSubmit={findFood}>
-                <Typography variant='h3' className={classes.title}>
-                  Mix n' match from local eats you love in JC & Hoboken
+                <Typography variant='h4' className={classes.title}>
+                  Mix n' match local eats in JC & Hoboken
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={12} md={6}>
@@ -128,6 +131,12 @@ const ZipModal: React.FC<{
                     >
                       Find food
                     </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <PlanCards
+                      color='black'
+                      small
+                    />
                   </Grid>
                 </Grid>
               </form>

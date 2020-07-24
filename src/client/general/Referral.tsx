@@ -122,6 +122,7 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     padding: theme.spacing(2),
     borderWidth: 2,
+    borderRadius: 20,
     borderColor: theme.palette.common.black,
     maxWidth: 300,
     minHeight: 132,
@@ -176,9 +177,6 @@ const Description = withClientApollo(() => {
           />
         }
       </Typography>
-      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        How to Earn
-      </Typography>
       <Grid
         justify='center'
         container
@@ -199,7 +197,7 @@ const Description = withClientApollo(() => {
               className={classes.box}
             >
               <Typography variant='h6'>
-                Subscribe to get your referral link
+                1. Subscribe to get your referral link
               </Typography>
             </Paper>
           </Grid>
@@ -217,7 +215,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              Your friend checkouts with your link
+              {referralLink ? '1. ' : '2. '}Your friend checkouts with your link
             </Typography>
           </Paper>
         </Grid>
@@ -234,7 +232,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              They get ${friendAmount} over 4 weeks
+              {referralLink ? '2. ' : '3. '}They get ${friendAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>
@@ -251,7 +249,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              You earn ${selfAmount} over 4 weeks
+              {referralLink ? '3. ' : '4. '}You earn ${selfAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>
