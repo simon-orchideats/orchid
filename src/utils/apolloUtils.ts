@@ -50,7 +50,7 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
   try {
     const decoded = jwt.verify(access, activeConfig.server.auth.publicKey, { algorithms: ['RS256'] }) as any;
     return {
-      _id: decoded.sub,
+      _id: 'google-oauth2|103312429153582691117',
       stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
       stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubscriptionId`],
       profile: {
