@@ -296,14 +296,40 @@ GET /orders/_search?
 
 ######### UPDATE ###########
 
+
 POST orders/_update_by_query
 {
   "script" : {
     "source": """
-      ctx._source.stripeInvoiceId = null;
-      for (int i = 0; i < ctx._source.deliveries.length; i++) {
-        ctx._source.deliveries[i].status = 'Open';
-      }    
+      for (int i = 0; i < ctx._source.deliveries.size(); i ++) {
+        for (int j = 0; j < ctx._source.deliveries[i].meals.size(); j++) {
+          ctx._source.deliveries[i].meals[j].stripePlanId = 'plan_HDGgkmXFCPQTlq'
+        }
+      }
+      for (int i = 0; i < ctx._source.plans.size(); i++) {
+        ctx._source.plans[i].stripePlanId = 'plan_HDGgkmXFCPQTlq';
+      }
+      for (int i = 0; i < ctx._source.costs.mealPrices.size(); i++) {
+        ctx._source.costs.mealPrices[i].stripePlanId = 'plan_HDGgkmXFCPQTlq';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+POST consumers/_update_by_query
+{
+  "script" : {
+    "source": """
+      if (ctx._source.plan != null) {
+        for (int i = 0; i < ctx._source.plan.mealPlans.size(); i++) {
+          ctx._source.plan.mealPlans[i].stripePlanId = 'plan_HDGgkmXFCPQTlq';
+        }
+      }
     """,
     "lang": "painless"
   },

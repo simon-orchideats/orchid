@@ -6,6 +6,7 @@ import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartSta
 import { useGetAvailablePlans } from "../../plan/planService";
 import { Cart } from "../../order/cartModel";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import { useGetConsumer } from "../../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -49,6 +50,7 @@ const useStyles = makeStyles(theme => ({
 const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
+  const consumer = useGetConsumer();
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   return (
@@ -109,23 +111,27 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
       const planPrices = 
         plans.data &&
-        plans.data.filter(p => p.IsActive)
-          .map(p => p.Tiers.map(t => (
-            <div className={classes.row}>
-              <Typography
-                color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
-              >
-                {t.minMeals}+ meals
-              </Typography>
-              <Typography
-                color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
-              >
-                ${(t.MealPrice / 100).toFixed(2)}/meal
-              </Typography>
-            </div>
-          )));
+        plans.data.filter(p => {
+          if (consumer && consumer.data && consumer.data.Plan) {
+            return consumer.data.Plan.MealPlans.find(mp => p.StripePlanId === mp.StripePlanId);
+          }
+          return p.IsActive;
+        }).map(p => p.Tiers.map(t => (
+          <div className={classes.row}>
+            <Typography
+              color='primary'
+              variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+            >
+              {t.minMeals}+ meals
+            </Typography>
+            <Typography
+              color='primary'
+              variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+            >
+              ${(t.MealPrice / 100).toFixed(2)}/meal
+            </Typography>
+          </div>
+        )));
       return (
         <>
           {

@@ -674,7 +674,6 @@ const Slider = () => {
       } else {
         height = 375;
       }
-      console.log(height);
       return (
         <Grid container>
           <Grid
