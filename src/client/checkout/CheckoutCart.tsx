@@ -164,7 +164,7 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <div className={`${classes.row}`} >
           <Typography variant='body1' color='primary'>
-            <b>Total</b>
+            <b>Weekly Total</b>
           </Typography>
           <Typography variant='body1' color='primary'>
             <b>${total.toFixed(2)}</b>

@@ -18,20 +18,19 @@ export const getSuggestion = (cart: Cart | null, minMeals: number, cost: number)
   return suggestion;
 }
 
+type summary = {
+  meals: string,
+  price: string,
+  isActive: boolean,
+};
+
 const MenuCart: React.FC<{
   render: (
     cart: Cart | null,
     disabled: boolean | undefined,
     onNext: () => void,
     suggestions: string[],
-    /**
-     *  left off here
-    summary: {
-      plan: string,
-      isActive: boolean,
-    }[],
-     */
-    summary: string[],
+    summary: summary[][],
     donationCount: number,
     incrementDonationCount: () => void,
     decremetnDonationCount: () => void,
@@ -85,7 +84,7 @@ const MenuCart: React.FC<{
   const decrementDonationCount = useDecrementCartDonationCount();
 
   const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
-  let summary = [];
+  let summary: summary[][] = [];
   let suggestions: string[] = [];
   if (plans.data) {
     let planId = Plan.getActivePlan(PlanNames.Standard, plans.data).stripePlanId;
@@ -95,19 +94,19 @@ const MenuCart: React.FC<{
     }
     const minPrice = Tier.getMealPrice(planId, MIN_MEALS, plans.data);
     suggestions = getSuggestion(cart, MIN_MEALS, minPrice);
-    const moreToNext = Tier.getNextTier(planId, mealCount, plans.data);
-    if (mealCount >= MIN_MEALS) {
-      summary.push(`${mealCount} meal plan (${(Tier.getMealPrice(planId, mealCount, plans.data) / 100).toFixed(2)} ea)`);
-      for (let i = 0; i < moreToNext.length; i++) {
-        const nextPrice = moreToNext[i].price;
-        const nextCount = moreToNext[i].count;
-        summary.push(`+${nextCount} for ${(nextPrice / 100).toFixed(2)} ea`)
+    summary = plans.data.filter(p => {
+      if (consumer && consumer.data && consumer.data.Plan) {
+        return consumer.data.Plan.MealPlans.find(mp => p.StripePlanId === mp.StripePlanId);
       }
-    }
-    if (cart && Cart.getAllowedDeliveries(cart) > 1) {
-      const extra = Cart.getAllowedDeliveries(cart) - 1;
-      summary.push(`${extra} extra deliver${extra === 1 ? 'y available' : 'ies available'}`);
-    }
+      return p.IsActive;
+    }).map(p => p.Tiers.map(t => {
+      const isActive = Boolean(mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)));
+      return {
+        meals: `${t.minMeals}+ meals`,
+        price: `$${(t.MealPrice / 100).toFixed(2)}/meal`,
+        isActive,
+      };
+    }));
   }
   return (
     <>
