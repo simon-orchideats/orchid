@@ -24,6 +24,13 @@ const MenuCart: React.FC<{
     disabled: boolean | undefined,
     onNext: () => void,
     suggestions: string[],
+    /**
+     *  left off here
+    summary: {
+      plan: string,
+      isActive: boolean,
+    }[],
+     */
     summary: string[],
     donationCount: number,
     incrementDonationCount: () => void,

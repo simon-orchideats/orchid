@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button, Grid } from "@material-ui/core";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
@@ -117,20 +117,32 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
           }
           return p.IsActive;
         }).map(p => p.Tiers.map(t => (
-          <div className={classes.row}>
-            <Typography
-              color='primary'
-              variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+          <Grid container>
+            <Grid
+              md={12}
+              lg={6}
+              item
             >
-              {t.minMeals}+ meals
-            </Typography>
-            <Typography
-              color='primary'
-              variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+              <Typography
+                color='primary'
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+              >
+                {t.minMeals}+ meals
+              </Typography>
+            </Grid>
+            <Grid
+              md={12}
+              lg={6}
+              item
             >
-              ${(t.MealPrice / 100).toFixed(2)}/meal
-            </Typography>
-          </div>
+              <Typography
+                color='primary'
+                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
+              >
+                ${(t.MealPrice / 100).toFixed(2)}/meal
+              </Typography>
+            </Grid>
+          </Grid>
         )));
       return (
         <>

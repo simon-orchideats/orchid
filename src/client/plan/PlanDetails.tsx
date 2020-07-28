@@ -47,7 +47,7 @@ const PlanDetails: React.FC<{
           tier.minMeals === 4 &&
           <>
             <Typography variant='h6' color='primary'>
-              Personal
+              Personal Week
             </Typography>
             {meals}
             <Typography variant='h6'>
@@ -60,7 +60,7 @@ const PlanDetails: React.FC<{
           tier.minMeals === 8 &&
           <>
             <Typography variant='h6' color='primary'>
-              Roomies
+              Roomies Week
             </Typography>
             {meals}
             <Typography variant='h6'>
@@ -73,7 +73,7 @@ const PlanDetails: React.FC<{
           tier.minMeals === 12 &&
           <>
             <Typography variant='h6' color='primary'>
-              Family
+              Family Week
             </Typography>
             {meals}
             <Typography variant='h6'>
