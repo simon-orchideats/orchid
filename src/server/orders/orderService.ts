@@ -725,6 +725,19 @@ class OrderService {
       if (!consumer.stripeSubscriptionId) throw new Error(`Missing subscriptionId for consumer '${consumerId}'`);
       if (!this.restService) throw new Error('Missing RestService');
       if (!consumer.profile.destination) throw new Error (`Consumer '${consumerId}' missing destination`);
+
+      // use planId from mealPrices in case user has grandfathered plan
+      const getMealsWithUpdatedPlanIds = (randomMeals: IDeliveryMeal[], mealPrices: IMealPrice[]) => randomMeals.map(m => {
+        const stripePlanId = mealPrices.find(mp => mp.planName === m.planName)?.stripePlanId;
+        if (!stripePlanId) {
+          throw new Error(`Got meal with plan '${m.planName}' but mealPrices doesn't have that plan`);
+        }
+        return {
+          ...m,
+          stripePlanId,
+        }
+      });
+      
       const cuisines = Tag.getCuisines(consumer.plan.tags);
       const plan = consumer.plan;
       const rests = await this.restService.getNearbyERests(
@@ -744,18 +757,19 @@ class OrderService {
         for (let j = 0; j < mealsPerDelivery; j++) {
           const randomRest = chooseRandomRest();
           const eRest = randomRest.rest;
-          Cart.addMealsToExistingDeliveryMeals(
-            Meal.chooseRandomMeals(
-              eRest.menu,
-              1,
-              randomRest._id,
-              eRest.profile.name,
-              eRest.taxRate,
-              eRest.hours,
-              cuisines,
-            ),
-            meals,
+          const randomMeals = Meal.chooseRandomMeals(
+            eRest.menu,
+            1,
+            randomRest._id,
+            eRest.profile.name,
+            eRest.taxRate,
+            eRest.hours,
+            cuisines,
           )
+          Cart.addMealsToExistingDeliveryMeals(
+            getMealsWithUpdatedPlanIds(randomMeals, mealPrices),
+            meals
+          );
         }
         deliveries.push({
           deliveryDate: getNextDeliveryDate(
@@ -770,27 +784,23 @@ class OrderService {
       }
 
       const numRemainingMeals= totalMeals % numDeliveries;
-      const remainingMeals: IDeliveryMeal[] = [];
       for (let i = 0; i < numRemainingMeals; i++) {
         const randomRest = chooseRandomRest();
+        const randomMeals = Meal.chooseRandomMeals(
+          randomRest.rest.menu,
+          1,
+          randomRest._id,
+          randomRest.rest.profile.name,
+          randomRest.rest.taxRate,
+          randomRest.rest.hours,
+          cuisines,
+        );
         Cart.addMealsToExistingDeliveryMeals(
-          Meal.chooseRandomMeals(
-            randomRest.rest.menu,
-            1,
-            randomRest._id,
-            randomRest.rest.profile.name,
-            randomRest.rest.taxRate,
-            randomRest.rest.hours,
-            cuisines,
-          ),
-          remainingMeals,
-        )
+          getMealsWithUpdatedPlanIds(randomMeals, mealPrices),
+          deliveries[0].meals,
+        );
       }
-      
-      Cart.addMealsToExistingDeliveryMeals(
-        remainingMeals,
-        deliveries[0].meals,
-      );
+
       Cart.delayDeliveriesForClosures(deliveries);
 
       const automatedOrder = Order.getNewOrder(
