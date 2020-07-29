@@ -207,7 +207,7 @@ const delivery = () => {
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Preferred repeat delivery schedule
+                  1. Weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   Meal plans can be edited/skipped up to 2 days before each scheduled delivery

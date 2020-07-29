@@ -67,7 +67,7 @@ const RenewalChooser: React.FC<{
         <Grid item xs={12}>
           <Typography
             component='p'
-            variant='caption'
+            variant='body1'
             color='error'
             className={classes.subtitle}
           >

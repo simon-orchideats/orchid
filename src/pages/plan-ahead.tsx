@@ -6,8 +6,8 @@ import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useUpdateTags } from "../client/global/state/cartState";
 import { useGetConsumer } from "../consumer/consumerService";
-import { useState, useRef, useEffect } from "react";
-import { Tag } from "../rest/tagModel";
+import { useState, useEffect } from "react";
+import { Tag, TagTypes } from "../rest/tagModel";
 import { useGetTags } from "../rest/restService";
 import RenewalChooser from "../client/general/RenewalChooser";
 import Link from "next/link";
@@ -34,11 +34,17 @@ const planAhead = () => {
   const updateCartTags = useUpdateTags();
   const consumer = useGetConsumer();
   const [tags, setTags] = useState<Tag[]>([]);
-  const validateCuisineRef= useRef<() => boolean>();
   const allTags = useGetTags();
+  const cartTags = cart ? cart.Tags : [];
   useEffect(() => {
-    if (allTags.data) setTags(allTags.data);
-  }, [allTags.data]);
+    if (cartTags.length > 0) {
+      setTags(cartTags);
+      return;
+    }
+    if (allTags.data) {
+      setTags(allTags.data);
+    }
+  }, [allTags.data, cartTags]);
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
@@ -61,15 +67,14 @@ const planAhead = () => {
           allTags={allTags.data || []}
           tags={tags}
           onTagChange={tags => updateTags(tags)}
-          validateCuisineRef={validateCuisine => {
-            validateCuisineRef.current = validateCuisine;
-          }}
+          validateCuisineRef={() => {}}
         />
         <Link href={deliveryRoute}>
           <Button
             variant='contained'
             color='primary'
             fullWidth
+            disabled={tags.filter(t => t.Type === TagTypes.Cuisine).length === 0}
             className={classes.nextButton}
             onClick={onNext}
           >
