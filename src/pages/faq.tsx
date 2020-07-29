@@ -139,7 +139,7 @@ const faqs = () => {
           <Qa
             q="Do I need to pick meals every week?"
             a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Orchid to do it for you.
-            Our team will hand select your meals based on your favorite foods and preferences. "
+            Our team will hand select your meals based on your favorite foods and preferences."
           />
           <Qa
             q='How do I update my subscription or delivery?'
@@ -234,8 +234,7 @@ const faqs = () => {
           />
           <Qa
             q='How long will my meals last?'
-            a="
-            Every meal is cooked the same day as it's delivered but should be stored in the fridge for however many days
+            a="Every meal is cooked the same day as it's delivered but should be stored in the fridge for however many days
             you feel comfortable. We recommend picking a balance. When delivered, eat certain meals now and save
             some for later, just as you would with meal prepping."
           />
