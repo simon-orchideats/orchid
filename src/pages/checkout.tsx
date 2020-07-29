@@ -28,7 +28,6 @@ import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
 import { useMutationResponseHandler } from "../utils/apolloUtils";
 import { promoDurations } from "../order/promoModel";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
-import { useGetTags } from "../rest/restService";
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
 
@@ -107,7 +106,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
   const plans = useGetAvailablePlans();
-  const allTags = useGetTags();
   useEffect(() => {
     if (router.query.a !== undefined) {
       setAmountOff(parseFloat(router.query.a as string));
@@ -169,12 +167,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           setDidPlaceOrder(false);
           throw err;
         }
-        if (!allTags.data) {
-          const err = new Error('No tags');
-          console.error(err.stack)
-          setDidPlaceOrder(false);
-          throw err;
-        }
         placeOrder(
           {
             _id: signUpRes.data.res.Id,
@@ -191,7 +183,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             deliveryInstructions,
-            allTags.data,
             promoInputRef.current?.value,
           )
         );
@@ -291,12 +282,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    if (!allTags.data) {
-      const err = new Error('No tags');
-      console.error(err.stack)
-      setDidPlaceOrder(false);
-      throw err;
-    }
     if (!consumer || !consumer.data) {
       if (!email) {
         const err = new Error('No email');
@@ -334,7 +319,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           deliveryInstructions,
-          allTags.data,
           promo,
         ),
       );
@@ -342,7 +326,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     sendCheckoutMetrics(
       cart,
       plans.data,
-      allTags.data.map(t => t.Name),
     )
   }
 

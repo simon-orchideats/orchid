@@ -18,7 +18,14 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    fontWeight: 600,
   },
+  outlinedPrimary: {
+    border: `1px solid ${theme.palette.divider}!important`,
+    backgroundColor: `${theme.palette.common.white} !important`,
+    color: theme.palette.text.primary,
+    fontWeight: 400,
+  }
 }));
 
 const RenewalChooser: React.FC<{
@@ -54,7 +61,7 @@ const RenewalChooser: React.FC<{
             color='primary'
             className={classes.title}
           >
-            Which foods are your favorite? On weeks you forget, we'll choose a meal plan you love
+            Which foods are your favorite? We pick meals on weeks you don't customize
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -82,11 +89,14 @@ const RenewalChooser: React.FC<{
                 <Button
                   fullWidth
                   color='primary'
-                  variant={isSelected ? 'contained' : 'outlined'}
+                  variant='outlined'
                   className={classes.toggle}
                   onClick={() =>
                     isSelected ? onTagChange(withoutCuisine) : onTagChange([...tags, tag])
                   }
+                  classes={{
+                    outlinedPrimary: isSelected ? undefined : classes.outlinedPrimary,
+                  }}
                 >
                   {isSelected && '✔ '}{tag.Name}
                 </Button>

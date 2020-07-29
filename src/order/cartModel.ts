@@ -4,13 +4,13 @@ import { getNextDeliveryDate } from './utils';
 import { IDeliveryInput, DeliveryInput, DeliveryMeal, IDeliveryMeal } from './deliveryModel';
 import { ICard } from '../card/cardModel';
 import { IDestination } from '../place/destinationModel';
-import { IConsumerPlan, ISchedule, Schedule, MealPlan, defaultDeliveryDay, deliveryDay } from '../consumer/consumerPlanModel';
+import { IConsumerPlanInput, ISchedule, Schedule, MealPlan, defaultDeliveryDay, deliveryDay } from '../consumer/consumerPlanModel';
 import { IMeal, Meal } from '../rest/mealModel';
 import { state } from '../place/addressModel';
 import moment from "moment";
 import { isEqual } from 'lodash';
 import { getItemChooser } from '../utils/utils';
-import { Tag } from '../rest/tagModel';
+import { Tag, ITag } from '../rest/tagModel';
 
 const AUTO_ADDON_LIMIT = 3;
 
@@ -18,7 +18,7 @@ export interface ICartInput {
   readonly paymentMethodId: string
   readonly card: ICard
   readonly promo?: string
-  readonly consumerPlan: Omit<IConsumerPlan, 'referralCode' | 'weeklyDiscounts'>
+  readonly consumerPlan: IConsumerPlanInput
   readonly donationCount: number
   readonly phone: string
   readonly destination: IDestination
@@ -38,6 +38,7 @@ export interface ICart {
   readonly deliveries: IDeliveryInput[];
   readonly restMeals: RestMeals
   readonly schedules: ISchedule[];
+  readonly tags: ITag[];
   readonly zip: string | null;
 }
 
@@ -75,6 +76,7 @@ export class Cart implements ICart {
   readonly deliveries: DeliveryInput[];
   readonly restMeals: RestMeals;
   readonly schedules: Schedule[];
+  readonly tags: Tag[];
   readonly zip: string | null;
 
   constructor(cart: ICart) {
@@ -89,6 +91,7 @@ export class Cart implements ICart {
       return map;
     }, {});
     this.schedules = cart.schedules.map(s => new Schedule(s));
+    this.tags = cart.tags.map(t => new Tag(t));
     this.zip = cart.zip;
   }
 
@@ -97,6 +100,7 @@ export class Cart implements ICart {
   public get Deliveries() { return this.deliveries }
   public get RestMeals() { return this.restMeals }
   public get Schedules() { return this.schedules }
+  public get Tags() { return this.tags }
   public get Zip() { return this.zip }
 
   public static addMealsToExistingDeliveryMeals = (newMeals: IDeliveryMeal[], existingMeals: IDeliveryMeal[]) => {
@@ -440,7 +444,6 @@ export class Cart implements ICart {
     card: ICard,
     paymentMethodId: string,
     instructions: string,
-    tags: Tag[],
     promo?: string,
   ): ICartInput {
     const mealPlans = Object.values(this.restMeals).reduce<MealPlan[]>((plans, restMeal) => {
@@ -476,7 +479,7 @@ export class Cart implements ICart {
       consumerPlan: {
         mealPlans,
         schedules: this.Schedules,
-        tags,
+        tags: this.Tags,
       },
       destination: {
         address: {

@@ -1,3 +1,4 @@
+import { Tag } from './../../../rest/tagModel';
 import { Hours } from './../../../rest/restModel';
 import { DeliveryMeal, DeliveryInput } from './../../../order/deliveryModel';
 import { deliveryDay, deliveryTime, Schedule, MealPlan } from './../../../consumer/consumerPlanModel';
@@ -22,6 +23,7 @@ export const cartQL = gql`
     deliveries: [DeliveryInput!]!
     schedules: [Schedule!]!
     zip: String
+    tags: [Tag!]!
   }
   type AutoDelivery {
     cart: CartState
@@ -42,6 +44,7 @@ export const cartQL = gql`
     updateCartPlanId(id: ID!): CartState!
     updateDeliveryDay(day: Int!): CartState!
     updateZip(zip: String!): CartState!
+    updateTags(tags: [Tag!]!): CartState!
   }
 `
 
@@ -269,6 +272,18 @@ export const useUpdateDeliveryTime = (): (time: deliveryTime) => void => {
   }
 }
 
+export const useUpdateTags = (): (tags: Tag[]) => void => {
+  type vars = { tags: Tag[] };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation updateTags($tags: Tag!) {
+      updateTags(tags: $tags) @client
+    }
+  `);
+  return (tags: Tag[]) => {
+    mutate({ variables: { tags } })
+  }
+}
+
 export const useUpdateZip = (): (zip: string) => void => {
   type vars = { zip: string };
   const [mutate] = useMutation<any, vars>(gql`
@@ -298,6 +313,7 @@ type cartMutationResolvers = {
   moveMealToNewDelivery: ClientResolver<{ meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number }, Cart | null>
   removeMealFromCart: ClientResolver<{ restId: string, meal: DeliveryMeal }, Cart | null>
   setCart: ClientResolver<{ order: Order, deliveryIndex: number }, Cart | null>
+  updateTags: ClientResolver<{ tags: Tag[] }, Cart | null>
   updateZip: ClientResolver<{ zip: string }, Cart | null>
 }
 
@@ -353,6 +369,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
           }
         },
         schedules: [],
+        tags: [],
         zip: null,
       }));
     }
@@ -393,6 +410,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
       schedules: res.cart.Schedules,
+      tags: res.cart.Tags,
       zip: res.cart.Zip,
     }));
   },
@@ -406,6 +424,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         restMeals: {},
         deliveries: [],
         schedules: [],
+        tags: [],
         zip: null,
       }));
     }
@@ -415,6 +434,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restMeals: res.cart.RestMeals,
       deliveries: res.cart.Deliveries,
       schedules: res.cart.Schedules,
+      tags: res.cart.Tags,
       zip: res.cart.Zip,
     }));
   },
@@ -431,6 +451,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       restMeals: {},
       deliveries: [],
       schedules: [],
+      tags: res.cart.Tags,
       zip: res.cart.Zip,
     }));
   },
@@ -461,6 +482,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         restMeals: {},
         deliveries: [],
         schedules: newCart.schedules,
+        tags: newCart.Tags,
         zip: newCart.Zip,
       });
     }
@@ -487,7 +509,32 @@ export const cartMutationResolvers: cartMutationResolvers = {
         time: d.DeliveryTime,
         day: moment(d.DeliveryDate).day() as deliveryDay,
       })),
+      tags: [],
       zip: order.Destination.Address.Zip,
+    }));
+  },
+
+  updateTags: (_, { tags }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      return updateCartCache(cache, new Cart({
+        allMeals: [],
+        donationCount: 0,
+        deliveries: [],
+        restMeals: {},
+        schedules: [],
+        tags,
+        zip: null,
+      }));
+    }
+    return updateCartCache(cache, new Cart({
+      allMeals: res.cart.AllMeals,
+      donationCount: res.cart.DonationCount,
+      deliveries: res.cart.Deliveries,
+      restMeals: res.cart.RestMeals,
+      schedules: res.cart.Schedules,
+      tags,
+      zip: res.cart.Zip,
     }));
   },
 
@@ -500,6 +547,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         deliveries: [],
         restMeals: {},
         schedules: [],
+        tags: [],
         zip,
       }));
     }
@@ -509,6 +557,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       deliveries: res.cart.Deliveries,
       restMeals: res.cart.RestMeals,
       schedules: res.cart.Schedules,
+      tags: res.cart.Tags,
       zip,
     }));
   },
