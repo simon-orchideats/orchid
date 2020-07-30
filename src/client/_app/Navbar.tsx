@@ -82,7 +82,7 @@ const useStyles = makeStyles(theme => ({
       width: 100,
       marginRight: theme.spacing(2)
     },
-    width: 150,
+    height: 63,
     paddingTop: 4,
     paddingBottom: 4,
     paddingLeft: theme.spacing(1),
@@ -285,7 +285,7 @@ const Navbar: React.FC = () => {
             {
               (isMdAndUp || !barIsStep) &&
               <Link href={indexRoute}>
-                <img src='/fork-logo.png' alt='logo' className={classes.logo} />
+                <img src='/logo.png' alt='logo' className={classes.logo} />
               </Link>
             }
             {bar}
