@@ -117,7 +117,7 @@ const whoWeAre = () => {
           className={classes.regularShrinker}
         >
           This isn't how we treat neighbors? These mom and pops are working hard behind the scenes to cook for you.
-          Orchid brings back love in every bite by putting people first.
+          Table brings back love in every bite by putting people first.
         </Typography>
         <Grid
           container

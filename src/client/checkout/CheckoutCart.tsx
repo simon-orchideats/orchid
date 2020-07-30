@@ -197,7 +197,7 @@ const CheckoutCart: React.FC<props> = ({
         }
         <Typography variant='subtitle2' className={classes.paddingBottom}>
           Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. Satisfaction is guaranteed. Contact us
-          at simon@orchideats.com or call (609) 513-8166 with any concerns or refunds.
+          at simon@tableweekly.com or call (609) 513-8166 with any concerns or refunds.
         </Typography>
         <Typography variant='body2' className={classes.hint}>
           Your subscription renews every week. Pricing is based on meals per week. Skip weeks or cancel anytime.

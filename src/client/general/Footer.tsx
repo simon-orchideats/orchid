@@ -116,7 +116,7 @@ const Footer = () => {
             </Link>
             <Hidden mdUp>
               <Typography variant='body1'>
-                Contact us at simon@orchideats.com
+                Contact us at simon@tableweekly.com
               </Typography>
             </Hidden>
           </Grid>
@@ -136,7 +136,7 @@ const Footer = () => {
             </div>
             <Hidden smDown>
               <Typography variant='body1'>
-                Contact us at simon@orchideats.com
+                Contact us at simon@tableweekly.com
               </Typography>
             </Hidden>
           </Grid>

@@ -153,9 +153,9 @@ const ScheduleDeliveries: React.FC<{
             >
               {
                 isUpdating ?
-                  'Orchid will ignore this empty delivery'
+                  'Table will ignore this empty delivery'
                 :
-                  `Orchid will ignore this empty delivery for this week, but we will still attempt to use this time when
+                  `Table will ignore this empty delivery for this week, but we will still attempt to use this time when
                   scheduling future orders for you`
               }
             </Typography>

@@ -67,7 +67,7 @@ class MyApp extends App {
     return (
       <React.Fragment>
         <Head>
-          <title>Orchid</title>
+          <title>Table</title>
           <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
         </Head>
         <ThemeProvider theme={getTheme()}>

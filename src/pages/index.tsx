@@ -467,7 +467,7 @@ const Why = () => {
   return (
     <div className={`${classes.why} ${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        Why Orchid?
+        Why Table?
       </Typography>
       <Grid
         container
@@ -993,7 +993,7 @@ const Testimonials = () => {
                 "Other apps cost way too much"
               </Typography>
               <Typography variant='body1'>
-                Even small orders. The delivery and service fees add up. That's why I use Orchid
+                Even small orders. The delivery and service fees add up. That's why I use Table
               </Typography>
             </div>
           </div>

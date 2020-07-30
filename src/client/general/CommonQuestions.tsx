@@ -69,12 +69,12 @@ const Faq = () => {
           Common Questions
         </Typography>
         <Expander
-          q='What is Orchid?'
+          q='What is Table?'
           n={
             <>
               <Typography variant='body1'>
                 A subscription of weekly meal plans delivered from local restaurants. Each week, customers can either
-                build their meal plan by picking meals from all different restaurants or allow Orchid to choose, based
+                build their meal plan by picking meals from all different restaurants or allow Table to choose, based
                 on their plan preferences.
               </Typography>
               <p />
@@ -88,11 +88,11 @@ const Faq = () => {
           }
         />
         <Expander
-          q='How is Orchid different from other delivery websites?'
+          q='How is Table different from other delivery websites?'
           n={
             <>
               <Typography variant='body1'>
-                Orchid is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
+              Table is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
                 fees. Our service offers unrivaled variety with the ability to mix and match different restaurants in
                 each delivery. Imagine subscribing to Netflix vs buying 1 movie on Amazon.
               </Typography>
@@ -115,7 +115,7 @@ const Faq = () => {
         />
         <Expander
           q="Do I need to pick meals every week?"
-          a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Orchid to do it for you.
+          a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Table to do it for you.
           Our team will hand select your meals based on your favorite foods and preferences."
         />
         <Expander
@@ -124,12 +124,12 @@ const Faq = () => {
         />
         <Expander
           q='How often am I charged?'
-          a="Orchid will automatically process your credit card on file at the end of each weekly cycle based
+          a="Table will automatically process your credit card on file at the end of each weekly cycle based
           on the number of meals confirmed for that week. A weekly cycle begins the day you subscribe."
         />
         <Expander
           q='Will I be locked into a contract?'
-          a="Orchid is a subscription, not a contract. You can cancel your service with ease any time in the My Plan page."
+          a="Table is a subscription, not a contract. You can cancel your service with ease any time in the My Plan page."
         />
         <Typography variant='body2' className={classes.mediumTopMargin}>
           See more answers on our&nbsp;

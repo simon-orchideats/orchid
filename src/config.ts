@@ -255,7 +255,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
   }
 };
 
-const prodUrl = 'https://orchideats.com';
+const prodUrl = 'https://tableweekly.com';
 
 const production: config = {
   client: {
@@ -288,7 +288,7 @@ const production: config = {
   server: {
     app: {
       port: parseInt(process.env.PORT || '8443', 10),
-      url: 'https://orchideats.com',
+      url: 'https://tableweekly.com',
     },
     auth: {
       domain: 'orchideats.auth0.com',
