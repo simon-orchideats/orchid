@@ -6,15 +6,15 @@ import Router, { useRouter } from 'next/router'
 import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliveries";
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
-import { Tier, MIN_MEALS, PlanNames, Plan } from "../../plan/planModel";
+import { MIN_MEALS, PlanNames, Plan } from "../../plan/planModel";
 import { planAheadRoute } from "../../pages/plan-ahead"
 
-export const getSuggestion = (cart: Cart | null, minMeals: number, cost: number) => {
+export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
   let suggestion: string[] = [];
   const mealCount = Cart.getStandardMealCount(cart)
   if (mealCount < minMeals) {
-    suggestion.push(`Need ${minMeals - mealCount} more meals for ${(cost / 100).toFixed(2)} ea`);
+    suggestion.push(`Need ${minMeals - mealCount} more meals`);
   }
   return suggestion;
 }
@@ -93,8 +93,7 @@ const MenuCart: React.FC<{
       const activeStandard = consumer.data.Plan.MealPlans.find(mp => mp.PlanName === PlanNames.Standard);
       if (activeStandard && activeStandard.StripePlanId !== planId) planId = activeStandard.StripePlanId;
     }
-    const minPrice = Tier.getMealPrice(planId, MIN_MEALS, plans.data);
-    suggestions = getSuggestion(cart, MIN_MEALS, minPrice);
+    suggestions = getSuggestion(cart, MIN_MEALS);
     summary = plans.data.filter(p => {
       if (consumer && consumer.data && consumer.data.Plan) {
         return consumer.data.Plan.MealPlans.find(mp => p.StripePlanId === mp.StripePlanId);
