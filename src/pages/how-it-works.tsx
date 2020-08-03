@@ -290,46 +290,69 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title="Mix n' Match"
-            description='Pick meals from different restaurants to build your order for delivery. Try all different types
-            of cuisines and restaurants like never before all in one convenient order. '
+            description='Pick meals from different restaurants to build your 1st delivery order'
             dividerTitle='Step'
             dividerSubtitle='1'
             img='how-it-works/mix.jpg'
             imgLeft={true}
-            imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Set Delivery'
-            description="Tell us your delivery schedule and we'll deliver at that time each week. Your personal server
-            delivers all your fresh meals together after notifying you of an exact ETA."
+            title='Set delivery'
+            description="Tell us your delivery schedule and we'll deliver at that time each week"
             dividerTitle='Step'
             dividerSubtitle='2'
-            img='how-it-works/deliver.jpg'
+            img='how-it-works/schedule.jpg'
             imgLeft={false}
             imgBackground={<img src='how-it-works/fruits.png' className={classes.fruits} alt='fruits' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Enjoy'
-            description='Enjoy your batch of cooked meals when delivered or save them for later.'
+            title='Receive 1 weekly delivery'
+            description="The same driver delivers to you each week. They text you an ETA the morning of your delivery"
             dividerTitle='Step'
             dividerSubtitle='3'
-            img='how-it-works/chef.jpg'
+            img='how-it-works/deliver.jpg'
+            imgLeft={true}
+            imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
+          />
+          <Grid item xs={12} className={classes.largeVerticalMargin} />
+          <Explanation
+            title='Enjoy'
+            description='Enjoy your batch of fresh cooked meals when delivered or throughout the week'
+            dividerTitle='Step'
+            dividerSubtitle='4'
+            img='how-it-works/eating.jpg'
+            imgLeft={false}
+          />
+          <Grid item xs={12} className={classes.largeVerticalMargin} />
+          <Explanation
+            title='Subscribe & repeat'
+            description="Receive a new delivery with new food each week"
+            dividerTitle='Step'
+            dividerSubtitle='5'
+            img='how-it-works/sub.jpeg'
             imgLeft={true}
             imgBackground={<img src='how-it-works/potatoes.png' className={classes.potatoes} alt='potatoes' />}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Subscribe'
-            description="You can customize meals for specific weeks, but on weeks you forget, we'll pick meals for you 
-            based on your favorite foods. You can change delivery times for specific weeks too. Orders are easy
-            to change, skip, and cancel."
+            title='Plan ahead or sit back'
+            description="Orders are easy to change, skip, and cancel. You can change delivery times too"
             dividerTitle='Step'
-            dividerSubtitle='4'
-            img='how-it-works/eating.jpg'
+            dividerSubtitle='6'
+            img='how-it-works/sample.png'
             imgLeft={false}
             imgBackground={<img src='how-it-works/rice.png' className={classes.rice} alt='rice' />}
+          />
+          <Grid item xs={12} className={classes.largeVerticalMargin} />
+          <Explanation
+            title="We'll pick meals if you forget"
+            description="If you forget to customize your week's meals, we'll pick for you"
+            dividerTitle='Step'
+            dividerSubtitle='7'
+            img='how-it-works/pick.jpeg'
+            imgLeft={true}
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
         </Grid>

@@ -1,4 +1,4 @@
-import { makeStyles, Container, Typography, Paper, Grid, IconButton, Hidden } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, Grid, IconButton } from '@material-ui/core';
 import Link from 'next/link'
 import { privacyRoute } from '../../pages/privacy';
 import { faqsRoute } from '../../pages/faq';
@@ -114,11 +114,9 @@ const Footer = () => {
                 Terms
               </Typography>
             </Link>
-            <Hidden mdUp>
-              <Typography variant='body1'>
-                Contact us at simon@tableweekly.com
-              </Typography>
-            </Hidden>
+            <Typography variant='h6'>
+              Contact us at simon@tableweekly.com
+            </Typography>
           </Grid>
           <Grid item sm={1} />
           <Grid
@@ -134,11 +132,6 @@ const Footer = () => {
                 <InstagramIcon />
               </IconButton>
             </div>
-            <Hidden smDown>
-              <Typography variant='body1'>
-                Contact us at simon@tableweekly.com
-              </Typography>
-            </Hidden>
           </Grid>
         </Grid>
       </Container>

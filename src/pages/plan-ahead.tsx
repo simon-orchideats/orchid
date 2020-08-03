@@ -23,8 +23,12 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(4),
     backgroundColor: theme.palette.common.white,
   },
-  nextButton: {
+  border: {
+    borderStyle: 'solid',
+    padding: theme.spacing(1),
+    width: '100%',
     marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(3),
   },
 }));
 
@@ -69,13 +73,21 @@ const planAhead = () => {
           onTagChange={tags => updateTags(tags)}
           validateCuisineRef={() => {}}
         />
+        <Typography
+          variant='body1'
+          className={classes.border}
+          align='center'
+        >
+          <b>
+            You can always change your meals later!
+          </b>
+        </Typography>
         <Link href={deliveryRoute}>
           <Button
             variant='contained'
             color='primary'
             fullWidth
             disabled={tags.filter(t => t.Type === TagTypes.Cuisine).length === 0}
-            className={classes.nextButton}
             onClick={onNext}
           >
             Next

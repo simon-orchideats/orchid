@@ -811,12 +811,12 @@ const HowItWorks = () => {
         />
         <Content
           title='Enjoy'
-          description='Eat meals now or save for later'
+          description='Receive all meals at once to eat now or throughout the week'
           img='home/microwave2.png'
         />
         <Content
           title='Subscribe'
-          description="Customize future weeks or let us pick for you"
+          description="Plan ahead future weeks or let us pick for you"
           img='home/calendar.png'
         />
       </Grid>

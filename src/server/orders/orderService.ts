@@ -1160,7 +1160,7 @@ class OrderService {
       }).catch(e => {
         console.error(`Failed to index new order ${JSON.stringify(order)}`, e.stack)
         throw e;
-      })
+      });
       this.addAutomaticOrder(
         signedInUser._id,
         1,
@@ -1175,7 +1175,6 @@ class OrderService {
       const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, signedInUser.permissions, consumer);
       const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
       await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
-
       if (referralPromo) {
         const source = referralPromo.referralSource;
         const discount: IDiscount = {

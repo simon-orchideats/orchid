@@ -61,7 +61,7 @@ const RenewalChooser: React.FC<{
             color='primary'
             className={classes.title}
           >
-            Which foods are your favorite? We pick meals on weeks you don't customize
+            Which foods are your favorite? We pick meals on weeks you don't plan ahead
           </Typography>
         </Grid>
         <Grid item xs={12}>
