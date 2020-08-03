@@ -153,9 +153,9 @@ const ScheduleDeliveries: React.FC<{
             >
               {
                 isUpdating ?
-                  'Orchid will ignore this empty delivery'
+                  'Table will ignore this empty delivery'
                 :
-                  `Orchid will ignore this empty delivery for this week, but we will still attempt to use this time when
+                  `Table will ignore this empty delivery for this week, but we will still attempt to use this time when
                   scheduling future orders for you`
               }
             </Typography>
@@ -168,7 +168,7 @@ const ScheduleDeliveries: React.FC<{
                   opacity: ('Status' in d && d.Status !== 'Open') ? 0.30 : 1
                 }}
               >
-                <Typography variant='subtitle1' className={`${classes.row} ${classes.paddingBottom}`}>
+                <Typography variant='subtitle1' className={classes.paddingBottom}>
                   {restMeal.meals[0].RestName}
                 </Typography>
                 {restMeal.meals.map(m => (

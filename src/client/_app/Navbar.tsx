@@ -18,6 +18,7 @@ import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService } from '../utils/analyticsService';
 import LogRocket from 'logrocket';
+import { planAheadRoute } from '../../pages/plan-ahead'
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -81,7 +82,7 @@ const useStyles = makeStyles(theme => ({
       width: 100,
       marginRight: theme.spacing(2)
     },
-    width: 150,
+    height: 63,
     paddingTop: 4,
     paddingBottom: 4,
     paddingLeft: theme.spacing(1),
@@ -124,15 +125,39 @@ const Navbar: React.FC = () => {
   const currRoute = router.pathname;
   const menuStep = (
     <Link href={menuRoute}>
-      <Typography
-        variant='button'
-        color='primary'
-        className={classes.link}
-      >
+      <Typography variant='button' className={classes.link}>
         Menu
       </Typography>
     </Link>
   );
+  
+  let account: JSX.Element | null = (
+    <Button
+      variant='text'
+      className={classes.account}
+      onClick={() => signIn()}
+    >
+      Login
+    </Button>
+  )
+
+  if (consumer.data) {
+    account = (
+      <div className={classes.account} onClick={onClickUser}>
+        {
+          isMdAndUp ?
+          <div className={classes.hi}>
+            <Typography variant='body1'>
+              Hi, {consumer.data.Profile.Name.split(' ')[0]}
+            </Typography>
+            <ExpandMoreIcon />
+          </div>
+          :
+          <AccountCircleIcon />
+        }
+      </div>
+    )
+  }
   let barIsStep = true;
   let bar;
   if (currRoute === `${menuRoute}` && isUpdating) {
@@ -149,31 +174,18 @@ const Navbar: React.FC = () => {
         </div>
       </div>
     )
-  } else if (currRoute === `${deliveryRoute}` && isUpdating) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          <Button
-            variant='text'
-            color='primary'
-            onClick={() => router.back()}
-          >
-            Menu
-          </Button>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button'>
-            Delivery
-          </Typography>
-        </div>
-      </div>
-    )
-  } else if (currRoute === `${deliveryRoute}`) {
+    account = null;
+  } else if (currRoute === `${planAheadRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button'>
+          <Typography variant='button' color='primary'>
+            Plan ahead
+          </Typography>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' className={classes.disabled}>
             Delivery
           </Typography>
           <ChevronRightIcon className={classes.horzMargin} />
@@ -183,24 +195,70 @@ const Navbar: React.FC = () => {
         </div>
       </div>
     )
+    account = null;
+  } else if (currRoute === `${deliveryRoute}` && isUpdating) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          <Button variant='text' onClick={() => router.back()}>
+            Menu
+          </Button>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' color='primary'>
+            Delivery
+          </Typography>
+        </div>
+      </div>
+    )
+    account = null;
+  } else if (currRoute === `${deliveryRoute}`) {
+    bar = (
+      <div className={classes.center}>
+        <div className={classes.vertCenter}>
+          {menuStep}
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Link href={planAheadRoute}>
+            <Typography variant='button' className={classes.link}>
+              Plan ahead
+            </Typography>
+          </Link>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' color='primary'>
+            Delivery
+          </Typography>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Typography variant='button' className={classes.disabled}>
+            Checkout
+          </Typography>
+        </div>
+      </div>
+    )
+    account = null;
   } else if (currRoute === `${checkoutRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
+          <Link href={planAheadRoute}>
+            <Typography variant='button' className={classes.link}>
+              Plan ahead
+            </Typography>
+          </Link>
+          <ChevronRightIcon className={classes.horzMargin} />
           <Link href={deliveryRoute}>
-            <Typography variant='button' color='primary' className={classes.link}>
+            <Typography variant='button' className={classes.link}>
               Delivery
             </Typography>
           </Link>
           <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button'>
+          <Typography variant='button' color='primary'>
             Checkout
           </Typography>
         </div>
       </div>
     )
+    account = null;
   } else {
     barIsStep = false;
     bar = (
@@ -215,28 +273,6 @@ const Navbar: React.FC = () => {
       </>
     )
   }
-  const account = consumer.data ?
-    <div className={classes.account} onClick={onClickUser}>
-      {
-        isMdAndUp ?
-        <div className={classes.hi}>
-          <Typography variant='body1'>
-            Hi, {consumer.data.Profile.Name.split(' ')[0]}
-          </Typography>
-          <ExpandMoreIcon />
-        </div>
-        :
-        <AccountCircleIcon />
-      }
-    </div>
-  :
-    <Button
-      variant='text'
-      className={classes.account}
-      onClick={() => signIn()}
-    >
-      Login
-    </Button>
   return (
     <>
       <AppBar
@@ -249,7 +285,7 @@ const Navbar: React.FC = () => {
             {
               (isMdAndUp || !barIsStep) &&
               <Link href={indexRoute}>
-                <img src='/fork-logo.png' alt='logo' className={classes.logo} />
+                <img src='/logo.png' alt='logo' className={classes.logo} />
               </Link>
             }
             {bar}

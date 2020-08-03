@@ -3,6 +3,7 @@ import MenuCart from "./MenuCart";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import { Cart } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -55,7 +56,10 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
     maxWidth: 150,
-  }
+  },
+  count: {
+    marginLeft: theme.spacing(2),
+  },
 }));
 
 const MenuMiniCart: React.FC<{
@@ -82,106 +86,108 @@ const MenuMiniCart: React.FC<{
       _decrementDonationCount,
       _title,
       confirmText,
-    ) => (
-      <div className={classes.col}>
-        <div className={`${classes.bar} ${classes.margin}`}>
-          {filter}
-          <Button
-            className={classes.next}
-            disabled={disabled}
-            variant='contained'
-            color='primary'
-            onClick={onNext}
-          >
-            {confirmText}
-          </Button>
-        </div>
-        <div className={`${classes.bar} ${classes.scrollable}`}>
-          {cart && cart.AllMeals.map(deliveryMeal => (
-            <Slide
-              key={deliveryMeal.IdKey}
-              direction='up'
-              in={true}
-              timeout={{
-                enter: 500,
-              }}
+    ) => {
+      const numMeals = cart ? Cart.getStandardMealCount(cart) : 0;
+      return (
+        <div className={classes.col}>
+          <div className={`${classes.bar} ${classes.margin}`}>
+            {filter}
+            <Typography
+              variant='h6'
+              color='primary'
+              className={classes.count}
             >
-              <div className={classes.meals}>
-                <div className={classes.bar}>
-                  <Button
-                    size='small'
-                    variant='text'
-                    color='primary'
-                    onClick={() => addMealToCart(
-                      deliveryMeal.MealId,
-                      deliveryMeal,
-                      deliveryMeal.Choices,
-                      deliveryMeal.RestId,
-                      deliveryMeal.RestName,
-                      deliveryMeal.TaxRate,
-                      deliveryMeal.Hours,
-                    )}
-                  >
-                    <AddIcon />
+              {
+                numMeals === 1 ? `${numMeals} meal` : `${numMeals} meals`
+              }
+            </Typography>
+            <Button
+              className={classes.next}
+              disabled={disabled}
+              variant='contained'
+              color='primary'
+              onClick={onNext}
+            >
+              {confirmText}
+            </Button>
+          </div>
+          <div className={`${classes.bar} ${classes.scrollable}`}>
+            {cart && cart.AllMeals.map(deliveryMeal => (
+              <Slide
+                key={deliveryMeal.IdKey}
+                direction='up'
+                in={true}
+                timeout={{
+                  enter: 500,
+                }}
+              >
+                <div className={classes.meals}>
+                  <div className={classes.bar}>
+                    <Button
+                      size='small'
+                      variant='text'
+                      color='primary'
+                      onClick={() => addMealToCart(
+                        deliveryMeal.MealId,
+                        deliveryMeal,
+                        deliveryMeal.Choices,
+                        deliveryMeal.RestId,
+                        deliveryMeal.RestName,
+                        deliveryMeal.TaxRate,
+                        deliveryMeal.Hours,
+                      )}
+                    >
+                      <AddIcon />
+                      </Button>
+                    <Typography variant='subtitle2'>
+                      {deliveryMeal.Quantity}
+                    </Typography>
+                    <Button
+                      size='small'
+                      variant='text'
+                      onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                    >
+                      <RemoveIcon />
                     </Button>
-                  <Typography variant='subtitle2'>
-                    {deliveryMeal.Quantity}
-                  </Typography>
-                  <Button
-                    size='small'
-                    variant='text'
-                    onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                  </div>
+                  <Typography
+                    className={classes.name}
+                    variant='body2'
+                    align='center'
                   >
-                    <RemoveIcon />
-                  </Button>
+                    {deliveryMeal.Name}
+                  </Typography>
                 </div>
-                <Typography
-                  className={classes.name}
-                  variant='body2'
-                  align='center'
-                >
-                  {deliveryMeal.Name}
-                </Typography>
-              </div>
-            </Slide>
-          ))}
+              </Slide>
+            ))}
+          </div>
+          {(!cart || !cart.Zip) && (
+            <Typography variant='body1' className={classes.suggestion}>
+              Enter zip to continue
+            </Typography>
+          )}
+          {
+            summary.length > 0 && summary.map(s => s.map(s2 => (
+              <Typography
+                variant={s2.isActive ? 'h6' : 'body1'}
+                color={s2.isActive ? 'primary' : 'inherit'}
+              >
+                {s2.meals} @ {s2.price}
+              </Typography>
+            )))
+          }
+          {cart && cart.Zip && suggestions.map((suggestion, i) => 
+            <Typography
+              key={i}
+              variant='body1'
+              className={classes.suggestion}
+            >
+              {suggestion}
+            </Typography>
+          )}
         </div>
-        {(!cart || !cart.Zip) && (
-          <Typography variant='body1' className={classes.suggestion}>
-            Enter zip to continue
-          </Typography>
-        )}
-        <Typography
-          variant='body1'
-          color='primary'
-          className={classes.summary}
-        >
-          {summary.length > 0 && summary[0]}
-        </Typography>
-        <Typography
-          variant='body1'
-          color='primary'
-          className={classes.summary}
-        >
-        {
-          summary.length > 1 && summary.map((s, i) => i === 0 ?
-            ''
-              :
-            ` ${s} `
-          )
-        }
-        </Typography>
-        {cart && cart.Zip && suggestions.map((suggestion, i) => 
-          <Typography
-            key={i}
-            variant='body1'
-            className={classes.suggestion}
-          >
-            {suggestion}
-          </Typography>
-        )}
-      </div>
-    )} />
+      )
+    }} />
   )
 }
 

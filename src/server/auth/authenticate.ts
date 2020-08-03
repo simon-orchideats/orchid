@@ -120,7 +120,7 @@ export const handleAuthCallback = async (req: express.Request, res: express.Resp
     res.redirect(`${activeConfig.server.app.url}${state.split('_')[1]}`);
   } catch (e) {
     console.error(`[Authenticate] Couldn't handle auth callback`, e.stack);
-    res.status(500).send("Sorry we couldn't log you in. Please try clearing your browsing history or contact alvin@orchideats.com");
+    res.status(500).send("Sorry we couldn't log you in. Please try clearing your browsing history or contact simon@tableweekly.com");
   }
 }
 

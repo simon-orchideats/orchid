@@ -1,9 +1,8 @@
-import { makeStyles, Typography, Button } from "@material-ui/core";
+import { makeStyles, Typography, Button, Grid, useMediaQuery, useTheme } from "@material-ui/core";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import MenuCart from "./MenuCart";
 import { useAddMealToCart, useRemoveMealFromCart } from "../global/state/cartState";
-import { useGetAvailablePlans } from "../../plan/planService";
 import { Cart } from "../../order/cartModel";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 
@@ -48,7 +47,6 @@ const useStyles = makeStyles(theme => ({
 
 const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) => {
   const classes = useStyles();
-  const plans = useGetAvailablePlans();
   const addMealToCart = useAddMealToCart();
   const removeMealFromCart = useRemoveMealFromCart();
   return (
@@ -58,13 +56,15 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
       disabled,
       onNext,
       suggestions,
-      _summary,
+      summary,
       donationCount,
       _incrementDonationCount,
       _decrementDonationCount,
       title,
       confirmText,
     ) => {
+      const theme = useTheme();
+      const isMd = useMediaQuery(theme.breakpoints.down('md'));
       const meals = (
         <>
           {cart && Object.entries(cart.RestMeals)
@@ -107,25 +107,39 @@ const SideMenuCart: React.FC<{ hideNext?: boolean }> = ({ hideNext = false }) =>
         </>
       );
       const mealCount = cart ? Cart.getStandardMealCount(cart) : 0;
-      const planPrices = 
-        plans.data &&
-        plans.data.filter(p => p.IsActive)
-          .map(p => p.Tiers.map(t => (
-            <div className={classes.row}>
-              <Typography
-                color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
-              >
-                {t.minMeals}+ meals
-              </Typography>
-              <Typography
-                color='primary'
-                variant={mealCount >= t.MinMeals && (!t.MaxMeals || (t.MaxMeals && mealCount <= t.MaxMeals)) ? 'h5' : 'body1'}
-              >
-                ${(t.MealPrice / 100).toFixed(2)}/meal
-              </Typography>
-            </div>
-          )));
+      const planPrices = summary.map(s => s.map(s2 => (
+        <Grid
+          container
+          style={{
+            marginBottom: isMd ? theme.spacing(1) : 0,
+          }}
+        >
+          <Grid
+            md={12}
+            lg={6}
+            item
+          >
+            <Typography
+              color='primary'
+              variant={s2.isActive ? 'h5' : 'body1'}
+            >
+              {s2.meals}
+            </Typography>
+          </Grid>
+          <Grid
+            md={12}
+            lg={6}
+            item
+          >
+            <Typography
+              color='primary'
+              variant={s2.isActive ? 'h5' : 'body1'}
+            >
+              {s2.price}
+            </Typography>
+          </Grid>
+        </Grid>
+      )));
       return (
         <>
           {

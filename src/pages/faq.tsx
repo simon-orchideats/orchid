@@ -76,12 +76,12 @@ const faqs = () => {
             SUBSCRIPTION
           </Typography>
           <Qa
-            q='What is Orchid?'
+            q='What is Table?'
             n={
               <>
                 <Typography variant='body1'>
                   A subscription of weekly meal plans delivered from local restaurants. Each week, customers can either
-                  build their meal plan by picking meals from all different restaurants or allow Orchid to choose, based
+                  build their meal plan by picking meals from all different restaurants or allow Table to choose, based
                   on their plan preferences.
                 </Typography>
                 <p />
@@ -95,11 +95,11 @@ const faqs = () => {
             }
           />
           <Qa
-            q='How is Orchid different from other delivery websites?'
+            q='How is Table different from other delivery websites?'
             n={
               <>
                 <Typography variant='body1'>
-                  Orchid is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
+                Table is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
                   fees. Our service offers unrivaled variety with the ability to mix and match different restaurants in
                   each delivery. Imagine subscribing to Netflix vs buying 1 movie on Amazon.
                 </Typography>
@@ -119,7 +119,7 @@ const faqs = () => {
             n={
               <>
                 <Typography variant='body1'>
-                  Orchid meals are cooked and delivered same-day fresh yet our meal plans are designed to be eaten over
+                  Table meals are cooked and delivered same-day fresh yet our meal plans are designed to be eaten over
                   the week. While we understand that freshness is a concern when storing food, you gain all the perks of
                   meal prepping without the work - instant meals and bulk savings.
                 </Typography>
@@ -127,7 +127,7 @@ const faqs = () => {
                 <Typography variant='body1'>
                   If freshness is the top priority, nothing beats dining-in or on-demand delivery. But if you appreciate
                   the comfort of always having cooked meals at home and the flexibility of eating whenever and however you
-                  want, then Orchid is the perfect fit.
+                  want, then Table is the perfect fit.
                 </Typography>
               </>
             }
@@ -138,8 +138,8 @@ const faqs = () => {
           />
           <Qa
             q="Do I need to pick meals every week?"
-            a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Orchid to do it for you.
-            Our team will hand select your meals based on your favorite foods and preferences. "
+            a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Table to do it for you.
+            Our team will hand select your meals based on your favorite foods and preferences."
           />
           <Qa
             q='How do I update my subscription or delivery?'
@@ -171,7 +171,7 @@ const faqs = () => {
           />
           <Qa
             q='Will I be locked into a contract?'
-            a="Orchid is a subscription, not a contract. You can cancel your service with ease any time in the My Plan page."
+            a="Table is a subscription, not a contract. You can cancel your service with ease any time in the My Plan page."
           />
           <Typography variant='h6' className={classes.title}>
             PAYMENTS & PRICING
@@ -209,7 +209,7 @@ const faqs = () => {
           />
           <Qa
             q='How often am I charged?'
-            a="Orchid will automatically process your credit card on file at the end of each weekly cycle based
+            a="Table will automatically process your credit card on file at the end of each weekly cycle based
             on the number of meals confirmed for that week. A weekly cycle begins the day you subscribe."
           />
           <Qa
@@ -234,8 +234,7 @@ const faqs = () => {
           />
           <Qa
             q='How long will my meals last?'
-            a="
-            Every meal is cooked the same day as it's delivered but should be stored in the fridge for however many days
+            a="Every meal is cooked the same day as it's delivered but should be stored in the fridge for however many days
             you feel comfortable. We recommend picking a balance. When delivered, eat certain meals now and save
             some for later, just as you would with meal prepping."
           />
@@ -329,7 +328,7 @@ const faqs = () => {
           />
           <Qa
             q='How do I create an account?'
-            a="You may click login at the top right corner of our home page and then click Sign Up under the Orchid logo
+            a="You may click login at the top right corner of our home page and then click Sign Up under the Table logo
             to create an account. Alternatively you can proceed through the checkout process and sign up at checkout."
           />
           <Qa

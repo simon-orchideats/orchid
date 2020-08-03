@@ -72,11 +72,12 @@ const useStyles = makeStyles(theme => ({
   },
   row: {
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'center',
   },
   welcome: {
     [theme.breakpoints.down('lg')]: {
-      background: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-plating.png)',
+      background: 'linear-gradient(rgba(255,252,241,.75), rgba(255,252,241,.75)), url(/home/yellow-plating.png)',
       backgroundPosition: '50% 75%',
       backgroundSize: 'cover',
     },
@@ -96,18 +97,18 @@ const useStyles = makeStyles(theme => ({
     },
   },
   welcomeTitle: {
-    fontSize: '4.25rem',
+    fontSize: '4rem',
     fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
-      fontSize: '3.25rem',
+      fontSize: '3rem',
     },
     [theme.breakpoints.down('xs')]: {
-      fontSize: '3rem',
+      fontSize: '2.8rem',
     },
   },
   welcomeText: {
     maxWidth: 600, // chosen by inspection
-    minWidth: 375,
+    minWidth: 320,
     [theme.breakpoints.down('sm')]: {
       paddingBottom: 50,
     },
@@ -123,8 +124,8 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
   },
-  largeBottomMargin: {
-    marginBottom: theme.spacing(5),
+  bottomMargin: {
+    marginBottom: theme.spacing(3),
   },
   largeVerticalMargin: {
     marginTop: theme.spacing(5),
@@ -133,8 +134,8 @@ const useStyles = makeStyles(theme => ({
   plans: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: 100,
-    backgroundImage: 'url(/home/friends.png)',
+    paddingTop: 50,
+    backgroundImage: 'url(/home/plans.png)',
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
     height: 750,
@@ -281,15 +282,6 @@ const useStyles = makeStyles(theme => ({
     height: 85,
     marginBottom: theme.spacing(1),
   },
-  arrow: {
-    [theme.breakpoints.down('sm')]: {
-      paddingLeft: theme.spacing(5),
-      transform: 'rotate(-90deg) scaleX(-1)',
-      height: 50,
-      marginLeft: theme.spacing(1),
-      marginBottom: 0,
-    },
-  },
   shrinker: {
     [theme.breakpoints.down('sm')]: {
       fontSize: '2.75rem',
@@ -305,13 +297,16 @@ const useStyles = makeStyles(theme => ({
     },
   },
   welcomeSub: {
+    textAlign: 'center',
     paddingBottom: theme.spacing(2),
+    maxWidth: 250,
     fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
       fontWeight: 500,
     },
     [theme.breakpoints.down('xs')]: {
+      maxWidth: 200,
       fontSize: '1.50rem',
     },
   },
@@ -376,44 +371,6 @@ const useStyles = makeStyles(theme => ({
   referralBottom: {
     marginBottom: theme.mixins.navbar.marginBottom
   },
-  cloud: {
-    display: 'flex',
-    alignItems: 'center',
-    width: 180,
-    minHeight: 80,
-    background: theme.palette.common.white,
-    borderRadius: 100,
-    position: 'relative',
-    '&::before': {
-      top: -20,
-      right: 95,
-      width: 60,
-      height: 60,
-      borderRadius: 200,
-      content: '" "',
-      position: 'absolute',
-      background: theme.palette.common.white,
-      zIndex: 1,
-    },
-    '&::after': {
-      top: -30,
-      left: 70,
-      width: 80,
-      height: 80,
-      borderRadius: 100,
-      content: '" "',
-      position: 'absolute',
-      background: theme.palette.common.white,
-      zIndex: 1,
-    },
-  },
-  cloudText: {
-    position: 'absolute',
-    zIndex: 2,
-  },
-  marginLeft: {
-    marginLeft: theme.spacing(1),
-  },
   stretch: {
     width: '100%',
     height: '100%',
@@ -431,83 +388,44 @@ const Welcome = () => {
   }
   return (
     <div className={`${classes.welcome} ${classes.centered}`}>
-      <Grid container alignItems='center'>
-        <Hidden smDown>
-          <Grid item md={1} />
-          <Grid
-            item
-            md={3}
-            className={classes.centered}
-          >
-            <div className={classes.cloud}>
-              <Typography variant='h5' className={classes.cloudText}>
+      <div className={classes.welcomeText}>
+        <Typography variant='h3' className={classes.welcomeTitle}>
+          Subscribe to weekly
+        </Typography>
+        <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
+          restaurant meals
+        </Typography>
+        <Grid container>
+          <Grid item xs={6}>
+            <div className={classes.centered}>
+              <Typography variant='h4' className={`${classes.welcomeSub}`}>
+                😍
+              </Typography>
+              <Typography variant='h4' className={`${classes.welcomeSub}`}>
                 Free weekly delivery
               </Typography>
             </div>
           </Grid>
-        </Hidden>
-        <Grid
-          item
-          xs={12}
-          md={4}
-          className={classes.centered}
-        >
-          <div className={classes.welcomeText}>
-            <Typography variant='h2' className={classes.welcomeTitle}>
-              Restaurants
-            </Typography>
-            <Typography variant='h2' className={`${classes.welcomeTitle} ${classes.largeBottomMargin}`}>
-              in your fridge
-            </Typography>
-            <Typography variant='h4' className={`${classes.welcomeSub}`}>
-              A meal plan subscription to restaurants
-            </Typography>
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={() => onClick()}
-              size='large'
-            >
-              Explore Menu
-            </Button>
-          </div>
-        </Grid>
-        <Grid
-          item
-          xs={12}
-          md={3}
-        >
-          <Grid container>
-            <Grid
-              item
-              xs={6}
-              md={12}
-              className={classes.centered}
-            >
-              <div className={classes.cloud}>
-                <Typography variant='h5' className={classes.cloudText}>
-                  One low, flat price
-                </Typography>
-              </div>
-            </Grid>
-            <Grid
-              item
-              xs={6}
-              md={12}
-              className={classes.centered}
-            >
-              <Hidden mdUp>
-                <div className={classes.cloud}>
-                  <Typography variant='h5' className={classes.cloudText}>
-                    Free weekly delivery
-                  </Typography>
-                </div>
-              </Hidden>
-            </Grid>
+          <Grid item xs={6}>
+            <div className={classes.centered}>
+              <Typography variant='h4' className={`${classes.welcomeSub}`}>
+                🙏
+              </Typography>
+              <Typography variant='h4' className={`${classes.welcomeSub}`}>
+                No service charge
+              </Typography>
+            </div>
           </Grid>
         </Grid>
-        <Grid item md={1} xs={12} />
-      </Grid>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={() => onClick()}
+          size='large'
+        >
+          Explore Menu
+        </Button>
+      </div>
     </div>
   );
 };
@@ -549,7 +467,7 @@ const Why = () => {
   return (
     <div className={`${classes.why} ${classes.largeVerticalMargin} ${classes.centered}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        Why Orchid?
+        Why Table?
       </Typography>
       <Grid
         container
@@ -577,7 +495,7 @@ const Why = () => {
         >
           <Content
             badTitle='You hate waiting for delivery'
-            goodTitle='Just heat it up'
+            goodTitle='Restaurants in your fridge'
             img='home/buffet.svg'
           />
         </Grid>
@@ -590,7 +508,7 @@ const Why = () => {
         >
           <Content
             badTitle='You & roomies argue on what to eat'
-            goodTitle="Mix n' match restaurants"
+            goodTitle="Everyone gets what they want"
             img='home/eat.svg'
           />
         </Grid>
@@ -658,7 +576,7 @@ const Slider = () => {
                 variant={isSm ? 'body1' : 'h6'}
                 className={classes.titleBarText}
               >
-                {!isSm && 'from '}{subtitle}
+                {!isSm && subtitle}
               </Typography>
             }
           />
@@ -668,13 +586,12 @@ const Slider = () => {
       if (isSm) {
         height = 'auto';
       } else if (isMd) {
-        height = 225;
+        height = 215;
       } else if (isLg) {
-        height = 275;
+        height = 250;
       } else {
-        height = 375;
+        height = 275;
       }
-      console.log(height);
       return (
         <Grid container>
           <Grid
@@ -740,7 +657,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/canteen/owner.jpg'
           title='Hanish & Peter'
-          subtitle='Canteen Desi Dhaba'
+          subtitle='Canteen Desi Dhaba owners'
           m1='/home/canteen/baigan-bartha.jpg'
           m2='/home/canteen/butter-chicken.jpg'
           m3='/home/canteen/chicken-biryani.jpg'
@@ -751,7 +668,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/greens/owner.jpg'
           title='Steven'
-          subtitle='Quality Greens Kitchen'
+          subtitle='Quality Greens Kitchen owner'
           m1='/home/greens/avo-salad.jpg'
           m2='/home/greens/umami-crunch.jpg'
           m3='/home/greens/grilled-organic-tofu.jpg'
@@ -762,7 +679,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/gypsy/owner.png'
           title='Moudy'
-          subtitle='Gypsy Grill'
+          subtitle='Gypsy Grill owner'
           m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
           m2='/home/gypsy/chicken-shawarma.jpg'
           m3='/home/gypsy/fattoush.jpg'
@@ -773,7 +690,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/marg/owner.jpg'
           title='Matt'
-          subtitle="Margherita's"
+          subtitle="Margherita's owner"
           m1='/home/marg/eggplant-parm.jpg'
           m2='/home/marg/m1.jpg'
           m3='/home/marg/meatball-parm.jpg'
@@ -784,7 +701,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/rumba/owner.jpg'
           title='Alan & Nairelys'
-          subtitle="Rumba Cubana"
+          subtitle="Rumba Cubana owners"
           m1='/home/rumba/el-revolico.jpg'
           m2='/home/rumba/fritas.jpg'
           m3='/home/rumba/ropa-vieja.jpg'
@@ -795,7 +712,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/shaka/owner.jpeg'
           title='Kiersten & Krista'
-          subtitle="Shaka Bowl"
+          subtitle="Shaka Bowl owners"
           m1='/home/shaka/earth.jpg'
           m2='/home/shaka/hilo.jpg'
           m3='/home/shaka/kong.jpg'
@@ -806,7 +723,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/taqueria/owner.png'
           title='Andrea & Phil'
-          subtitle="La Taqueria"
+          subtitle="La Taqueria owner"
           m1='/home/taqueria/barbocoa-taco.png'
           m2='/home/taqueria/bistec-quesadilla.jpg'
           m3='/home/taqueria/chorizo-quesadilla.jpg'
@@ -817,7 +734,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/tonys/owner.jpg'
           title='Mike'
-          subtitle="Tony Boloney's"
+          subtitle="Tony Boloney's owner"
           m1='/home/tonys/aloo-fries.jpg'
           m2='/home/tonys/casino.jpg'
           m3='/home/tonys/general.jpg'
@@ -828,7 +745,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/wurst/owner.jpg'
           title='Aaron'
-          subtitle="Würstbar"
+          subtitle="Würstbar owner"
           m1='/home/wurst/blue-nose.jpg'
           m2='/home/wurst/haus-brat.jpg'
           m3='/home/wurst/haus-poutine.jpg'
@@ -852,48 +769,54 @@ const HowItWorks = () => {
     description,
     img
   }) => (
-        <Grid
-          item
-          xs={12}
-          sm={12}
-          md={4}
-        >
-          <div className={`${classes.verticalMargin} ${classes.row}`}>
-            <img
-              src={img}
-              alt='logo'
-              className={classes.icon}
-            />
-            <div className={classes.marginLeft}>
-              <Typography variant='h5' className={classes.subtitle}>
-                {title}
-              </Typography>
-              <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-                {description}
-              </Typography>
-            </div>
-          </div>
-        </Grid>
-      )
+    <Grid
+      item
+      xs={12}
+      sm={12}
+      md={3}
+    >
+      <div className={`${classes.verticalMargin} ${classes.centered}`}>
+        <img
+          src={img}
+          alt='logo'
+          className={classes.icon}
+        />
+        <Typography variant='h5' className={classes.subtitle}>
+          {title}
+        </Typography>
+        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+          {description}
+        </Typography>
+      </div>
+    </Grid>
+  )
   return (
     <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
       <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
         How it Works
       </Typography>
-      <Grid container className={classes.verticalMargin}>
+      <Grid
+        container
+        className={classes.verticalMargin}
+      >
         <Content
           title="Mix n' Match"
           description='Pick meals from different restaurants for 1 delivery'
           img='home/mix.png'
         />
         <Content
+          title='Set delivery'
+          description='Choose a time & day for weekly delivery'
+          img='how-it-works/delivery-man.png'
+        />
+        <Content
           title='Enjoy'
-          description='Eat meals now or save for later'
+          description='Receive all meals at once to eat now or throughout the week'
           img='home/microwave2.png'
         />
         <Content
           title='Subscribe'
-          description='Tell when and what to deliver each week'
+          description="Plan ahead future weeks or let us pick for you"
           img='home/calendar.png'
         />
       </Grid>
@@ -1070,7 +993,7 @@ const Testimonials = () => {
                 "Other apps cost way too much"
               </Typography>
               <Typography variant='body1'>
-                Even small orders. The delivery and service fees add up. That's why I use Orchid
+                Even small orders. The delivery and service fees add up. That's why I use Table
               </Typography>
             </div>
           </div>
@@ -1117,17 +1040,7 @@ const Index = () => {
     </>
   )
 }
-/**
- * for all screens, welcome banner, needs to show title of how it works
- * 
- * make dots green,
- * make why orchid same height as how orchid
- * 
- * remove extra margins
- * 
- * 
- * for how and why, inrease space between button and title
- */
+
 export default Index;
 
 export const indexRoute = '/';

@@ -2,7 +2,6 @@ import { makeStyles, Button, Typography } from "@material-ui/core";
 import { deliveryDay, deliveryTime, Schedule } from "../../consumer/consumerPlanModel";
 import withClientApollo from '../utils/withClientApollo';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { MIN_MEALS } from '../../plan/planModel';
 import DeliveryDateChooser from './DeliveryDateChooser';
 import { deliveryFee } from "../../order/costModel";
 
@@ -20,6 +19,11 @@ const useStyles = makeStyles(theme => ({
   },
   orange: {
     color: theme.palette.warning.dark,
+  },
+  border: {
+    borderStyle: 'solid',
+    padding: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -59,12 +63,12 @@ const PreferredSchedule: React.FC<{
   } else {
     extraDeliveries = (
       <>
-        <Typography variant='body1' color='textSecondary'>
+        {/* <Typography variant='body1' color='textSecondary'>
           * {remainingDeliveries} extra {remainingDeliveries > 1 ? 'deliveries' : 'delivery'} available (+${(deliveryFee / 100).toFixed(2)} ea)
         </Typography>
         <Typography variant='body1' color='textSecondary'>
           (Separate deliveries available for every batch of {MIN_MEALS}+ meals)
-        </Typography>
+        </Typography> */}
         <Button
           variant='outlined'
           color='primary'
@@ -115,9 +119,9 @@ const PreferredSchedule: React.FC<{
           />
         </div>
       ))}
-      <Typography variant='body1'>
+      <Typography variant='body1' className={classes.border}>
         <b>
-          *Your personal server will text you an exact ETA the morning of each delivery
+          Your driver will text you an ETA the morning of the bulk delivery
         </b>
       </Typography>
       {extraDeliveries}

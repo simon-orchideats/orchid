@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Meal } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
-import ShortTextIcon from '@material-ui/icons/ShortText';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { Hours } from '../../rest/restModel';
@@ -376,7 +376,7 @@ const MenuMeal: React.FC<{
           variant='subtitle1'
           className={classes.title}
         >
-          {meal.Name} {meal.Description && <ShortTextIcon className={classes.detail} />}
+          {meal.Name} {meal.Description && <HelpOutlineIcon className={classes.detail} />}
         </Typography>
         {
           isMdAndUp &&

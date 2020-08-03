@@ -63,6 +63,7 @@ type config = {
     stripe: {
       key: string
       hookSecret: string
+      productId: string
     },
   }
 }
@@ -147,7 +148,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
     },
     stripe: {
       key: process.env.STRIPE_KEY!,
-      hookSecret: process.env.STRIPE_HOOK_SECRET!
+      hookSecret: process.env.STRIPE_HOOK_SECRET!,
+      productId: 'prod_HDGfbzG7jbjZo5'
     },
     sentry: {
       // dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
@@ -240,7 +242,8 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
     },
     stripe: {
       key: process.env.STRIPE_KEY!,
-      hookSecret: process.env.STRIPE_HOOK_SECRET!
+      hookSecret: process.env.STRIPE_HOOK_SECRET!,
+      productId: 'prod_HDGfbzG7jbjZo5'
     },
     sentry: {
       dsn: 'https://a21059ea44684e83b12fe9bacb58c567@sentry.io/4754134',
@@ -252,7 +255,7 @@ W8K7/eskjgjSHSz4k0wffqcCKQk3Y191a7sQs2AngocRIWeg4i+hqtoX/dHoYbJd
   }
 };
 
-const prodUrl = 'https://orchideats.com';
+const prodUrl = 'https://tableweekly.com';
 
 const production: config = {
   client: {
@@ -285,7 +288,7 @@ const production: config = {
   server: {
     app: {
       port: parseInt(process.env.PORT || '8443', 10),
-      url: 'https://orchideats.com',
+      url: 'https://tableweekly.com',
     },
     auth: {
       domain: 'orchideats.auth0.com',
@@ -328,7 +331,8 @@ D8hc31R0UA==
     },
     stripe: {
       key: process.env.STRIPE_KEY!,
-      hookSecret: process.env.STRIPE_HOOK_SECRET!
+      hookSecret: process.env.STRIPE_HOOK_SECRET!,
+      productId: 'prod_HE1HzzgacTnts6'
     },
     sentry: {
       dsn: 'https://75d82331aa704ff0b641a0c11660d7ac@sentry.io/4741736',

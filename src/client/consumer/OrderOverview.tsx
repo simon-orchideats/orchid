@@ -211,7 +211,7 @@ const OrderOverview: React.FC<{
             md={2}
           >
             <Typography variant='subtitle1'>
-              Orchid meals picked for you
+              Table meals picked for you
             </Typography>
           </Grid>
         }

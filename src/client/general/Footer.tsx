@@ -50,7 +50,7 @@ const Footer = () => {
           >
             <div>
               <img
-                src='/fork-logo.png'
+                src='/logo.png'
                 alt='logo'
                 className={classes.logo}
               />
@@ -114,6 +114,9 @@ const Footer = () => {
                 Terms
               </Typography>
             </Link>
+            <Typography variant='h6'>
+              Contact us at simon@tableweekly.com
+            </Typography>
           </Grid>
           <Grid item sm={1} />
           <Grid
@@ -129,9 +132,6 @@ const Footer = () => {
                 <InstagramIcon />
               </IconButton>
             </div>
-            <Typography variant='body1'>
-              Contact us at simon@orchideats.com
-            </Typography>
           </Grid>
         </Grid>
       </Container>
