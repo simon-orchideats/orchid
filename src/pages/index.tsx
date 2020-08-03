@@ -576,7 +576,7 @@ const Slider = () => {
                 variant={isSm ? 'body1' : 'h6'}
                 className={classes.titleBarText}
               >
-                {!isSm && 'from '}{subtitle}
+                {!isSm && subtitle}
               </Typography>
             }
           />
@@ -586,11 +586,11 @@ const Slider = () => {
       if (isSm) {
         height = 'auto';
       } else if (isMd) {
-        height = 225;
+        height = 215;
       } else if (isLg) {
-        height = 275;
+        height = 250;
       } else {
-        height = 375;
+        height = 275;
       }
       return (
         <Grid container>
@@ -657,7 +657,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/canteen/owner.jpg'
           title='Hanish & Peter'
-          subtitle='Canteen Desi Dhaba'
+          subtitle='Canteen Desi Dhaba owners'
           m1='/home/canteen/baigan-bartha.jpg'
           m2='/home/canteen/butter-chicken.jpg'
           m3='/home/canteen/chicken-biryani.jpg'
@@ -668,7 +668,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/greens/owner.jpg'
           title='Steven'
-          subtitle='Quality Greens Kitchen'
+          subtitle='Quality Greens Kitchen owner'
           m1='/home/greens/avo-salad.jpg'
           m2='/home/greens/umami-crunch.jpg'
           m3='/home/greens/grilled-organic-tofu.jpg'
@@ -679,7 +679,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/gypsy/owner.png'
           title='Moudy'
-          subtitle='Gypsy Grill'
+          subtitle='Gypsy Grill owner'
           m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
           m2='/home/gypsy/chicken-shawarma.jpg'
           m3='/home/gypsy/fattoush.jpg'
@@ -690,7 +690,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/marg/owner.jpg'
           title='Matt'
-          subtitle="Margherita's"
+          subtitle="Margherita's owner"
           m1='/home/marg/eggplant-parm.jpg'
           m2='/home/marg/m1.jpg'
           m3='/home/marg/meatball-parm.jpg'
@@ -701,7 +701,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/rumba/owner.jpg'
           title='Alan & Nairelys'
-          subtitle="Rumba Cubana"
+          subtitle="Rumba Cubana owners"
           m1='/home/rumba/el-revolico.jpg'
           m2='/home/rumba/fritas.jpg'
           m3='/home/rumba/ropa-vieja.jpg'
@@ -712,7 +712,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/shaka/owner.jpeg'
           title='Kiersten & Krista'
-          subtitle="Shaka Bowl"
+          subtitle="Shaka Bowl owners"
           m1='/home/shaka/earth.jpg'
           m2='/home/shaka/hilo.jpg'
           m3='/home/shaka/kong.jpg'
@@ -723,7 +723,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/taqueria/owner.png'
           title='Andrea & Phil'
-          subtitle="La Taqueria"
+          subtitle="La Taqueria owner"
           m1='/home/taqueria/barbocoa-taco.png'
           m2='/home/taqueria/bistec-quesadilla.jpg'
           m3='/home/taqueria/chorizo-quesadilla.jpg'
@@ -734,7 +734,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/tonys/owner.jpg'
           title='Mike'
-          subtitle="Tony Boloney's"
+          subtitle="Tony Boloney's owner"
           m1='/home/tonys/aloo-fries.jpg'
           m2='/home/tonys/casino.jpg'
           m3='/home/tonys/general.jpg'
@@ -745,7 +745,7 @@ const Slider = () => {
         <Slide
           ownerImg='/home/wurst/owner.jpg'
           title='Aaron'
-          subtitle="Würstbar"
+          subtitle="Würstbar owner"
           m1='/home/wurst/blue-nose.jpg'
           m2='/home/wurst/haus-brat.jpg'
           m3='/home/wurst/haus-poutine.jpg'
