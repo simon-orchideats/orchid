@@ -18,6 +18,9 @@ import { sendZipMetrics } from "../client/menu/menuMetrics";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
 import { Cart } from "../order/cartModel";
+import { useNotify } from "../client/global/state/notificationState";
+import Notifier from "../client/notification/Notifier";
+import { NotificationType } from "../client/notification/notificationModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -91,8 +94,10 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const notify = useNotify();
   const updateCartZip = useUpdateZip()
   const zip = cart && cart.Zip ? cart.Zip : '';
+  const [didShowPromo, setDidShowPromo] = useState<boolean>(false);
   const [isZipModalOpen, setZipModalOpen] = useState(zip ? false : true);
   const [isShowingZipInput, setShowZipInput] = useState(false);
   const [zipInput, setZipInput] = useState<string>(zip);
@@ -105,6 +110,13 @@ const menu = () => {
   };
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
   
+  useEffect(() => {
+    if (!didShowPromo && !isZipModalOpen) {
+      notify('Promo auto applied at checkout!', NotificationType.success, false);
+      setDidShowPromo(true);
+    }
+  }, [didShowPromo, isZipModalOpen]);
+
   useEffect(() => {
     if (cuisines.length === 0) {
       setCuisines(allCuisines)
@@ -198,6 +210,7 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
+      <Notifier />
       {
         !isMdAndUp &&
         <Fab
@@ -245,7 +258,7 @@ const menu = () => {
             in={isMdAndUp || showMiniCart}
             timeout={{
               enter: 0,
-              exit: 400,
+              exit: 700,
             }}
           >
             <Paper className={classes.filters}>

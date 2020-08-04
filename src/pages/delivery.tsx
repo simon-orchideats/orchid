@@ -178,13 +178,10 @@ const delivery = () => {
   }
   let step2Title = `2. Schedule meals for ${startDate} - ${endDate}`;
 
-  if (!isUpdating) {
-    if (hasMultipleDeliveries) {
-      step2Title = '2. Choose meals for each delivery';
-    } else {
-      step2Title = '2. Review deliveries';
-    }
+  if (!isUpdating && hasMultipleDeliveries) {
+    step2Title = '2. Choose meals for each delivery';
   }
+
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;

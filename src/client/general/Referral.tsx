@@ -136,7 +136,7 @@ const Header = () => {
   return (
     <div className={`${classes.friends} ${classes.centered}`}>
       <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-        Gift ${friendAmount}, Get ${selfAmount}
+        Earn ${selfAmount}
       </Typography>
     </div>
   );
