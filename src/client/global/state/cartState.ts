@@ -12,6 +12,7 @@ import { Order } from '../../../order/orderModel';
 import moment from 'moment';
 import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
+import { ExecutionResult } from '@apollo/react-common';
 
 type cartQueryRes = {
   cart: Cart | null
@@ -55,28 +56,25 @@ const CART_QUERY = gql`
     cart @client
   }
 `
-
+type scheduleRes = {
+    setScheduleAndAutoDeliveries: {
+      delays: string[]
+  }
+};
 export const useSetScheduleAndAutoDeliveries = (): [
-  (schedules: Schedule[], start?: number) => void,
+  (schedules: Schedule[], start?: number) => Promise<ExecutionResult<scheduleRes>>,
   {
     error: ApolloError | undefined
     delays: string[],
   }
 ] => {
-  type res = {
-      setScheduleAndAutoDeliveries: {
-        delays: string[]
-    }
-  };
   type vars = { schedules: Schedule[], start?: number };
-  const [mutate, mutation] = useMutation<res, vars>(gql`
+  const [mutate, mutation] = useMutation<scheduleRes, vars>(gql`
     mutation setScheduleAndAutoDeliveries($schedules: [Schedule!]!, $start: Float) {
       setScheduleAndAutoDeliveries(schedules: $schedules, start: $start) @client
     }
   `);
-  const setScheduleAndAutoDeliveries = (schedules: Schedule[], start?: number) => {
-    mutate({ variables: { schedules, start } })
-  };
+  const setScheduleAndAutoDeliveries = (schedules: Schedule[], start?: number) => mutate({ variables: { schedules, start } });
   return useMemo(() => {
     return [
       setScheduleAndAutoDeliveries,

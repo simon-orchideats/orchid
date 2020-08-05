@@ -21,6 +21,7 @@ import { Cart } from "../order/cartModel";
 import { useNotify } from "../client/global/state/notificationState";
 import Notifier from "../client/notification/Notifier";
 import { NotificationType } from "../client/notification/notificationModel";
+import { useGetConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -42,8 +43,9 @@ const useStyles = makeStyles(theme => ({
   fab: {
     zIndex: 1,
     position: 'fixed',
-    top: '50%',
-    right: theme.spacing(2),
+    // -28 because fab is 56px
+    left: 'calc(50% - 28px)',
+    bottom: theme.spacing(2),
   },
   removeCart: {
     backgroundColor: `${theme.palette.secondary.light} !important`,
@@ -94,6 +96,7 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const consumer = useGetConsumer();
   const notify = useNotify();
   const updateCartZip = useUpdateZip()
   const zip = cart && cart.Zip ? cart.Zip : '';
@@ -111,11 +114,11 @@ const menu = () => {
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
   
   useEffect(() => {
-    if (!didShowPromo && !isZipModalOpen) {
+    if (!didShowPromo && !isZipModalOpen && !consumer.data?.Plan && !consumer.loading) {
       notify('Promo auto applied at checkout!', NotificationType.success, false);
       setDidShowPromo(true);
     }
-  }, [didShowPromo, isZipModalOpen]);
+  }, [didShowPromo, isZipModalOpen, consumer]);
 
   useEffect(() => {
     if (cuisines.length === 0) {

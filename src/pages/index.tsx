@@ -2,12 +2,12 @@ import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, A
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
-import Router, { useRouter } from 'next/router';
+import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React from 'react';
-import { useGetConsumer, useGetConsumerFromPromo } from '../consumer/consumerService';
+import { useGetConsumer } from '../consumer/consumerService';
 import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
 import Referral from '../client/general/Referral';
 import { Carousel } from 'react-responsive-carousel';
@@ -76,12 +76,22 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
   },
   welcome: {
-    [theme.breakpoints.down('lg')]: {
-      background: 'linear-gradient(rgba(255,252,241,.75), rgba(255,252,241,.75)), url(/home/yellow-plating.png)',
-      backgroundPosition: '50% 75%',
-      backgroundSize: 'cover',
+    [theme.breakpoints.down(1080)]: {
+      backgroundSize: 1080,
     },
-    backgroundImage: `url(/home/yellow-plating.png)`,
+    [theme.breakpoints.down('md')]: {
+      backgroundPosition: '36% 60%',
+    },
+    [theme.breakpoints.down('sm')]: {
+      backgroundSize: 960,
+    },
+    [theme.breakpoints.down('xs')]: {
+      background: 'linear-gradient(rgba(255,252,241,0), rgba(255,252,241,0)), url(/home/yellow-plating-mobile.png)',
+      backgroundPosition: '0% 100%',
+      backgroundSize: 'cover',
+      justifyContent: 'flex-start',
+    },
+    backgroundImage: `url(/home/yellow-plating-desk.png)`,
     backgroundPosition: '50% 60%',
     backgroundSize: 'cover',
     marginTop: -theme.mixins.navbar.marginBottom,
@@ -95,22 +105,48 @@ const useStyles = makeStyles(theme => ({
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
       maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px - 115.5px - 150px)`,
     },
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   welcomeTitle: {
     fontSize: '4rem',
     fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
-      fontSize: '3rem',
+      fontSize: '3.5rem',
     },
     [theme.breakpoints.down('xs')]: {
       fontSize: '2.8rem',
+    },
+  },
+  welcomeSub: {
+    textAlign: 'center',
+    paddingBottom: theme.spacing(2),
+    maxWidth: 150,
+    fontWeight: 500,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      maxWidth: 200,
+      fontSize: '1.50rem',
     },
   },
   welcomeText: {
     maxWidth: 600, // chosen by inspection
     minWidth: 320,
     [theme.breakpoints.down('sm')]: {
+      marginTop: theme.spacing(4),
       paddingBottom: 50,
+      justifyContent: 'flex-start',
+      maxWidth: 300,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginTop: theme.spacing(6),
+      maxWidth: 400,
     },
   },
   verticalMargin: {
@@ -125,7 +161,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(3),
   },
   bottomMargin: {
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(1),
   },
   largeVerticalMargin: {
     marginTop: theme.spacing(5),
@@ -296,20 +332,6 @@ const useStyles = makeStyles(theme => ({
       fontWeight: 500,
     },
   },
-  welcomeSub: {
-    textAlign: 'center',
-    paddingBottom: theme.spacing(2),
-    maxWidth: 250,
-    fontWeight: 500,
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.85rem',
-      fontWeight: 500,
-    },
-    [theme.breakpoints.down('xs')]: {
-      maxWidth: 200,
-      fontSize: '1.50rem',
-    },
-  },
   ctaButton: {
     marginTop: theme.spacing(4),
   },
@@ -346,10 +368,10 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(3),
     paddingBottom: theme.spacing(3),
     borderStyle: 'solid',
-    borderColor: '#ed8d81',
+    borderColor: theme.palette.common.pink,
   },
   promotion: {
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.common.pink,
     color: theme.palette.common.white,
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
@@ -377,6 +399,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('sm')]: {
       transform: 'none',
       left: 'auto',
+      top: 0,
     },
   },
 }));
@@ -387,7 +410,7 @@ const Welcome = () => {
     Router.push(menuRoute);
   }
   return (
-    <div className={`${classes.welcome} ${classes.centered}`}>
+    <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
           Subscribe to weekly
@@ -399,20 +422,14 @@ const Welcome = () => {
           <Grid item xs={6}>
             <div className={classes.centered}>
               <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                😍
-              </Typography>
-              <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                Free weekly delivery
+                😍 Free weekly delivery
               </Typography>
             </div>
           </Grid>
           <Grid item xs={6}>
             <div className={classes.centered}>
               <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                🙏
-              </Typography>
-              <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                No service charge
+                🙏 No service charge
               </Typography>
             </div>
           </Grid>
@@ -865,29 +882,9 @@ const Promotion = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
   const theme = useTheme<Theme>();
-  const router = useRouter();
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
-  const a = router.query.a as string;
-  const p = router.query.p as string;
-  const res = useGetConsumerFromPromo(p);
-  const referralDollars = a ? parseFloat(a) / 100 : 0;
   const consumerData = consumer.data;
   if (consumerData && consumerData.Plan) return null;
-  const name = res.name;
-  if (name) {
-    const referral = referralDollars * 4 * referralMonthDuration;
-    const fName = name.split(' ')[0].toLowerCase();
-    return (
-      <div className={`${classes.mediumVerticalMargin} ${classes.centered} ${classes.promotion}`}>
-        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-          Welcome from {fName.charAt(0).toUpperCase() + fName.slice(1)}!
-        </Typography>
-        <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-          ${referral} off your first month, auto applied at checkout
-        </Typography>
-      </div>
-    )
-  }
   const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
   return (
     <div className={`${classes.centered} ${classes.promotion}`}>

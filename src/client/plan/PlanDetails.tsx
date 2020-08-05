@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(small ? 0 : 2),
     width: small ? 200 : 260,
     borderStyle: 'solid',
-    borderColor: color === 'black' ? theme.palette.primary.main : '#ed8d81',
+    borderColor: color === 'black' ? theme.palette.primary.main : theme.palette.common.pink,
   }),
   cardSubtitle: {
     color: theme.palette.text.secondary,

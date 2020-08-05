@@ -60,6 +60,23 @@ const useStyles = makeStyles(theme => ({
   count: {
     marginLeft: theme.spacing(2),
   },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  priceBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: theme.palette.divider,
+    padding: theme.spacing(1),
+  },
 }));
 
 const MenuMiniCart: React.FC<{
@@ -166,16 +183,32 @@ const MenuMiniCart: React.FC<{
               Enter zip to continue
             </Typography>
           )}
-          {
-            summary.length > 0 && summary.map(s => s.map(s2 => (
-              <Typography
-                variant={s2.isActive ? 'h6' : 'body1'}
-                color={s2.isActive ? 'primary' : 'inherit'}
-              >
-                {s2.meals} @ {s2.price}
-              </Typography>
-            )))
-          }
+          <div className={classes.row}>
+            {
+              summary.length > 0 && summary.map(s => s.map((s2, i) => (
+                <div
+                  className={classes.priceBox}
+                  style={{
+                    borderLeftWidth: s2.isActive || i === 0  || (i === 1 && !s[0].isActive) ? 1 : 0,
+                    borderRightWidth: s2.isActive || i === s.length - 1 || (i === 1 && !s[2].isActive) ? 1 : 0
+                  }}
+                >
+                  <Typography
+                    variant={s2.isActive ? 'h6' : 'body1'}
+                    color={s2.isActive ? 'primary' : 'inherit'}
+                  >
+                    {s2.meals}
+                  </Typography>
+                  <Typography
+                    variant={s2.isActive ? 'h6' : 'body1'}
+                    color={s2.isActive ? 'primary' : 'inherit'}
+                  >
+                    {s2.price}
+                  </Typography>
+                </div>
+              )))
+            }
+          </div>
           {cart && cart.Zip && suggestions.map((suggestion, i) => 
             <Typography
               key={i}

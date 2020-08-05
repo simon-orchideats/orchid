@@ -79,12 +79,11 @@ const useStyles = makeStyles(theme => ({
   },
   logo: {
     [theme.breakpoints.down('xs')]: {
-      width: 100,
       marginRight: theme.spacing(2)
     },
-    height: 63,
-    paddingTop: 4,
-    paddingBottom: 4,
+    height: '100%',
+    paddingTop: 2,
+    paddingBottom: 2,
     paddingLeft: theme.spacing(1),
     marginRight: theme.spacing(5),
     cursor: 'pointer',

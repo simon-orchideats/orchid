@@ -161,16 +161,17 @@ const delivery = () => {
     setSchedules(newSchedules);
   }
   const hasMultipleDeliveries = schedules.length > 1;
+  const shouldShowStep2 = hasMultipleDeliveries || isUpdating || scheduleRes.delays.length > 0;
   const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
-    if (panel === 'deliveries' && !hasMultipleDeliveries) return;
+    if (panel === 'deliveries' && !shouldShowStep2) return;
     if (isExpanded) setExpanded(panel);
     if (panel === 'assignments') {
       setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     }
   };
-  const setDates = () => {
-    setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
-    if (!hasMultipleDeliveries && !isUpdating) {
+  const setDates = async () => {
+    const res = await setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
+    if (!hasMultipleDeliveries && !isUpdating && res.data && res.data.setScheduleAndAutoDeliveries.delays.length === 0) {
       navToCheckout();
       return;
     }
@@ -178,8 +179,8 @@ const delivery = () => {
   }
   let step2Title = `2. Schedule meals for ${startDate} - ${endDate}`;
 
-  if (!isUpdating && hasMultipleDeliveries) {
-    step2Title = '2. Choose meals for each delivery';
+  if (shouldShowStep2) {
+    step2Title = '2. Schedule your meals';
   }
 
   if (!cart) {
@@ -211,7 +212,7 @@ const delivery = () => {
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  {hasMultipleDeliveries && '1. '}Weekly delivery schedule
+                  {shouldShowStep2 && '1. '}Weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   Meal plans can be edited/skipped up to 2 days before each scheduled delivery
@@ -241,7 +242,7 @@ const delivery = () => {
           </ExpansionPanelDetails>
         </ExpansionPanel>
         {
-          (isUpdating || hasMultipleDeliveries) &&
+          shouldShowStep2 &&
           <ExpansionPanel
             expanded={expanded === 'assignments'} 
             className={classes.panel}
