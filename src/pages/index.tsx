@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, GridList, GridListTile, GridListTileBar } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, GridList, GridListTile, GridListTileBar, Container } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -51,6 +51,16 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down('xs')]: {
       height: 20
+    },
+  },
+  title: {
+    paddingBottom: theme.spacing(6),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.85rem',
+      fontWeight: 500,
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.50rem',
     },
   },
   titleWrap: {
@@ -161,7 +171,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(3),
   },
   bottomMargin: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
   largeVerticalMargin: {
     marginTop: theme.spacing(5),
@@ -220,6 +230,26 @@ const useStyles = makeStyles(theme => ({
   },
   orchidFood: {
     width: '100%',
+  },
+  sample: {
+    backgroundColor: theme.palette.common.white,
+    minHeight: 400,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    display: 'flex',
+    alignItems: 'center',
+  },
+  sampleImg: {
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: theme.spacing(0),
+    },
+    paddingLeft: theme.spacing(2),
+    width: '100%'
+  },
+  sampleTitle: {
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: theme.spacing(1),
+    },
   },
   testimonial: {
     textAlign: 'left',
@@ -335,16 +365,6 @@ const useStyles = makeStyles(theme => ({
   ctaButton: {
     marginTop: theme.spacing(4),
   },
-  title: {
-    paddingBottom: theme.spacing(6),
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.85rem',
-      fontWeight: 500,
-    },
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '1.50rem',
-    },
-  },
   weeklyPlans: {
     paddingBottom: theme.spacing(2),
     [theme.breakpoints.down('sm')]: {
@@ -359,6 +379,10 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.common.white,
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(2),
+  },
+  partnersContainer: {
+    paddingLeft: 0,
+    paddingRight: 0,
   },
   plansTitle: {
     backgroundColor: theme.palette.common.white,
@@ -498,7 +522,7 @@ const Why = () => {
           md={4}
         >
           <Content
-            badTitle='You order out $40 each week'
+            badTitle='You order 2+ deliveries a week'
             goodTitle='Subscribe & save'
             img='home/piggy-bank.svg'
           />
@@ -512,7 +536,7 @@ const Why = () => {
         >
           <Content
             badTitle='You hate waiting for delivery'
-            goodTitle='Restaurants in your fridge'
+            goodTitle='Just heat it up'
             img='home/buffet.svg'
           />
         </Grid>
@@ -654,123 +678,125 @@ const Slider = () => {
     }
   return (
     <div className={`${classes.partners}`}>
-      <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
-        Featured Partners
-      </Typography>
-      <Carousel
-        className={classes.topMargin}
-        autoPlay
-        stopOnHover
-        infiniteLoop
-        showArrows
-        showThumbs={false}
-        dynamicHeight={false}
-        swipeable={false}
-        showStatus={false}
-        interval={5000}
-        transitionTime={300}
-        swipeScrollTolerance={500}
-      >
-        <Slide
-          ownerImg='/home/canteen/owner.jpg'
-          title='Hanish & Peter'
-          subtitle='Canteen Desi Dhaba owners'
-          m1='/home/canteen/baigan-bartha.jpg'
-          m2='/home/canteen/butter-chicken.jpg'
-          m3='/home/canteen/chicken-biryani.jpg'
-          m4='/home/canteen/chicken-tikka.jpg'
-          m5='/home/canteen/lamb-rogan-josh.jpg'
-          m6='/home/canteen/paneer-tikka-masala.jpg'
-        />
-        <Slide
-          ownerImg='/home/greens/owner.jpg'
-          title='Steven'
-          subtitle='Quality Greens Kitchen owner'
-          m1='/home/greens/avo-salad.jpg'
-          m2='/home/greens/umami-crunch.jpg'
-          m3='/home/greens/grilled-organic-tofu.jpg'
-          m4='/home/greens/kale-caesar.jpg'
-          m5='/home/greens/rosemary-roasted-chicken.jpg'
-          m6='/home/greens/vegetable-trio.jpg'
-        />
-        <Slide
-          ownerImg='/home/gypsy/owner.png'
-          title='Moudy'
-          subtitle='Gypsy Grill owner'
-          m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
-          m2='/home/gypsy/chicken-shawarma.jpg'
-          m3='/home/gypsy/fattoush.jpg'
-          m4='/home/gypsy/feta.jpg'
-          m5='/home/gypsy/lamb-beef-shawafel.jpg'
-          m6='/home/gypsy/m1.jpg'
-        />
-        <Slide
-          ownerImg='/home/marg/owner.jpg'
-          title='Matt'
-          subtitle="Margherita's owner"
-          m1='/home/marg/eggplant-parm.jpg'
-          m2='/home/marg/m1.jpg'
-          m3='/home/marg/meatball-parm.jpg'
-          m4='/home/marg/penne-vodka.jpg'
-          m5='/home/marg/sausage-peppers.jpg'
-          m6='/home/marg/rigatoni-meat.jpg'
-        />
-        <Slide
-          ownerImg='/home/rumba/owner.jpg'
-          title='Alan & Nairelys'
-          subtitle="Rumba Cubana owners"
-          m1='/home/rumba/el-revolico.jpg'
-          m2='/home/rumba/fritas.jpg'
-          m3='/home/rumba/ropa-vieja.jpg'
-          m4='/home/rumba/rumba-meal.jpg'
-          m5='/home/rumba/sandwich-cubano.jpg'
-          m6='/home/rumba/trio-de-empanadas.jpg'
-        />
-        <Slide
-          ownerImg='/home/shaka/owner.jpeg'
-          title='Kiersten & Krista'
-          subtitle="Shaka Bowl owners"
-          m1='/home/shaka/earth.jpg'
-          m2='/home/shaka/hilo.jpg'
-          m3='/home/shaka/kong.jpg'
-          m4='/home/shaka/molokai-cacao.jpg'
-          m5='/home/shaka/ono.jpg'
-          m6='/home/shaka/big-island.jpg'
-        />
-        <Slide
-          ownerImg='/home/taqueria/owner.png'
-          title='Andrea & Phil'
-          subtitle="La Taqueria owner"
-          m1='/home/taqueria/barbocoa-taco.png'
-          m2='/home/taqueria/bistec-quesadilla.jpg'
-          m3='/home/taqueria/chorizo-quesadilla.jpg'
-          m4='/home/taqueria/flauta-plate.png'
-          m5='/home/taqueria/pescado-taco.png'
-          m6='/home/taqueria/taq-meal.jpg'
-        />
-        <Slide
-          ownerImg='/home/tonys/owner.jpg'
-          title='Mike'
-          subtitle="Tony Boloney's owner"
-          m1='/home/tonys/aloo-fries.jpg'
-          m2='/home/tonys/casino.jpg'
-          m3='/home/tonys/general.jpg'
-          m4='/home/tonys/magic-fries.jpg'
-          m5='/home/tonys/tonys-meal.jpg'
-          m6='/home/tonys/winger.jpg'
-        />
-        <Slide
-          ownerImg='/home/wurst/owner.jpg'
-          title='Aaron'
-          subtitle="Würstbar owner"
-          m1='/home/wurst/blue-nose.jpg'
-          m2='/home/wurst/haus-brat.jpg'
-          m3='/home/wurst/haus-poutine.jpg'
-          m4='/home/wurst/king-brat.jpg'
-          m5='/home/wurst/king-marcus.jpg'
-          m6='/home/wurst/the-general.jpg'
-        />
-      </Carousel>
+      <Container maxWidth='xl' className={classes.partnersContainer}>
+        <Typography variant='h3' className={`${classes.title} ${classes.centered}`}>
+          Featured Partners
+        </Typography>
+        <Carousel
+          className={classes.topMargin}
+          autoPlay
+          stopOnHover
+          infiniteLoop
+          showArrows
+          showThumbs={false}
+          dynamicHeight={false}
+          swipeable={false}
+          showStatus={false}
+          interval={5000}
+          transitionTime={300}
+          swipeScrollTolerance={500}
+        >
+          <Slide
+            ownerImg='/home/canteen/owner.jpg'
+            title='Hanish & Peter'
+            subtitle='Canteen Desi Dhaba owners'
+            m1='/home/canteen/baigan-bartha.jpg'
+            m2='/home/canteen/butter-chicken.jpg'
+            m3='/home/canteen/chicken-biryani.jpg'
+            m4='/home/canteen/chicken-tikka.jpg'
+            m5='/home/canteen/lamb-rogan-josh.jpg'
+            m6='/home/canteen/paneer-tikka-masala.jpg'
+          />
+          <Slide
+            ownerImg='/home/greens/owner.jpg'
+            title='Steven'
+            subtitle='Quality Greens Kitchen owner'
+            m1='/home/greens/avo-salad.jpg'
+            m2='/home/greens/umami-crunch.jpg'
+            m3='/home/greens/grilled-organic-tofu.jpg'
+            m4='/home/greens/kale-caesar.jpg'
+            m5='/home/greens/rosemary-roasted-chicken.jpg'
+            m6='/home/greens/vegetable-trio.jpg'
+          />
+          <Slide
+            ownerImg='/home/gypsy/owner.png'
+            title='Moudy'
+            subtitle='Gypsy Grill owner'
+            m1='/home/gypsy/chicken-kabob-sandwhich.jpg'
+            m2='/home/gypsy/chicken-shawarma.jpg'
+            m3='/home/gypsy/fattoush.jpg'
+            m4='/home/gypsy/feta.jpg'
+            m5='/home/gypsy/lamb-beef-shawafel.jpg'
+            m6='/home/gypsy/m1.jpg'
+          />
+          <Slide
+            ownerImg='/home/marg/owner.jpg'
+            title='Matt'
+            subtitle="Margherita's owner"
+            m1='/home/marg/eggplant-parm.jpg'
+            m2='/home/marg/m1.jpg'
+            m3='/home/marg/meatball-parm.jpg'
+            m4='/home/marg/penne-vodka.jpg'
+            m5='/home/marg/sausage-peppers.jpg'
+            m6='/home/marg/rigatoni-meat.jpg'
+          />
+          <Slide
+            ownerImg='/home/rumba/owner.jpg'
+            title='Alan & Nairelys'
+            subtitle="Rumba Cubana owners"
+            m1='/home/rumba/el-revolico.jpg'
+            m2='/home/rumba/fritas.jpg'
+            m3='/home/rumba/ropa-vieja.jpg'
+            m4='/home/rumba/rumba-meal.jpg'
+            m5='/home/rumba/sandwich-cubano.jpg'
+            m6='/home/rumba/trio-de-empanadas.jpg'
+          />
+          <Slide
+            ownerImg='/home/shaka/owner.jpeg'
+            title='Kiersten & Krista'
+            subtitle="Shaka Bowl owners"
+            m1='/home/shaka/earth.jpg'
+            m2='/home/shaka/hilo.jpg'
+            m3='/home/shaka/kong.jpg'
+            m4='/home/shaka/molokai-cacao.jpg'
+            m5='/home/shaka/ono.jpg'
+            m6='/home/shaka/big-island.jpg'
+          />
+          <Slide
+            ownerImg='/home/taqueria/owner.png'
+            title='Andrea & Phil'
+            subtitle="La Taqueria owner"
+            m1='/home/taqueria/barbocoa-taco.png'
+            m2='/home/taqueria/bistec-quesadilla.jpg'
+            m3='/home/taqueria/chorizo-quesadilla.jpg'
+            m4='/home/taqueria/flauta-plate.png'
+            m5='/home/taqueria/pescado-taco.png'
+            m6='/home/taqueria/taq-meal.jpg'
+          />
+          <Slide
+            ownerImg='/home/tonys/owner.jpg'
+            title='Mike'
+            subtitle="Tony Boloney's owner"
+            m1='/home/tonys/aloo-fries.jpg'
+            m2='/home/tonys/casino.jpg'
+            m3='/home/tonys/general.jpg'
+            m4='/home/tonys/magic-fries.jpg'
+            m5='/home/tonys/tonys-meal.jpg'
+            m6='/home/tonys/winger.jpg'
+          />
+          <Slide
+            ownerImg='/home/wurst/owner.jpg'
+            title='Aaron'
+            subtitle="Würstbar owner"
+            m1='/home/wurst/blue-nose.jpg'
+            m2='/home/wurst/haus-brat.jpg'
+            m3='/home/wurst/haus-poutine.jpg'
+            m4='/home/wurst/king-brat.jpg'
+            m5='/home/wurst/king-marcus.jpg'
+            m6='/home/wurst/the-general.jpg'
+          />
+        </Carousel>
+      </Container>
     </div>
   )
 }
@@ -818,22 +844,22 @@ const HowItWorks = () => {
       >
         <Content
           title="Mix n' Match"
-          description='Pick meals from different restaurants for 1 delivery'
+          description='Pick meals from different restaurants'
           img='home/mix.png'
         />
         <Content
-          title='Set delivery'
-          description='Choose a time & day for weekly delivery'
+          title='Set combined delivery'
+          description='Choose a time & day for weekly deliveries'
           img='how-it-works/delivery-man.png'
         />
         <Content
-          title='Enjoy'
-          description='Receive all meals at once to eat now or throughout the week'
+          title='Eat whenever'
+          description='Eat meals throughout the week'
           img='home/microwave2.png'
         />
         <Content
-          title='Subscribe'
-          description="Plan ahead future weeks or let us pick for you"
+          title="Plan ahead or don't"
+          description="Skip weeks, pick future meals, or let us pick"
           img='home/calendar.png'
         />
       </Grid>
@@ -909,6 +935,53 @@ const ReferralWelcome = withClientApollo(() => {
     </div>
   )
 });
+
+const Sample = () => {
+  const classes = useStyles();
+  return (
+    <div className={classes.sample}>
+      <Container maxWidth='xl'>
+        <Grid container>
+          <Grid
+            item
+            sm={12} 
+            md={4}
+            className={classes.centered}
+          >
+            <Typography
+              variant='h3'
+              className={`
+                ${classes.title}
+                ${classes.shrinker}
+                ${classes.sampleTitle}
+              `}
+            >
+              Restaurants in your fridge
+            </Typography>
+            <Typography
+              variant='h5'
+              className={`
+                ${classes.subtitle}
+                ${classes.sampleTitle}
+              `}
+            >
+              All different restaurants in 1 convenient delivery
+            </Typography>
+          </Grid>
+          <Grid
+            item
+            sm={12}
+            md={8}
+            className={classes.centered}
+          >
+            <img src='/home/orchidFood.png' className={classes.sampleImg} />
+          </Grid>
+        </Grid>
+      </Container>
+
+    </div>
+  )
+}
 
 const Testimonials = () => {
   const classes = useStyles();
@@ -1028,6 +1101,7 @@ const Index = () => {
       <ReferralWelcome />
       <Welcome />
       <Promotion />
+      <Sample />
       <HowItWorks />
       <Plans />
       <Why />

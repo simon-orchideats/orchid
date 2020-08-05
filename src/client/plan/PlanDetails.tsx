@@ -15,7 +15,11 @@ const useStyles = makeStyles(theme => ({
     borderStyle: 'solid',
     borderColor: color === 'black' ? theme.palette.primary.main : theme.palette.common.pink,
   }),
-  cardSubtitle: {
+  title: {
+    paddingBottom: theme.spacing(1),
+  },
+  price: {
+    paddingTop: theme.spacing(1),
     color: theme.palette.text.secondary,
   },
 }));
@@ -36,7 +40,7 @@ const PlanDetails: React.FC<{
     </Typography>
   );
   const price = (
-    <Typography variant='body1' className={classes.cardSubtitle}>
+    <Typography variant='body1' className={classes.price}>
       ${(tier.MealPrice / 100).toFixed(2)}/meal
     </Typography>
   )
@@ -46,7 +50,11 @@ const PlanDetails: React.FC<{
         {
           tier.minMeals === 4 &&
           <>
-            <Typography variant='h6' color='primary'>
+            <Typography
+              variant='h6'
+              color='primary'
+              className={classes.title}
+            >
               Personal Week
             </Typography>
             {meals}

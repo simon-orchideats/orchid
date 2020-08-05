@@ -195,7 +195,14 @@ GET /orders/_search?
         }
       }
     }
-  }
+  },
+  "sort": [
+    {
+      "createdDate": {
+        "order": "desc"
+      }
+    }
+  ]
 }
 
 
@@ -296,6 +303,68 @@ GET /orders/_search?
 
 ######### UPDATE ###########
 
+POST rests/_update_by_query
+{
+  "script" : {
+    "source": """
+      def menu = ctx._source.menu;
+      for (int i = 0; i < menu.length; i++) {
+        menu[i].planName = 'Standard';
+        menu[i].stripePlanId = 'price_1H5eIMChNVhU1EK6a5H2QWUw';
+      }
+    """,
+    "lang": "painless"
+  },
+  "query": { 
+    "match_all": {}
+  }
+}
+
+"addonGroups" : [
+  {
+    "names" : [
+      "Lettuce",
+      "Tomato",
+      "Onion"
+    ],
+    "limit" : 3
+  },
+  {
+    "names" : [
+      "Ketchup",
+      "Blue cheese dressing",
+      "Mayo"
+    ],
+    "limit" : 3
+  }
+],
+
+ctx._source.menu.add([
+  "stripePlanId" : "plan_HE1O8fPf3Nf3Uo",
+  "planName": "Standard",
+  "_id": "NEj1_D4omVrODqkU6KF5I",
+  "img": "/menu/gypsy-grill/lamb-beef-shawafel.jpg",
+  "name": "Lamb & Beef Shawafel",
+  "description": "Lamb & beef shawarma and falafel stuffed in pita with salad & tahini sauce",
+  "originalPrice": 1050,
+  "optionGroups" : new def[] {
+    [
+      "names" : new def[] {
+        "2pc Kunafa",
+        "2pc Baklava"
+      }
+    ]
+  },
+  "addonGroups" : new def[] {},
+  "orderNames" : new def[] {},
+  "tags": new def[] {
+    [
+      "name" : "Mediterranean",
+      "type" : "cuisine"
+    ]
+  },
+  "isActive" : true
+]);
 
 POST orders/_update_by_query
 {
@@ -608,16 +677,36 @@ POST rests/_update_by_query
 {
   "script" : {
     "source": """
-      ctx._source.profile.
-      ctx._source.actor = "Magdy",
-      ctx._source.actorImg" = /menu/wings-to-go/owner.jpg",
-      ctx._source.story = "There's family. There's soccer. Then there's good wings. They're cooked fresh every day. I hope you like them."
+      ctx._source.menu[7].addonGroups = new def[] {
+        [
+          "names" : new def[] {
+            "Cheese Sauce",
+            "Cheese Sauce",
+            "Chipotle Mayo",
+            "Chipotle Mayo",
+            "Truffle Aioli",
+            "Truffle Aioli",
+            "Sriracha Ketchup",
+            "Sriracha Ketchup",
+            "Pesto Mayo",
+            "Pesto Mayo",
+            "Chili Lime Mayo",
+            "Chili Lime Mayo",
+            "Hoisin Aioli",
+            "Hoisin Aioli",
+            "Wasabi Aioli",
+            "Wasabi Aioli"
+          },
+          "limit": 2
+        ]
+
+      }
     """,
     "lang": "painless"
   },
   "query": {
     "match": {
-      "profile.name.keyword": "Wings To Go"
+      "profile.name.keyword": "Würstbar"
     }
   }
 }
@@ -1656,3 +1745,7 @@ PUT /promos/
 
 
 ###############################
+
+
+scott appliance works of boston 617 448 3835
+
