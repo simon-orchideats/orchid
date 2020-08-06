@@ -308,7 +308,7 @@ const HowItWorks = () => {
           />
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
-            title='Receive 1 weekly delivery'
+            title='Receive combined delivery'
             description="The same driver delivers to you each week. They text you an ETA the morning of your delivery"
             dividerTitle='Step'
             dividerSubtitle='3'

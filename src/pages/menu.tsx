@@ -48,8 +48,8 @@ const useStyles = makeStyles(theme => ({
     bottom: theme.spacing(2),
   },
   removeCart: {
-    backgroundColor: `${theme.palette.secondary.light} !important`,
-    color: theme.palette.primary.main,
+    backgroundColor: `${theme.palette.common.pink} !important`,
+    color: theme.palette.common.white,
   },
   showCart: {
     backgroundColor: `${theme.palette.primary.main} !important`,

@@ -858,7 +858,7 @@ const HowItWorks = () => {
           img='home/microwave2.png'
         />
         <Content
-          title="Plan ahead or don't"
+          title="Plan ahead easily"
           description="Skip weeks, pick future meals, or let us pick"
           img='home/calendar.png'
         />
