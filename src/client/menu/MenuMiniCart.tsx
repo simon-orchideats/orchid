@@ -16,7 +16,8 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
   },
   scrollable: {
-    overflowX: 'scroll',
+    overflowY: 'scroll',
+    maxHeight: 145,
   },
   bar: {
     display: 'flex',
@@ -55,7 +56,6 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    maxWidth: 150,
   },
   count: {
     marginLeft: theme.spacing(2),
@@ -128,56 +128,6 @@ const MenuMiniCart: React.FC<{
               {confirmText}
             </Button>
           </div>
-          <div className={`${classes.bar} ${classes.scrollable}`}>
-            {cart && cart.AllMeals.map(deliveryMeal => (
-              <Slide
-                key={deliveryMeal.IdKey}
-                direction='up'
-                in={true}
-                timeout={{
-                  enter: 500,
-                }}
-              >
-                <div className={classes.meals}>
-                  <div className={classes.bar}>
-                    <Button
-                      size='small'
-                      variant='text'
-                      color='primary'
-                      onClick={() => addMealToCart(
-                        deliveryMeal.MealId,
-                        deliveryMeal,
-                        deliveryMeal.Choices,
-                        deliveryMeal.RestId,
-                        deliveryMeal.RestName,
-                        deliveryMeal.TaxRate,
-                        deliveryMeal.Hours,
-                      )}
-                    >
-                      <AddIcon />
-                      </Button>
-                    <Typography variant='subtitle2'>
-                      {deliveryMeal.Quantity}
-                    </Typography>
-                    <Button
-                      size='small'
-                      variant='text'
-                      onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
-                    >
-                      <RemoveIcon />
-                    </Button>
-                  </div>
-                  <Typography
-                    className={classes.name}
-                    variant='body2'
-                    align='center'
-                  >
-                    {deliveryMeal.Name}
-                  </Typography>
-                </div>
-              </Slide>
-            ))}
-          </div>
           {(!cart || !cart.Zip) && (
             <Typography variant='body1' className={classes.suggestion}>
               Enter zip to continue
@@ -218,6 +168,56 @@ const MenuMiniCart: React.FC<{
               {suggestion}
             </Typography>
           )}
+          <div className={`${classes.scrollable}`}>
+            {cart && cart.AllMeals.map(deliveryMeal => (
+              <Slide
+                key={deliveryMeal.IdKey}
+                direction='up'
+                in={true}
+                timeout={{
+                  enter: 500,
+                }}
+              >
+                <div className={classes.meals}>
+                  <div className={classes.bar}>
+                    <Button
+                      size='small'
+                      variant='text'
+                      color='primary'
+                      onClick={() => addMealToCart(
+                        deliveryMeal.MealId,
+                        deliveryMeal,
+                        deliveryMeal.Choices,
+                        deliveryMeal.RestId,
+                        deliveryMeal.RestName,
+                        deliveryMeal.TaxRate,
+                        deliveryMeal.Hours,
+                      )}
+                    >
+                      <AddIcon />
+                    </Button>
+                    <Typography variant='subtitle2'>
+                      {deliveryMeal.Quantity}
+                    </Typography>
+                    <Button
+                      size='small'
+                      variant='text'
+                      onClick={() => removeMealFromCart(deliveryMeal.RestId, deliveryMeal)}
+                    >
+                      <RemoveIcon />
+                    </Button>
+                    <Typography
+                      className={classes.name}
+                      variant='body2'
+                      align='center'
+                    >
+                      {deliveryMeal.Name}
+                    </Typography>
+                  </div>
+                </div>
+              </Slide>
+            ))}
+          </div>
         </div>
       )
     }} />

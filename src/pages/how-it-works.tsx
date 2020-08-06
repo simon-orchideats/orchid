@@ -290,7 +290,7 @@ const HowItWorks = () => {
         <Grid container>
           <Explanation
             title="Mix n' Match"
-            description='Pick meals from different restaurants to build your 1st delivery order'
+            description='Pick meals from different restaurants to build your 1st order'
             dividerTitle='Step'
             dividerSubtitle='1'
             img='how-it-works/mix.jpg'
@@ -319,7 +319,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Enjoy'
-            description='Enjoy your batch of fresh cooked meals when delivered or throughout the week'
+            description='Enjoy your fresh cooked meals when delivered or throughout the week'
             dividerTitle='Step'
             dividerSubtitle='4'
             img='how-it-works/eating.jpg'
@@ -328,7 +328,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Subscribe & repeat'
-            description="Receive a new delivery with new food each week"
+            description="Get a new delivery with new food each week"
             dividerTitle='Step'
             dividerSubtitle='5'
             img='how-it-works/sub.jpeg'
@@ -338,7 +338,7 @@ const HowItWorks = () => {
           <Grid item xs={12} className={classes.largeVerticalMargin} />
           <Explanation
             title='Plan ahead or sit back'
-            description="Orders are easy to change, skip, and cancel. You can change delivery times too"
+            description="Orders and deliveries are easy to change, skip, and cancel"
             dividerTitle='Step'
             dividerSubtitle='6'
             img='how-it-works/sample.png'

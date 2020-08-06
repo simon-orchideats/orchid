@@ -136,7 +136,7 @@ const Header = () => {
   return (
     <div className={`${classes.friends} ${classes.centered}`}>
       <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-        Earn ${selfAmount}
+        Gift ${friendAmount}, Get ${selfAmount}
       </Typography>
     </div>
   );
@@ -249,7 +249,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              {referralLink ? '3. ' : '4. '}You earn ${selfAmount} over 4 weeks
+              {referralLink ? '3. ' : '4. '}You get ${selfAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>
