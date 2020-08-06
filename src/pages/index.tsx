@@ -604,20 +604,20 @@ const Slider = () => {
               titleWrap: classes.titleWrap
             }}
             title={
-              !isSm &&
               <Typography
-                variant='h5'
+                variant={isSm ? 'body1' : 'h5'}
                 className={classes.titleBarText}
               >
                 {title}
               </Typography>
             }
             subtitle={
+              !isSm &&
               <Typography
-                variant={isSm ? 'body1' : 'h6'}
+                variant={'h6'}
                 className={classes.titleBarText}
               >
-                {!isSm && subtitle}
+                {subtitle}
               </Typography>
             }
           />
