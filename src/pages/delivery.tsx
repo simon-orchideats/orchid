@@ -8,7 +8,6 @@ import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "
 import { useState, useMemo, useEffect } from "react";
 import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerPlanModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
-import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
 import PreferredSchedule from "../client/general/PreferredSchedule";
 import { useUpdateDeliveries, useGetOrder } from "../client/order/orderService";
@@ -18,11 +17,11 @@ import moment from "moment";
 import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/delivery/deliveryMetrics";
 import { useGetAvailablePlans } from "../plan/planService";
 import SyncAltIcon from '@material-ui/icons/SyncAlt';
-import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
 import Notifier from "../client/notification/Notifier";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { useGetConsumer } from "../consumer/consumerService";
+import { planAheadRoute } from "./plan-ahead";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -105,17 +104,8 @@ const delivery = () => {
       notify("Sorry couldn't find a new delivery date", NotificationType.error, false);
     }
   }, [scheduleRes]);
-  const navToCheckout = () => {
-    const pushing = {
-      pathname: checkoutRoute
-    } as any;
-    if (!router.query.p) {
-      pushing.query = {
-        p: welcomePromoCouponId,
-        a: welcomePromoAmount,
-      }
-    }
-    Router.push(pushing);
+  const navToPlanAhead = () => {
+    Router.push(planAheadRoute);
   }
   const onUpdateOrder = () => {
     if (!cart) {
@@ -172,7 +162,7 @@ const delivery = () => {
   const setDates = async () => {
     const res = await setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     if (!hasMultipleDeliveries && !isUpdating && res.data && res.data.setScheduleAndAutoDeliveries.delays.length === 0) {
-      navToCheckout();
+      navToPlanAhead();
       return;
     }
     setExpanded('assignments');
@@ -310,7 +300,7 @@ const delivery = () => {
                   <Button
                     variant='contained'
                     color='primary'
-                    onClick={navToCheckout}
+                    onClick={navToPlanAhead}
                     fullWidth
                     className={classes.nextButton}
                     disabled={hasScheduleError}

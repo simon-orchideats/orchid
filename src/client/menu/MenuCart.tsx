@@ -7,7 +7,6 @@ import { upcomingDeliveriesRoute } from "../../pages/consumer/upcoming-deliverie
 import { deliveryRoute } from "../../pages/delivery";
 import { useGetConsumer } from "../../consumer/consumerService";
 import { MIN_MEALS, PlanNames, Plan } from "../../plan/planModel";
-import { planAheadRoute } from "../../pages/plan-ahead"
 
 export const getSuggestion = (cart: Cart | null, minMeals: number) => {
   if (!cart) return [];
@@ -75,7 +74,7 @@ const MenuCart: React.FC<{
       if (consumer && consumer.data && consumer.data.StripeSubscriptionId) {
         Router.push(upcomingDeliveriesPath);
       } else {
-        Router.push(planAheadRoute);
+        Router.push(deliveryRoute);
       }
     }
   }

@@ -37,11 +37,11 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.mixins.navbar.marginBottom,
   },
   inputs: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
     paddingBottom: theme.spacing(2),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
     background: theme.palette.background.paper
   },
   title: {
@@ -463,6 +463,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     >
       <Notifier />
       <Grid container alignItems='stretch'>
+        {
+          !isMdAndUp &&
+          <Grid
+            item
+            sm={12}
+            className={`${classes.inputs} ${classes.title}`}
+          >
+            <CheckoutCart {...checkoutCartProps} hideCheckout />
+          </Grid>
+        }
         <Grid
           item
           sm={12}
@@ -635,6 +645,19 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <CardForm />
         </Grid>
         {
+          !isMdAndUp &&
+          <Grid
+            item
+            sm={12}
+            className={`${classes.inputs} ${classes.title}`}
+          >
+            <CheckoutCart
+              {...checkoutCartProps}
+              hideDeliveries
+            />
+          </Grid>
+        }
+        {
           isMdAndUp &&
           <Grid
             item
@@ -644,16 +667,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <StickyDrawer>
               <CheckoutCart {...checkoutCartProps} />
             </StickyDrawer>
-          </Grid>
-        }
-        {
-          !isMdAndUp &&
-          <Grid
-            item
-            sm={12}
-            className={`${classes.inputs} ${classes.title}`}
-          >
-            <CheckoutCart {...checkoutCartProps} buttonBottom />
           </Grid>
         }
       </Grid>

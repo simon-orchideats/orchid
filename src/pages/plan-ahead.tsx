@@ -1,7 +1,6 @@
 import { Container, makeStyles, Button, Typography } from "@material-ui/core";
 import Faq from "../client/general/CommonQuestions";
 import withClientApollo from "../client/utils/withClientApollo";
-import Router from 'next/router'
 import { menuRoute } from "./menu";
 import { isServer } from "../client/utils/isServer";
 import { useGetCart, useUpdateTags } from "../client/global/state/cartState";
@@ -10,8 +9,9 @@ import { useState, useEffect } from "react";
 import { Tag, TagTypes } from "../rest/tagModel";
 import { useGetTags } from "../rest/restService";
 import RenewalChooser from "../client/general/RenewalChooser";
-import Link from "next/link";
-import { deliveryRoute } from "./delivery";
+import Router, { useRouter } from 'next/router'
+import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
+import { checkoutRoute } from "./checkout";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -35,6 +35,7 @@ const useStyles = makeStyles(theme => ({
 const planAhead = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const router = useRouter();
   const updateCartTags = useUpdateTags();
   const consumer = useGetConsumer();
   const [tags, setTags] = useState<Tag[]>([]);
@@ -60,7 +61,19 @@ const planAhead = () => {
     return null;
   }
   const updateTags = (tags: Tag[]) => setTags(tags);
-  const onNext = () => updateCartTags(tags);
+  const onNext = () => {
+    updateCartTags(tags);
+    const pushing = {
+      pathname: checkoutRoute
+    } as any;
+    if (!router.query.p) {
+      pushing.query = {
+        p: welcomePromoCouponId,
+        a: welcomePromoAmount,
+      }
+    }
+    Router.push(pushing);
+  }
   return (
     <>
       <Container className={classes.container}>
@@ -82,17 +95,15 @@ const planAhead = () => {
             You can always change your meals later!
           </b>
         </Typography>
-        <Link href={deliveryRoute}>
-          <Button
-            variant='contained'
-            color='primary'
-            fullWidth
-            disabled={tags.filter(t => t.Type === TagTypes.Cuisine).length === 0}
-            onClick={onNext}
-          >
-            Next
-          </Button>
-        </Link>
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth
+          disabled={tags.filter(t => t.Type === TagTypes.Cuisine).length === 0}
+          onClick={onNext}
+        >
+          Next
+        </Button>
       </Container>
       <Faq />
     </>
