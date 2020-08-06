@@ -37,6 +37,7 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.mixins.navbar.marginBottom,
   },
   inputs: {
+    width: '100%',
     paddingBottom: theme.spacing(2),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
