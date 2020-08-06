@@ -228,7 +228,7 @@ const useStyles = makeStyles(theme => ({
     minHeight: 600,
     padding: theme.spacing(4),
   },
-  orchidFood: {
+  tableFood: {
     width: '100%',
   },
   sample: {
@@ -974,7 +974,7 @@ const Sample = () => {
             md={8}
             className={classes.centered}
           >
-            <img src='/home/orchidFood.png' className={classes.sampleImg} />
+            <img src='/home/tableFood.png' className={classes.sampleImg} />
           </Grid>
         </Grid>
       </Container>
@@ -1019,7 +1019,7 @@ const Testimonials = () => {
               <Typography variant='body1'>
                 It's like Christmas every Tuesday
               </Typography>
-              <img src='/home/orchidFood.png' className={classes.orchidFood} />
+              <img src='/home/tableFood.png' className={classes.tableFood} />
             </div>
           </div>
           <div className={classes.t1}>
