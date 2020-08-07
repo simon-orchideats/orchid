@@ -45,8 +45,6 @@ const useStyles = makeStyles(theme => ({
   fab: {
     zIndex: 1,
     position: 'fixed',
-    // -99 because fab is 198
-    left: 'calc(50% - 99px)',
     bottom: theme.spacing(2),
   },
   removeCart: {
@@ -221,6 +219,10 @@ const menu = () => {
         <Fab
           variant='extended'
           onClick={onClickFab}
+          style={{
+            // -99 because fab is 198 and -33 because fab is 66
+            left: showMiniCart ? 'calc(50% - 99px)' : 'calc(50% - 33px)'
+          }}
           className={`
             ${classes.fab}
             ${showMiniCart ? classes.removeCart : classes.showCart}
