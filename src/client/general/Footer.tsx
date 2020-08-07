@@ -33,10 +33,10 @@ const useStyles = makeStyles(theme => ({
 const Footer = () => {
   const classes = useStyles();
   const onClickFb = () => {
-    window.location.href = 'https://www.facebook.com/orchidFB'
+    window.location.href = 'https://www.facebook.com/table.fb'
   }
   const onClickIg = () => {
-    window.location.href = 'https://www.instagram.com/orchidIG'
+    window.location.href = 'https://www.instagram.com/table.ig'
   }
   return (
     <Paper elevation={0} className={classes.paper}>
