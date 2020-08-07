@@ -16,7 +16,6 @@ import { Tag } from "../rest/tagModel";
 import SearchInput from "../client/general/inputs/SearchInput";
 import { sendZipMetrics } from "../client/menu/menuMetrics";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
 import { Cart } from "../order/cartModel";
 import { useNotify } from "../client/global/state/notificationState";
 import Notifier from "../client/notification/Notifier";
@@ -31,6 +30,9 @@ const useStyles = makeStyles(theme => ({
   menu: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: theme.spacing(6)
+    },
     width: '100%',
   },
   link: {
@@ -43,13 +45,13 @@ const useStyles = makeStyles(theme => ({
   fab: {
     zIndex: 1,
     position: 'fixed',
-    // -28 because fab is 56px
-    left: 'calc(50% - 28px)',
+    // -99 because fab is 198
+    left: 'calc(50% - 99px)',
     bottom: theme.spacing(2),
   },
   removeCart: {
-    backgroundColor: `${theme.palette.common.pink} !important`,
-    color: theme.palette.common.white,
+    backgroundColor: `#ffffe0 !important`,
+    color: theme.palette.primary.main,
   },
   showCart: {
     backgroundColor: `${theme.palette.primary.main} !important`,
@@ -217,6 +219,7 @@ const menu = () => {
       {
         !isMdAndUp &&
         <Fab
+          variant='extended'
           onClick={onClickFab}
           className={`
             ${classes.fab}
@@ -226,9 +229,8 @@ const menu = () => {
           {
             showMiniCart ?
             <>
-              <RemoveShoppingCartIcon />
-              <Typography variant='body1'>
-                {cart ? Cart.getNumMeals(cart.AllMeals) : 0}
+              <Typography variant='subtitle1'>
+                Hide cart ({cart ? Cart.getNumMeals(cart.AllMeals) : 0} meals)
               </Typography>
             </>
             :
