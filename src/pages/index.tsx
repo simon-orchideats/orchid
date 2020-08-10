@@ -888,6 +888,9 @@ const Plans = withClientApollo(() => {
         <Typography variant='h6'>
           Change, skip, cancel anytime
         </Typography>
+        <Typography variant='h6'>
+          Satisfaction guaranteed or your money back
+        </Typography>
       </div>
       <PlanCards />
       <Link href={menuRoute}>
@@ -915,10 +918,10 @@ const Promotion = withClientApollo(() => {
   return (
     <div className={`${classes.centered} ${classes.promotion}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        Get ${basePromoAmount} off! Limited time only
+        ${basePromoAmount} off your 1st month!
       </Typography>
-      <Typography variant='body2' className={classes.topMargin}>
-        Promotion over your first month, auto applied at checkout
+      <Typography variant={isSmAndDown ? 'h6' : 'h5'} className={classes.bold}>
+        Auto applied at checkout
       </Typography>
     </div>
   );
