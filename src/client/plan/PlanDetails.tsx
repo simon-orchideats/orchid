@@ -18,9 +18,14 @@ const useStyles = makeStyles(theme => ({
   title: {
     paddingBottom: theme.spacing(1),
   },
-  price: {
+  deliveries: {
     paddingTop: theme.spacing(1),
     color: theme.palette.text.secondary,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));
 
@@ -35,13 +40,13 @@ const PlanDetails: React.FC<{
 }) => {
   const classes = useStyles({ color, small });
   const meals = (
-    <Typography variant='h6'>
-      {tier.minMeals}+ meals
+    <Typography variant='h6' className={classes.title}>
+      <b>{tier.MinMeals}{tier.MaxMeals ? ` - ${tier.MaxMeals}` : '+'} meals</b> a week
     </Typography>
   );
   const price = (
-    <Typography variant='body1' className={classes.price}>
-      ${(tier.MealPrice / 100).toFixed(2)}/meal
+    <Typography variant='h6'>
+      <b>${(tier.MealPrice / 100).toFixed(2)}</b> / meal
     </Typography>
   )
   return (
@@ -55,13 +60,13 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Personal Week
+              Personal
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               1 free delivery
             </Typography>
-            {price}
           </>
         }
         {
@@ -72,13 +77,13 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Roomies Week
+              Roomies
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               2 deliveries
             </Typography>
-            {price}
           </>
         }
         {
@@ -89,13 +94,13 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Family Week
+              Family
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               3+ deliveries
             </Typography>
-            {price}
           </>
         }
       </CardContent>

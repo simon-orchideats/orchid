@@ -1,10 +1,9 @@
 import Stripe from "stripe";
 export const welcomePromoCouponId = 'welcome35';
-export const welcomePromoAmount = 875;
-export const referralFriendAmount = 1000;
+export const welcomePromoAmount = 1250;
+export const referralFriendAmount = 1125;
 export const referralSelfAmount = 500;
 export const referralMonthDuration = 1;
-export const autoPickPromoAmount = 750;
 export const oncePromoKey = 'oncePromo';
 
 export interface EPromo {

@@ -191,7 +191,7 @@ const useStyles = makeStyles(theme => ({
       paddingTop: 50, // determined by inspection
     },
     [theme.breakpoints.down('sm')]: {
-      height: 900,
+      height: 1000,
     }
   },
   testimonialsTitle: {
@@ -927,6 +927,19 @@ const Promotion = withClientApollo(() => {
   );
 });
 
+const MoneyBack = () => {
+  const classes = useStyles();
+  const theme = useTheme<Theme>();
+  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
+  return (
+    <div className={`${classes.centered} ${classes.promotion}`}>
+      <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
+        100% money back guaranteed
+      </Typography>
+    </div>
+  );
+};
+
 const ReferralWelcome = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
@@ -1107,6 +1120,7 @@ const Index = () => {
       <Sample />
       <HowItWorks />
       <Plans />
+      <MoneyBack />
       <Why />
       <Slider />
       <Testimonials />
