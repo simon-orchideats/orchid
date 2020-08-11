@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
     paddingLeft: theme.spacing(small ? 0 : 2),
     paddingRight: theme.spacing(small ? 0 : 2),
-    width: small ? 200 : 260,
+    width: small ? 230 : 260,
     borderStyle: 'solid',
     borderColor: color === 'black' ? theme.palette.primary.main : theme.palette.common.pink,
   }),
