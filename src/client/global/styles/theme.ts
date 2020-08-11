@@ -136,6 +136,7 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
+      pink: '#ed8d81',
       link: brandLink,
       success: brandSuccess,
       warning: brandWarning,
@@ -374,6 +375,7 @@ const theme: ThemeOptions = {
 declare module "@material-ui/core/colors/common" {
   interface CommonColors {
     link: string;
+    pink: string;
     [NotificationType.success]: string;
     [NotificationType.warning]: string;
     [NotificationType.error]: string;

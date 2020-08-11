@@ -79,12 +79,11 @@ const useStyles = makeStyles(theme => ({
   },
   logo: {
     [theme.breakpoints.down('xs')]: {
-      width: 100,
       marginRight: theme.spacing(2)
     },
-    height: 63,
-    paddingTop: 4,
-    paddingBottom: 4,
+    height: '100%',
+    paddingTop: 2,
+    paddingBottom: 2,
     paddingLeft: theme.spacing(1),
     marginRight: theme.spacing(5),
     cursor: 'pointer',
@@ -181,12 +180,12 @@ const Navbar: React.FC = () => {
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' color='primary'>
-            Plan ahead
+          <Typography variant='button' className={classes.link}>
+            Delivery
           </Typography>
           <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Delivery
+          <Typography variant='button' color='primary'>
+            Plan ahead
           </Typography>
           <ChevronRightIcon className={classes.horzMargin} />
           <Typography variant='button' className={classes.disabled}>
@@ -217,15 +216,15 @@ const Navbar: React.FC = () => {
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
-          <Link href={planAheadRoute}>
-            <Typography variant='button' className={classes.link}>
-              Plan ahead
-            </Typography>
-          </Link>
-          <ChevronRightIcon className={classes.horzMargin} />
           <Typography variant='button' color='primary'>
             Delivery
           </Typography>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Link href={planAheadRoute}>
+            <Typography variant='button' className={classes.disabled}>
+              Plan ahead
+            </Typography>
+          </Link>
           <ChevronRightIcon className={classes.horzMargin} />
           <Typography variant='button' className={classes.disabled}>
             Checkout
@@ -240,15 +239,15 @@ const Navbar: React.FC = () => {
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
-          <Link href={planAheadRoute}>
-            <Typography variant='button' className={classes.link}>
-              Plan ahead
-            </Typography>
-          </Link>
-          <ChevronRightIcon className={classes.horzMargin} />
           <Link href={deliveryRoute}>
             <Typography variant='button' className={classes.link}>
               Delivery
+            </Typography>
+          </Link>
+          <ChevronRightIcon className={classes.horzMargin} />
+          <Link href={planAheadRoute}>
+            <Typography variant='button' className={classes.link}>
+              Plan ahead
             </Typography>
           </Link>
           <ChevronRightIcon className={classes.horzMargin} />

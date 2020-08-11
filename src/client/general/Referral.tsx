@@ -62,15 +62,17 @@ const useStyles = makeStyles(theme => ({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    borderStyle: 'solid'
+    borderStyle: 'solid',
   },
-  welcomeTitle: {
-    fontWeight: 600,
+  oval: {
     backgroundColor: theme.palette.common.white,
     padding: 16,
     borderRadius: 40,
     paddingLeft: 24,
     paddingRight: 24,
+  },
+  welcomeTitle: {
+    fontWeight: 600,
   },
   topMargin: {
     marginTop: theme.spacing(1),
@@ -135,9 +137,14 @@ const Header = () => {
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   return (
     <div className={`${classes.friends} ${classes.centered}`}>
-      <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
-        Gift ${friendAmount}, Get ${selfAmount}
-      </Typography>
+      <div className={classes.oval}>
+        <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
+          You get ${selfAmount}
+        </Typography>
+        <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.welcomeTitle}>
+          Friends get ${friendAmount}
+        </Typography>
+      </div>
     </div>
   );
 };
@@ -197,7 +204,7 @@ const Description = withClientApollo(() => {
               className={classes.box}
             >
               <Typography variant='h6'>
-                1. Subscribe to get your referral link
+                1. Subscribe to get your referral link and share it
               </Typography>
             </Paper>
           </Grid>
@@ -249,7 +256,7 @@ const Description = withClientApollo(() => {
             className={classes.box}
           >
             <Typography variant='h6'>
-              {referralLink ? '3. ' : '4. '}You earn ${selfAmount} over 4 weeks
+              {referralLink ? '3. ' : '4. '}You get ${selfAmount} over 4 weeks
             </Typography>
           </Paper>
         </Grid>

@@ -16,8 +16,11 @@ import { Tag } from "../rest/tagModel";
 import SearchInput from "../client/general/inputs/SearchInput";
 import { sendZipMetrics } from "../client/menu/menuMetrics";
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
 import { Cart } from "../order/cartModel";
+import { useNotify } from "../client/global/state/notificationState";
+import Notifier from "../client/notification/Notifier";
+import { NotificationType } from "../client/notification/notificationModel";
+import { useGetConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -27,6 +30,9 @@ const useStyles = makeStyles(theme => ({
   menu: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: theme.spacing(6)
+    },
     width: '100%',
   },
   link: {
@@ -39,11 +45,10 @@ const useStyles = makeStyles(theme => ({
   fab: {
     zIndex: 1,
     position: 'fixed',
-    top: '50%',
-    right: theme.spacing(2),
+    bottom: theme.spacing(2),
   },
   removeCart: {
-    backgroundColor: `${theme.palette.secondary.light} !important`,
+    backgroundColor: `#ffffe0 !important`,
     color: theme.palette.primary.main,
   },
   showCart: {
@@ -91,8 +96,11 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const consumer = useGetConsumer();
+  const notify = useNotify();
   const updateCartZip = useUpdateZip()
   const zip = cart && cart.Zip ? cart.Zip : '';
+  const [didShowPromo, setDidShowPromo] = useState<boolean>(false);
   const [isZipModalOpen, setZipModalOpen] = useState(zip ? false : true);
   const [isShowingZipInput, setShowZipInput] = useState(false);
   const [zipInput, setZipInput] = useState<string>(zip);
@@ -105,6 +113,13 @@ const menu = () => {
   };
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
   
+  useEffect(() => {
+    if (!didShowPromo && !isZipModalOpen && !consumer.data?.Plan && !consumer.loading) {
+      notify('Promo auto applied at checkout!', NotificationType.success, false);
+      setDidShowPromo(true);
+    }
+  }, [didShowPromo, isZipModalOpen, consumer]);
+
   useEffect(() => {
     if (cuisines.length === 0) {
       setCuisines(allCuisines)
@@ -198,10 +213,16 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
+      <Notifier />
       {
         !isMdAndUp &&
         <Fab
+          variant='extended'
           onClick={onClickFab}
+          style={{
+            // -99 because fab is 198 and -33 because fab is 66
+            left: showMiniCart ? 'calc(50% - 99px)' : 'calc(50% - 33px)'
+          }}
           className={`
             ${classes.fab}
             ${showMiniCart ? classes.removeCart : classes.showCart}
@@ -210,9 +231,8 @@ const menu = () => {
           {
             showMiniCart ?
             <>
-              <RemoveShoppingCartIcon />
-              <Typography variant='body1'>
-                {cart ? Cart.getNumMeals(cart.AllMeals) : 0}
+              <Typography variant='subtitle1'>
+                Hide cart ({cart ? Cart.getNumMeals(cart.AllMeals) : 0} meals)
               </Typography>
             </>
             :
@@ -245,7 +265,7 @@ const menu = () => {
             in={isMdAndUp || showMiniCart}
             timeout={{
               enter: 0,
-              exit: 400,
+              exit: 700,
             }}
           >
             <Paper className={classes.filters}>

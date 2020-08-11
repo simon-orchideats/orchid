@@ -119,11 +119,18 @@ const PreferredSchedule: React.FC<{
           />
         </div>
       ))}
-      <Typography variant='body1' className={classes.border}>
-        <b>
-          Your driver will text you an ETA the morning of the bulk delivery
-        </b>
-      </Typography>
+      <div className={classes.border}>
+        <Typography variant='body1'>
+          <b>
+            We'll text an ETA the morning of {schedules.length > 1 ? 'each' : 'the'} delivery
+          </b>
+        </Typography>
+        <Typography variant='body1'>
+          <b>
+            Ex: "Meals will arrive 6 - 6:10pm"
+          </b>
+        </Typography>
+      </div>
       {extraDeliveries}
     </>
   );

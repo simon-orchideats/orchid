@@ -22,15 +22,15 @@ const useStyles = makeStyles(theme => ({
   paddingBottom: {
     paddingBottom: theme.spacing(2),
   },
+  smallPaddingBottom: {
+    paddingBottom: theme.spacing(1),
+  },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
   },
-  hint: {
-    color: theme.palette.text.hint,
-  },
   button: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1),
     // so that the button doesn't shrink on safari. determined by inspection
     minHeight: 36,
   },
@@ -39,7 +39,8 @@ const useStyles = makeStyles(theme => ({
 type props = {
   amountOff: number
   promoDuration?: promoDurations
-  buttonBottom?: boolean
+  hideCheckout?: boolean
+  hideDeliveries?: boolean
   defaultPromo?: string
   loading: boolean,
   onApplyPromo: () => void
@@ -50,7 +51,8 @@ type props = {
 
 const CheckoutCart: React.FC<props> = ({
   amountOff,
-  buttonBottom = false,
+  hideCheckout = false,
+  hideDeliveries = false,
   defaultPromo,
   loading,
   onApplyPromo,
@@ -101,7 +103,18 @@ const CheckoutCart: React.FC<props> = ({
       inputRef={promoRef}
       defaultValue={defaultPromo}
     />
-  )
+  );
+  const disclaimer = (
+    <>
+      <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
+        Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. Satisfaction is guaranteed. Contact us
+        at simon@tableweekly.com or call (609) 513-8166 for a full refund.
+      </Typography>
+      <Typography variant='body2' className={classes.paddingBottom}>
+        Your subscription renews every week. Pricing is based on meals per week. Skip weeks or cancel anytime.
+      </Typography>
+    </>
+  );
   const taxes = Cost.getTaxes(cart.Deliveries, mealPrices);
   const deliveryFee = Cost.getDeliveryFee(cart.Deliveries);
   const total = ((taxes + planPrice - amountOff + (deliveryFee * (cart.Schedules.length - 1))) / 100);
@@ -109,14 +122,6 @@ const CheckoutCart: React.FC<props> = ({
   const restMealsPerDelivery = Cart.getRestMealsPerDelivery(cart.deliveries);
   return (
     <>
-      {
-        !buttonBottom &&
-        <>
-          {orderButton}
-          {promoInput}
-          {applyPromoButton}
-        </>
-      }
       {/* necessary div so that the rows dont reduce in height in safari */}
       <div>
         <div className={classes.row}>
@@ -187,63 +192,57 @@ const CheckoutCart: React.FC<props> = ({
             ${(competitorPrice - total).toFixed(2)}
           </Typography>
         </div>
-        {
-          buttonBottom && 
-          <>
-            {promoInput}
-            {applyPromoButton}
-            {orderButton}
-          </>
-        }
-        <Typography variant='subtitle2' className={classes.paddingBottom}>
-          Your first payment is on <b>{moment().add(1, 'w').format('M/D')}</b>. Satisfaction is guaranteed. Contact us
-          at simon@tableweekly.com or call (609) 513-8166 with any concerns or refunds.
-        </Typography>
-        <Typography variant='body2' className={classes.hint}>
-          Your subscription renews every week. Pricing is based on meals per week. Skip weeks or cancel anytime.
-        </Typography>
+        {!hideCheckout && promoInput}
+        {!hideCheckout && applyPromoButton}
+        {!hideCheckout && orderButton}
+        {!hideCheckout && disclaimer}
       </div>
-      <Typography
-        variant='h6'
-        color='primary'
-        className={classes.title}
-      >
-        Order summary
-      </Typography>
       {
-        cart.DonationCount > 0 &&
-        <CartMealGroup
-          img='/heartHand.png'
-          name='Donation'
-          quantity={cart.DonationCount}
-        />
-      }
-      {
-        cart.Deliveries.map((d, i) => (
-          <div key={i}>
-            <Typography variant='h6' className={classes.paddingBottom}>
-              {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
-            </Typography>
-            {Object.values(restMealsPerDelivery[i]).map((restMeal, j) => (
-              <div key={i + ',' + j + '-' + restMeal.meals[0].RestId}>
-                <Typography variant='subtitle1' className={classes.paddingBottom}>
-                  {restMeal.meals[0].RestName}
+        !hideDeliveries &&
+        <>
+          <Typography
+            variant='h6'
+            color='primary'
+            className={classes.title}
+          >
+            Order summary
+          </Typography>
+          {
+            cart.DonationCount > 0 &&
+            <CartMealGroup
+              img='/heartHand.png'
+              name='Donation'
+              quantity={cart.DonationCount}
+            />
+          }
+          {
+            cart.Deliveries.map((d, i) => (
+              <div key={i}>
+                <Typography variant='h6' className={classes.paddingBottom}>
+                  {Schedule.getDateTimeStr(d.DeliveryDate, d.DeliveryTime)}
                 </Typography>
-                {
-                  restMeal.meals.map(m => 
-                    <CartMealGroup
-                      key={m.IdKey}
-                      choices={m.Choices}
-                      name={m.Name}
-                      img={m.Img}
-                      quantity={m.Quantity}
-                    />
-                  )
-                }
+                {Object.values(restMealsPerDelivery[i]).map((restMeal, j) => (
+                  <div key={i + ',' + j + '-' + restMeal.meals[0].RestId}>
+                    <Typography variant='subtitle1' className={classes.paddingBottom}>
+                      {restMeal.meals[0].RestName}
+                    </Typography>
+                    {
+                      restMeal.meals.map(m => 
+                        <CartMealGroup
+                          key={m.IdKey}
+                          choices={m.Choices}
+                          name={m.Name}
+                          img={m.Img}
+                          quantity={m.Quantity}
+                        />
+                      )
+                    }
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )) 
+            ))
+          }
+        </>
       }
     </>
   )

@@ -11,12 +11,21 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
     paddingLeft: theme.spacing(small ? 0 : 2),
     paddingRight: theme.spacing(small ? 0 : 2),
-    width: small ? 200 : 260,
+    width: small ? 230 : 260,
     borderStyle: 'solid',
-    borderColor: color === 'black' ? theme.palette.primary.main : '#ed8d81',
+    borderColor: color === 'black' ? theme.palette.primary.main : theme.palette.common.pink,
   }),
-  cardSubtitle: {
+  title: {
+    paddingBottom: theme.spacing(1),
+  },
+  deliveries: {
+    paddingTop: theme.spacing(1),
     color: theme.palette.text.secondary,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));
 
@@ -31,13 +40,13 @@ const PlanDetails: React.FC<{
 }) => {
   const classes = useStyles({ color, small });
   const meals = (
-    <Typography variant='h6'>
-      {tier.minMeals}+ meals
+    <Typography variant='h6' className={classes.title}>
+      <b>{tier.MinMeals}{tier.MaxMeals ? ` - ${tier.MaxMeals}` : '+'} meals</b> a week
     </Typography>
   );
   const price = (
-    <Typography variant='body1' className={classes.cardSubtitle}>
-      ${(tier.MealPrice / 100).toFixed(2)}/meal
+    <Typography variant='h6'>
+      <b>${(tier.MealPrice / 100).toFixed(2)}</b> / meal
     </Typography>
   )
   return (
@@ -46,40 +55,52 @@ const PlanDetails: React.FC<{
         {
           tier.minMeals === 4 &&
           <>
-            <Typography variant='h6' color='primary'>
-              Personal Week
+            <Typography
+              variant='h6'
+              color='primary'
+              className={classes.title}
+            >
+              Personal
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               1 free delivery
             </Typography>
-            {price}
           </>
         }
         {
           tier.minMeals === 8 &&
           <>
-            <Typography variant='h6' color='primary'>
-              Roomies Week
+            <Typography
+              variant='h6'
+              color='primary'
+              className={classes.title}
+            >
+              Roomies
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               2 deliveries
             </Typography>
-            {price}
           </>
         }
         {
           tier.minMeals === 12 &&
           <>
-            <Typography variant='h6' color='primary'>
-              Family Week
+            <Typography
+              variant='h6'
+              color='primary'
+              className={classes.title}
+            >
+              Family
             </Typography>
             {meals}
-            <Typography variant='h6'>
+            {price}
+            <Typography variant='h6' className={classes.deliveries}>
               3+ deliveries
             </Typography>
-            {price}
           </>
         }
       </CardContent>

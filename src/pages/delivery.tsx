@@ -8,7 +8,6 @@ import { useGetCart, useSetScheduleAndAutoDeliveries, useClearCartMeals } from "
 import { useState, useMemo, useEffect } from "react";
 import { Schedule, deliveryDay, deliveryTime } from "../consumer/consumerPlanModel";
 import ScheduleDeliveries from "../client/general/inputs/ScheduledDelivieries";
-import { checkoutRoute } from "./checkout";
 import { Cart } from "../order/cartModel";
 import PreferredSchedule from "../client/general/PreferredSchedule";
 import { useUpdateDeliveries, useGetOrder } from "../client/order/orderService";
@@ -18,11 +17,11 @@ import moment from "moment";
 import { sendRemoveScheduleMetrics, sendUpdateOrderMetrics } from "../client/delivery/deliveryMetrics";
 import { useGetAvailablePlans } from "../plan/planService";
 import SyncAltIcon from '@material-ui/icons/SyncAlt';
-import { welcomePromoAmount, welcomePromoCouponId } from "../order/promoModel";
 import Notifier from "../client/notification/Notifier";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { useGetConsumer } from "../consumer/consumerService";
+import { planAheadRoute } from "./plan-ahead";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -105,17 +104,8 @@ const delivery = () => {
       notify("Sorry couldn't find a new delivery date", NotificationType.error, false);
     }
   }, [scheduleRes]);
-  const navToCheckout = () => {
-    const pushing = {
-      pathname: checkoutRoute
-    } as any;
-    if (!router.query.p) {
-      pushing.query = {
-        p: welcomePromoCouponId,
-        a: welcomePromoAmount,
-      }
-    }
-    Router.push(pushing);
+  const navToPlanAhead = () => {
+    Router.push(planAheadRoute);
   }
   const onUpdateOrder = () => {
     if (!cart) {
@@ -160,24 +150,29 @@ const delivery = () => {
     sendRemoveScheduleMetrics(removed[0]);
     setSchedules(newSchedules);
   }
+  const hasMultipleDeliveries = schedules.length > 1;
+  const shouldShowStep2 = hasMultipleDeliveries || isUpdating || scheduleRes.delays.length > 0;
   const handleExpander = (panel: 'deliveries' | 'assignments') => (_event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    if (panel === 'deliveries' && !shouldShowStep2) return;
     if (isExpanded) setExpanded(panel);
     if (panel === 'assignments') {
       setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     }
   };
-  const setDates = () => {
-    setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
+  const setDates = async () => {
+    const res = await setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
+    if (!hasMultipleDeliveries && !isUpdating && res.data && res.data.setScheduleAndAutoDeliveries.delays.length === 0) {
+      navToPlanAhead();
+      return;
+    }
     setExpanded('assignments');
   }
   let step2Title = `2. Schedule meals for ${startDate} - ${endDate}`;
-  if (!isUpdating) {
-    if (schedules.length === 1) {
-      step2Title = '2. Confirm meals';
-    } else {
-      step2Title = '2. Choose meals for each delivery';
-    }
+
+  if (shouldShowStep2) {
+    step2Title = '2. Schedule your meals';
   }
+
   if (!cart) {
     if (!isServer()) Router.replace(`${menuRoute}`);
     return null;
@@ -207,7 +202,7 @@ const delivery = () => {
               :
               <div>
                 <Typography variant='h4' color='primary'>
-                  1. Weekly delivery schedule
+                  {shouldShowStep2 && '1. '}Weekly delivery schedule
                 </Typography>
                 <Typography variant='body1' color='textSecondary'>
                   Meal plans can be edited/skipped up to 2 days before each scheduled delivery
@@ -236,83 +231,86 @@ const delivery = () => {
             </Button>
           </ExpansionPanelDetails>
         </ExpansionPanel>
-        <ExpansionPanel
-          expanded={expanded === 'assignments'} 
-          className={classes.panel}
-          disabled={isPreferredScheduleNextDisabled}
-          onChange={handleExpander('assignments')}
-        >
-          <ExpansionPanelSummary>
-            <div>
-              <Typography variant='h4' color='primary'>
-                {step2Title}
-              </Typography>
-              {
-                isUpdating ?
-                <Typography variant='body1' color='textSecondary'>
-                  These updates will only affect this order
-                </Typography>
-                :
-                <Typography variant='body1' color='textSecondary'>
-                  You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime
-                </Typography>
-              }
-              {
-                schedules.length > 1 && isSmAndDown &&
-                <Typography className={classes.row}>
-                  <b>Scroll right to see more</b>&nbsp;<SyncAltIcon />
-                </Typography>
-              }
-            </div>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails className={classes.col}>
-            {
-              scheduleRes.delays.length > 0 &&
-              <div className={classes.warning}>
-                <Typography variant='h6'>
-                  Deliveries based on your preferred day
+        {
+          shouldShowStep2 &&
+          <ExpansionPanel
+            expanded={expanded === 'assignments'} 
+            className={classes.panel}
+            disabled={isPreferredScheduleNextDisabled}
+            onChange={handleExpander('assignments')}
+          >
+            <ExpansionPanelSummary>
+              <div>
+                <Typography variant='h4' color='primary'>
+                  {step2Title}
                 </Typography>
                 {
-                  scheduleRes.delays.map((d, i) => 
-                    <Typography variant='subtitle1' key={i}>
-                      {d}
-                    </Typography>
-                  )
+                  isUpdating ?
+                  <Typography variant='body1' color='textSecondary'>
+                    These updates will only affect this order
+                  </Typography>
+                  :
+                  <Typography variant='body1' color='textSecondary'>
+                    You can skip/edit meals up to 2 days before each delivery. Cancel your subscription anytime
+                  </Typography>
+                }
+                {
+                  hasMultipleDeliveries && isSmAndDown &&
+                  <Typography className={classes.row}>
+                    <b>Scroll right to see more</b>&nbsp;<SyncAltIcon />
+                  </Typography>
                 }
               </div>
-            }
-            <ScheduleDeliveries
-              deliveries={cart.Deliveries}
-              isUpdating={isUpdating}
-              setError={cart.DonationCount === 0 ? setHasScheduleError : undefined}
-              movable
-            />
-            {
-              isUpdating ?
-              <Button
-                variant='contained'
-                color='primary'
-                fullWidth
-                className={classes.nextButton}
-                disabled={hasScheduleError}
-                onClick={onUpdateOrder}
-              >
-                Update order
-              </Button>
-              :
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails className={classes.col}>
+              {
+                scheduleRes.delays.length > 0 &&
+                <div className={classes.warning}>
+                  <Typography variant='h6'>
+                    Deliveries based on your preferred day
+                  </Typography>
+                  {
+                    scheduleRes.delays.map((d, i) => 
+                      <Typography variant='subtitle1' key={i}>
+                        {d}
+                      </Typography>
+                    )
+                  }
+                </div>
+              }
+              <ScheduleDeliveries
+                deliveries={cart.Deliveries}
+                isUpdating={isUpdating}
+                setError={cart.DonationCount === 0 ? setHasScheduleError : undefined}
+                movable
+              />
+              {
+                isUpdating ?
                 <Button
                   variant='contained'
                   color='primary'
-                  onClick={navToCheckout}
                   fullWidth
                   className={classes.nextButton}
                   disabled={hasScheduleError}
+                  onClick={onUpdateOrder}
                 >
-                  Next
+                  Update order
                 </Button>
-            }
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
+                :
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={navToPlanAhead}
+                    fullWidth
+                    className={classes.nextButton}
+                    disabled={hasScheduleError}
+                  >
+                    Next
+                  </Button>
+              }
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
+        }
       </Container>
       <Faq />
     </>
