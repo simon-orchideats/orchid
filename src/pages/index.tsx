@@ -536,7 +536,7 @@ const Why = () => {
         >
           <Content
             badTitle='You hate waiting for delivery'
-            goodTitle='Just heat it up'
+            goodTitle='Save time & just reheat'
             img='home/buffet.svg'
           />
         </Grid>
@@ -888,9 +888,6 @@ const Plans = withClientApollo(() => {
         <Typography variant='h6'>
           Change, skip, cancel anytime
         </Typography>
-        <Typography variant='h6'>
-          Satisfaction guaranteed or your money back
-        </Typography>
       </div>
       <PlanCards />
       <Link href={menuRoute}>
@@ -957,7 +954,7 @@ const Sample = () => {
   return (
     <div className={classes.sample}>
       <Container maxWidth='xl'>
-        <Grid container>
+        <Grid container justify='center'>
           <Grid
             item
             sm={12} 
@@ -972,7 +969,7 @@ const Sample = () => {
                 ${classes.sampleTitle}
               `}
             >
-              Restaurants in your fridge
+              Mix & match restaurants in 1 delivery
             </Typography>
             <Typography
               variant='h5'
@@ -981,7 +978,17 @@ const Sample = () => {
                 ${classes.sampleTitle}
               `}
             >
-              All different restaurants in 1 convenient delivery
+              Restaurants in your fridge
+            </Typography>
+            <Typography
+              variant='h5'
+              className={`
+                ${classes.subtitle}
+                ${classes.sampleTitle}
+                ${classes.verticalMargin}
+              `}
+            >
+              Stop waiting for food. Heat & eat!
             </Typography>
           </Grid>
           <Grid
@@ -990,7 +997,7 @@ const Sample = () => {
             md={8}
             className={classes.centered}
           >
-            <img src='/home/tableFood.png' className={classes.sampleImg} />
+            <img src='/home/sample.jpg' className={classes.sampleImg} />
           </Grid>
         </Grid>
       </Container>
@@ -1035,7 +1042,7 @@ const Testimonials = () => {
               <Typography variant='body1'>
                 It's like Christmas every Tuesday
               </Typography>
-              <img src='/home/tableFood.png' className={classes.tableFood} />
+              <img src='/home/sample.jpg' className={classes.tableFood} />
             </div>
           </div>
           <div className={classes.t1}>

@@ -82,7 +82,7 @@ const PlanDetails: React.FC<{
             {meals}
             {price}
             <Typography variant='h6' className={classes.deliveries}>
-              2 deliveries
+              2 deliveries (1 free)
             </Typography>
           </>
         }
@@ -99,7 +99,7 @@ const PlanDetails: React.FC<{
             {meals}
             {price}
             <Typography variant='h6' className={classes.deliveries}>
-              3+ deliveries
+              3+ deliveries (1 free)
             </Typography>
           </>
         }
