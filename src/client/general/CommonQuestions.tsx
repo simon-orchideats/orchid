@@ -92,7 +92,7 @@ const Faq = () => {
           n={
             <>
               <Typography variant='body1'>
-              Table is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
+                Table is a weekly subscription that delivers restaurant meals all at one low, flat rate with no extra
                 fees. Our service offers unrivaled variety with the ability to mix and match different restaurants in
                 each delivery. Imagine subscribing to Netflix vs buying 1 movie on Amazon.
               </Typography>
@@ -108,15 +108,15 @@ const Faq = () => {
           }
         />
         <Expander
+          q="How does subscription work?"
+          a="Every week you can choose to either pick your meals or allow Table to do it for you.
+          Our team will hand select your meals based on your favorite foods and preferences."
+        />
+        <Expander
           q='How long will my meals last?'
           a="Every meal is cooked the same day as it's delivered but should be stored in the fridge for however many days
           you feel comfortable. We recommend picking a balance. When delivered, eat certain meals now and save
           some for later, just as you would with meal prepping."
-        />
-        <Expander
-          q="Do I need to pick meals every week?"
-          a="Nope, it’s up to you! You can choose to either pick your meals every week or allow Table to do it for you.
-          Our team will hand select your meals based on your favorite foods and preferences."
         />
         <Expander
           q='Can I skip a week of delivery?'

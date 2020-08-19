@@ -18,7 +18,6 @@ import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService } from '../utils/analyticsService';
 import LogRocket from 'logrocket';
-import { planAheadRoute } from '../../pages/plan-ahead'
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -174,27 +173,6 @@ const Navbar: React.FC = () => {
       </div>
     )
     account = null;
-  } else if (currRoute === `${planAheadRoute}`) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          {menuStep}
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.link}>
-            Delivery
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' color='primary'>
-            Plan ahead
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Checkout
-          </Typography>
-        </div>
-      </div>
-    )
-    account = null;
   } else if (currRoute === `${deliveryRoute}` && isUpdating) {
     bar = (
       <div className={classes.center}>
@@ -220,12 +198,6 @@ const Navbar: React.FC = () => {
             Delivery
           </Typography>
           <ChevronRightIcon className={classes.horzMargin} />
-          <Link href={planAheadRoute}>
-            <Typography variant='button' className={classes.disabled}>
-              Plan ahead
-            </Typography>
-          </Link>
-          <ChevronRightIcon className={classes.horzMargin} />
           <Typography variant='button' className={classes.disabled}>
             Checkout
           </Typography>
@@ -242,12 +214,6 @@ const Navbar: React.FC = () => {
           <Link href={deliveryRoute}>
             <Typography variant='button' className={classes.link}>
               Delivery
-            </Typography>
-          </Link>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Link href={planAheadRoute}>
-            <Typography variant='button' className={classes.link}>
-              Plan ahead
             </Typography>
           </Link>
           <ChevronRightIcon className={classes.horzMargin} />

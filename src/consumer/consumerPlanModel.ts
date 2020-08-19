@@ -3,7 +3,7 @@ import { IWeeklyDiscount, WeeklyDiscount } from './../order/discountModel';
 import { PlanName } from './../plan/planModel';
 import moment from 'moment';
 
-export const MIN_DAYS_AHEAD = 1;
+export const MIN_DAYS_AHEAD = 0;
 
 export type deliveryDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 

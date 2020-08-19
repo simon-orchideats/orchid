@@ -21,7 +21,8 @@ import Notifier from "../client/notification/Notifier";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { useGetConsumer } from "../consumer/consumerService";
-import { planAheadRoute } from "./plan-ahead";
+import { checkoutRoute } from "./checkout";
+import { welcomePromoCouponId, welcomePromoAmount } from "../order/promoModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -104,8 +105,17 @@ const delivery = () => {
       notify("Sorry couldn't find a new delivery date", NotificationType.error, false);
     }
   }, [scheduleRes]);
-  const navToPlanAhead = () => {
-    Router.push(planAheadRoute);
+  const navToCheckout = () => {
+    const pushing = {
+      pathname: checkoutRoute
+    } as any;
+    if (!router.query.p) {
+      pushing.query = {
+        p: welcomePromoCouponId,
+        a: welcomePromoAmount,
+      }
+    }
+    Router.push(pushing);
   }
   const onUpdateOrder = () => {
     if (!cart) {
@@ -162,7 +172,7 @@ const delivery = () => {
   const setDates = async () => {
     const res = await setScheduleAndAutoDeliveries(schedules, Date.now() >= start ? Date.now() : start);
     if (!hasMultipleDeliveries && !isUpdating && res.data && res.data.setScheduleAndAutoDeliveries.delays.length === 0) {
-      navToPlanAhead();
+      navToCheckout();
       return;
     }
     setExpanded('assignments');
@@ -215,6 +225,7 @@ const delivery = () => {
               addSchedule={addSchedule}
               allowedDeliveries={allowedDeliveries}
               limit={limit}
+              start={start}
               removeSchedule={removeSchedule}
               schedules={schedules}
               updateSchedule={updateSchedules}
@@ -300,7 +311,7 @@ const delivery = () => {
                   <Button
                     variant='contained'
                     color='primary'
-                    onClick={navToPlanAhead}
+                    onClick={navToCheckout}
                     fullWidth
                     className={classes.nextButton}
                     disabled={hasScheduleError}

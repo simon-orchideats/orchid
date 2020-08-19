@@ -60,7 +60,7 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Personal
+              Personal Plan
             </Typography>
             {meals}
             {price}
@@ -77,7 +77,7 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Roomies
+              Roomies Plan
             </Typography>
             {meals}
             {price}
@@ -94,7 +94,7 @@ const PlanDetails: React.FC<{
               color='primary'
               className={classes.title}
             >
-              Family
+              Family Plan
             </Typography>
             {meals}
             {price}
