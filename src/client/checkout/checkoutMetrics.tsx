@@ -5,6 +5,7 @@ import { IPlan } from '../../plan/planModel';
 export const sendCheckoutMetrics = (
   cart: Cart,
   plans: IPlan[],
+  cuisines: string[],
 ) => {
   AnalyticsService.sendCheckoutMetrics(cart, plans);
   AnalyticsService.sendDeliveryMetrics(cart.Deliveries);
@@ -13,5 +14,5 @@ export const sendCheckoutMetrics = (
     plans
   );
   AnalyticsService.sendChoseScheduleMetrics(cart.Schedules);
-  AnalyticsService.sendCuisineMetrics(cart.Tags.map(t => t.Name));
+  AnalyticsService.sendCuisineMetrics(cuisines);
 }

@@ -41,6 +41,7 @@ const PreferredSchedule: React.FC<{
   limit,
   removeSchedule,
   schedules,
+  start,
   updateSchedule,
 }) => {
   const classes = useStyles();
@@ -116,6 +117,7 @@ const PreferredSchedule: React.FC<{
             time={s.Time}
             onTimeChange={time => updateSchedule(i, s.Day, time)}
             limit={limit}
+            start={start}
           />
         </div>
       ))}

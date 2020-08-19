@@ -26,12 +26,14 @@ const DeliveryDateChooser: React.FC<{
   onTimeChange: (t: deliveryTime) => void
   time: deliveryTime
   limit?: number
+  start?: number
 }> = ({
   onDayChange,
   day,
   onTimeChange,
   time,
   limit,
+  start,
 }) => {
   const classes = useStyles();
   const consumer = useGetConsumer();
@@ -88,7 +90,7 @@ const DeliveryDateChooser: React.FC<{
         </ToggleButton>
       </ToggleButtonGroup>
         <Typography variant='body1'>
-          <b>{(consumer.data && consumer.data.Plan) ? 'Delivery day' : 'First delivery day'}: {getNextDeliveryDate(day).format('M/D/YY')}</b>
+          <b>{(consumer.data && consumer.data.Plan) ? 'Delivery day' : 'First delivery day'}: {getNextDeliveryDate(day, start).format('M/D/YY')}</b>
         </Typography>
       <FormControl variant='filled' className={`${classes.input} ${classes.smallPaddingBottom}`}>
         <Select

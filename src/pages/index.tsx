@@ -400,6 +400,12 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
   },
+  moneyBack: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+  },
   bold: {
     fontWeight: 600,
   },
@@ -437,10 +443,13 @@ const Welcome = () => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Subscribe to weekly
+          Mix & match
+        </Typography>
+        <Typography variant='h3' className={`${classes.welcomeTitle}`}>
+          restaurants
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
-          restaurant meals
+          Easy & Affordable
         </Typography>
         <Grid container>
           <Grid item xs={6}>
@@ -855,10 +864,10 @@ const HowItWorks = () => {
         <Content
           title='Eat whenever'
           description='Eat meals throughout the week'
-          img='home/microwave2.png'
+          img='home/refrigerator.png'
         />
         <Content
-          title="Plan ahead easily"
+          title="Subscribe"
           description="Skip weeks, pick future meals, or let us pick"
           img='home/calendar.png'
         />
@@ -883,7 +892,7 @@ const Plans = withClientApollo(() => {
     <div className={`${classes.plans}`}>
       <div className={`${classes.plansTitle} ${classes.centered}`}>
         <Typography variant='h3' className={`${classes.shrinker} ${classes.weeklyPlans}`}>
-          Weekly Plans
+          Subscribe & Save
         </Typography>
         <Typography variant='h6'>
           Change, skip, cancel anytime
@@ -929,7 +938,7 @@ const MoneyBack = () => {
   const theme = useTheme<Theme>();
   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   return (
-    <div className={`${classes.centered} ${classes.promotion}`}>
+    <div className={`${classes.centered} ${classes.moneyBack}`}>
       <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
         100% money back guaranteed
       </Typography>
@@ -969,16 +978,7 @@ const Sample = () => {
                 ${classes.sampleTitle}
               `}
             >
-              Mix & match restaurants in 1 delivery
-            </Typography>
-            <Typography
-              variant='h5'
-              className={`
-                ${classes.subtitle}
-                ${classes.sampleTitle}
-              `}
-            >
-              Restaurants in your fridge
+              Local meal plan subscription
             </Typography>
             <Typography
               variant='h5'
@@ -988,7 +988,7 @@ const Sample = () => {
                 ${classes.verticalMargin}
               `}
             >
-              Stop waiting for food. Heat & eat!
+              1 convenient delivery
             </Typography>
           </Grid>
           <Grid
@@ -997,7 +997,7 @@ const Sample = () => {
             md={8}
             className={classes.centered}
           >
-            <img src='/home/sample.jpg' className={classes.sampleImg} />
+            <img src='/home/sample2.jpg' className={classes.sampleImg} />
           </Grid>
         </Grid>
       </Container>
