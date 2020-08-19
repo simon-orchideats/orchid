@@ -988,7 +988,7 @@ const Sample = () => {
                 ${classes.verticalMargin}
               `}
             >
-              1 convenient delivery
+              Restaurants in your fridge, delivered together
             </Typography>
           </Grid>
           <Grid
