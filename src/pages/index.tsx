@@ -443,10 +443,10 @@ const Welcome = () => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Mix & match
+          Meal plans,
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle}`}>
-          restaurants
+          from restaurants
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
           Easy & Affordable
@@ -978,7 +978,7 @@ const Sample = () => {
                 ${classes.sampleTitle}
               `}
             >
-              Local meal plan subscription
+              Mix & match restaurants
             </Typography>
             <Typography
               variant='h5'
