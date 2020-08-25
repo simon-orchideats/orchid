@@ -443,7 +443,7 @@ const Welcome = () => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Meal plans,
+          Meal plans
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle}`}>
           from restaurants

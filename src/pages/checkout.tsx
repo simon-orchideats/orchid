@@ -434,7 +434,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 
 
   const onApplyPromo = () => {
-    if (!validate(accountNameInputRef.current?.value, passwordInputRef.current?.value)) {
+    if (!validate(accountNameInputRef.current?.value, passwordInputRef.current?.value, receiveTextsInput.current?.checked)) {
       notify('Please fix errors', NotificationType.error, true);
       return
     };
