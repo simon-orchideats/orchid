@@ -445,11 +445,11 @@ const Welcome = () => {
         <Typography variant='h3' className={classes.welcomeTitle}>
           Meal plans
         </Typography>
-        <Typography variant='h3' className={`${classes.welcomeTitle}`}>
+        <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
           from restaurants
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
-          Easy & Affordable
+          easy & worth it
         </Typography>
         <Grid container>
           <Grid item xs={6}>
