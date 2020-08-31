@@ -443,13 +443,10 @@ const Welcome = () => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          Meal plans
+          Easy meal plans
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
           from restaurants
-        </Typography>
-        <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
-          easy & worth it
         </Typography>
         <Grid container>
           <Grid item xs={6}>
@@ -528,7 +525,8 @@ const Why = () => {
           className={classes.centered}
           xs={12}
           sm={12}
-          md={4}
+          md={6}
+          xl={3}
         >
           <Content
             badTitle='You order 2+ deliveries a week'
@@ -541,7 +539,8 @@ const Why = () => {
           className={classes.centered}
           xs={12}
           sm={12}
-          md={4}
+          md={6}
+          xl={3}
         >
           <Content
             badTitle='You hate waiting for delivery'
@@ -554,12 +553,27 @@ const Why = () => {
           className={classes.centered}
           xs={12}
           sm={12}
-          md={4}
+          md={6}
+          xl={3}
         >
           <Content
             badTitle='You & roomies argue on what to eat'
             goodTitle="Everyone gets what they want"
             img='home/eat.svg'
+          />
+        </Grid>
+        <Grid
+          item
+          className={classes.centered}
+          xs={12}
+          sm={12}
+          md={6}
+          xl={3}
+        >
+          <Content
+            badTitle='Unreliable delivery'
+            goodTitle="Same trustworthy driver, always"
+            img='home/trust.svg'
           />
         </Grid>
       </Grid>
@@ -988,7 +1002,7 @@ const Sample = () => {
                 ${classes.verticalMargin}
               `}
             >
-              Restaurants in your fridge, delivered together
+              Restaurants in your fridge, delivered by the same driver
             </Typography>
           </Grid>
           <Grid
