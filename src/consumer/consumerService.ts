@@ -3,7 +3,6 @@ import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
 import { Consumer, IConsumer, IConsumerProfile } from './consumerModel';
-import { ConsumerPlan } from './consumerPlanModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -24,35 +23,35 @@ type myConsumerRes = { myConsumer: IConsumer | null }
 
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
-  //@ts-ignore
-  if (newConsumer.plan) {
-    //@ts-ignore
-    newConsumer.plan.__typename = 'ConsumerPlan';
-    newConsumer.plan.schedules.forEach(s => {
-      //@ts-ignore
-      s.__typename = 'Schedules';
-    });
-    newConsumer.plan.mealPlans.forEach(mp => {
-      //@ts-ignore
-      mp.__typename = 'MealPlan';
-    });
-    newConsumer.plan.tags.forEach(t => {
-      // @ts-ignore
-      t.__typename = 'Tag'
-    })
-  }
-  //@ts-ignore
-  newConsumer.profile.__typename = 'ConsumerProfile';
-  //@ts-ignore
-  newConsumer.profile.card.__typename = 'Card';
-  //@ts-ignore
-  newConsumer.profile.destination.address.__typename  = 'Address'
-  //@ts-ignore
-  newConsumer.profile.destination.__typename = 'Destination'
-  //@ts-ignore
-  newConsumer.__typename = 'Consumer';
-  //@ts-ignore
-  if (!newConsumer.profile.destination.address.address2) newConsumer.profile.destination.address.address2 = null;
+  // //@ts-ignore
+  // if (newConsumer.plan) {
+  //   //@ts-ignore
+  //   newConsumer.plan.__typename = 'ConsumerPlan';
+  //   newConsumer.plan.schedules.forEach(s => {
+  //     //@ts-ignore
+  //     s.__typename = 'Schedules';
+  //   });
+  //   newConsumer.plan.mealPlans.forEach(mp => {
+  //     //@ts-ignore
+  //     mp.__typename = 'MealPlan';
+  //   });
+  //   newConsumer.plan.tags.forEach(t => {
+  //     // @ts-ignore
+  //     t.__typename = 'Tag'
+  //   })
+  // }
+  // //@ts-ignore
+  // newConsumer.profile.__typename = 'ConsumerProfile';
+  // //@ts-ignore
+  // newConsumer.profile.card.__typename = 'Card';
+  // //@ts-ignore
+  // newConsumer.profile.location.address.__typename  = 'Address'
+  // //@ts-ignore
+  // newConsumer.profile.location.__typename = 'Destination'
+  // //@ts-ignore
+  // newConsumer.__typename = 'Consumer';
+  // //@ts-ignore
+  // if (!newConsumer.profile.location.address.address2) newConsumer.profile.location.address.address2 = null;
   return newConsumer
 }
 
@@ -71,11 +70,11 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
 }
 
 export const useUpdateMyProfile = (): [
-  (consumer: Consumer, profile: IConsumerProfile, paymentMethodId?: string) => void,
+  (consumer: IConsumer, profile: IConsumerProfile, paymentMethodId?: string) => void,
   {
     error?: ApolloError 
     data?: {
-      res: Consumer | null,
+      res: IConsumer | null,
       error: string | null
     }
   }
@@ -93,7 +92,7 @@ export const useUpdateMyProfile = (): [
     }
     ${consumerFragment}
   `);
-  const updateMyProfile = (consumer: Consumer, profile: IConsumerProfile, paymentMethodId?: string) => {
+  const updateMyProfile = (consumer: IConsumer, profile: IConsumerProfile, paymentMethodId?: string) => {
     mutate({
       variables: { profile, paymentMethodId },
       optimisticResponse: {
@@ -109,7 +108,7 @@ export const useUpdateMyProfile = (): [
   }
   return useMemo(() => {
     const data = mutation.data && {
-      res: mutation.data.updateMyProfile.res && new Consumer(mutation.data.updateMyProfile.res),
+      res: mutation.data.updateMyProfile.res,
       error: mutation.data.updateMyProfile.error
     }
     return [
@@ -159,7 +158,6 @@ export const useCancelSubscription = (): [
           const newConsumer = copyWithTypenames(consumer.myConsumer);
           updateMyConsumer(cache, {
             ...newConsumer,
-            stripeSubscriptionId: null,
             plan: null,
           });
         }
@@ -178,8 +176,8 @@ export const useCancelSubscription = (): [
 
 export const useGetConsumer = () => {
   const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
-  const consumer = useMemo<Consumer | null>(() => (
-    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
+  const consumer = useMemo<IConsumer | null>(() => (
+    res.data && res.data.myConsumer ? Consumer.getICopy(res.data.myConsumer) : null
   ), [res.data]);
   return {
     loading: res.loading,
@@ -211,7 +209,7 @@ export const useGetLazyConsumer = (): [
   () => void,
   {
     error?: ApolloError 
-    data: Consumer | null
+    data: IConsumer | null
   }
 ] => {
   const [getConsumer, consumerRes] = useLazyQuery<myConsumerRes>(MY_CONSUMER_QUERY, {
@@ -221,7 +219,7 @@ export const useGetLazyConsumer = (): [
     getConsumer,
     {
       error: consumerRes.error,
-      data: consumerRes.data && consumerRes.data.myConsumer ? new Consumer(consumerRes.data.myConsumer) : null
+      data: consumerRes.data ? consumerRes.data.myConsumer : null
     }
   ]
 }
@@ -254,8 +252,8 @@ export const useGoogleSignIn = () => () => new Promise<{ name: string, email: st
 
 export const useRequireConsumer = (url: string) => {
   const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
-  const consumer = useMemo<Consumer | null>(() => (
-    res.data && res.data.myConsumer ? new Consumer(res.data.myConsumer) : null
+  const consumer = useMemo<IConsumer | null>(() => (
+    res.data && res.data.myConsumer ? Consumer.getICopy(res.data.myConsumer) : null
   ), [res.data]);
   if (!consumer && !res.loading && !res.error) {
     if (!isServer()) window.location.assign(`${activeConfig.client.app.url}/login?redirect=${url}`);
@@ -280,7 +278,7 @@ export const useConsumerSignUp = (): [
   {
     error?: ApolloError 
     data?: {
-      res: Consumer | null,
+      res: IConsumer | null,
       error: string | null
     }
     called: boolean,
@@ -316,7 +314,7 @@ export const useConsumerSignUp = (): [
   }
   return useMemo(() => {
     const data = mutation.data && {
-      res: mutation.data.signUp.res && new Consumer(mutation.data.signUp.res),
+      res: mutation.data.signUp.res,
       error: mutation.data.signUp.error
     }
     return [
@@ -330,64 +328,64 @@ export const useConsumerSignUp = (): [
   }, [mutation]);
 }
 
-export const useUpdateMyPlan = (): [
-  (plan: ConsumerPlan, currConsumer: Consumer) => void,
-  {
-    error?: ApolloError 
-    data?: {
-      res: Consumer | null,
-      error: string | null
-    }
-  }
-] => {
-  type res = { updateMyPlan: MutationConsumerRes };
-  const [mutate, mutation] = useMutation<res>(gql`
-    mutation updateMyPlan($plan: ConsumerPlanInput!) {
-      updateMyPlan(plan: $plan) {
-        res {
-          ...consumerFragment
-        }
-        error
-      }
-    }
-    ${consumerFragment}
-  `);
-  const updateMyPlan = (plan: ConsumerPlan, currConsumer: Consumer) => {
-    if (!currConsumer.Plan) {
-      const err = new Error('Missing consumer plan');
-      console.error(err.stack);
-      throw err;
-    }
-    if (ConsumerPlan.equals(plan, currConsumer.Plan)) return;
-    mutate({ 
-      variables: {
-        plan: ConsumerPlan.getIConsumerPlanInputFromConsumerPlan(plan),
-      },
-      optimisticResponse: {
-        updateMyPlan: {
-          res: copyWithTypenames({
-            ...currConsumer,
-            plan
-          }),
-          error: null,
-          //@ts-ignore
-          __typename: 'ConsumerRes'
-        }
-      },
-      // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
-    })
-  }
-  return useMemo(() => {
-    const data = mutation.data && {
-      res: mutation.data.updateMyPlan.res && new Consumer(mutation.data.updateMyPlan.res),
-      error: mutation.data.updateMyPlan.error
-    }
-    return [
-      updateMyPlan,
-      {
-        error: mutation.error,
-        data,
-      }
-    ]
-  }, [mutation]);
-}
+// export const useUpdateMyPlan = (): [
+//   (plan: IConsumerPlan, currConsumer: IConsumer) => void,
+//   {
+//     error?: ApolloError 
+//     data?: {
+//       res: IConsumer | null,
+//       error: string | null
+//     }
+//   }
+// ] => {
+  // type res = { updateMyPlan: MutationConsumerRes };
+  // const [mutate, mutation] = useMutation<res>(gql`
+  //   mutation updateMyPlan($plan: ConsumerPlanInput!) {
+  //     updateMyPlan(plan: $plan) {
+  //       res {
+  //         ...consumerFragment
+  //       }
+  //       error
+  //     }
+  //   }
+  //   ${consumerFragment}
+  // `);
+  // const updateMyPlan = (plan: IConsumerPlan, currConsumer: IConsumer) => {
+  //   if (!currConsumer.plan) {
+  //     const err = new Error('Missing consumer plan');
+  //     console.error(err.stack);
+  //     throw err;
+  //   }
+  //   if (ConsumerPlan.equals(plan, currConsumer.plan)) return;
+  //   mutate({ 
+  //     variables: {
+  //       plan: ConsumerPlan.getIConsumerPlanInputFromConsumerPlan(plan),
+  //     },
+  //     optimisticResponse: {
+  //       updateMyPlan: {
+  //         res: copyWithTypenames({
+  //           ...currConsumer,
+  //           plan
+  //         }),
+  //         error: null,
+  //         //@ts-ignore
+  //         __typename: 'ConsumerRes'
+  //       }
+  //     },
+  //     // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
+  //   })
+  // }
+  // return useMemo(() => {
+  //   const data = mutation.data && {
+  //     res: mutation.data.updateMyPlan.res && new Consumer(mutation.data.updateMyPlan.res),
+  //     error: mutation.data.updateMyPlan.error
+  //   }
+  //   return [
+  //     updateMyPlan,
+  //     {
+  //       error: mutation.error,
+  //       data,
+  //     }
+  //   ]
+  // }, [mutation]);
+// }

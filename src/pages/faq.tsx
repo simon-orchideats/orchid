@@ -1,6 +1,7 @@
+//@ts-nocheck
+
 import { makeStyles, Container, Typography, Paper, Link } from '@material-ui/core';
 import Footer from '../client/general/Footer';
-import { deliveryFee } from '../order/costModel';
 import { referralFriendAmount, welcomePromoAmount, referralSelfAmount } from '../order/promoModel';
 
 const useStyles = makeStyles(theme => ({

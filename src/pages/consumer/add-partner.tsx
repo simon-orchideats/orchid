@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Container, Paper, FormControlLabel, Checkbox, Button, Divider} from "@material-ui/core";
 import React, { useRef, useState, createRef, RefObject } from 'react';
 import { state } from "../../place/addressModel";
@@ -420,7 +422,7 @@ const AddPartner = () => {
         name: nameInputRef?.current!.value,
         phone: phoneInputRef?.current!.value
       },
-      menu: menuInputs.map(mi => ({
+      featured: menuInputs.map(mi => ({
         name: mi.nameInputRef?.current!.value,
         img: mi.imgInputRef?.current!.value,
         isActive: mi.isActiveRef?.current!.checked,

@@ -1,16 +1,4 @@
-import { IHours } from './restModel';
-import { ITag, Tag, TagTypes } from './tagModel';
-import { PlanName } from './../plan/planModel';
-import { IDeliveryMeal } from '../order/deliveryModel';
-import { getItemChooser } from '../utils/utils';
-import { Cart } from '../order/cartModel';
-
-const doesMealContainCuisines = (meal: IMeal, cuisines: string[]) => {
-  for (let i = 0; i < cuisines.length; i++) {
-    if (meal.tags.find(t => t.type === TagTypes.Cuisine && t.name === cuisines[i])) return true;
-  }
-  return false;
-}
+import { ITag, Tag } from './tagModel';
 
 export interface IOptionGroup {
   readonly names: string[]
@@ -55,20 +43,18 @@ export class AddonGroup extends OptionGroup implements IAddonGroup {
 }
 
 export interface IMeal {
+  readonly addonGroups: IAddonGroup[],
+  readonly description: string
   readonly _id: string,
   readonly img?: string,
-  readonly name: string,
-  readonly addonGroups: IAddonGroup[],
-  readonly optionGroups: IOptionGroup[],
   readonly isActive: boolean
-  readonly description: string
-  readonly originalPrice: number
-  readonly stripePlanId: string
-  readonly planName: PlanName
+  readonly name: string,
+  readonly optionGroups: IOptionGroup[],
+  readonly price: number
   readonly tags: ITag[]
 }
 
-export interface IMealInput extends Omit<IMeal, 'planName' | 'stripePlanId' | '_id'> {}
+export interface IMealInput extends Omit<IMeal, '_id'> {}
 
 export class Meal implements IMeal {
   readonly _id: string;
@@ -78,9 +64,7 @@ export class Meal implements IMeal {
   readonly optionGroups: OptionGroup[]
   readonly name: string;
   readonly description: string;
-  readonly originalPrice: number;
-  readonly stripePlanId: string;
-  readonly planName: PlanName;
+  readonly price: number;
   readonly tags: Tag[];
 
   constructor(meal: IMeal) {
@@ -90,49 +74,22 @@ export class Meal implements IMeal {
     this.img = meal.img;
     this.name = meal.name;
     this.description = meal.description;
-    this.originalPrice = meal.originalPrice;
+    this.price = meal.price;
     this.optionGroups = meal.optionGroups.map(og => new OptionGroup(og))
-    this.stripePlanId = meal.stripePlanId;
-    this.planName = meal.planName;
     this.tags = meal.tags.map(t => new Tag(t));
   }
 
-  public get Id() { return this._id }
-  public get IsActive() { return this.isActive }
-  public get AddonGroups() { return this.addonGroups }
-  public get Img() { return this.img }
-  public get Name() { return this.name }
-  public get OptionGroups() { return this.optionGroups }
-  public get Description() { return this.description }
-  public get OriginalPrice() { return this.originalPrice }
-  public get StripePlanId() { return this.stripePlanId }
-  public get PlanName() { return this.planName }
-  public get Tags() { return this.tags }
-
   static getICopy(meal: IMeal): IMeal {
     return {
-      ...meal,
+      _id: meal._id,
+      img: meal.img,
+      isActive: meal.isActive,
+      name: meal.name,
+      description: meal.description,
+      price: meal.price,
+      tags: meal.tags.map(t => Tag.getICopy(t)),
       addonGroups: meal.addonGroups.map(ag => AddonGroup.getICopy(ag)),
       optionGroups: meal.optionGroups.map(og => OptionGroup.getICopy(og))
     }
-  }
-
-  static chooseRandomMeals(
-    menu: IMeal[],
-    mealCount: number,
-    restId: string,
-    restName: string,
-    taxRate: number,
-    hours: IHours,
-    cuisines?: string[],
-  ): IDeliveryMeal[] {
-    const filter = cuisines ?
-      (m: IMeal) => m.isActive && doesMealContainCuisines(m, cuisines)
-    :
-      (m: IMeal) => m.isActive
-    const chooseRandomly = getItemChooser<IMeal>(menu, filter);
-    const meals: IMeal[] = [];
-    for (let i = 0; i < mealCount; i++) meals.push(chooseRandomly());
-    return Cart.getDeliveryMeals(meals, restId, restName, taxRate, hours);
   }
 }

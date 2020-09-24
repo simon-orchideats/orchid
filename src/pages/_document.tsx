@@ -7,6 +7,7 @@ import { activeConfig } from '../config';
 import { fbEvents } from "../client/utils/analyticsService";
 const tracking = activeConfig.client.analytics.ga.trackingId;
 const fbTracking = activeConfig.client.analytics.facebookPixel.pixelId;
+const googleKey = activeConfig.client.googleApi.key;
 
 export default class MyDocument extends Document {
   render() {
@@ -15,6 +16,8 @@ export default class MyDocument extends Document {
         <script src="https://js.stripe.com/v3/"></script>
         <script src='https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js' />
         <script src='https://cdnjs.cloudflare.com/ajax/libs/postscribe/2.0.6/postscribe.min.js' />
+        <script type="text/javascript" src={`https://maps.googleapis.com/maps/api/js?key=${googleKey}&libraries=places`}></script>
+
         <Head>
           {/* Global Site Tag (gtag.js) - Google Analytics */}
           <script

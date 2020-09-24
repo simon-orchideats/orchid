@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, GridList, GridListTile, GridListTileBar, Container } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, ImageList, ImageListItem, ImageListItemBar, Container, TextField } from '@material-ui/core';
 import PlanCards from '../client/plan/PlanCards';
 import Link from 'next/link';
 import { menuRoute } from './menu';
@@ -6,11 +6,9 @@ import Router from 'next/router';
 import { howItWorksRoute } from './how-it-works';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
-import React from 'react';
-import { useGetConsumer } from '../consumer/consumerService';
-import { welcomePromoAmount, referralMonthDuration } from '../order/promoModel';
-import Referral from '../client/general/Referral';
+import React, { useState } from 'react';
 import { Carousel } from 'react-responsive-carousel';
+import { useSetSearchArea } from '../client/global/state/cartState';
 
 const useStyles = makeStyles(theme => ({
   avatar: {
@@ -110,10 +108,10 @@ const useStyles = makeStyles(theme => ({
     // - the promo banner then the top margin of how-it-works
     maxHeight: `calc(100vh - ${theme.mixins.toolbar.height}px - 115.5px - 150px)`,
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px - 115.5px - 150px)`,
+      maxHeight: `calc(100vh - ${theme.mixins.customToolbar.landscapeHeight}px - 115.5px - 150px)`,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      maxHeight: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px - 115.5px - 150px)`,
+      maxHeight: `calc(100vh - ${theme.mixins.customToolbar.smallHeight}px - 115.5px - 150px)`,
     },
     textAlign: 'center',
     display: 'flex',
@@ -434,9 +432,19 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const Welcome = () => {
+const Welcome = withClientApollo(() => {
   const classes = useStyles();
-  const onClick = () => {
+  const updateCartZip = useSetSearchArea()
+  const [error, setError] = useState('');
+  const [zip, setZip] = useState<string>();
+  const findFood = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!zip) {
+      setError('Enter location');
+      return;
+    }
+    updateCartZip(zip);
     Router.push(menuRoute);
   }
   return (
@@ -464,18 +472,37 @@ const Welcome = () => {
             </div>
           </Grid>
         </Grid>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={() => onClick()}
-          size='large'
-        >
-          Explore Menu
-        </Button>
+        <Grid container>
+          <form onSubmit={findFood}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12} md={6}>
+                <TextField
+                  hiddenLabel
+                  fullWidth
+                  variant='filled'
+                  error={!!error}
+                  helperText={error}
+                  onChange={e => setZip(e.target.value)}
+                  margin='none'
+                  placeholder='Your location'
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} md={6}>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  type='submit'
+                >
+                  Find food
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Grid>
       </div>
     </div>
   );
-};
+});
 
 const Why = () => {
   const classes = useStyles();
@@ -621,7 +648,7 @@ const Slider = () => {
       const owner = (
         <>
           <img src={ownerImg} className={classes.stretch} />
-          <GridListTileBar
+          <ImageListItemBar
             className={classes.titleBar}
             classes={{
               titleWrap: classes.titleWrap
@@ -663,38 +690,38 @@ const Slider = () => {
             md={4}
           >
             <Hidden smDown>
-              <GridList
+              <ImageList
                 cols={1}
-                cellHeight={height}
+                rowHeight={height}
                 className={classes.stretch}
               >
-                <GridListTile rows={2}>
+                <ImageListItem rows={2}>
                   {owner}
-                </GridListTile>
-              </GridList>
+                </ImageListItem>
+              </ImageList>
             </Hidden>
           </Grid>
           <Grid item md={8} sm={12}>
-            <GridList cols={3} cellHeight={height}>
-              <GridListTile>
+            <ImageList cols={3} rowHeight={height}>
+              <ImageListItem>
                 {isSm ? owner : <img src={m1} className={classes.stretch} />}
-              </GridListTile>
-              <GridListTile>
+              </ImageListItem>
+              <ImageListItem>
                 <img src={m2} className={classes.stretch} />
-              </GridListTile>
-              <GridListTile>
+              </ImageListItem>
+              <ImageListItem>
                 <img src={m3} className={classes.stretch} />
-              </GridListTile>
-              <GridListTile>
+              </ImageListItem>
+              <ImageListItem>
                 <img src={m4} className={classes.stretch} />
-              </GridListTile>
-              <GridListTile>
+              </ImageListItem>
+              <ImageListItem>
                 <img src={m5} className={classes.stretch} />
-              </GridListTile>
-              <GridListTile>
+              </ImageListItem>
+              <ImageListItem>
                 <img src={m6} className={classes.stretch} />
-              </GridListTile>
-            </GridList>
+              </ImageListItem>
+            </ImageList>
           </Grid>
         </Grid>
       );
@@ -927,26 +954,6 @@ const Plans = withClientApollo(() => {
   )
 });
 
-const Promotion = withClientApollo(() => {
-  const classes = useStyles();
-  const consumer = useGetConsumer();
-  const theme = useTheme<Theme>();
-  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
-  const consumerData = consumer.data;
-  if (consumerData && consumerData.Plan) return null;
-  const basePromoAmount = ((welcomePromoAmount * 4 * referralMonthDuration) / 100);
-  return (
-    <div className={`${classes.centered} ${classes.promotion}`}>
-      <Typography variant={isSmAndDown ? 'h5' : 'h4'} className={classes.bold}>
-        ${basePromoAmount} off your 1st month!
-      </Typography>
-      <Typography variant={isSmAndDown ? 'h6' : 'h5'} className={classes.bold}>
-        Auto applied at checkout
-      </Typography>
-    </div>
-  );
-});
-
 const MoneyBack = () => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -960,24 +967,12 @@ const MoneyBack = () => {
   );
 };
 
-const ReferralWelcome = withClientApollo(() => {
-  const classes = useStyles();
-  const consumer = useGetConsumer();
-  const consumerData = consumer.data;
-  if (!consumerData || !consumerData.Plan) return null;
-  return (
-    <div className={classes.referralBottom}>
-      <Referral />
-    </div>
-  )
-});
-
 const Sample = () => {
   const classes = useStyles();
   return (
     <div className={classes.sample}>
       <Container maxWidth='xl'>
-        <Grid container justify='center'>
+        <Grid container justifyContent='center'>
           <Grid
             item
             sm={12} 
@@ -1135,9 +1130,7 @@ const Testimonials = () => {
 const Index = () => {
   return (
     <>
-      <ReferralWelcome />
       <Welcome />
-      <Promotion />
       <Sample />
       <HowItWorks />
       <Plans />

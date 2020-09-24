@@ -1,10 +1,12 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Container, Paper, useTheme, useMediaQuery, Theme, Grid, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
 import Close from '@material-ui/icons/Close';
 import { useState, useRef, useEffect } from "react";
-import { useGetMyUpcomingOrders, useSkipDelivery } from "../../client/order/orderService";
+import { useGetMyUpcomingOrders } from "../../client/order/orderService";
 import { Order } from "../../order/orderModel";
-import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
+// import { useGetCart, useClearCartMeals, useSetCart } from "../../client/global/state/cartState";
 import Router from 'next/router'
 import { menuRoute } from "../menu";
 import withApollo from "../../client/utils/withPageApollo";
@@ -19,10 +21,7 @@ import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import moment from "moment";
 import { Consumer } from "../../consumer/consumerModel";
-import { MIN_DAYS_AHEAD } from "../../consumer/consumerPlanModel";
-import { deliveryRoute } from "../delivery";
 import { useGetAvailablePlans } from "../../plan/planService";
-import { sendSkipDeliveryMetrics } from "../../client/consumer/upcomingDeliveriesMetrics";
 import { referralFriendAmount, referralSelfAmount, referralMonthDuration } from "../../order/promoModel";
 import OrderOverview from "../../client/consumer/OrderOverview";
 import { activeConfig } from "../../config";
@@ -140,15 +139,6 @@ const UpcomingDeliveryOverview: React.FC<{
       query,
     });
   };
-  const onSkip = (deliveryIndex: number) => {
-    if (!plans) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
-    sendSkipDeliveryMetrics(order, deliveryIndex);
-    skipDelivery(order, deliveryIndex, plans);
-  }
   let action = null;
   if (canEdit) {
     if (isUpdating) {
@@ -181,8 +171,7 @@ const UpcomingDeliveryOverview: React.FC<{
         action={action}
         scheduleDeliveries={
           <ScheduleDeliveries
-            deliveries={order.Deliveries}
-            onSkip={onSkip}
+            deliveries={order.deliveries}
             isUpdating={isUpdating}
           />
         }
@@ -213,7 +202,7 @@ const UpcomingDeliveries = () => {
   } else {
     OrderOverviews = consumerData && orders.data && orders.data.map(order => 
       <UpcomingDeliveryOverview
-        key={order.Id}
+        key={order._id}
         order={order}
         isUpdating={isUpdating}
         consumer={consumerData}
@@ -235,30 +224,6 @@ const UpcomingDeliveries = () => {
     console.error('No consumer data', consumer.error);
     return <Typography>Error</Typography>
   }
-  const referralLink = `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan?.ReferralCode}&a=${referralFriendAmount}`
-  const friendAmount = referralFriendAmount * 4 * referralMonthDuration;
-  const referral = (
-    <Paper className={`${classes.padding} ${classes.marginBottom}`}>
-      <Typography variant='h6' className={classes.marginBottom}>
-        Refer a friend. You Get ${(referralSelfAmount * 4 * referralMonthDuration / 100).toFixed(2)} off and they get
-        ${(friendAmount / 100).toFixed(2)} off
-      </Typography>
-      <WithClickToCopy 
-        render={onCopy =>
-          <Typography
-            variant='h6'
-            className={classes.marginBottom}
-            onClick={() => onCopy(referralLink)}
-          >
-            When they checkout with your link&nbsp;
-            <b>
-              {referralLink}
-            </b>
-          </Typography>
-        }
-      />
-    </Paper>
-  );
   if (needsCart) {
     return (
       <Container maxWidth='xl' className={classes.needsCartContainer}>
@@ -272,7 +237,6 @@ const UpcomingDeliveries = () => {
             <Typography variant='h3' className={`${classes.marginBottom} ${classes.paddingTop}`}>
               Upcoming deliveries
             </Typography>
-            {referral}
             {OrderOverviews}
           </Grid>
           {
@@ -302,7 +266,6 @@ const UpcomingDeliveries = () => {
       <Typography variant='h3' className={classes.marginBottom}>
         Upcoming deliveries
       </Typography>
-      {referral}
       {OrderOverviews}
     </Container>
   );

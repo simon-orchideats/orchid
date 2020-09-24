@@ -1,8 +1,8 @@
 import React from 'react';
 import { makeStyles, Typography, Grid, Paper, Avatar } from "@material-ui/core";
-import { Rest } from "../../rest/restModel";
+import { IRest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
-import { Meal } from '../../rest/mealModel';
+import { IMeal } from '../../rest/mealModel';
 import { TagTypes } from '../../rest/tagModel';
 
 const useStyles = makeStyles(theme => ({
@@ -39,12 +39,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const isMealInFilter = (meal: Meal, cuisines: string[]) => {
+const isMealInFilter = (meal: IMeal, cuisines: string[]) => {
   let mealIsInCuisineFilter = false;
   for (let i = 0; i < cuisines.length; i++) {
-    for (let j = 0; j < meal.Tags.length; j++) {
-      const tag = meal.Tags[j];
-      if (tag.Type === TagTypes.Cuisine && tag.Name === cuisines[i]) {
+    for (let j = 0; j < meal.tags.length; j++) {
+      const tag = meal.tags[j];
+      if (tag.type === TagTypes.Cuisine && tag.name === cuisines[i]) {
         mealIsInCuisineFilter = true;
         break;
       }
@@ -58,30 +58,30 @@ const isMealInFilter = (meal: Meal, cuisines: string[]) => {
 
 const RestMenu: React.FC<{
   cuisinesFilter: string[],
-  rest: Rest,
+  rest: IRest,
 }> = ({
   cuisinesFilter,
   rest,
 }) => {
   const classes = useStyles();
-  const meals = rest.Menu.map(meal => {
+  const meals = rest.featured.map(meal => {
     const isInFilter = isMealInFilter(meal, cuisinesFilter);
     if (!isInFilter) return null;
     if (!meal.isActive) return null;
     return (
       <Grid
         item
-        key={meal.Id}
+        key={meal._id}
         xs={4}
         sm={4}
         md={3}
       >
         <MenuMeal
-          restId={rest.Id}
-          restName={rest.Profile.Name}
           meal={meal}
-          taxRate={rest.TaxRate}
-          hours={rest.Hours}
+          deliveryFee={rest.deliveryFee}
+          restId={rest._id}
+          restName={rest.profile.name}
+          taxRate={rest.taxRate}
         />
       </Grid>
     )
@@ -93,10 +93,10 @@ const RestMenu: React.FC<{
         <Grid
           container
           alignItems='center'
-          justify='space-between'
+          justifyContent='space-between'
         >
             {
-              rest.Profile.Actor ?
+              rest.profile.actor ?
               <>
                 <Grid
                   item
@@ -104,7 +104,7 @@ const RestMenu: React.FC<{
                   sm={12}
                 >
                   <Typography variant='h4'>
-                    {rest.Profile.Name}
+                    {rest.profile.name}
                   </Typography>
                 </Grid>
                 <Grid
@@ -113,12 +113,12 @@ const RestMenu: React.FC<{
                   sm={12}
                 >
                   <div className={classes.profile}>
-                    <Avatar src={rest.Profile.ActorImg} className={classes.profilePic} />
+                    <Avatar src={rest.profile.actorImg} className={classes.profilePic} />
                     <Typography variant='body1' color='textSecondary'>
                       by&nbsp;
                     </Typography>
                     <Typography variant='h6'>
-                      {rest.Profile.Actor}
+                      {rest.profile.actor}
                     </Typography>
                   </div>
                 </Grid>
@@ -126,7 +126,7 @@ const RestMenu: React.FC<{
             :
               <Grid item xs={12}>
                 <Typography variant='h4'>
-                  {rest.Profile.Name}
+                  {rest.profile.name}
                 </Typography>
               </Grid>
             }
@@ -135,7 +135,7 @@ const RestMenu: React.FC<{
           variant='subtitle1'
           color='textSecondary'
         >
-          {rest.Profile.Story}
+          {rest.profile.story}
         </Typography>
       </div>
       <Grid container className={classes.meals}>
@@ -146,12 +146,12 @@ const RestMenu: React.FC<{
 }
 
 export default React.memo(RestMenu, (prevProps, nextProps) => {
-  if (prevProps.rest.Id !== nextProps.rest.Id) return false;
-  const prevRestMeals = prevProps.rest.Menu.map(meal => 
-    isMealInFilter(meal, prevProps.cuisinesFilter) ? meal.Id : null,
+  if (prevProps.rest._id !== nextProps.rest._id) return false;
+  const prevRestMeals = prevProps.rest.featured.map(meal => 
+    isMealInFilter(meal, prevProps.cuisinesFilter) ? meal._id : null,
   ).sort();
-  const nextRestMeals = nextProps.rest.Menu.map(meal =>
-    isMealInFilter(meal, nextProps.cuisinesFilter) ? meal.Id : null,
+  const nextRestMeals = nextProps.rest.featured.map(meal =>
+    isMealInFilter(meal, nextProps.cuisinesFilter) ? meal._id : null,
   ).sort();
   const areEqual = prevRestMeals.length === nextRestMeals.length
     && prevRestMeals.every((mealId, index) => mealId === nextRestMeals[index]);

@@ -1,5 +1,3 @@
-import { IRewards } from './../../order/rewardModel';
-import { IWeeklyDiscount } from './../../order/discountModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
 import { getAuth0Header } from './../auth/auth0Management';
@@ -8,7 +6,7 @@ import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { EConsumer, IConsumer, Consumer, IConsumerProfile, Permission } from './../../consumer/consumerModel';
-import { IConsumerPlan, EConsumerPlan, ConsumerPlan, IConsumerPlanInput } from './../../consumer/consumerPlanModel';
+import { IConsumerPlan } from './../../consumer/consumerPlanModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -16,40 +14,14 @@ import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
-import { refetchAccessToken } from '../../utils/auth';
-import { Delivery } from '../../order/deliveryModel';
 
 const CONSUMER_INDEX = 'consumers';
 
-const getReferredDiscountConsumers = (signedInUserId: string) => ({
-  bool: {
-    filter: {
-      bool: {
-        must: {
-          term: {
-            'plan.weeklyDiscounts.discounts.referredUserId': signedInUserId
-          }
-        }
-      }
-    }
-  }
-})
-
 export interface IConsumerService {
-  attachDiscountsToPlan: (
-    _id: string,
-    discounts: IWeeklyDiscount[],
-    replace:  boolean,
-    consumer?: EConsumer
-  ) => Promise<void>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
-  getRewards: (signedInUser: SignedInUser) => Promise<IRewards>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
-  getNameFromReferral: (promoCode: string) => Promise<string>
-  removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
-  upsertConsumer(_id: string, permissions: Permission[], consumer: EConsumer): Promise<IConsumer>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
@@ -106,86 +78,62 @@ class ConsumerService implements IConsumerService {
     req?: IncomingMessage,
     res?: OutgoingMessage
   ) {
+    console.log(req, res);
     try {
       if (!this.orderService) throw 'Missing order service';
       if (!signedInUser) throw getNotSignedInErr()
       const subscriptionId = signedInUser.stripeSubscriptionId;
-      const orderService = this.orderService;
       if (!subscriptionId) throw new Error('Missing stripe subscription id');
 
-      const todaysOrder = await this.orderService.deleteCurrentOrderUnconfirmedDeliveries(signedInUser._id);
-      if (todaysOrder) {
-        const numConfirmedMeals = Delivery.getConfirmedMealCount(todaysOrder.deliveries);
-        const stripeSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-        await Promise.all(stripeSubscription.items.data.map(si => {
-          const count = numConfirmedMeals[si.plan.id] || 0;
-          return orderService.setOrderUsage(si.id, count, Math.round(Date.now() / 1000)).catch(e => {
-            console.error(`Could not set order usage count of '${count}' with sub item '${si.id}' for sub plan
-            '${si.plan.id}'`, e.stack);
-            throw e;
-          });
-        }));
-      }
+      // const p1 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
+      //   headers: await getAuth0Header(),
+      //   method: 'PATCH',
+      //   body: JSON.stringify({
+      //     app_metadata: {
+      //       stripeSubscriptionId: null,
+      //     },
+      //   })
+      // }).then(async () => {
+      //   if (req && res) await refetchAccessToken(req, res);
+      // }).catch(e => {
+      //   const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
+      //   console.error(msg)
+      //   throw e;
+      // });
 
-      const p1 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
-        headers: await getAuth0Header(),
-        method: 'PATCH',
-        body: JSON.stringify({
-          app_metadata: {
-            stripeSubscriptionId: null,
-          },
-        })
-      }).then(async () => {
-        if (req && res) await refetchAccessToken(req, res);
-      }).catch(e => {
-        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });
+      // const eConsumer = await this.getEConsumer(signedInUser._id);
+      // const plan = eConsumer?.consumer.plan;
+      // if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
 
-      const p2 = this.orderService.deleteUnpaidOrdersWithUnconfirmedDeliveries(signedInUser._id).catch(e => {
-        console.error(`Failed to delete upcoming orders with unconfirmed deliveries for ${signedInUser._id}`, e.stack);
-        throw e;
-      });
+      // const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
+      //   stripeSubscriptionId: null,
+      //   plan: null,
+      // }
+      // const p3 = this.elastic.update({
+      //   index: CONSUMER_INDEX,
+      //   id: signedInUser._id,
+      //   body: {
+      //     doc: updatedConsumer
+      //   }
+      // }).catch(e => {
+      //   const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
+      //   console.error(msg)
+      //   throw e;
+      // });
+      // this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
+      //   const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
+      //   console.error(msg)
+      //   throw e;
+      // });
+      // this.orderService.removeReferredDiscounts(signedInUser).catch(e => {
+      //   console.error(`[ConsumerService] Failed to removeReferredDiscounts with userId '${signedInUser._id}'`, e.stack)
+      //   throw e;
+      // })
+      // this.removeReferredWeeklyDiscount(signedInUser._id).catch(e => {
+      //   console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${signedInUser._id}'`, e.stack)
+      // });
 
-      const eConsumer = await this.getEConsumer(signedInUser._id);
-      const plan = eConsumer?.consumer.plan;
-      if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
-      this.stripe.coupons.del(plan.referralCode)
-        .catch(e => {
-          console.error(`[ConsumerService] Failed to remove referral coupon code '${plan.referralCode}'`, e.stack);
-          throw e;
-        })
-
-      const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
-        stripeSubscriptionId: null,
-        plan: null,
-      }
-      const p3 = this.elastic.update({
-        index: CONSUMER_INDEX,
-        id: signedInUser._id,
-        body: {
-          doc: updatedConsumer
-        }
-      }).catch(e => {
-        const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });
-      this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
-        const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
-        console.error(msg)
-        throw e;
-      });
-      this.orderService.removeReferredDiscounts(signedInUser).catch(e => {
-        console.error(`[ConsumerService] Failed to removeReferredDiscounts with userId '${signedInUser._id}'`, e.stack)
-        throw e;
-      })
-      this.removeReferredWeeklyDiscount(signedInUser._id).catch(e => {
-        console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${signedInUser._id}'`, e.stack)
-      });
-
-      await Promise.all([p1, p2, p3]);
+      // await Promise.all([p1, p2, p3]);
       return {
         res: true,
         error: null,
@@ -193,64 +141,6 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] couldn't cancel subscription for user '${JSON.stringify(signedInUser)}'`, e.stack);
       throw new Error('Internal Server Error');
-    }
-  }
-
-  public async attachDiscountsToPlan(_id: string, weeklyDiscounts: IWeeklyDiscount[], replace: boolean, eConsumer?: EConsumer) {
-    try {
-      let consumer = eConsumer;
-      if (!consumer) {
-        const res = await this.getEConsumer(_id);
-        if (!res) throw new Error(`Missing eConsumer for '${_id}'`);
-        consumer = res.consumer;
-      }
-      const currPlan = consumer.plan;
-      if (!currPlan) throw new Error(`EConsumer '${_id}' missing plan`);
-      
-      const newWeeklyDiscounts = replace ? weeklyDiscounts : [
-        ...currPlan.weeklyDiscounts,
-        ...weeklyDiscounts
-      ];
-      const plan: EConsumerPlan = {
-        ...currPlan,
-        weeklyDiscounts: newWeeklyDiscounts
-      };
-      const doc: Pick<EConsumer, 'plan'> = {
-        plan,
-      }
-      try {
-        await this.elastic.update({
-          index: CONSUMER_INDEX,
-          id: _id,
-          body: {
-            doc
-          }
-        })
-      } catch (e) {
-        console.error(`Failed to update plan for consumer ${_id}`, e.stack);
-        throw e;
-      }
-    } catch (e) {
-      console.error(`[ConsumerService] Failed to attachDiscountsToPlan for consumer ${_id}`, e.stack);
-      throw e;
-    }
-  }
-
-  public async getRewards(signedInUser: SignedInUser): Promise<IRewards> {
-    try {
-      if (!signedInUser) throw 'No signed in user';
-      const res = await this.getEConsumer(signedInUser._id);
-      if (!res) throw new Error('No user found');
-      return {
-        earned: 0,
-        potential: res.consumer.plan?.weeklyDiscounts.reduce<number>((sum, { discounts }) =>
-          sum + discounts.reduce<number>((sum, d) => sum + (d.amountOff ?? 0), 0), 
-          0
-        ) ?? 0,
-      };
-    } catch (e) {
-      console.error(`[ConsumerService] Failed to get rewards for '${signedInUser?._id}'`, e.stack);
-      throw e;
     }
   }
 
@@ -284,13 +174,13 @@ class ConsumerService implements IConsumerService {
       const body: EConsumer = {
         createdDate: Date.now(),
         stripeCustomerId: null,
-        stripeSubscriptionId: null,
         profile: {
           name,
           email,
           phone: null,
           card: null,
-          destination: null,
+          location: null,
+          serviceInstructions: null,
         },
         plan: null,
       }
@@ -315,7 +205,6 @@ class ConsumerService implements IConsumerService {
       return {
         _id: signedInUser._id,
         stripeCustomerId: res.consumer.stripeCustomerId,
-        stripeSubscriptionId: res.consumer.stripeSubscriptionId,
         profile: res.consumer.profile,
         plan: res.consumer.plan,
         permissions: signedInUser.permissions,
@@ -323,64 +212,6 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] Failed to get consumer ${signedInUser?._id}: ${e.stack}`)
       return null;
-    }
-  }
-
-  async getConsumerByStripeId(stripeCustomerId: string): Promise<{
-    _id: string,
-    consumer: EConsumer,
-  }> {
-    try {
-      const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                term: {
-                  stripeCustomerId
-                }
-              }
-            }
-          }
-        }
-      });
-      if (res.body.hits.total.value === 0) throw new Error(`Consumer with stripeId '${stripeCustomerId}' not found`);
-      const consumer = res.body.hits.hits[0];
-      return {
-        _id: consumer._id,
-        consumer: consumer._source
-      };
-    } catch (e) {
-      console.error(`Failed to search for consumer stripeCustomerId ${stripeCustomerId}: ${e.stack}`);
-      throw new Error('Internal Server Error');
-    }
-  }
-
-  async getNameFromReferral(promoCode: string): Promise<string> {
-    try {
-      const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                term: {
-                  'plan.referralCode': promoCode
-                }
-              }
-            }
-          }
-        }
-      });
-      if (res.body.hits.total.value === 0) throw new Error(`Consumer with referralCode '${promoCode}' not found`);
-      const consumer = res.body.hits.hits[0];
-      return consumer._source.profile.name;
-    } catch (e) {
-      console.error(`Failed to search for consumer promoCode '${promoCode}'`, e.stack);
-      throw e;
     }
   }
 
@@ -427,57 +258,11 @@ class ConsumerService implements IConsumerService {
     });
   }
 
-  public async removeReferredWeeklyDiscount(referredUserId: string): Promise<ApiResponse<any, any>> {
-    return this.elastic.updateByQuery({
-      index: CONSUMER_INDEX,
-      body: {
-        query: getReferredDiscountConsumers(referredUserId),
-        script: {
-          source: `
-            def weeklyDiscounts = ctx._source.plan.weeklyDiscounts;
-            for (int i = 0; i < weeklyDiscounts.length; i++) {
-              def discounts = weeklyDiscounts[i].discounts;
-              discounts.removeIf(d -> d.referredUserId.equals(params.referredUserId));
-            }
-            weeklyDiscounts.removeIf(wd -> wd.discounts.length == 0);
-          `,
-          lang: 'painless',
-          params: {
-            referredUserId: referredUserId,
-          }
-        },
-      }
-    }).catch(e => {
-      console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${referredUserId}'`, e.stack)
-      throw e;
-    });
-  }
-
-  async upsertConsumer(_id: string, permissions: Permission[], consumer: EConsumer): Promise<IConsumer> {
-    // todo: when inserting, make sure check for existing consumer with email only and remove it to prevent
-    // dupe entries.
-    try {
-      await this.elastic.index({
-        index: CONSUMER_INDEX,
-        id: _id,
-        body: consumer
-      });
-      return {
-        ...consumer,
-        _id,
-        permissions,
-      }
-    } catch (e) {
-      console.error(`[ConsumerService] failed to upsert consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
-      throw e;
-    }
-  }
-
   async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string): Promise<MutationConsumerRes> {
     try {
       if (!this.geoService) return Promise.reject('GeoService not set');
       if (!signedInUser) throw getNotSignedInErr();
-      if (!profile.destination) throw new Error('Missing destination');
+      if (!profile.location) throw new Error('Missing destination');
       if (!this.orderService) throw new Error('Order service not set');
       if (!signedInUser.stripeCustomerId) throw new Error(`Missing stripe customer id for '${signedInUser._id}'`)
       const {
@@ -485,7 +270,7 @@ class ConsumerService implements IConsumerService {
         city,
         state,
         zip
-      } = profile.destination.address;
+      } = profile.location.address;
       let geo;
       try {
         geo = await this.geoService.getGeocode(address1, city, state, zip);
@@ -498,8 +283,8 @@ class ConsumerService implements IConsumerService {
       const doc: Pick<EConsumer, 'profile'> = {
         profile: {
           ...profile,
-          destination: {
-            ...profile.destination,
+          location: {
+            ...profile.location,
             geo: {
               lat: geo.lat,
               lon: geo.lon
@@ -533,7 +318,7 @@ class ConsumerService implements IConsumerService {
           },
         });
       }
-      await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
+      // await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
       return {
         res: newConsumer,
         error: null
@@ -544,51 +329,58 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlanInput): Promise<MutationConsumerRes> {
+  // todo pivot: change this from any
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: any): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-      let plan: EConsumerPlan;
-      try {
-        const res = await this.getEConsumer(signedInUser._id);
-        if (!res) throw new Error(`Failed to get EConsumer '${signedInUser._id}'`);
-        const currPlan = res.consumer.plan;
-        if (!currPlan) throw new Error(`EConsumer '${signedInUser._id}' missing plan`);
-        plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
-          newPlan,
-          currPlan.referralCode,
-          currPlan.weeklyDiscounts,
-          currPlan.mealPlans.reduce<{ [key: string]: string }>((sum, mp) => {
-            sum[mp.stripePlanId] = mp.stripeSubscriptionItemId;
-            return sum;
-          }, {}),
-        );
-      } catch (e) {
-        console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
-        throw e;
-      }
-      const doc: Pick<EConsumer, 'plan'> = {
-        plan,
-      }
-      const updatedConsumer = await this.elastic.update({
-        index: CONSUMER_INDEX,
-        id: signedInUser._id,
-        _source: 'true',
-        body: {
-          doc
-        }
-      });
+      // let plan: EConsumerPlan;
+      // try {
+      //   const res = await this.getEConsumer(signedInUser._id);
+      //   if (!res) throw new Error(`Failed to get EConsumer '${signedInUser._id}'`);
+      //   const currPlan = res.consumer.plan;
+      //   if (!currPlan) throw new Error(`EConsumer '${signedInUser._id}' missing plan`);
+      //   plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
+      //     newPlan,
+      //     currPlan.referralCode,
+      //     currPlan.weeklyDiscounts,
+      //     currPlan.mealPlans.reduce<{ [key: string]: string }>((sum, mp) => {
+      //       sum[mp.stripePlanId] = mp.stripeSubscriptionItemId;
+      //       return sum;
+      //     }, {}),
+      //   );
+      // } catch (e) {
+      //   console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
+      //   throw e;
+      // }
+      // const doc: Pick<EConsumer, 'plan'> = {
+      //   plan,
+      // }
+      // const updatedConsumer = await this.elastic.update({
+      //   index: CONSUMER_INDEX,
+      //   id: signedInUser._id,
+      //   _source: 'true',
+      //   body: {
+      //     doc
+      //   }
+      // });
 
-      const newConsumer: IConsumer = {
-        ...updatedConsumer.body.get._source,
-        _id: signedInUser._id,
-        permissions: signedInUser.permissions,
-      };
+      // const newConsumer: IConsumer = {
+      //   ...updatedConsumer.body.get._source,
+      //   _id: signedInUser._id,
+      //   permissions: signedInUser.permissions,
+      // };
+      
+      // return {
+      //   res: newConsumer,
+      //   error: null,
+      // }
       return {
-        res: newConsumer,
+        res: null,
         error: null,
       }
+
     } catch (e) {
       console.error(
         `[ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
@@ -615,7 +407,7 @@ export const getConsumerService = () => {
   initConsumerService(
     initElastic(),
     new Stripe(activeConfig.server.stripe.key, {
-      apiVersion: '2020-03-02',
+      apiVersion: '2020-08-27',
     }),
   );
   consumerService!.setOrderService(getOrderService());

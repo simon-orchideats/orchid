@@ -9,6 +9,11 @@ export const _OrderQL = gql`
     Skipped
   }
 
+  enum ServiceType {
+    Pickup
+    Delivery
+  }
+
   input CartInput {
     card: CardInput!
     consumerPlan: ConsumerPlanInput!
@@ -116,6 +121,35 @@ export const _OrderQL = gql`
   type PromoRes {
     res: Promo
     error: String
+  }
+
+  type OrderMeal {
+    mealId: ID!
+    img: String
+    name: String!
+    choices: [String!]!
+    quantity: Int!
+    instructions: String
+    tags: [Tag!]!
+  }
+
+  input OrderMealInput {
+    choices: [String!]!
+    description: String
+    img: String
+    instructions: String
+    mealId: ID!
+    name: String!
+    price: Int!
+    quantity: Int!
+    tags: [TagInput!]!
+  }
+
+  type OrderRest {
+    meals: [OrderMeal!]!
+    restId: ID!
+    restName: ID!
+    stripeRestId: ID
   }
 
   type Order {

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Meal } from "../../rest/mealModel";
+import { IMeal } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { Hours } from '../../rest/restModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -22,17 +21,17 @@ const useStyles = makeStyles(theme => ({
   content: {
     paddingRight: 0,
     paddingLeft: 0,
-    paddingBottom: `${theme.spacing(1)}px !important`,
+    paddingBottom: `${theme.spacing(1)} !important`,
     paddingTop: 4,
     cursor: 'pointer',
     [theme.breakpoints.up('md')]: {
       paddingTop: undefined,
     },
   },
-  scaler: ({ meal }: { meal: Meal }) => ({
+  scaler: ({ meal }: { meal: IMeal }) => ({
     width: '100%',
-    paddingBottom: meal.Img ? '100%' : undefined,
-    paddingTop: meal.Img ? undefined : '100%',
+    paddingBottom: meal.img ? '100%' : undefined,
+    paddingTop: meal.img ? undefined : '100%',
     position: 'relative',
     cursor: 'pointer',
   }),
@@ -46,6 +45,7 @@ const useStyles = makeStyles(theme => ({
   },
   title: {
     lineHeight: 1.5,
+    fontWeight: 500,
   },
   desc: {
     overflow: 'hidden',
@@ -57,15 +57,13 @@ const useStyles = makeStyles(theme => ({
   imgAdd: {
     color: theme.palette.common.white
   },
-  button: {
-    borderRadius: 10,
-  },
   popper: {
     width: 300,
     padding: theme.spacing(2),
   },
   detail: {
     fontSize: '1rem',
+    verticalAlign: 'text-bottom'
   },
   choiceLabel: {
     fontSize: '1.5rem',
@@ -73,17 +71,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MenuMeal: React.FC<{
-  meal: Meal,
+  deliveryFee: number,
+  meal: IMeal,
   restId: string,
   restName: string,
   taxRate: number,
-  hours: Hours,
 }> = ({
+  deliveryFee,
   meal,
   restId,
   restName,
   taxRate,
-  hours,
 }) => {
   const theme = useTheme<Theme>();
   const classes = useStyles({ meal });
@@ -103,9 +101,9 @@ const MenuMeal: React.FC<{
   }
   const defaultOptions = {};
   const [options, setOptions] = useState<{ [groupIndex: number]: string }>(defaultOptions);
-  const defaultAddons = meal.AddonGroups.reduce<addonGroupsState>((sum, ag, i) => ({
+  const defaultAddons = meal.addonGroups.reduce<addonGroupsState>((sum, ag, i) => ({
     ...sum,
-    ...ag.Names.reduce<addonGroupsState>((innerSum, name) => {
+    ...ag.names.reduce<addonGroupsState>((innerSum, name) => {
       innerSum[`${i}-${name}`] = {
         isChecked: false,
         name,
@@ -117,15 +115,14 @@ const MenuMeal: React.FC<{
   const [addonCounts, setAddonCounts] = useState<{ [groupIndex: number]: number }>(defaultAddonCounts);
   const [addons, setAddons] = useState(defaultAddons);
   const onClickAdd = (event: React.MouseEvent<HTMLElement>) => {
-    if (meal.OptionGroups.length === 0 && meal.AddonGroups.length === 0) {
+    if (meal.optionGroups.length === 0 && meal.addonGroups.length === 0) {
       addMealToCart(
-        meal.Id,
-        new Meal(meal),
+        meal,
         [],
+        deliveryFee,
         restId,
         restName,
         taxRate,
-        hours,
       );
       openTooltip();
       setChoicesAnchor(null);
@@ -136,7 +133,6 @@ const MenuMeal: React.FC<{
   const onClickContent = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
     setDescAnchor(descAnchor ? null : event.currentTarget);
     setDesc(mealDesc || 'No description');
-    
   };
   const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
     setAddons({
@@ -161,15 +157,14 @@ const MenuMeal: React.FC<{
   }
   const onClickNextAddon = () => {
     const nextIndex = addonGroupIndex + 1;
-    if (nextIndex === meal.AddonGroups.length) {
+    if (nextIndex === meal.addonGroups.length) {
       addMealToCart(
-        meal.Id,
-        new Meal(meal),
+        meal,
         [ ...Object.values(options), ...Object.values(addons).filter(a => a.isChecked).map(a => a.name)],
+        deliveryFee,
         restId,
         restName,
         taxRate,
-        hours,
       );
       openTooltip();
       onCloseChoices();
@@ -190,15 +185,14 @@ const MenuMeal: React.FC<{
     // prevenDefault so the event doesn't bubble up and trigger a second event callback
     e.preventDefault();
     const newGroupIndex = optionGroupIndex + 1;
-    if (newGroupIndex === meal.OptionGroups.length && meal.AddonGroups.length === 0) {
+    if (newGroupIndex === meal.optionGroups.length && meal.addonGroups.length === 0) {
       addMealToCart(
-        meal.Id,
-        new Meal(meal),
+        meal,
         [...Object.values(options), selectedOption],
+        deliveryFee,
         restId,
         restName,
         taxRate,
-        hours
       );
       openTooltip();
       onCloseChoices();
@@ -244,17 +238,17 @@ const MenuMeal: React.FC<{
             }}/>
           }
           {
-            optionGroupIndex < meal.OptionGroups.length &&
+            optionGroupIndex < meal.optionGroups.length &&
             <FormControl>
               <FormLabel focused={false} className={classes.choiceLabel}>
                 Pick one
               </FormLabel>
               {
-                meal.OptionGroups.map((og, i) => (
+                meal.optionGroups.map((og, i) => (
                   i === optionGroupIndex &&
                   <RadioGroup key={`og-${i}`} value={options[optionGroupIndex] || false}>
                     {
-                      og.Names.map((name, j) =>
+                      og.names.map((name, j) =>
                         <FormControlLabel
                           key={`og-names-${j}`}
                           value={name}
@@ -270,21 +264,21 @@ const MenuMeal: React.FC<{
             </FormControl>
           }
           {
-            optionGroupIndex >= meal.OptionGroups.length && addonGroupIndex < meal.AddonGroups.length &&
+            optionGroupIndex >= meal.optionGroups.length && addonGroupIndex < meal.addonGroups.length &&
             <FormControl>
               <FormLabel
                 focused={false}
                 className={classes.choiceLabel} 
                 onClick={() => setAddonGroupIndex(addonGroupIndex - 1)}
               >
-                Pick {meal.AddonGroups[addonGroupIndex].Limit ? `max ${meal.AddonGroups[addonGroupIndex].Limit}` : 'any'}
+                Pick {meal.addonGroups[addonGroupIndex].limit ? `max ${meal.addonGroups[addonGroupIndex].limit}` : 'any'}
               </FormLabel>
               {
-                meal.AddonGroups.map((ag, i) => (
+                meal.addonGroups.map((ag, i) => (
                   i === addonGroupIndex &&
                   <FormGroup key={`ag-${i}`}>
                     {
-                      ag.Names.map((name, j) =>
+                      ag.names.map((name, j) =>
                         <FormControlLabel
                           key={`ag-names-${j}`}
                           control={
@@ -302,9 +296,9 @@ const MenuMeal: React.FC<{
                       )
                     }
                     {
-                      ag.Limit && addonCounts[i] > ag.Limit ?
+                      ag.limit && addonCounts[i] > ag.limit ?
                         <Typography color='error'>
-                          Can only pick {ag.Limit}
+                          Can only pick {ag.limit}
                         </Typography>
                       :
                         <Button
@@ -354,11 +348,11 @@ const MenuMeal: React.FC<{
         >
           <div className={classes.scaler} onClick={onClickAdd}>
             {
-              meal.Img ?
+              meal.img ?
                 <CardMedia
                   className={classes.img}
-                  image={meal.Img}
-                  title={meal.Img}
+                  image={meal.img}
+                  title={meal.img}
                 >
                   <AddBoxIcon className={classes.imgAdd} />
                 </CardMedia>
@@ -370,22 +364,28 @@ const MenuMeal: React.FC<{
           </div>
         </Tooltip>
       </ClickAwayListener>
-      <CardContent className={classes.content} onClick={e => onClickContent(e, meal.Description)}>
+      <CardContent className={classes.content} onClick={e => onClickContent(e, meal.description)}>
         <Typography
-          gutterBottom
-          variant='subtitle1'
+          variant='body1'
           className={classes.title}
         >
-          {meal.Name} {meal.Description && <HelpOutlineIcon className={classes.detail} />}
+          {meal.name}
+        </Typography>
+        <Typography
+          gutterBottom
+          variant='body2'
+          className={classes.title}
+        >
+          ${(meal.price / 100).toFixed(2)}
         </Typography>
         {
           isMdAndUp &&
           <Typography
-            variant='body2'
+            variant='caption'
             color='textSecondary'
             className={classes.desc}
           >
-            {meal.Description}
+            {meal.description && <HelpOutlineIcon className={classes.detail} />} {meal.description}
           </Typography>
         }
       </CardContent>

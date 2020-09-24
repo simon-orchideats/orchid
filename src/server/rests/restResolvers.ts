@@ -5,9 +5,9 @@ import { IRestInput } from '../../rest/restModel';
 export const RestQueryResolvers: ServerResolovers = {
   nearbyRests: async (
     _root: any,
-    { cityOrZip }: { cityOrZip: string }
+    { addr }: { addr: string }
   ) => {
-    return await getRestService().getNearbyRests(cityOrZip);
+    return await getRestService().getNearbyRests(addr);
   },
 
   rest: (_root: any, { restId }: { restId: string }) => {

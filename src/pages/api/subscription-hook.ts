@@ -12,7 +12,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { MealPrice } from '../../order/orderModel';
 
 const stripe = new Stripe(activeConfig.server.stripe.key, {
-  apiVersion: '2020-03-02',
+  apiVersion: '2020-08-27',
 });
 
 export const config = {
@@ -123,7 +123,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       // this is possible when a subscription is canceled and today's order had no confirmed deliveries
       // so it was deleted upon cancelation
       if (!todaysOrder) return;
-      getOrderService().setOrderStripeInvoiceId(todaysOrder._id, invoice.id)
+      getOrderService().setOrderStripePaymentId(todaysOrder._id, invoice.id)
         .catch(e => {
           console.error(`[SubscriptionHook] failed set order '${todaysOrder._id}' stripeInvoiceId '${invoice.id}'`, e.stack);
         });

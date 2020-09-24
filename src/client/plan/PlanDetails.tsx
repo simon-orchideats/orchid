@@ -1,6 +1,7 @@
+//@ts-nocheck
+
 import { Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
-import { Tier } from '../../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   card: ({ color, small }: { color: string, small: boolean }) => ({

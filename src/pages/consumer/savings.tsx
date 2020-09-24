@@ -1,12 +1,12 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Container, Paper, Grid } from "@material-ui/core";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";
-import { useGetRewards, useGetSpent } from "../../client/order/orderService";
 import CountUp from 'react-countup';
 import {
   PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
 } from 'recharts';
-import { competitorMealPrice } from "../../order/costModel";
 
 const savingsColor = '#008036'
 

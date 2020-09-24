@@ -1,19 +1,18 @@
+//@ts-nocheck
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
 import { useRef, useState } from 'react';
-import { ConsumerPlan, deliveryDay, deliveryTime, Schedule, MealPlan } from '../../consumer/consumerPlanModel';
+import { ConsumerPlan, deliveryDay, deliveryTime } from '../../consumer/consumerPlanModel';
 import RenewalChooser from '../../client/general/RenewalChooser';
-import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
+import { useRequireConsumer, useCancelSubscription } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import { sendChooseCuisineMetrics, sendUpdateScheduleMetrics, sendAddScheduleMetrics, sendRemoveScheduleMetrics, sendUpdatePlanMetrics, sendCancelSubscriptionMetrics } from "../../client/consumer/myPlanMetrics";
 import Counter from "../../client/menu/Counter";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import PreferredSchedule from "../../client/general/PreferredSchedule";
-import { MIN_MEALS, Tier } from "../../plan/planModel";
 import { menuRoute } from "../menu";
 import Link from "next/link";
 import { debounce } from 'lodash';

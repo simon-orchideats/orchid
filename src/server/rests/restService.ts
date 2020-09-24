@@ -1,5 +1,4 @@
 import { ECuisine, ITag } from './../../rest/tagModel';
-import { PlanNames } from './../../plan/planModel';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { Permissions } from './../../consumer/consumerModel';
 import { MutationBoolRes, SignedInUser } from './../../utils/apolloUtils';
@@ -8,7 +7,7 @@ import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest, IRestInput, Rest } from './../../rest/restModel';
 
-const REST_INDEX = 'rests';
+const REST_INDEX = 'rests2';
 const TAG_INDEX = 'tags';
 
 export interface IRestService {
@@ -56,15 +55,12 @@ class RestService implements IRestService {
         zip,
       } = rest.address
       const geo = await this.geoService.getGeocode(address1, city, state, zip);
-      const plans = await this.planService.getAvailablePlans();
-      const plan = plans.filter(p => p.name === PlanNames.Standard);
-      if (plan.length === 0) throw new Error(`Missing ${PlanNames.Standard} plan`);
       const eRest: ERest = Rest.getERestFromRestInput(
         rest,
         geo,
-        0.06625,
-        plan[0].name,
-        plan[0].stripePlanId,
+        350,
+        1000,
+        0.06625
       );
       try {
         await this.elastic.index({
@@ -99,7 +95,7 @@ class RestService implements IRestService {
   }
 
   public async getNearbyERests(
-    cityOrZip: string,
+    location: string,
     cuisines?: string[],
     fields?: string[]
   ): Promise<{
@@ -108,15 +104,10 @@ class RestService implements IRestService {
   }[]> {
     try {
       if (!this.geoService) throw new Error('GeoService not set');
-      let geo;
-      const isCity = isNaN(parseFloat(cityOrZip));
-      if (isCity) {
-        geo = await this.geoService.getGeocodeByCity(cityOrZip);
-      } else {
-        geo = await this.geoService.getGeocodeByZip(cityOrZip);
-      }
+      const geo = await this.geoService.getGeocodeByQuery(location);
       if (!geo) return [];
-      const { lat, lon, state } = geo;
+      const { lat, lon } = geo;
+      console.log(lat, lon);
       const options: any = {
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
@@ -127,24 +118,26 @@ class RestService implements IRestService {
                 bool: {
                   must: [
                     {
-                      geo_distance : {
-                        distance: '5mi',
-                        'location.geo' : {
-                          lat,
-                          lon
+                      geo_shape : {
+                        'location.geoShape' : {
+                          shape: {
+                            type: 'point',
+                            coordinates: [ lon, lat ]
+                          },
+                          relation: 'intersects'
                         }
                       }
                     },
                     {
                       term: {
-                        'menu.isActive': true
+                        'featured.isActive': true
                       }
                     },
-                    {
-                      term: {
-                        'location.address.state': state
-                      }
-                    },
+                    // {
+                    //   term: {
+                    //     'location.address.state': state
+                    //   }
+                    // },
                     {
                       term: {
                         'status': 'Open',
@@ -182,13 +175,14 @@ class RestService implements IRestService {
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby ERests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
+      console.error(`[RestService] could not get nearby ERests for '${location}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw e;
     }
   }
 
   async getNearbyRests(cityOrZip: string, cuisines?: string[], fields?: string[]): Promise<IRest[]> {
     try {
+      console.log('yo im here');
       const eRests = await this.getNearbyERests(cityOrZip, cuisines, fields);
       return eRests.map(({ _id, rest }) => ({
         ...rest,

@@ -1,19 +1,19 @@
-import { deliveryDay } from './../consumer/consumerPlanModel';
-import { PlanName } from './../plan/planModel';
 import { IAddress } from './../place/addressModel';
 import { RestProfile, IRestProfile } from './restProfileModel';
-import { IMeal, Meal, IMealInput, AddonGroup, OptionGroup } from './mealModel';
-import { ILocation, Location } from '../place/locationModel';
+import { IMeal, Meal, IMealInput } from './mealModel';
+import { ELocation, Location, ILocation } from '../place/locationModel';
 import { nanoid } from 'nanoid'
 
-type RestStatus = 'Open' | 'Closed'
+type RestStatus = 'Active' | 'Inactive'
+
+export type OpeningDays = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 const RestStatuses: {
-  Open: 'Open',
-  Closed: 'Closed'
+  Active: 'Active',
+  Inactive: 'Inactive'
 } = {
-  Open: 'Open',
-  Closed: 'Closed'
+  Active: 'Active',
+  Inactive: 'Inactive'
 }
 
 export interface IDayHours {
@@ -72,7 +72,7 @@ export class Hours implements IHours {
     this.Sa = hs.Sa.map(dh => new DayHours(dh));
   }
 
-  static getDay(i: deliveryDay): OpeningDay {
+  static getDay(i: OpeningDays): OpeningDay {
     switch (i) {
       case 0:
         return 'Su'
@@ -89,7 +89,7 @@ export class Hours implements IHours {
       case 6:
         return 'Sa'
       default:
-        throw new Error(`Unexpected deliveryDay ${i}`)
+        throw new Error(`Unexpected OpeningDay ${i}`)
     }
   }
 
@@ -109,60 +109,37 @@ export class Hours implements IHours {
 
 export interface ERest {
   readonly createdDate: number
-  readonly location: ILocation & {
-    geo?: {
-      lat: string
-      lon: string
-    }
-  };
+  readonly location: ELocation
   readonly hours: IHours;
-  readonly menu: IMeal[];
+  readonly featured: IMeal[];
   readonly profile: IRestProfile;
   readonly taxRate: number;
-  readonly status: RestStatus
+  readonly deliveryFee: number;
+  readonly status: RestStatus;
+  readonly deliveryMinimum: number;
 }
 
 export interface IRestInput {
   readonly address: IAddress;
   readonly profile: IRestProfile;
-  readonly menu: IMealInput[]
+  readonly featured: IMealInput[]
 }
 
-export interface IRest extends Omit<ERest, 'menu' | 'status' | 'createdDate'> {
+export interface IRest extends Omit<ERest, 'status' | 'createdDate' | 'location'> {
   readonly _id: string;
-  readonly menu: IMeal[];
+  readonly location: ILocation;
 }
 
-export class Rest implements IRest {
-  readonly _id: string;
-  readonly hours: Hours;
-  readonly location: Location;
-  readonly menu: Meal[];
-  readonly profile: RestProfile;
-  readonly taxRate: number;
-
-  constructor(rest: IRest) {
-    this._id = rest._id
-    this.hours = new Hours(rest.hours);
-    this.location = new Location(rest.location);
-    this.menu = rest.menu.map(meal => new Meal(meal));
-    this.profile = new RestProfile(rest.profile)
-    this.taxRate = rest.taxRate;
-  }
-
-  public get Id() { return this._id }
-  public get Hours() { return this.hours }
-  public get Location() { return this.location }
-  public get Menu() { return this.menu }
-  public get Profile() { return this.profile }
-  public get TaxRate() { return this.taxRate }
-
+export class Rest {
   static getICopy(rest: IRest): IRest {
     return {
-      ...rest,
+      _id: rest._id,
+      deliveryMinimum: rest.deliveryMinimum,
+      taxRate: rest.taxRate,
+      deliveryFee: rest.deliveryFee,
       hours: Hours.getICopy(rest.hours),
       location: Location.getICopy(rest.location),
-      menu: rest.menu.map(meal => Meal.getICopy(meal)),
+      featured: rest.featured.map(meal => Meal.getICopy(meal)),
       profile: RestProfile.getICopy(rest.profile),
     }
   }
@@ -174,12 +151,15 @@ export class Rest implements IRest {
       lon: string;
       timezone: string;
     },
+    // todo simon: these 3 args should be part of restinput
+    deliveryFee: number,
+    deliveryMinimum: number,
     taxRate: number,
-    planName: PlanName,
-    stripePlanId: string,
   ): ERest {
     return {
       createdDate: Date.now(),
+      deliveryFee,
+      deliveryMinimum,
       location: {
         address: {
           ...rest.address,
@@ -205,15 +185,11 @@ export class Rest implements IRest {
         Sa: []
       },
       taxRate,
-      menu: rest.menu.map(m => ({
+      featured: rest.featured.map(m => Meal.getICopy({
         ...m,
-        optionGroups: m.optionGroups.map(og => OptionGroup.getICopy(og)),
-        addonGroups: m.addonGroups.map(ag => AddonGroup.getICopy(ag)),
         _id: nanoid(),
-        planName,
-        stripePlanId,
       })),
-      status: RestStatuses.Closed
+      status: RestStatuses.Inactive
     }
   }
 }

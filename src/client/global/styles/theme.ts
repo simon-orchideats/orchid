@@ -20,8 +20,8 @@ const brandBase = white;
 const brandPrimary = leafGreen;
 const brandSecondary = floralWhite;
 const brandLink = blue;
-const brandSecondaryLightOpacity = (opacity: number) => `rgba(28, 62, 8, ${opacity})`
-const brandSecondaryDarkOpacity = (opacity: number) => `rgba(20, 45, 6, ${opacity})`
+const brandPrimaryLightOpacity = (opacity: number) => `rgba(83, 132, 1 ${opacity})`
+const brandPrimaryDarkOpacity = (opacity: number) => `rgba(83, 132, 1, ${opacity})`
 const brandText = charcoal;
 const brandCanvas = lightGray;
 const brandSuccess = powerGreen;
@@ -55,81 +55,88 @@ const theme: ThemeOptions = {
     customToolbar: {
       toolbarLandscapeQuery,
       toolbarWidthQuery,
-    },
-    toolbar: {
       height: 56,
-      [toolbarLandscapeQuery as string]: {
-        height: 48
-      },
-      [toolbarWidthQuery as string]: {
-        height: 64
-      },
-    }
+      smallHeight: 64,
+      landscapeHeight: 58,
+    },
   },
-  overrides: {
+  components: {
     MuiAppBar: {
-      colorDefault: {
-        backgroundColor: brandBase,
-      },
+      styleOverrides: {
+        colorDefault: {
+          backgroundColor: brandBase,
+        },
+      }
     },
     MuiButton: {
-      containedPrimary: {
-        color: white,
+      styleOverrides: {
+        containedPrimary: {
+          color: white,
+        }
       }
     },
     MuiContainer: {
-      root: {
-        backgroundColor: white
-      },
+      styleOverrides: {
+        root: {
+          backgroundColor: white
+        },
+      }
     },
     MuiFilledInput: {
-      root: {
-        backgroundColor: white,
-        '&:hover': {
+      styleOverrides: {
+        root: {
           backgroundColor: white,
+          '&:hover': {
+            backgroundColor: white,
+          },
+          '&.Mui-focused': {
+            backgroundColor: white,
+          }
         },
-        '&.Mui-focused': {
-          backgroundColor: white,
+        underline: {
+          '&:before': {
+            borderBottom: `1px solid ${brandPrimary}`
+          },
+          '&:after': {
+            borderBottom: `2px solid ${brandPrimary}`
+          },
+          '&:hover:before': {
+            borderBottom: `1px solid `
+          },
         }
-      },
-      underline: {
-        '&:before': {
-          borderBottom: `1px solid ${brandPrimary}`
-        },
-        '&:after': {
-          borderBottom: `2px solid ${brandPrimary}`
-        },
-        '&:hover:before': {
-          borderBottom: `1px solid `
-        },
       }
     },
     //@ts-ignore
     MuiToggleButtonGroup: {
-      grouped: {
-        '&:not(:first-child)': {
-          borderLeft: `1px solid rgba(0, 0, 0, 0.12)`,
-        }, 
+      styleOverrides: {
+        grouped: {
+          '&:not(:first-child)': {
+            marginLeft: `0 !important`
+          }, 
+        }
       }
     },
     //@ts-ignore
     MuiToggleButton: {
-      root: {
-        flex: 1,
-        color: brandText,
-        backgroundColor: white,
-        '&:hover': {
-          color: brandSecondary,
-          backgroundColor: brandSecondaryLightOpacity(0.87),
+      styleOverrides: {
+        root: {
+          flex: 1,
+          color: brandText,
+          backgroundColor: white,
+          '&:hover': {
+            border: `1px solid ${brandPrimaryLightOpacity(0.87)} !important`,
+          },
+          '&.Mui-selected:hover': {
+            border: `1px solid ${brandPrimaryDarkOpacity(0.87)} !important`,
+            backgroundColor: `#ffffff !important`,
+          },
+          '&.Mui-selected': {
+            border: `1px solid ${leafGreen} !important`,
+            backgroundColor: `#ffffff !important`,
+            color: leafGreen,
+          },
         },
-        '&.Mui-selected:hover': {
-          backgroundColor: `${brandSecondaryDarkOpacity(0.87)} !important`,
-        },
-        '&.Mui-selected': {
-          color: white,
-          backgroundColor: brandPrimary,
-        },
-      },
+      }
     },
   },
   palette: {
@@ -196,7 +203,6 @@ const theme: ThemeOptions = {
       primary: brandText,
       secondary: 'rgba(0, 0, 0, 0.54)',
       disabled: 'rgba(0, 0, 0, 0.38)',
-      hint: 'rgba(0, 0, 0, 0.38)'
     },
     divider: 'rgba(0, 0, 0, 0.12)',
     background: {
@@ -372,25 +378,29 @@ const theme: ThemeOptions = {
   }
 }
 
-declare module "@material-ui/core/colors/common" {
-  interface CommonColors {
-    link: string;
-    pink: string;
-    [NotificationType.success]: string;
-    [NotificationType.warning]: string;
-    [NotificationType.error]: string;
-  }
-}
-
-declare module "@material-ui/core/styles/createMixins" {
-  interface Mixins {
+declare module '@material-ui/core/styles/createMixins' {
+  interface Mixins{
     navbar: {
       marginBottom: number
     };
     customToolbar: {
       toolbarLandscapeQuery: string
       toolbarWidthQuery: string
+      height: number,
+      smallHeight: number,
+      landscapeHeight: number
     }
+  }
+}
+
+
+declare module '@material-ui/core/styles/createPalette' {
+  interface CommonColors {
+    link: string;
+    pink: string;
+    [NotificationType.success]: string;
+    [NotificationType.warning]: string;
+    [NotificationType.error]: string;
   }
 }
 

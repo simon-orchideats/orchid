@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
@@ -15,7 +16,6 @@ import { NotificationType } from "../../client/notification/notificationModel";
 import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
-import { sendUpdateAddressMetrics, sendUpdatePhoneMetrics, sendUpdateCardMetrics, sendUpdateInstructionsMetrics } from "../../client/consumer/profileMetrics";
 import BaseInput from "../../client/general/inputs/BaseInput";
 const useStyles = makeStyles(theme => ({
   container: {
@@ -134,7 +134,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (state) {
       const updatedProfile: IConsumerProfile = {
         ...consumerData.profile,
-        destination: {
+        location: {
           address: {
             address1: addr1InputRef.current!.value,
             address2: addr2InputRef.current!.value,
@@ -214,7 +214,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     setIsUpdatingInstructions(false);
     const updatedProfile: IConsumerProfile = {
       ...consumerData.profile,
-      destination: {
+      location: {
         address: consumerData.Profile.Destination.Address,
         instructions: instructionsInputRef.current!.value,
       },

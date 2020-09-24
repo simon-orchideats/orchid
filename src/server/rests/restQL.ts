@@ -34,22 +34,21 @@ const MealQL = gql`
     name: String!
     isActive: Boolean!
     description: String
-    originalPrice: Float
+    price: Float
     optionGroups: [OptionGroupInput!]!
     addonGroups: [AddonGroupInput!]!
+    tags: [TagInput]
   }
 
   type Meal {
+    addonGroups: [AddonGroup!]!
+    description: String
     _id: ID!
     img: String
-    name: String!
     isActive: Boolean!
-    description: String
-    originalPrice: Float
+    name: String!
     optionGroups: [OptionGroup!]!
-    addonGroups: [AddonGroup!]!
-    stripePlanId: ID!
-    planName: ID!
+    price: Int!
     tags: [Tag!]!
   }
 `
@@ -109,11 +108,12 @@ const _RestQL = gql`
 
   type Rest {
     _id: ID!
-    location: Location!
-    menu: [Meal!]!
     hours: Hours
+    location: Location!
+    featured: [Meal!]!
     profile: RestProfile!
     taxRate: Float!
+    deliveryFee: Int!
   }
 `;
 

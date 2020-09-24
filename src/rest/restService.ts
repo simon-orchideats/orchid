@@ -54,8 +54,8 @@ export const useGetTags = () => {
     `
   );
 
-  const tags = useMemo<Tag[] | undefined>(() => (
-    res.data ? res.data.allTags.map(t => new Tag(t)) : res.data
+  const tags = useMemo<ITag[] | undefined>(() => (
+    res.data ? res.data.allTags.map(t =>  Tag.getICopy(t)) : res.data
   ), [res.data]);
 
   return {
@@ -65,27 +65,27 @@ export const useGetTags = () => {
   }
 }
 
-const useGetNearbyRests = (cityOrZip: string) => {
+const useGetNearbyRests = (addr: string) => {
   type res = {
     nearbyRests: IRest[]
   }
   const res = useQuery<res>(
     gql`
-      query nearbyRests($cityOrZip: String) {
-        nearbyRests(cityOrZip: $cityOrZip) {
+      query nearbyRests($addr: String) {
+        nearbyRests(addr: $addr) {
           ...restFragment
         }
       }
       ${restFragment}
     `, 
     {
-      variables: { cityOrZip },
-      skip: !cityOrZip,
+      skip: !addr,
+      variables: { addr },
     }
   );
 
-  const rests = useMemo<Rest[] | undefined>(() => (
-    res.data ? res.data.nearbyRests.map(rest => new Rest(rest)) : res.data
+  const rests = useMemo<IRest[] | undefined>(() => (
+    res.data ? res.data.nearbyRests.map(rest => Rest.getICopy(rest)) : res.data
   ), [res.data]);
 
   return {
@@ -122,7 +122,7 @@ const useGetRest = (restId: string | null) => {
   return {
     loading: res.loading,
     error: res.error,
-    data: res.data ? new Rest(res.data.rest) : res.data
+    data: res.data ? Rest.getICopy(res.data.rest) : res.data
   }
 }
 

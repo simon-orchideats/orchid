@@ -42,14 +42,11 @@ const restFragment = gql`
         close
       }
     }
-    menu {
+    featured {
       _id
       img
       name
       description
-      originalPrice
-      stripePlanId
-      planName
       tags {
         type
         name
@@ -62,6 +59,7 @@ const restFragment = gql`
       optionGroups {
         names
       }
+      price
     }
     profile {
       name
@@ -71,6 +69,7 @@ const restFragment = gql`
       story
     }
     taxRate
+    deliveryFee
   }
 `
 

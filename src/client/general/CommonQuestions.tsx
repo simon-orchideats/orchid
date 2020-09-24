@@ -1,4 +1,4 @@
-import { makeStyles, Container, Typography, Paper, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
+import { makeStyles, Container, Typography, Paper, Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { faqsRoute } from '../../pages/faq';
 import Link from 'next/link';
@@ -43,11 +43,11 @@ const Expander: React.FC<{
 }) => {
   const classes = useStyles();
   return (
-    <ExpansionPanel>
-      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+    <Accordion>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant='subtitle1'>{q}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.details}>
+      </AccordionSummary>
+      <AccordionDetails className={classes.details}>
       {
         a && 
         <Typography variant='body1'>
@@ -55,8 +55,8 @@ const Expander: React.FC<{
         </Typography>
       }
       {n && n}
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+      </AccordionDetails>
+    </Accordion>
   )
 }
 

@@ -18,14 +18,14 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: theme.spacing(2),
     position: 'sticky',
     top: theme.mixins.toolbar.height,
-    height: `calc(100vh - ${theme.mixins.toolbar.height}px)`,
+    height: `calc(100vh - ${theme.mixins.customToolbar.height}px)`,
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height}px)`,
-      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarLandscapeQuery].height,
+      height: `calc(100vh - ${theme.mixins.customToolbar.landscapeHeight}px)`,
+      top: theme.mixins.customToolbar.landscapeHeight,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      height: `calc(100vh - ${(theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height}px)`,
-      top: (theme.mixins.toolbar as any)[theme.mixins.customToolbar.toolbarWidthQuery].height
+      height: `calc(100vh - ${theme.mixins.customToolbar.smallHeight}px)`,
+      top: theme.mixins.customToolbar.smallHeight,
     },
   },
 }));

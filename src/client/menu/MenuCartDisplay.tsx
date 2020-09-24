@@ -17,29 +17,20 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const SideMenuCart: React.FC = () => {
+const MenuCartDisplay: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
   const disabled = false;
   const onNext = () => {
     Router.push(checkoutRoute)
   };
-  const suggestions: string[] = [];
-  const meals = (
-    <>
-      {
-        cart && cart.rest &&
-        <div>
-          <Typography variant='h6'>
-            {cart.rest.restName}
-          </Typography>
-          {cart.rest.meals.map(m => (
-            <CartMealGroup key={OrderMeal.getKey(m)} m={m} />
-          ))}
-        </div>
-      }
-    </>
-  );
+  if (!cart || !cart.rest) {
+    return (
+      <Typography variant='h6'>
+        Cart's empty. Add some meals to get started
+      </Typography>
+    )
+  }
   return (
     <>
       <Button
@@ -52,7 +43,7 @@ const SideMenuCart: React.FC = () => {
       >
         Checkout
       </Button>
-      {suggestions.map((suggestion, i) => (
+      {/* {suggestions.map((suggestion, i) => (
         <Typography
           key={i}
           variant='body1'
@@ -60,10 +51,13 @@ const SideMenuCart: React.FC = () => {
         >
           {suggestion}
         </Typography>
-      ))}
-      {meals}
+      ))} */}
+      <Typography variant='h6'>
+        {cart.rest.restName}
+      </Typography>
+      {cart.rest.meals.map(m => <CartMealGroup key={OrderMeal.getKey(m)} m={m} />)}
     </>
   )
 }
 
-export default withClientApollo(SideMenuCart);
+export default withClientApollo(MenuCartDisplay);

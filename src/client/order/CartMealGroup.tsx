@@ -1,6 +1,10 @@
-import { makeStyles, Typography, Grid, Button } from "@material-ui/core";
+import { makeStyles, Typography, Grid, Button, IconButton, Paper, TextField, Popover } from "@material-ui/core";
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import { useState } from "react";
+import { useIncrementMealCount, useRemoveMealFromCart, useSetInstruction } from "../global/state/cartState";
+import { IOrderMeal } from "../../order/orderRestModel";
 
 const useStyles = makeStyles(theme => ({
   group: {
@@ -15,32 +19,43 @@ const useStyles = makeStyles(theme => ({
   icon: {
     fontSize: '1.8rem',
   },
+  more: {
+    padding: 0,
+  },
   col: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
-  }
+  },
+  popper: {
+    width: 300,
+    padding: theme.spacing(2),
+    display: 'flex',
+    alignItems: 'center',
+  },
 }));
 
 const CartMealGroup: React.FC<{
-  name: string,
-  img?: string,
-  quantity: number,
-  choices?: string[],
-  onAddMeal?: () => void,
-  onRemoveMeal?: () => void,
+  m: IOrderMeal
 }> = ({
-  name,
-  img,
-  choices,
-  quantity,
-  onAddMeal,
-  onRemoveMeal,
+  m
  }) => {
-  const classes = useStyles({ img });
+  const incrementMealCount = useIncrementMealCount();
+  const removeMealFromCart = useRemoveMealFromCart();
+  const setInstruction = useSetInstruction();
+  const [instructionsAnchor, setInstructionsAnchor] = useState<null | HTMLElement>(null);
+  const onClickMore = (event: React.MouseEvent<HTMLElement>) => {
+    setInstructionsAnchor(instructionsAnchor ? null : event.currentTarget);
+  };
+  const onCloseInstructions = () => {
+    setInstructionsAnchor(null);
+    setInstruction(m, instructions ? instructions : null);
+  }
+  const [instructions, setInstructions] = useState<string | null>(m.instructions)
+  const classes = useStyles({ img: m.img });
   const imgCol = 4;
-  const nameCol: 7 | 11 = img ? 7 as 7: 7 + imgCol as 7 | 11;
+  const nameCol: 6 | 10 = m.img ? 6 as 6: 6 + imgCol as 6 | 10;
   return (
     <Grid
       container
@@ -52,47 +67,74 @@ const CartMealGroup: React.FC<{
         sm={1}
         className={classes.col}
       >
-        {
-          onAddMeal &&
-          <Button
-            variant='text'
-            color='primary'
-            onClick={onAddMeal}
-          >
-            <AddIcon className={classes.icon} />
-          </Button>
-        }
+        <Button
+          variant='text'
+          color='primary'
+          onClick={() => incrementMealCount(m)}
+        >
+          <AddIcon className={classes.icon} />
+        </Button>
         <Typography variant='h6'>
-          {quantity}
+          {m.quantity}
         </Typography>
-        {
-          onRemoveMeal &&
-          <Button
-            variant='text'
-            onClick={onRemoveMeal}
-          >
-            <RemoveIcon className={classes.icon} />
-          </Button>
-        }
+        <Button
+          variant='text'
+          onClick={() => removeMealFromCart(m)}
+        >
+          <RemoveIcon className={classes.icon} />
+        </Button>
       </Grid>
       {
-        img &&
+        m.img &&
         <Grid item sm={imgCol}>
           <img
-            src={img}
-            alt={img}
+            src={m.img}
+            alt={m.img}
             className={classes.img}
           />
         </Grid>
       }
       <Grid item sm={nameCol}>
         <Typography variant='subtitle1'>
-          {name}
+          {m.name}
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          {choices && choices.join(', ')}
+          {m.choices && m.choices.join(', ')}
+        </Typography>
+        <Typography variant='body1' color='textSecondary'>
+          {m.instructions}
         </Typography>
       </Grid>
+      <Grid item sm={1}>
+        <IconButton onClick={onClickMore} className={classes.more}>
+          <MoreVertIcon />
+        </IconButton>
+      </Grid>
+      <Popover
+        open={Boolean(instructionsAnchor)}
+        anchorEl={instructionsAnchor}
+        onClose={onCloseInstructions}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <Paper className={classes.popper}>
+          <TextField
+            fullWidth
+            label='Instructions'
+            placeholder='Instructions'
+            multiline
+            variant='outlined'
+            value={instructions ? instructions : undefined}
+            onChange={e => setInstructions(e.target.value)}
+          />
+        </Paper>
+      </Popover>
     </Grid>
   )
 }

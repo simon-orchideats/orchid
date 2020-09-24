@@ -1,9 +1,10 @@
+//@ts-nocheck
+
 import { makeStyles, Button, Typography } from "@material-ui/core";
-import { deliveryDay, deliveryTime, Schedule } from "../../consumer/consumerPlanModel";
+import { deliveryDay, deliveryTime } from "../../consumer/consumerPlanModel";
 import withClientApollo from '../utils/withClientApollo';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DeliveryDateChooser from './DeliveryDateChooser';
-import { deliveryFee } from "../../order/costModel";
 
 const useStyles = makeStyles(theme => ({
   deliveryHeader: {

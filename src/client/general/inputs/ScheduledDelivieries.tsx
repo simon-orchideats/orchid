@@ -1,13 +1,11 @@
+//@ts-nocheck
+
 import { makeStyles, IconButton, useTheme, Typography, Button } from "@material-ui/core";
-import { DeliveryInput, Delivery, DeliveryMeal } from "../../../order/deliveryModel";
 import CartMealGroup from "../../order/CartMealGroup";
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import React from "react";
-import { Schedule } from "../../../consumer/consumerPlanModel";
-import { useMoveMealToNewDeliveryInCart } from "../../global/state/cartState";
 import { Cart } from "../../../order/cartModel";
-import { MIN_MEALS } from "../../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   col: {
@@ -69,7 +67,7 @@ const ScheduleDeliveries: React.FC<{
   const theme = useTheme();
   const moveMealToNewDelivery = useMoveMealToNewDeliveryInCart();
   const restMealsPerDelivery = Cart.getRestMealsPerDelivery(deliveries);
-  const moveMeal = (meal: DeliveryMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
+  const moveMeal = (meal: OrderMeal, fromDeliveryIndex: number, toDeliveryIndex: number) => {
     moveMealToNewDelivery(
       meal,
       fromDeliveryIndex,

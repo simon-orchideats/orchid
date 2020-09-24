@@ -11,13 +11,21 @@ import { useRouter } from 'next/router';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
-import { deliveryRoute } from '../../pages/delivery';
 import ConsumerPopper from './ConsumerPopper';
 import AboutPopper from './AboutPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService } from '../utils/analyticsService';
 import LogRocket from 'logrocket';
+import { useGetCart } from '../global/state/cartState';
+import { ServiceTypes, Order } from '../../order/orderModel';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import { Cart } from '../../order/cartModel';
+import SearchInput from '../general/inputs/SearchInput';
+import ServiceTimePopper from './ServiceTimePopper';
+import ServiceTypePopper from './ServiceTypePopper';
+import MenuIcon from '@material-ui/icons/Menu';
+import CartModal from './CartModal';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -34,6 +42,15 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
   },
+  cart: {
+    color: theme.palette.primary.main
+  },
+  menuServiceDropdown: {
+    cursor: 'pointer',
+    display: 'flex',
+    textDecoration: 'underline',
+    color: theme.palette.common.link,
+  },
   about: {
     minWidth: 50,
     cursor: 'pointer',
@@ -43,18 +60,15 @@ const useStyles = makeStyles(theme => ({
     minWidth: 95,
     display: 'flex',
   },
-  how: {
-    marginRight: theme.spacing(1),
-  },
   container: {
     padding: 0,
-  },
-  disabled: {
-    color: theme.palette.action.disabled,
   },
   toolbar: {
     display: 'flex',
     padding: 0, 
+    height: theme.mixins.customToolbar.height,
+    [theme.mixins.customToolbar.toolbarWidthQuery]: theme.mixins.customToolbar.toolbarWidthQuery,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: theme.mixins.customToolbar.toolbarLandscapeQuery
   },
   center: {
     width: '100%',
@@ -78,7 +92,8 @@ const useStyles = makeStyles(theme => ({
   },
   logo: {
     [theme.breakpoints.down('xs')]: {
-      marginRight: theme.spacing(2)
+      marginRight: theme.spacing(1),
+      height: '75%',
     },
     height: '100%',
     paddingTop: 2,
@@ -96,30 +111,43 @@ const useStyles = makeStyles(theme => ({
 const Navbar: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
+  const cart = useGetCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const consumer = useGetConsumer();
+  const [isShowingSearchAreaInput, setShowSearchAreaInput] = useState(false);
   const signIn = useSignIn();
   const [accountAnchor, setAccountAnchor] = useState<HTMLDivElement | null>(null);
   const [aboutAnchor, setAboutAnchor] = useState<HTMLDivElement | null>(null);
+  const [serviceTypeAnchor, setServiceTypeAnchor] = useState<HTMLDivElement | null>(null);
+  const [serviceTimeAnchor, setServiceTimeAnchor] = useState<HTMLDivElement | null>(null);
   const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
     setAccountAnchor(event.currentTarget);
   };
   const onClickAbout = (event: React.MouseEvent<HTMLDivElement>) => {
     setAboutAnchor(event.currentTarget);
   };
+  const onClickServiceType = (event: React.MouseEvent<HTMLDivElement>) => {
+    setServiceTypeAnchor(event.currentTarget);
+  };
+  const onClickServiceTime = (event: React.MouseEvent<HTMLDivElement>) => {
+    setServiceTimeAnchor(event.currentTarget);
+  };
+  const onClickCart = () => {
+    if (!isMdAndUp) setIsCartOpen(true);
+  }
   useMemo(() => {
-    const id = consumer.data && consumer.data.Id;
+    const id = consumer.data && consumer.data._id;
     if (id) {
       analyticsService.setUserId(id);
       LogRocket.identify(id);
     }
-  }, [consumer.data && consumer.data.Id]);
+  }, [consumer.data && consumer.data._id]);
   const accountOpen = !!accountAnchor;
   const aboutOpen = !!aboutAnchor;
+  const serviceTypeOpen = !!serviceTypeAnchor;
+  const serviceTimeOpen = !!serviceTimeAnchor;
   const router = useRouter();
-  const urlQuery = router.query;
-  const updatingParam = urlQuery.updating;
-  const isUpdating = !!updatingParam && updatingParam === 'true'
   const currRoute = router.pathname;
   const menuStep = (
     <Link href={menuRoute}>
@@ -146,7 +174,7 @@ const Navbar: React.FC = () => {
           isMdAndUp ?
           <div className={classes.hi}>
             <Typography variant='body1'>
-              Hi, {consumer.data.Profile.Name.split(' ')[0]}
+              Hi, {consumer.data.profile.name.split(' ')[0]}
             </Typography>
             <ExpandMoreIcon />
           </div>
@@ -156,66 +184,65 @@ const Navbar: React.FC = () => {
       </div>
     )
   }
-  let barIsStep = true;
   let bar;
-  if (currRoute === `${menuRoute}` && isUpdating) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          <Typography variant='button'>
-            Menu
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Delivery
-          </Typography>
+  if (currRoute === menuRoute) {
+    if (!cart || !cart.searchArea) {
+      bar = null;
+      account = null;
+    } else {
+      const onAddrInputBlur = () => {
+        setShowSearchAreaInput(false);
+      }
+      const onClickSearchArea = () => {
+        setShowSearchAreaInput(true);
+      }
+      const shortAddrArr = cart.searchArea.split(' ');
+      const shortAddr = shortAddrArr ? `${shortAddrArr[0]} ${shortAddrArr[1]}` : null;
+      const searchArea = isShowingSearchAreaInput ?
+        <SearchInput onBlur={onAddrInputBlur} />
+      :
+        (
+          <div className={classes.menuServiceDropdown} onClick={onClickSearchArea}>
+            <Typography variant='body1'>{shortAddr}</Typography>
+          </div>
+        )
+      bar = (
+        <>
+          <CartModal
+            open={isCartOpen}
+            onClose={() => {
+              setIsCartOpen(false);
+            }}
+          />
+          <div className={classes.menuServiceDropdown} onClick={onClickServiceType}>
+            <Typography variant='body1'>
+              {cart.serviceType}
+            </Typography>
+          </div>
+          &nbsp;
+          <div className={classes.menuServiceDropdown} onClick={onClickServiceTime}>
+            <Typography variant='body1'>
+              {Order.getServiceTimeStr(cart.serviceTime) === 'ASAP' ? 'ASAP' : `${cart.serviceDate} ${Order.getServiceTimeStr(cart.serviceTime)}`}
+            </Typography>
+          </div>
+          &nbsp;
+          {cart.serviceType === ServiceTypes.Delivery ? 'to' : 'near'}
+          &nbsp;
+          {searchArea}
+        </>
+      );
+      account = (
+        <div className={`${classes.account} ${classes.cart}`} onClick={onClickCart}>
+          <ShoppingCartIcon />&nbsp;
+          <Typography variant='h6'>{Cart.getNumMeals(cart)}</Typography>
         </div>
-      </div>
-    )
-    account = null;
-  } else if (currRoute === `${deliveryRoute}` && isUpdating) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          <Button variant='text' onClick={() => router.back()}>
-            Menu
-          </Button>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' color='primary'>
-            Delivery
-          </Typography>
-        </div>
-      </div>
-    )
-    account = null;
-  } else if (currRoute === `${deliveryRoute}`) {
-    bar = (
-      <div className={classes.center}>
-        <div className={classes.vertCenter}>
-          {menuStep}
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' color='primary'>
-            Delivery
-          </Typography>
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' className={classes.disabled}>
-            Checkout
-          </Typography>
-        </div>
-      </div>
-    )
-    account = null;
+      );
+    }
   } else if (currRoute === `${checkoutRoute}`) {
     bar = (
       <div className={classes.center}>
         <div className={classes.vertCenter}>
           {menuStep}
-          <ChevronRightIcon className={classes.horzMargin} />
-          <Link href={deliveryRoute}>
-            <Typography variant='button' className={classes.link}>
-              Delivery
-            </Typography>
-          </Link>
           <ChevronRightIcon className={classes.horzMargin} />
           <Typography variant='button' color='primary'>
             Checkout
@@ -225,7 +252,6 @@ const Navbar: React.FC = () => {
     )
     account = null;
   } else {
-    barIsStep = false;
     bar = (
       <>
         <Link href={menuRoute}>
@@ -247,12 +273,10 @@ const Navbar: React.FC = () => {
       >
         <Container className={classes.container} maxWidth='lg'>
           <Toolbar className={classes.toolbar}>
-            {
-              (isMdAndUp || !barIsStep) &&
-              <Link href={indexRoute}>
-                <img src='/logo.png' alt='logo' className={classes.logo} />
-              </Link>
-            }
+            {!isMdAndUp && currRoute === menuRoute && <MenuIcon />}
+            <Link href={indexRoute}>
+              <img src='/logo.png' alt='logo' className={classes.logo} />
+            </Link>
             {bar}
             {account}
           </Toolbar>
@@ -265,6 +289,16 @@ const Navbar: React.FC = () => {
             open={aboutOpen}
             onClose={() => setAboutAnchor(null)}
             anchorEl={aboutAnchor}
+          />
+          <ServiceTimePopper
+            open={serviceTimeOpen}
+            onClose={() => setServiceTimeAnchor(null)}
+            anchorEl={serviceTimeAnchor}
+          />
+          <ServiceTypePopper
+            open={serviceTypeOpen}
+            onClose={() => setServiceTypeAnchor(null)}
+            anchorEl={serviceTypeAnchor}
           />
         </Container>
       </AppBar>

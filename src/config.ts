@@ -27,6 +27,9 @@ type config = {
         pixelId: string
       }
     },
+    googleApi: {
+      key: string,
+    }
   },
   server: {
     app: {
@@ -100,6 +103,9 @@ const development: config = {
         pixelId: '254026399032356'
       }
     },
+    googleApi: {
+      key: 'AIzaSyCvchRcfSWqIZhi11mVORsWRcJH5AnIQH0',
+    }
   },
   server: {
     app: {
@@ -194,6 +200,9 @@ const stage: config = {
         pixelId: ''
       }
     },
+    googleApi: {
+      key: 'AIzaSyCvchRcfSWqIZhi11mVORsWRcJH5AnIQH0',
+    }
   },
   server: {
     app: {
@@ -284,6 +293,9 @@ const production: config = {
         pixelId: '701753510614691'
       }
     },
+    googleApi: {
+      key: 'AIzaSyCvchRcfSWqIZhi11mVORsWRcJH5AnIQH0',
+    }
   },
   server: {
     app: {

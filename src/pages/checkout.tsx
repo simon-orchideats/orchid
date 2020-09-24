@@ -1,18 +1,17 @@
-import { Typography, makeStyles, Grid, Container, TextField, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox, TextField } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
-import Router, { useRouter } from 'next/router'
+import Router from 'next/router'
 import { menuRoute } from "./menu";
 import StickyDrawer from "../client/general/StickyDrawer";
 import React, { useState, useEffect, useRef, createRef } from "react";
-import { state, Address } from "../place/addressModel";
 import { useTheme } from "@material-ui/styles";
 import CardForm from "../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import CheckoutCart from "../client/checkout/CheckoutCart";
 import { activeConfig } from "../config";
-import { usePlaceOrder, useGetPromo } from "../client/order/orderService";
+import { usePlaceOrder } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
@@ -20,17 +19,16 @@ import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import EmailInput from "../client/general/inputs/EmailInput";
-import AddressForm from "../client/general/inputs/AddressForm";
 import GLogo from "../client/checkout/GLogo";
 import { useConsumerSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
-import { useGetAvailablePlans } from "../plan/planService";
-import { sendCheckoutMetrics } from "../client/checkout/checkoutMetrics";
-import { useMutationResponseHandler } from "../utils/apolloUtils";
-import { promoDurations } from "../order/promoModel";
+// import { useGetAvailablePlans } from "../plan/planService";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
 import { useGetTags } from "../rest/restService";
+import { Cart } from "../order/cartModel";
+import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
+import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -49,10 +47,6 @@ const useStyles = makeStyles(theme => ({
   title: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-  },
-  subtitle: {
-    marginTop: -theme.spacing(2),
-    fontWeight: 'bold',
   },
   secureSeal: {
     paddingLeft: theme.spacing(1),
@@ -77,7 +71,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const cart = useGetCart();
   const signInGoogle = useGoogleSignIn();
   const notify = useNotify();
-  const router = useRouter();
   const allTags = useGetTags();
   const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer();
@@ -87,15 +80,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const addr2InputRef = createRef<HTMLInputElement>();
   const cityInputRef = createRef<HTMLInputElement>();
   const zipInputRef = createRef<HTMLInputElement>();
-  const [state, setState] = useState<state | ''>('NJ');
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  const [applyPromo, applyPromoRes] = useGetPromo();
   const receiveTextsInput = createRef<HTMLInputElement>();
-  const promoInputRef = createRef<HTMLInputElement>();
-  const [amountOff, setAmountOff] = useState<number | undefined>(undefined);
-  const [promoDuration, setPromoDuration] = useState<promoDurations>();
-  const [deliveryInstructions, setDliveryInstructions] = useState<string>('')
+  const [serviceInstructions, setServiceInstructions] = useState<string>('')
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
   const accountNameInputRef = createRef<HTMLInputElement>();
@@ -108,24 +96,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
-  const plans = useGetAvailablePlans();
-  useEffect(() => {
-    if (router.query.a !== undefined) {
-      setAmountOff(parseFloat(router.query.a as string));
-    }
-  }, [router.query.a]);
-
-
-  useMutationResponseHandler(applyPromoRes, () => {
-    if (!applyPromoRes.data?.res?.AmountOff) {
-      const err = new Error('Missing amount off');
-      console.error(err.stack);
-      throw err;
-    }
-    notify('Promo applied', NotificationType.success, true);
-    setAmountOff(applyPromoRes.data.res.AmountOff);
-    setPromoDuration(applyPromoRes.data.res.Duration);
-  });
+  // const plans = useGetAvailablePlans();
+  // useEffect(() => {
+  //   if (router.query.a !== undefined) {
+  //     setAmountOff(parseFloat(router.query.a as string));
+  //   }
+  // }, [router.query.a]);
 
   useEffect(() => {
     if (placeOrderRes.error) {
@@ -178,22 +154,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         }
         placeOrder(
           {
-            _id: signUpRes.data.res.Id,
-            name: signUpRes.data.res.Profile.Name,
-            email: signUpRes.data.res.Profile.Email
+            _id: signUpRes.data.res._id,
+            name: signUpRes.data.res.profile.name,
+            email: signUpRes.data.res.profile.name
           },
-          cart.getCartInput(
-            addr1InputRef.current!.value,
-            addr2InputRef.current!.value,
-            cityInputRef.current!.value,
-            state as state,
-            zipInputRef.current!.value,
+          Cart.getCartInput(
+            addr2InputRef.current!.value || null,
+            cart,
             phoneInputRef.current!.value,
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
-            deliveryInstructions,
-            allTags.data,
-            promoInputRef.current?.value,
+            serviceInstructions,
+            null,
           )
         );
       }
@@ -205,13 +177,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   } else if (!cart) {
     Router.replace(menuRoute);
     return <Typography>Redirecting...</Typography>
-  }
-
-  if (consumer && consumer.data) {
-    if (consumer.data.StripeSubscriptionId && !placeOrderRes.called && !signUpRes.called) {
-      Router.replace(menuRoute)
-      return <Typography>Redirecting...</Typography>
-    }
   }
 
   const validate = (name?: string, password?: string, canReceiveTexts?: boolean) => {
@@ -260,7 +225,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     zip?: string,
     phone?: string,
     paymentMethod?: stripe.paymentMethod.PaymentMethod,
-    promo?: string
   ) => {
     if (
       !addr1
@@ -280,12 +244,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    if (!plans.data) {
-      const err = new Error(`No plans`);
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
+    // if (!plans.data) {
+    //   const err = new Error(`No plans`);
+    //   console.error(err.stack);
+    //   setDidPlaceOrder(false);
+    //   throw err;
+    // }
     if (!pm.current) {
       const err = new Error(`No payment method`);
       console.error(err.stack);
@@ -321,30 +285,26 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     } else {
       placeOrder(
         {
-          _id: consumer.data.Id,
-          name: consumer.data.Profile.Name,
-          email: consumer.data.Profile.Email,
+          _id: consumer.data._id,
+          name: consumer.data.profile.name,
+          email: consumer.data.profile.name,
         },
-        cart.getCartInput(
-          addr1,
+        Cart.getCartInput(
           addr2 || null,
-          city,
-          state as state,
-          zip,
+          cart,
           phone,
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
-          deliveryInstructions,
-          allTags.data,
-          promo,
+          serviceInstructions,
+          null
         ),
       );
     }
-    sendCheckoutMetrics(
-      cart,
-      plans.data,
-      allTags.data.map(t => t.Name),
-    )
+    // sendCheckoutMetrics(
+    //   cart,
+    //   plans.data,
+    //   allTags.data.map(t => t.Name),
+    // )
   }
 
   const onClickPlaceOrder = async (
@@ -356,7 +316,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     city?: string,
     zip?: string,
     phone?: string,
-    promo?: string,
     canReceiveTexts?: boolean,
   ) => {
     if (didPlaceOrder) return;
@@ -384,12 +343,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    if (!plans.data) {
-      const err = new Error(`No plans`);
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
+    // if (!plans.data) {
+    //   const err = new Error(`No plans`);
+    //   console.error(err.stack);
+    //   setDidPlaceOrder(false);
+    //   throw err;
+    // }
     const cardElement = elements.getElement('cardNumber');
     if (!cardElement) {
       const err =  new Error('No card element');
@@ -397,7 +356,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    const billingName = (!consumer || !consumer.data) ? name : consumer.data.Profile.Name;
+    const billingName = (!consumer || !consumer.data) ? name : consumer.data.profile.name;
     try {
       pm.current = await stripe.createPaymentMethod({
         type: 'card',
@@ -428,32 +387,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       zip,
       phone,
       pm.current.paymentMethod,
-      promo
     );
   }
 
-
-  const onApplyPromo = () => {
-    if (!validate(accountNameInputRef.current?.value, passwordInputRef.current?.value, receiveTextsInput.current?.checked)) {
-      notify('Please fix errors', NotificationType.error, true);
-      return
-    };
-    if (!promoInputRef.current?.value) return;
-    applyPromo(
-      promoInputRef.current!.value,
-      phoneInputRef.current!.value,
-      Address.getFullAddrStr(
-        addr1InputRef.current!.value,
-        cityInputRef.current!.value,
-        state as state,
-        zipInputRef.current!.value,
-        addr2InputRef.current?.value,
-      )
-    );
-  }
   const checkoutCartProps = {
-    amountOff: amountOff ?? 0,
-    promoDuration,
     onPlaceOrder: () => onClickPlaceOrder(
       accountNameInputRef.current?.value,
       passwordInputRef.current?.value,
@@ -463,16 +400,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       cityInputRef.current?.value,
       zipInputRef.current?.value,
       phoneInputRef.current?.value,
-      promoInputRef.current?.value,
       receiveTextsInput.current?.checked,
     ),
     loading: didPlaceOrder,
-    promoRef: promoInputRef,
-    defaultPromo: router.query.p as string,
-    onApplyPromo,
-    onChangePromo: () => {
-      if (amountOff !== 0) setAmountOff(0);
-    }
   }
   return (
     <Container
@@ -503,26 +433,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             color='primary'
             className={classes.title}
           >
-            Delivery Address
+            Instructions
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant='subtitle2' className={classes.subtitle}>
-                Table only delivers to NJ at this time. NY coming soon
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <AddressForm
-                setValidator={(validator: () => boolean) => {
-                  validateAddressRef.current = validator;
-                }}
-                addr1InputRef={addr1InputRef}
-                addr2InputRef={addr2InputRef}
-                cityInputRef={cityInputRef}
-                zipInputRef={zipInputRef}
-                state={state}
-                setState={setState}
-              />
+              <ServiceTypePicker />
             </Grid>
             <Grid
               item
@@ -546,8 +461,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 variant='outlined'
                 size='small'
                 fullWidth
-                value={deliveryInstructions}
-                onChange={e => setDliveryInstructions(e.target.value)}
+                value={serviceInstructions}
+                onChange={e => setServiceInstructions(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -578,6 +493,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             color='primary'
             className={classes.title}
           >
+            When
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <ServiceDateTimePicker />
+            </Grid>
+          </Grid>
+          <Typography
+            variant='h6'
+            color='primary'
+            className={classes.title}
+          >
             Account
           </Typography>
           {
@@ -585,12 +512,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography variant='body1'>
-                  {consumer.data.Profile.Name}
+                  {consumer.data.profile.name}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant='body1'>
-                  {consumer.data.Profile.Email}
+                  {consumer.data.profile.email}
                 </Typography>
               </Grid>
             </Grid>

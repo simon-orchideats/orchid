@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Container } from "@material-ui/core";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";

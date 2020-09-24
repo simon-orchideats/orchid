@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
@@ -26,9 +28,9 @@ const PlanCards: React.FC<{
     <>
       {plans.data.filter(p => p.IsActive).map(plan => (
         <Grid
-          key={plan.StripePlanId}
+          key={plan.StripeProductId}
           container
-          justify='center'
+          justifyContent='center'
         >
           {plan.Tiers.map(t => (
             <Grid

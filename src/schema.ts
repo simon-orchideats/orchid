@@ -24,7 +24,7 @@ const query = gql`
     myPaidOrders: [Order!]!
     myRewards: Rewards!
     mySpent: Spent!
-    nearbyRests(cityOrZip: String): [Rest!]!
+    nearbyRests(addr: String): [Rest!]!
     rest(restId: ID!): Rest!
     order(orderId: ID!): Order!
     consumerFromReferral(promoCode: ID!): String!

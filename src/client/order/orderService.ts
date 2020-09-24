@@ -1,10 +1,11 @@
+//@ts-nocheck
+
 import { IRewards, Rewards } from './../../order/rewardModel';
 import { MutationPromoRes, Promo } from './../../order/promoModel';
 import { Plan, IPlan } from './../../plan/planModel';
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
 import { IOrder, Order, MealPrice } from './../../order/orderModel';
-import { IUpdateDeliveryInput, Delivery, DeliveryInput, DeliveryStatuses } from './../../order/deliveryModel';
 import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
@@ -14,7 +15,6 @@ import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 import { orderFragment } from '../../order/orderFragment';
 import { ISpent, Spent } from '../../order/costModel';
-import { MealPlan } from '../../consumer/consumerPlanModel';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -33,114 +33,6 @@ const ALL_UPCOMING_ORDERS_QUERY = gql`
   }
   ${orderFragment}
 `
-
-export const useGetPromo = (): [
-  (promoCode: string, phone: string, fullAddr: string) => void,
-  {
-    error?: ApolloError 
-    data?: {
-      res: Promo | null,
-      error: string | null
-    },
-  }
-] => {
-  type res = { getPromo: MutationPromoRes };
-  type vars = { promoCode: string, phone: string, fullAddr: string }
-  const [mutate, mutation] = useMutation<res, vars>(gql`
-    mutation getPromo($promoCode: String!, $phone: String!, $fullAddr: String!) {
-      getPromo(promoCode: $promoCode, phone: $phone, fullAddr: $fullAddr) {
-        res {
-          stripeCouponId
-          percentOff
-          amountOff
-          duration
-        }
-        error
-      }
-    }
-  `);
-  const getPromo = (promoCode: string, phone: string, fullAddr: string) => {
-    mutate({
-      variables: { promoCode, phone, fullAddr },
-    })
-  }
-  return useMemo(() => {
-    const data = mutation.data && {
-      res: mutation.data.getPromo.res && new Promo(mutation.data.getPromo.res),
-      error: mutation.data.getPromo.error
-    }
-    return [
-      getPromo,
-      {
-        error: mutation.error,
-        data,
-      }
-    ]
-  }, [mutation]);
-}
-
-
-export const useGetOrder = (orderId: string | null) => {
-  type res = { order: IOrder }
-  const res = useQuery<res>(
-    gql`
-      query order($orderId: ID!) {
-        order(orderId: $orderId) {
-          ...orderFragment
-        }
-      }
-      ${orderFragment}
-    `, 
-    {
-      skip: !orderId,
-      variables: { orderId },
-    }
-  );
-  return {
-    loading: res.loading,
-    error: res.error,
-    data: res.data ? new Order(res.data.order) : res.data
-  }
-}
-
-export const useGetRewards = () => {
-  type res = { myRewards: IRewards }
-  const res = useQuery<res>(
-    gql`
-      query myRewards {
-        myRewards {
-          earned
-          potential
-        }
-      }
-    `
-  );
-  return {
-    loading: res.loading,
-    error: res.error,
-    data: res.data ? new Rewards(res.data.myRewards) : res.data
-  }
-}
-
-export const useGetSpent = () => {
-  type res = { mySpent: ISpent }
-  const res = useQuery<res>(
-    gql`
-      query mySpent {
-        mySpent {
-          amount
-          numMeals
-          numOrders
-        }
-      }
-    `
-  );
-  return {
-    loading: res.loading,
-    error: res.error,
-    data: res.data ? new Spent(res.data.mySpent) : res.data
-  }
-}
 
 type newConsumer = {
   _id: string,
@@ -185,9 +77,9 @@ export const usePlaceOrder = (): [
               email: newConsumer.email,
               phone: cart.phone,
               card: cart.card,
-              destination: {
-                instructions: cart.destination.instructions,
-                address: cart.destination.address,
+              location: {
+                instructions: cart.location.instructions,
+                address: cart.location.address,
               },
             },
             plan: {
@@ -210,7 +102,7 @@ export const usePlaceOrder = (): [
   }
   return useMemo(() => {
     const data = mutation.data && {
-      res: mutation.data.placeOrder.res && new Consumer(mutation.data.placeOrder.res),
+      res: mutation.data.placeOrder.res && Consumer.getICopy(mutation.data.placeOrder.res),
       error: mutation.data.placeOrder.error
     }
     return [
@@ -224,269 +116,11 @@ export const usePlaceOrder = (): [
   }, [mutation]);
 }
 
-export const useSkipDelivery = (): [
-  (order: Order, deliveryIndex: number, plans: Plan[]) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  }
-] => {
-  type res = { skipDelivery: MutationBoolRes };
-  type vars = { orderId: string, deliveryIndex: number }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation skipDelivery($orderId: ID!, $deliveryIndex: Int!) {
-      skipDelivery(orderId: $orderId, deliveryIndex: $deliveryIndex) {
-        res
-        error
-      }
-    }
-  `);
-  const skipDelivery = (order: Order, deliveryIndex: number, plans: Plan[]) => {
-    mutate({ 
-      variables: {
-        orderId: order.Id,
-        deliveryIndex
-      },
-      optimisticResponse: {
-        skipDelivery: {
-          res: true,
-          error: null,
-          //@ts-ignore
-          __typename: "BoolRes",
-        }
-      },
-      update: (cache, { data }) => {
-        if (!data || !data.skipDelivery.res) return;
-        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-        if (!upcomingOrders) {
-          const err = new Error('Failed to get upcoming orders for cache update');
-          console.error(err.stack);
-          throw err;
-        }
-        const newDeliveries = order.Deliveries.map((d, i) => 
-          i === deliveryIndex ? 
-            new Delivery({
-              ...d,
-              meals: [],
-              status: 'Skipped',
-            })
-          :
-            new Delivery(d)
-        );
-        const mealPrices = MealPrice.getMealPriceFromDeliveries(
-          plans,
-          newDeliveries,
-          order.DonationCount,
-        )
-        const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
-          if (order._id !== upcomingOrder._id) return upcomingOrder;
-          const copy = Order.getICopy(upcomingOrder);
-          const newOrder: IOrder = {
-            ...copy,
-            costs: {
-              ...copy.costs,
-              mealPrices,
-            },
-            isAutoGenerated: false,
-            deliveries: newDeliveries,
-          }
-          return Order.addTypenames(newOrder);
-        });
-        cache.writeQuery({
-          query: MY_UPCOMING_ORDERS_QUERY,
-          data: {
-            myUpcomingOrders: newUpcomingOrders,
-          }
-        })
-      }
-    })
-  }
-  return useMemo(() => [
-    skipDelivery,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.skipDelivery : undefined,
-    }
-  ], [mutation]);
-}
-
-export const useUpdateDeliveries = (): [
-  (
-    orderId: string,
-    updateOptions: IUpdateDeliveryInput,
-    consumerMealPlan: MealPlan[],
-    plans: IPlan[],
-  ) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  },
-] => {
-  type res = { updateDeliveries: MutationBoolRes };
-  type vars = { orderId: string, updateOptions: IUpdateDeliveryInput }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation updateDeliveries($orderId: ID!, $updateOptions: UpdateDeliveryInput!) {
-      updateDeliveries(orderId: $orderId, updateOptions: $updateOptions) {
-        res
-        error
-      }
-    }
-  `);
-  const updateDeliveries = (
-    orderId: string,
-    updateOptions: IUpdateDeliveryInput,
-    consumerMealPlan: MealPlan[],
-    plans: IPlan[]
-  ) => {
-    mutate({ 
-      variables: {
-        orderId,
-        updateOptions
-      },
-      optimisticResponse: {
-        updateDeliveries: {
-          res: true,
-          error: null,
-          //@ts-ignore
-          __typename: "BoolRes",
-        }
-      },
-      update: (cache, { data }) => {
-        if (!data || !data.updateDeliveries.res) return;
-        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-        if (!upcomingOrders) {
-          const err = new Error('Failed to get upcoming orders for cache update');
-          console.error(err.stack);
-          throw err;
-        }
-        const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
-          if (orderId !== upcomingOrder._id) return upcomingOrder;
-          const copy = Order.getICopy(upcomingOrder);
-          const oldConfirmedDeliveries = upcomingOrder.deliveries
-            .filter(d => d.status === 'Confirmed')
-            .map(d => Delivery.getICopy(d));
-          const newDeliveries = [
-            ...oldConfirmedDeliveries,
-            ...updateOptions.deliveries.map(d => ({
-              ...DeliveryInput.getICopy(d),
-              status: DeliveryStatuses.Open ,
-            })),
-          ];
-          const mealPrices = MealPrice.getMealPriceFromDeliveries(
-            plans,
-            newDeliveries,
-            updateOptions.donationCount,
-            consumerMealPlan,
-          );
-          const newOrder: IOrder = {
-            ...copy,
-            costs: {
-              ...copy.costs,
-              mealPrices,
-            },
-            isAutoGenerated: false,
-            deliveries: newDeliveries,
-          }
-          return Order.addTypenames(newOrder);
-        });
-        cache.writeQuery({
-          query: MY_UPCOMING_ORDERS_QUERY,
-          data: {
-            myUpcomingOrders: newUpcomingOrders,
-          }
-        })
-      }
-    })
-  }
-  return useMemo(() => [
-    updateDeliveries,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.updateDeliveries : undefined,
-    }
-  ], [mutation]);
-}
-
-export const useRemoveDonations = (): [
-  (order: Order, plans: Plan[]) => void,
-  {
-    error?: ApolloError 
-    data?: MutationBoolRes
-  }
-] => {
-  type res = { removeDonations: MutationBoolRes };
-  type vars = { orderId: string }
-  const [mutate, mutation] = useMutation<res,vars>(gql`
-    mutation removeDonations($orderId: ID!) {
-      removeDonations(orderId: $orderId) {
-        res
-        error
-      }
-    }
-  `);
-  const removeDonations = (order: Order, plans: Plan[]) => {
-    mutate({ 
-      variables: {
-        orderId: order.Id,
-      },
-      optimisticResponse: {
-        removeDonations: {
-          res: true,
-          error: null,
-          //@ts-ignore
-          __typename: "BoolRes",
-        }
-      },
-      update: (cache, { data }) => {
-        if (!data || !data.removeDonations.res) return;
-        const upcomingOrders = cache.readQuery<myUpcomingOrdersRes>({ query: MY_UPCOMING_ORDERS_QUERY });
-        if (!upcomingOrders) {
-          const err = new Error('Failed to get upcoming orders for cache update');
-          console.error(err.stack);
-          throw err;
-        }
-        const mealPrices = MealPrice.getMealPriceFromDeliveries(
-          plans,
-          order.Deliveries,
-          0,
-        )
-        const newUpcomingOrders = upcomingOrders.myUpcomingOrders.map(upcomingOrder => {
-          if (order._id !== upcomingOrder._id) return upcomingOrder;
-          const copy = Order.getICopy(upcomingOrder);
-          const newOrder: IOrder = {
-            ...copy,
-            costs: {
-              ...copy.costs,
-              mealPrices,
-            },
-            isAutoGenerated: false,
-            donationCount: 0,
-          }
-          return Order.addTypenames(newOrder);
-        });
-        cache.writeQuery({
-          query: MY_UPCOMING_ORDERS_QUERY,
-          data: {
-            myUpcomingOrders: newUpcomingOrders,
-          }
-        })
-      }
-    })
-  }
-  return useMemo(() => [
-    removeDonations,
-    {
-      error: mutation.error,
-      data: mutation.data ? mutation.data.removeDonations : undefined,
-    }
-  ], [mutation]);
-}
-
 type myUpcomingOrdersRes = { myUpcomingOrders: IOrder[] }
 export const useGetMyUpcomingOrders = () => {
   const res = useQuery<myUpcomingOrdersRes>(MY_UPCOMING_ORDERS_QUERY);
-  const orders = useMemo<Order[] | undefined>(() => (
-    res.data ? res.data.myUpcomingOrders.map(order => new Order(order)) : res.data
+  const orders = useMemo<IOrder[] | undefined>(() => (
+    res.data ? res.data.myUpcomingOrders.map(order => Order.getICopy(order)) : res.data
   ), [res.data]);
   return {
     loading: res.loading,
@@ -505,8 +139,8 @@ export const useGetMyPaidOrders = () => {
       ${orderFragment}
     `
   );
-  const orders = useMemo<Order[] | undefined>(() => (
-    res.data ? res.data.myPaidOrders.map(order => new Order(order)) : res.data
+  const orders = useMemo<IOrder[] | undefined>(() => (
+    res.data ? res.data.myPaidOrders.map(order => Order.getICopy(order)) : res.data
   ), [res.data]);
   return {
     loading: res.loading,
@@ -518,8 +152,8 @@ export const useGetMyPaidOrders = () => {
 type allUpcomingOrdersRes = { allUpcomingOrders: IOrder[] }
 export const useGetAllUpcomingOrders = () => {
   const res = useQuery<allUpcomingOrdersRes>(ALL_UPCOMING_ORDERS_QUERY);
-  const orders = useMemo<Order[] | undefined>(() => (
-    res.data ? res.data.allUpcomingOrders.map(order => new Order(order)) : res.data
+  const orders = useMemo<IOrder[] | undefined>(() => (
+    res.data ? res.data.allUpcomingOrders.map(order => Order.getICopy(order)) : res.data
   ), [res.data]);
   return {
     loading: res.loading,
@@ -538,8 +172,8 @@ export const useGetAllPaidOrders = () => {
       ${orderFragment}
     `
   );
-  const orders = useMemo<Order[] | undefined>(() => (
-    res.data ? res.data.allPaidOrders.map(order => new Order(order)) : res.data
+  const orders = useMemo<IOrder[] | undefined>(() => (
+    res.data ? res.data.allPaidOrders.map(order => Order.getICopy(order)) : res.data
   ), [res.data]);
   return {
     loading: res.loading,

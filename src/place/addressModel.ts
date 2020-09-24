@@ -7,6 +7,7 @@ export type state =
 | 'CO'
 | 'CT'
 | 'DE'
+| 'DC'
 | 'FL'
 | 'GA'
 | 'HI'
@@ -108,6 +109,7 @@ type states = {
   CA: 'CA',
   CO: 'CO',
   CT: 'CT',
+  DC: 'DC',
   DE: 'DE',
   FL: 'FL',
   GA: 'GA',
@@ -161,6 +163,7 @@ export const States: states = {
   CA: 'CA',
   CO: 'CO',
   CT: 'CT',
+  DC: 'DC',
   DE: 'DE',
   FL: 'FL',
   GA: 'GA',

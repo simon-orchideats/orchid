@@ -126,7 +126,7 @@ const ConsumerPopper: React.FC<{
           </Typography>
         </div>
         {
-          consumer && consumer.Permissions.includes(Permissions.updateAllOrders) &&
+          consumer && consumer.permissions.includes(Permissions.updateAllOrders) &&
           <>
             <div className={classes.row} onClick={() => {
               Router.push(allUpcomingDeliveriesRoute);
@@ -149,7 +149,7 @@ const ConsumerPopper: React.FC<{
           </>
         }
         {
-          consumer && consumer.Permissions.includes(Permissions.createRests) &&
+          consumer && consumer.permissions.includes(Permissions.createRests) &&
           <div className={classes.row} onClick={() => {
             Router.push(addPartnerRoute);
             onClose();

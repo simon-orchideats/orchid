@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Grid, useMediaQuery, Theme, useTheme, Paper } from '@material-ui/core';
 import withClientApollo from '../utils/withClientApollo';
 import React from 'react';
@@ -164,7 +166,7 @@ const Description = withClientApollo(() => {
   const classes = useStyles();
   const consumer = useGetConsumer();
   const consumerData = consumer.data;
-  const referralLink = consumerData && consumerData.Plan &&
+  const referralLink = consumerData && consumerData.plan &&
     `${activeConfig.client.app.url.replace('https://', '')}?p=${consumerData.Plan.ReferralCode}&a=${referralFriendAmount}`
   const width = referralLink ? 4 : 3;
   return (
@@ -185,7 +187,7 @@ const Description = withClientApollo(() => {
         }
       </Typography>
       <Grid
-        justify='center'
+        justifyContent='center'
         container
         spacing={2}
       >

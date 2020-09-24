@@ -43,8 +43,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * 
  * simon:
- * fluffy who we are link
- * get20 in consumer popup
+ * when removing the last item, also close the cart
  * 
  */
 
@@ -82,7 +81,7 @@ const start = async () => {
 
   const elastic = initElastic();
   const stripe = new Stripe(activeConfig.server.stripe.key, {
-    apiVersion: '2020-03-02',
+    apiVersion: '2020-08-27',
   });
 
   const geoService = initGeoService();

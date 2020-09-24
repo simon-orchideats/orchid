@@ -1,8 +1,9 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Paper, Divider, Popover, Grid } from "@material-ui/core";
 import { useState } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { Order } from "../../order/orderModel";
-import { Destination } from "../../place/destinationModel";
 import moment from "moment";
 
 const useStyles = makeStyles(theme => ({
@@ -31,7 +32,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
   },
   hint: {
-    color: theme.palette.text.hint
+    color: 'red'//todo pivot
   },
   link: {
     color: theme.palette.common.link,

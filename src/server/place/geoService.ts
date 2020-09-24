@@ -14,6 +14,11 @@ export interface IGeoService {
     lon: string,
     state: state,
   } | null>
+  getGeocodeByQuery: (q: string) => Promise<{
+    lat: string,
+    lon: string,
+    state: state,
+  } | null>
   getGeocodeByZip: (zip: string) => Promise<{
     lat: string,
     lon: string,
@@ -95,6 +100,47 @@ class GeoService implements IGeoService{
         }
       }
       console.warn(`[GeoService] Could not find lat, lon for '${city}'`);
+      return null;
+    } catch (e) {
+      console.error('[GeoService] could not get lat, lon', e.stack);
+      throw e;
+    }
+  }
+
+  async getGeocodeByQuery(q: string): Promise<{
+    lat: string
+    lon: string,
+    state: state,
+  } | null> {
+    try {
+      const query = `q=${querystring.escape(q)}&api_key=${activeConfig.server.geo.key}`;
+      let jsonData;
+      try {
+        console.log(`https://api.geocod.io/v1.6/geocode?${query}`);
+        const res = await fetch(`https://api.geocod.io/v1.6/geocode?${query}`);
+        if (res.status != 200) throw new Error('Could not fetch geocode');
+        jsonData = await res.json();
+      } catch (e) {
+        console.warn(`Could not fetch city, state for '${q}': ${e.stack}`);
+        return null;
+      }
+      if (jsonData.results && jsonData.results.length > 0) {
+        console.log(jsonData.results);
+        const {
+          address_components,
+          accuracy,
+          accuracy_type,
+          location,
+        } = jsonData.results[0];
+        if (accuracy > 0.7 && (accuracy_type === 'rooftop' || accuracy_type === 'range_interpolation' || accuracy_type === 'point')) {
+          return {
+            lat: location.lat,
+            lon: location.lng,
+            state: address_components.state,
+          }
+        }
+      }
+      console.warn(`[GeoService] Could not find lat, lon for '${q}'`);
       return null;
     } catch (e) {
       console.error('[GeoService] could not get lat, lon', e.stack);

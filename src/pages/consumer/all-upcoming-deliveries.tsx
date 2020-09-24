@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { makeStyles, Typography, Container } from "@material-ui/core";
 import { useGetAllUpcomingOrders } from "../../client/order/orderService";
 import withApollo from "../../client/utils/withPageApollo";
