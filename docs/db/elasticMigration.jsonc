@@ -361,6 +361,9 @@ POST _reindex
 
 
 
+DELETE orders
+
+PUT /orders/
 
 
 

@@ -55,6 +55,36 @@ const CART_QUERY = gql`
 export const useGetCart = () => {
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   return (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
+  // return {
+  //   "rest": {
+  //     "deliveryFee": 299,
+  //     "meals": [
+  //       {
+  //         "choices": [],
+  //         "description": null,
+  //         "img": "/menu/taqueria/pescado-taco.png",
+  //         "instructions": null,
+  //         "mealId": "O6_4TKaCEMVBFpB3-XR0P",
+  //         "name": "Pescado (Fish) Tacos x3",
+  //         "quantity": 4,
+  //         "price": 1000,
+  //         "tags": [
+  //           {
+  //             "name": "Mexican",
+  //             "type": "cuisine"
+  //           }
+  //         ]
+  //       }
+  //     ],
+  //     "restId": "GpnuO3EBTPi9Vy_WkUiX",
+  //     "restName": "La Taqueria Downtown",
+  //     "taxRate": 0.06625
+  //   },
+  //   "searchArea": '444 Washington Boulevard, Jersey City, NJ, USA',
+  //   "serviceDate": "9/24",
+  //   "serviceTime": "ASAP",
+  //   "serviceType": "Delivery"
+  // } as ICart
 }
 
 export const useAddMealToCart = (): (

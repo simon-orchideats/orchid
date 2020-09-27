@@ -1,7 +1,10 @@
+import { SignedInUser } from './../utils/apolloUtils';
+import { ICartInput } from './cartModel';
 import { ELocation, ILocation, Location } from './../place/locationModel';
 import { ICost, Cost } from './costModel';
-import { IOrderRest } from './orderRestModel';
+import { IOrderRest, OrderRest } from './orderRestModel';
 import { OrderConsumer, IOrderConsumer } from './orderConsumer';
+import { ERest } from '../rest/restModel';
 
 export type ServiceTime =  
 'ASAP'
@@ -257,7 +260,7 @@ export interface EOrder {
   readonly stripePaymentId: string | null
 }
 
-export interface IOrder extends Omit<EOrder, 'location' | 'cartUpdatedDate'> {
+export interface IOrder extends Omit<EOrder, 'location' | 'createdDate'> {
   readonly location: ILocation
   readonly _id: string
 }
@@ -334,7 +337,7 @@ export class Order {
     return {
       costs: Cost.getICopy(order.costs),
       consumer: OrderConsumer.getICopy(order.consumer),
-      createdDate: order.createdDate,
+      cartUpdatedDate: order.cartUpdatedDate,
       location: order.location && Location.getICopy(order.location),
       _id: order._id,
       serviceDate: order.serviceDate,
@@ -343,6 +346,32 @@ export class Order {
       serviceType: order.serviceType,
       rest: order.rest,
       stripePaymentId: order.stripePaymentId,
+    }
+  }
+
+  static getEOrder(
+    signedInUser: NonNullable<SignedInUser>,
+    searchArea: ELocation,
+    cart: ICartInput,
+    rest: Pick<ERest, 'stripeRestId' | 'location'>,
+    stripePaymentId: string,
+  ): EOrder {
+    const date = Date.now();
+    return {
+      cartUpdatedDate: date,
+      consumer: OrderConsumer.getIOrderConsumer(signedInUser, cart),
+      costs: Cost.getICost(cart.cartOrder.rest),
+      createdDate: date,
+      location: cart.cartOrder.serviceType === ServiceTypes.Pickup ?
+        rest.location
+      :
+        searchArea,
+      serviceDate: cart.cartOrder.serviceDate,
+      serviceInstructions: cart.cartOrder.serviceInstructions,
+      serviceTime: cart.cartOrder.serviceTime,
+      serviceType: cart.cartOrder.serviceType,
+      rest: OrderRest.getIOrderRest(cart.cartOrder.rest),
+      stripePaymentId,
     }
   }
 

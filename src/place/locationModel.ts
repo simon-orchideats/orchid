@@ -1,11 +1,9 @@
-import { IAddress, Address } from './addressModel';
-
 export interface IGeo {
   readonly lat: string,
   readonly lon: string,
 }
 
-export class Geo {
+export class Geo implements IGeo {
   readonly lat: string
   readonly lon: string
 
@@ -22,25 +20,21 @@ export class Geo {
   }
 }
 
+export interface ILocation {
+  readonly primaryAddr: string
+  readonly address2: string | null
+}
+
 export interface ELocation extends ILocation {
   readonly timezone: string;
-  readonly geo: IGeo
+  readonly geoPoint: IGeo
 }
 
-export interface ILocation {
-  readonly address: IAddress;
-}
-
-export class Location implements ILocation {
-  readonly address: Address
-
-  constructor(location: ILocation) {
-    this.address = new Address(location.address);
-  }
-
-  static getICopy(location: ILocation): ILocation {
+export class Location {
+  static getICopy(l: ILocation): ILocation {
     return {
-      address: Address.getICopy(location.address),
+      primaryAddr: l.primaryAddr,
+      address2: l.address2,
     }
   }
 }

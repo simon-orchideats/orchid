@@ -77,7 +77,6 @@ const ServiceDateTimePicker: React.FC = () => {
           onError={console.error}
           minutesStep={15}
           disablePast
-          disableCloseOnSelect
           shouldDisableTime={(time, clockType) => {
             return clockType === 'minutes' && time % 15 !== 0
           }}

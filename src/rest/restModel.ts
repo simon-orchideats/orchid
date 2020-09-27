@@ -117,6 +117,7 @@ export interface ERest {
   readonly deliveryFee: number;
   readonly status: RestStatus;
   readonly deliveryMinimum: number;
+  readonly stripeRestId: string | null;
 }
 
 export interface IRestInput {
@@ -125,7 +126,7 @@ export interface IRestInput {
   readonly featured: IMealInput[]
 }
 
-export interface IRest extends Omit<ERest, 'status' | 'createdDate' | 'location'> {
+export interface IRest extends Omit<ERest, 'status' | 'createdDate' | 'location' | 'stripeRestId'> {
   readonly _id: string;
   readonly location: ILocation;
 }
@@ -161,11 +162,10 @@ export class Rest {
       deliveryFee,
       deliveryMinimum,
       location: {
-        address: {
-          ...rest.address,
-          address2: rest.address.address2 ? rest.address.address2 : undefined
-        },
-        geo: {
+        //todo pivot,
+        primaryAddr: 'supsupsup',
+        address2: null,
+        geoPoint: {
           lat: geo.lat,
           lon: geo.lon,
         },
@@ -189,7 +189,8 @@ export class Rest {
         ...m,
         _id: nanoid(),
       })),
-      status: RestStatuses.Inactive
+      status: RestStatuses.Inactive,
+      stripeRestId: null,
     }
   }
 }

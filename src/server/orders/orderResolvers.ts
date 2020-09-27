@@ -46,6 +46,11 @@ export const OrderMutationResolvers: ServerResolovers = {
     { cart }: { cart: ICartInput },
     { signedInUser, req, res },
   ) => {
-    return await getOrderService().placeOrder(signedInUser, cart, req, res);
+    try {
+      return await getOrderService().placeOrder(signedInUser, cart, req, res);
+    } catch (e) {
+      console.error(`[OrderService] could not place order for '${signedInUser?._id}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
   },
 }

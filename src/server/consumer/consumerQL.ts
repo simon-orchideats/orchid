@@ -5,12 +5,29 @@ const _ConsumerQL = gql`
     res: Consumer
     error: String
   }
+  enum PlanRole {
+    Member
+    Owner
+  }
+  type ConsumerPlan {
+    role: PlanRole!
+    stripeProductPriceId: ID!
+    stripeProductName: String!
+  }
+  type ConsumerLocation {
+    primaryAddr: String!
+    address2: String
+    geoPoint: Geo!
+  }
+  input ConsumerLocationInput {
+    primaryAddr: String!
+    address2: String
+    geoPoint: GeoInput!
+  }
   type Consumer {
     _id: ID!
-    plan: ConsumerPlan
     profile: ConsumerProfile!
-    stripeCustomerId: ID
-    stripeSubscriptionId: ID
+    plan: ConsumerPlan
     permissions: [String!]!
   }
   type ConsumerProfile {
@@ -18,7 +35,8 @@ const _ConsumerQL = gql`
     email: String!
     card: Card
     phone: String
-    destination: Destination
+    searchArea: ConsumerLocation
+    serviceInstruction: String
   }
 
   input ConsumerProfileInput {
@@ -26,7 +44,7 @@ const _ConsumerQL = gql`
     email: String!
     card: CardInput
     phone: String
-    destination: DestinationInput
+    destination: ConsumerLocationInput
   }
 `
 

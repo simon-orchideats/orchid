@@ -3,32 +3,10 @@ import gql from 'graphql-tag';
 export const consumerFragment = gql`
   fragment consumerFragment on Consumer {
     _id
-    stripeCustomerId
-    stripeSubscriptionId
     plan {
-      mealPlans {
-        stripePlanId
-        planName
-        mealCount
-      }
-      schedules {
-        day
-        time
-      }
-      tags {
-        type
-        name
-      }
-      referralCode
-      weeklyDiscounts {
-        discounts {
-          description
-          amountOff
-          percentOff
-          reason
-          referredUserId
-        }
-      }
+      role
+      stripeProductPriceId
+      stripeProductName
     }
     profile {
       name
@@ -39,16 +17,15 @@ export const consumerFragment = gql`
         expYear
       }
       phone
-      destination {
-        instructions
-        address {
-          address1
-          address2
-          city
-          state
-          zip
+      searchArea {
+        primaryAddr
+        address2
+        geoPoint {
+          lat
+          lon
         }
       }
+      serviceInstruction
     }
     permissions
   }

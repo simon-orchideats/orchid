@@ -10,7 +10,7 @@ export const PlanRoles: {
 
 export interface IConsumerPlan {
   readonly role: PlanRole
-  readonly stripeProductId: string
+  readonly stripeProductPriceId: string
   readonly stripeProductName: string
 }
 
@@ -20,10 +20,10 @@ export interface EConsumerPlan extends IConsumerPlan {
 
 export class ConsumerPlan {
 
-  static getICopy(plan: IConsumerPlan) {
+  static getICopy(plan: IConsumerPlan): IConsumerPlan {
     return {
       role: plan.role,
-      stripeProductId: plan.stripeProductId,
+      stripeProductPriceId: plan.stripeProductPriceId,
       stripeProductName: plan.stripeProductName,
     }
   }
@@ -34,7 +34,7 @@ export class ConsumerPlan {
 
   static equals(p1: IConsumerPlan, p2: IConsumerPlan) {
     if (p1.role !== p2.role) return false;
-    if (p1.stripeProductId !== p2.stripeProductId) return false;
+    if (p1.stripeProductPriceId !== p2.stripeProductPriceId) return false;
     if (p1.stripeProductName !== p2.stripeProductName) return false;
     // if (!Schedule.equalsLists(plan1.Schedules, plan2.Schedules)) return false;
     // if (!Tag.areTagsEqual(plan1.Tags, plan2.Tags)) return false;

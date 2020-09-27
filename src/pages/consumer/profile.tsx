@@ -134,7 +134,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (state) {
       const updatedProfile: IConsumerProfile = {
         ...consumerData.profile,
-        location: {
+        searchArea: {
           address: {
             address1: addr1InputRef.current!.value,
             address2: addr2InputRef.current!.value,
@@ -214,7 +214,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     setIsUpdatingInstructions(false);
     const updatedProfile: IConsumerProfile = {
       ...consumerData.profile,
-      location: {
+      searchArea: {
         address: consumerData.Profile.Destination.Address,
         instructions: instructionsInputRef.current!.value,
       },

@@ -1,12 +1,7 @@
-//@ts-nocheck
-
-import { IRewards, Rewards } from './../../order/rewardModel';
-import { MutationPromoRes, Promo } from './../../order/promoModel';
-import { Plan, IPlan } from './../../plan/planModel';
 import { Consumer } from './../../consumer/consumerModel';
 import { consumerFragment } from './../../consumer/consumerFragment';
-import { IOrder, Order, MealPrice } from './../../order/orderModel';
-import { MutationBoolRes, MutationConsumerRes } from "../../utils/apolloUtils";
+import { IOrder, Order } from './../../order/orderModel';
+import { MutationConsumerRes } from "../../utils/apolloUtils";
 import { ICartInput } from '../../order/cartModel';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -14,7 +9,6 @@ import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 import { orderFragment } from '../../order/orderFragment';
-import { ISpent, Spent } from '../../order/costModel';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -64,36 +58,38 @@ export const usePlaceOrder = (): [
     ${consumerFragment}
   `);
   const placeOrder = (newConsumer: newConsumer, cart: ICartInput) => {
+    console.log(copyWithTypenames, newConsumer);
     mutate({
       variables: { cart },
-      optimisticResponse: {
-        placeOrder: {
-          res: copyWithTypenames({
-            _id: newConsumer._id,
-            stripeSubscriptionId: null,
-            stripeCustomerId: null,
-            profile: {
-              name: newConsumer.name,
-              email: newConsumer.email,
-              phone: cart.phone,
-              card: cart.card,
-              location: {
-                instructions: cart.location.instructions,
-                address: cart.location.address,
-              },
-            },
-            plan: {
-              ...cart.consumerPlan,
-              referralCode: '', // empty string with the intention that it populates later
-              weeklyDiscounts: [] // empty so it populates later
-            },
-            permissions: [] // empty so it populates later
-          }),
-          error: null,
-          //@ts-ignore
-          __typename: 'ConsumerRes'
-        }
-      },
+      // optimisticResponse: {
+      //   placeOrder: {
+      //     res: copyWithTypenames({
+      //       _id: newConsumer._id,
+      //       stripeCustomerId: null,
+      //       profile: {
+      //         name: newConsumer.name,
+      //         email: newConsumer.email,
+      //         phone: cart.phone,
+      //         card: cart.card,
+      //         searchArea: {
+      //           primaryAddr: cart.searchArea,
+      //           address2: null, // null to be replaced when it repopulates later
+      //           geo: {
+      //             // empty string with the intention that it populates later
+      //             lat: '',
+      //             lon: '',
+      //           }
+      //         },
+      //         serviceInstructions: cart.cartOrder.serviceInstructions,
+      //       },
+      //       plan: null,
+      //       permissions: [] // empty so it populates later
+      //     }),
+      //     error: null,
+      //     //@ts-ignore
+      //     __typename: 'ConsumerRes'
+      //   }
+      // },
       update: (cache, { data }) => {
         if (data && data.placeOrder.res) updateMyConsumer(cache, data.placeOrder.res)
       },

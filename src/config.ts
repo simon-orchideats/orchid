@@ -84,7 +84,7 @@ const development: config = {
       audience: 'https://orchideats.com',
     },
     stripe: {
-      key: 'pk_test_oWhC33Y3nSyfngzNkRlD3Qo800JmKvXEWQ',
+      key: 'pk_test_Ij3KCwOSq0LycG5DEcpvULGp00kyRcst9h',
     },
     logRocket: {
       // key: 'ugxrrj/orchid-dev',

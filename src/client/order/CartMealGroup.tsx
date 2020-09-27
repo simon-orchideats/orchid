@@ -37,8 +37,10 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const CartMealGroup: React.FC<{
+  disableEditing?: boolean,
   m: IOrderMeal
 }> = ({
+  disableEditing = false,
   m
  }) => {
   const incrementMealCount = useIncrementMealCount();
@@ -67,22 +69,28 @@ const CartMealGroup: React.FC<{
         sm={1}
         className={classes.col}
       >
-        <Button
-          variant='text'
-          color='primary'
-          onClick={() => incrementMealCount(m)}
-        >
-          <AddIcon className={classes.icon} />
-        </Button>
+        {
+          !disableEditing &&
+          <Button
+            variant='text'
+            color='primary'
+            onClick={() => incrementMealCount(m)}
+          >
+            <AddIcon className={classes.icon} />
+          </Button>
+        }
         <Typography variant='h6'>
           {m.quantity}
         </Typography>
-        <Button
-          variant='text'
-          onClick={() => removeMealFromCart(m)}
-        >
-          <RemoveIcon className={classes.icon} />
-        </Button>
+        {
+          !disableEditing &&
+          <Button
+            variant='text'
+            onClick={() => removeMealFromCart(m)}
+          >
+            <RemoveIcon className={classes.icon} />
+          </Button>
+        }
       </Grid>
       {
         m.img &&
@@ -106,9 +114,12 @@ const CartMealGroup: React.FC<{
         </Typography>
       </Grid>
       <Grid item sm={1}>
-        <IconButton onClick={onClickMore} className={classes.more}>
-          <MoreVertIcon />
-        </IconButton>
+        {
+          !disableEditing &&
+          <IconButton onClick={onClickMore} className={classes.more}>
+            <MoreVertIcon />
+          </IconButton>
+        }
       </Grid>
       <Popover
         open={Boolean(instructionsAnchor)}

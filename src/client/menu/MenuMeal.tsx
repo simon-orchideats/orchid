@@ -364,7 +364,9 @@ const MenuMeal: React.FC<{
           </div>
         </Tooltip>
       </ClickAwayListener>
-      <CardContent className={classes.content} onClick={e => onClickContent(e, meal.description)}>
+      <CardContent className={classes.content} onClick={e => {
+        if (meal.description) onClickContent(e, meal.description)
+      }}>
         <Typography
           variant='body1'
           className={classes.title}

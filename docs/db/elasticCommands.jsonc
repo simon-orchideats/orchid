@@ -1072,33 +1072,21 @@ PUT /rests2/
       },
       "location": {
         "properties": {
-          "address": {
-            "properties": {
-              "address1": {
-                "type": "keyword"
-              },
-              "address2": {
-                "type": "keyword"
-              },
-              "city": {
-                "type": "keyword"
-              },
-              "state": {
-                "type": "keyword"
-              },
-              "zip": {
-                "type": "keyword"
-              }
-            }
+          
+          "primaryAddr": {
+            "type": "keyword"
+          },
+          "address2": {
+            "type": "keyword"
           },
           "geoPoint": {
             "type": "geo_point"
           },
-          "geoShape": {
-            "type": "geo_shape"
-          },
           "timezone": {
             "type": "keyword"
+          },
+          "geoShape": {
+            "type": "geo_shape"
           }
         }
       },
@@ -1360,6 +1348,9 @@ PUT /rests2/
       },
       "deliveryMinimum": {
         "type": "integer" 
+      },
+      "stripeRestId": {
+        "type": "keyword" 
       }
       // "url": {
       //   "type": "keyword"
@@ -1415,21 +1406,23 @@ PUT /orders/
         }
       },
       "costs": {
-        "additionalOrderFee": {
-          "type": "integer"
-        },
-        "onDemandFee": {
-          "type": "integer"
-        },
-        "tip": {
-          "type": "integer"
-        },
-        "deliveryFee": {
-          "type": "integer"
-        },
-        "taxRate": {
-          "type": "float"
-        },
+        "properties": {
+          "additionalOrderFee": {
+            "type": "integer"
+          },
+          "onDemandFee": {
+            "type": "integer"
+          },
+          "tip": {
+            "type": "integer"
+          },
+          "deliveryFee": {
+            "type": "integer"
+          },
+          "taxRate": {
+            "type": "float"
+          }
+        }
         // "promos": {
         //   "properties": {
         //     "stripeCouponId": {
@@ -1478,28 +1471,15 @@ PUT /orders/
       "serviceType": {
         "type": "keyword"
       },
-      "destination": {
+      "location": {
         "properties": {
-          "address": {
-            "properties": {
-              "address1": {
-                "type": "keyword"
-              },
-              "address2": {
-                "type": "keyword"
-              },
-              "city": {
-                "type": "keyword"
-              },
-              "state": {
-                "type": "keyword"
-              },
-              "zip": {
-                "type": "keyword"
-              }
-            }
+          "primaryAddr": {
+            "type": "keyword"
           },
-          "geo": {
+          "address2": {
+            "type": "keyword"
+          },
+          "geoPoint": {
             "type": "geo_point"
           },
           "timezone": {
@@ -1508,11 +1488,10 @@ PUT /orders/
         }
       },
       "serviceDate": {
-        "type": "date",
-        "format": "epoch_millis"
+        "type": "keyword"
       },
       "serviceInstructions": {
-        "type": "text"
+        "type": "keyword"
       },
       "serviceTime": {
         "type": "keyword"
@@ -1742,28 +1721,15 @@ PUT /consumers/
           "serviceInstructions": {
             "type": "keyword"
           },
-          "destination": {
+          "searchArea": {
             "properties": {
-              "address": {
-                "properties": {
-                  "address1": {
-                    "type": "keyword"
-                  },
-                  "address2": {
-                    "type": "keyword"
-                  },
-                  "city": {
-                    "type": "keyword"
-                  },
-                  "state": {
-                    "type": "keyword"
-                  },
-                  "zip": {
-                    "type": "keyword"
-                  }
-                }
+              "primaryAddr": {
+                "type": "keyword"
               },
-              "geo": {
+              "address2": {
+                "type": "keyword"
+              },
+              "geoPoint": {
                 "type": "geo_point"
               },
               "timezone": {

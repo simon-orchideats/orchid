@@ -21,8 +21,9 @@ export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
-  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
+  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string | null, stripeCustomerId: string) =>  Promise<Response>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
+  updateConsumer(_id: string, permissions: Permission[], consumer: Partial<EConsumer>): Promise<IConsumer>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
 
@@ -179,7 +180,7 @@ class ConsumerService implements IConsumerService {
           email,
           phone: null,
           card: null,
-          location: null,
+          searchArea: null,
           serviceInstructions: null,
         },
         plan: null,
@@ -241,7 +242,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string, stripeCustomerId: string): Promise<Response> {
+  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string | null, stripeCustomerId: string): Promise<Response> {
     return fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${userId}`, {
       headers: await getAuth0Header(),
       method: 'PATCH',
@@ -252,7 +253,7 @@ class ConsumerService implements IConsumerService {
         },
       })
     }).catch(e => {
-      const msg = `[ConsumerService] couldn't add stripeSubscriptionId for user '${userId}'`
+      const msg = `[ConsumerService] couldn't add updateAuth0MetaData for user '${userId}'`
       console.error(msg, e.stack);
       throw e;
     });
@@ -262,30 +263,31 @@ class ConsumerService implements IConsumerService {
     try {
       if (!this.geoService) return Promise.reject('GeoService not set');
       if (!signedInUser) throw getNotSignedInErr();
-      if (!profile.location) throw new Error('Missing destination');
+      if (!profile.searchArea) throw new Error('Missing destination');
       if (!this.orderService) throw new Error('Order service not set');
       if (!signedInUser.stripeCustomerId) throw new Error(`Missing stripe customer id for '${signedInUser._id}'`)
-      const {
-        address1,
-        city,
-        state,
-        zip
-      } = profile.location.address;
       let geo;
       try {
-        geo = await this.geoService.getGeocode(address1, city, state, zip);
+        geo = await this.geoService.getGeocodeByQuery(profile.searchArea.primaryAddr);
+        if (!geo) {
+          return {
+            res: null,
+            error: `Couldn't verify address '${profile.searchArea.primaryAddr}'`
+          }
+        }
       } catch (e) {
         return {
           res: null,
-          error: `Couldn't verify address '${address1} ${city} ${state}, ${zip}'`
+          error: `Couldn't verify address '${profile.searchArea.primaryAddr}'`
         }
       }
       const doc: Pick<EConsumer, 'profile'> = {
         profile: {
           ...profile,
-          location: {
-            ...profile.location,
-            geo: {
+          searchArea: {
+            primaryAddr: profile.searchArea.primaryAddr,
+            address2: profile.searchArea.address2,
+            geoPoint: {
               lat: geo.lat,
               lon: geo.lon
             },
@@ -386,6 +388,32 @@ class ConsumerService implements IConsumerService {
         `[ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
         e.stack
       );
+      throw e;
+    }
+  }
+
+  
+  async updateConsumer(
+    _id: string,
+    permissions: Permission[],
+    consumer: Partial<EConsumer>
+  ): Promise<IConsumer>{
+    try {
+      const updatedConsumer = await this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: _id,
+        _source: 'true',
+        body: {
+          doc: consumer
+        }
+      });
+      return {
+        ...updatedConsumer.body.get._source,
+        _id,
+        permissions,
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] failed to update consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;
     }
   }

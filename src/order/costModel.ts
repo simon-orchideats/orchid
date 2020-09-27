@@ -1,9 +1,11 @@
+import { ICartRest } from './cartModel';
+
 export const ADDITIONAL_ORDER_FEE = 199;
 export const ON_DEMAND_FEE = 199;
 
 export interface ICost {
-  readonly additionalOrderFee: typeof ADDITIONAL_ORDER_FEE
-  readonly onDemandFee: typeof ON_DEMAND_FEE
+  readonly additionalOrderFee: number
+  readonly onDemandFee: number
   readonly tip: number
   readonly deliveryFee: number
   readonly taxRate: number
@@ -20,6 +22,16 @@ export class Cost {
     }
   }
 
+  public static getICost(r: ICartRest) {
+    return {
+      // todo pivot: these shoulnd't be 0s
+      additionalOrderFee: 0,
+      onDemandFee: 0,
+      tip: 0,
+      deliveryFee: r.deliveryFee,
+      taxRate: r.taxRate,
+    }
+  }
   // public static getDeliveryFee(deliveries: IDeliveryInput[]) {
   // }
 

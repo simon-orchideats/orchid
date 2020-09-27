@@ -12,6 +12,22 @@ import { useSetSearchArea } from '../../global/state/cartState';
 import withClientApollo from '../../utils/withClientApollo';
 import { debounce } from 'lodash';
 
+interface MainTextMatchedSubstrings {
+  offset: number;
+  length: number;
+}
+
+interface StructuredFormatting {
+  main_text: string;
+  secondary_text: string;
+  main_text_matched_substrings: MainTextMatchedSubstrings[];
+}
+
+interface PlaceType {
+  description: string;
+  structured_formatting: StructuredFormatting;
+}
+
 // there only needs to be 1 autocompleteService for the entire app. so if we mount two of these
 // components, we can share the same autocompleteService
 const autocompleteService: {
@@ -62,28 +78,18 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface MainTextMatchedSubstrings {
-  offset: number;
-  length: number;
-}
-interface StructuredFormatting {
-  main_text: string;
-  secondary_text: string;
-  main_text_matched_substrings: MainTextMatchedSubstrings[];
-}
-interface PlaceType {
-  description: string;
-  structured_formatting: StructuredFormatting;
-}
-
 const SearchInput: React.FC<{
   onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  defaultValue?: string
+  disableAutoFocus?: boolean
 }> = ({
   onBlur,
+  defaultValue,
+  disableAutoFocus = false
 }) => {
   const classes = useStyles();
   const setSearchArea = useSetSearchArea();
-  const [selectedAddr, setSelectedAddr] = React.useState<PlaceType | null>(null);
+  const [selectedAddr, setSelectedAddr] = React.useState<PlaceType | null | string>(defaultValue || null);
   const [inputAddr, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<PlaceType[]>([]);
   React.useEffect(() => {
@@ -102,7 +108,7 @@ const SearchInput: React.FC<{
     getSuggestionsDelayed(inputAddr, (results?: PlaceType[]) => {
       if (!isSuggestionsOutdated) {
         let newOptions: PlaceType[] = [];
-        if (selectedAddr) newOptions = [selectedAddr];
+        if (selectedAddr && typeof selectedAddr !== 'string') newOptions = [selectedAddr];
         if (results) newOptions = [...newOptions, ...results];
         setOptions(newOptions);
       }
@@ -120,21 +126,19 @@ const SearchInput: React.FC<{
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (options.length > 0) {
-      setSearchArea(options[0].description)
-    }
+    if (options.length > 0) setSearchArea(options[0].description)
   }
 
   return (
     <form onSubmit={onSubmit}>
       <Autocomplete
         autoComplete
+        freeSolo
         includeInputInList
         filterSelectedOptions
-        popupIcon={null} 
-        getOptionLabel={(option) =>
-          typeof option === 'string' ? option : option.description
-        }
+        inputValue={inputAddr}
+        // popupIcon={null} 
+        getOptionLabel={option => typeof option === 'string' ? option : option.description}
         // to disable the built-in filtering of the autocomplete component
         filterOptions={(x) => x}
         options={options}
@@ -142,7 +146,7 @@ const SearchInput: React.FC<{
         value={selectedAddr}
         onChange={(_event, newValue) => {
           setSelectedAddr(newValue);
-          if (newValue) {
+          if (newValue && typeof newValue !== 'string') {
             setOptions([newValue, ...options]);
             setSearchArea(newValue.description)
           } else {
@@ -155,7 +159,7 @@ const SearchInput: React.FC<{
         renderInput={params => (
           <TextField
             {...params}
-            autoFocus
+            autoFocus={!disableAutoFocus}
             label='Enter Address'
             onBlur={onBlur}
             variant='outlined'

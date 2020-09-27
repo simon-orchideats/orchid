@@ -1,6 +1,7 @@
 import { IMeal, Meal } from "../rest/mealModel";
 import { Tag } from "../rest/tagModel";
 import { difference } from "lodash";
+import { ICartRest } from "./cartModel";
 
 export interface IOrderMeal extends Omit<
   IMeal,
@@ -82,7 +83,6 @@ export interface IOrderRest {
   readonly meals: IOrderMeal[]
   readonly restId: string
   readonly restName: string
-  readonly stripeRestId: string
 }
 
 export class OrderRest {
@@ -91,7 +91,6 @@ export class OrderRest {
       meals: orderRest.meals.map(m => OrderMeal.getICopy(m)),
       restId: orderRest.restId,
       restName: orderRest.restName,
-      stripeRestId: orderRest.stripeRestId,
     }
   }
 
@@ -99,4 +98,11 @@ export class OrderRest {
     return r.meals.reduce((sum, m) => sum + m.quantity, 0);
   }
 
+  static getIOrderRest(cartRest: ICartRest): IOrderRest {
+    return {
+      meals: cartRest.meals,
+      restId: cartRest.restId,
+      restName: cartRest.restName,
+    }
+  }
 }

@@ -44,7 +44,7 @@ export class AddonGroup extends OptionGroup implements IAddonGroup {
 
 export interface IMeal {
   readonly addonGroups: IAddonGroup[],
-  readonly description: string
+  readonly description: string | null
   readonly _id: string,
   readonly img?: string,
   readonly isActive: boolean
@@ -56,29 +56,7 @@ export interface IMeal {
 
 export interface IMealInput extends Omit<IMeal, '_id'> {}
 
-export class Meal implements IMeal {
-  readonly _id: string;
-  readonly img?: string;
-  readonly isActive: boolean
-  readonly addonGroups: AddonGroup[]
-  readonly optionGroups: OptionGroup[]
-  readonly name: string;
-  readonly description: string;
-  readonly price: number;
-  readonly tags: Tag[];
-
-  constructor(meal: IMeal) {
-    this._id = meal._id;
-    this.isActive = meal.isActive;
-    this.addonGroups = meal.addonGroups.map(ag => new AddonGroup(ag))
-    this.img = meal.img;
-    this.name = meal.name;
-    this.description = meal.description;
-    this.price = meal.price;
-    this.optionGroups = meal.optionGroups.map(og => new OptionGroup(og))
-    this.tags = meal.tags.map(t => new Tag(t));
-  }
-
+export class Meal {
   static getICopy(meal: IMeal): IMeal {
     return {
       _id: meal._id,

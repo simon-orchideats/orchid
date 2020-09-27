@@ -1,10 +1,6 @@
-//@ts-nocheck
-
 import { makeStyles, Typography, Container } from "@material-ui/core";
-import { Order } from "../../order/orderModel";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";
-import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import OrderOverview from "../../client/consumer/OrderOverview";
 import { useGetMyPaidOrders } from "../../client/order/orderService";
 
@@ -16,20 +12,6 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(3),
   },
 }));
-
-const HistoryDeliveryOverview: React.FC<{
-  order: Order,
-}> = ({
-  order,
-}) => {
-  return (
-    <OrderOverview
-      order={order}
-      action={null}
-      scheduleDeliveries={<ScheduleDeliveries deliveries={order.Deliveries} />}
-    />
-  )
-}
 
 const OrderHistory = () => {
   const classes = useStyles();
@@ -43,8 +25,8 @@ const OrderHistory = () => {
     OrderOverviews = <Typography variant='subtitle1'>No order history.</Typography>
   } else {
     OrderOverviews = consumerData && orders.data && orders.data.map(order => 
-      <HistoryDeliveryOverview
-        key={order.Id}
+      <OrderOverview
+        key={order._id}
         order={order}
       />
     )

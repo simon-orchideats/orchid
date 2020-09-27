@@ -17,7 +17,6 @@ import { NotificationType } from "../client/notification/notificationModel";
 import { Card } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
-import { upcomingDeliveriesRoute } from "./consumer/upcoming-deliveries";
 import EmailInput from "../client/general/inputs/EmailInput";
 import GLogo from "../client/checkout/GLogo";
 import { useConsumerSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
@@ -29,6 +28,8 @@ import { useGetTags } from "../rest/restService";
 import { Cart } from "../order/cartModel";
 import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
 import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
+import SearchInput from "../client/general/inputs/SearchInput";
+import { orderHistoryRoute } from "./consumer/order-history";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -75,11 +76,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer();
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
-  const validateAddressRef = useRef<() => boolean>();
-  const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
-  const cityInputRef = createRef<HTMLInputElement>();
-  const zipInputRef = createRef<HTMLInputElement>();
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const receiveTextsInput = createRef<HTMLInputElement>();
@@ -114,7 +111,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
         Router.push({
-          pathname: upcomingDeliveriesRoute,
+          pathname: orderHistoryRoute,
           query: {
             confirmation: 'true',
             clear: 'true',
@@ -188,9 +185,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!validatePhoneRef.current!()) {
       isValid = false;
     }
-    if (!validateAddressRef.current!()) {
-      isValid = false;
-    }
     if (!consumer.data && !name) {
       setAccountNameError('Your name is incomplete');
       isValid = false;
@@ -219,24 +213,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     name?: string,
     password?: string,
     email?: string,
-    addr1?: string,
     addr2?: string,
-    city?: string,
-    zip?: string,
     phone?: string,
     paymentMethod?: stripe.paymentMethod.PaymentMethod,
   ) => {
-    if (
-      !addr1
-      || !city
-      || !zip
-      || !phone
-      || !paymentMethod
-    ) {
+    if (!phone || !paymentMethod) {
       const err = new Error(`Undefined inputs ${JSON.stringify({
-        addr1,
-        city,
-        zip,
         phone,
         paymentMethod,
       })}`);
@@ -311,10 +293,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     name?: string,
     password?: string,
     email?: string,
-    addr1?: string,
     addr2?: string,
-    city?: string,
-    zip?: string,
     phone?: string,
     canReceiveTexts?: boolean,
   ) => {
@@ -381,10 +360,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       name,
       password,
       email,
-      addr1,
       addr2,
-      city,
-      zip,
       phone,
       pm.current.paymentMethod,
     );
@@ -395,10 +371,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       accountNameInputRef.current?.value,
       passwordInputRef.current?.value,
       emailInputRef.current?.value,
-      addr1InputRef.current?.value,
       addr2InputRef.current?.value,
-      cityInputRef.current?.value,
-      zipInputRef.current?.value,
       phoneInputRef.current?.value,
       receiveTextsInput.current?.checked,
     ),
@@ -438,6 +411,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <ServiceTypePicker />
+            </Grid>
+            <Grid item xs={12}>
+              <SearchInput defaultValue={'100 Gold Street, New York, NY, USA'} disableAutoFocus />
             </Grid>
             <Grid
               item

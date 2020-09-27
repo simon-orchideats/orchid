@@ -1,8 +1,10 @@
+import { ELocation } from './../../place/locationModel';
+import { ERest } from './../../rest/restModel';
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, Order } from './../../order/orderModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { Permissions } from './../../consumer/consumerModel';
+import { Permissions, EConsumer, Consumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput } from './../../order/cartModel';
@@ -14,6 +16,8 @@ import { Client, ApiResponse } from '@elastic/elasticsearch';
 import Stripe from 'stripe';
 import { activeConfig } from '../../config';
 import moment from 'moment-timezone';
+import { refetchAccessToken } from '../../utils/auth';
+import { OrderMeal } from '../../order/orderRestModel';
 
 const ORDER_INDEX = 'orders';
 // const PROMO_INDEX = 'promos';
@@ -135,6 +139,16 @@ export interface IOrderService {
   // setOrderStripePaymentId(orderId: string, invoiceId: string): Promise<void>
 }
 
+type validatedRest = Pick<
+  ERest,
+  'featured'
+  | 'taxRate'
+  | 'deliveryFee'
+  | 'deliveryMinimum'
+  | 'stripeRestId'
+  | 'location'
+>;
+
 class OrderService {
   private readonly elastic: Client
   private readonly stripe: Stripe
@@ -167,28 +181,32 @@ class OrderService {
   }
 
   //@ts-ignore // todo simon: do this
-  private validateRest(restId: string, meals: IOrderMeal[]) {
+  private async validateRest(cart: ICartInput): Promise<{
+    msg: string | null,
+    rest: validatedRest | null,
+  }> {
     if (!this.restService) return Promise.reject('RestService not set');
-    return this.restService.getRest(restId, ['menu'])
-      .then(rest => {
-        if (!rest) {
-          const msg = `Can't find rest '${restId}'`
-          console.warn('[OrderService]', msg);
-          return msg;
-        }
-        for (let i = 0; i < meals.length; i++) {
-          if (!rest.featured.find(meal => meal._id === meals[i].mealId)) {
-            const msg = `Can't find mealId '${meals[i].mealId}'`
-            console.warn('[OrderService]', msg);
-            return msg;
-          }
-        }
-        return '';
-      }).catch(e => {
-        const msg = `Couldn't find rest '${restId}'`
-        console.warn('[OrderService]', msg, e.stack);
-        return msg;
-      });
+    const cartRest = cart.cartOrder.rest
+    const rest: validatedRest | null = await this.restService.getRest(cartRest.restId, [
+      'featured',
+      'taxRate',
+      'deliveryFee',
+      'deliveryMinimum',
+      'stripeRestId',
+      'location',
+    ]);
+    if (!rest) {
+      const msg = `Can't find rest '${cartRest.restId}'`
+      console.warn('[OrderService]', msg);
+      return {
+        msg,
+        rest: null,
+      };
+    }
+    return {
+      msg: null,
+      rest,
+    }
   }
 
   //@ts-ignore // todo simon: do this
@@ -352,9 +370,17 @@ class OrderService {
     //   })
   }
 
-  private async validateCart(cart: ICartInput) {
+  private async validateCart(cart: ICartInput): Promise<{
+    msg: string | null,
+    rest: validatedRest | null,
+  }> {
     const phoneValidation = validatePhone(cart.phone);
-    if (phoneValidation) return phoneValidation;
+    if (phoneValidation) {
+      return {
+        msg: phoneValidation,
+        rest: null,
+      }
+    };
     // todo simon: revalidate again
     // const deliveryDateValidation = validateDeliveryDate(cart.deliveryDate);
     // if (deliveryDateValidation) return deliveryDateValidation;
@@ -385,7 +411,7 @@ class OrderService {
 
     // todo simon: revalidate again
     // let p1;
-    // if (cart.restId) p1 = this.validateRest(cart.restId, cart.meals);
+    // if (cart.restId) p1 = this.validateRest(cart);
     // const p2 = this.validateAddress(cart.destination.address);
     // const p3 = this.validatePlan(cart.consumerPlan.stripePlanId, Cart.getMealCount(cart));
 
@@ -400,7 +426,7 @@ class OrderService {
     //   return messages[2]
     // }
 
-    return '';
+    return this.validateRest(cart);
   }
 
   // todo simon: enable
@@ -583,46 +609,36 @@ class OrderService {
   }
 
   public async getMyPaidOrders(signedInUser: SignedInUser): Promise<IOrder[]> {
-    try {
-      if (!signedInUser) throw getNotSignedInErr()
-      const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
-        index: ORDER_INDEX,
-        size: 1000,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: [
-                    {
-                      term: {
-                        'consumer.userId': signedInUser._id
-                      }
-                    },
-                    {
-                      exists: {
-                        field: 'stripePaymentId'
-                      }
+    if (!signedInUser) throw getNotSignedInErr()
+    const res: ApiResponse<SearchResponse<EOrder>> = await this.elastic.search({
+      index: ORDER_INDEX,
+      size: 1000,
+      body: {
+        query: {
+          bool: {
+            filter: {
+              bool: {
+                must: [
+                  {
+                    term: {
+                      'consumer.userId': signedInUser._id
                     }
-                  ],
-                }
+                  }
+                ],
               }
             }
-          },
-          sort: [
-            {
-              receptionDate: {
-                order: 'desc',
-              }
+          }
+        },
+        sort: [
+          {
+            cartUpdatedDate: {
+              order: 'desc',
             }
-          ],
-        }
-      });
-      return res.body.hits.hits.map(({ _id, _source }) => Order.getIOrderFromEOrder(_id, _source));
-    } catch (e) {
-      console.error(`[OrderService] couldn't get upcoming EOrders for consumer '${signedInUser?._id}'`, e.stack);
-      throw e;
-    }
+          }
+        ],
+      }
+    });
+    return res.body.hits.hits.map(({ _id, _source }) => Order.getIOrderFromEOrder(_id, _source));
   }
 
   // public async processTaxesAndFeesAndDiscounts(
@@ -673,280 +689,159 @@ class OrderService {
     // }
   // }
 
+  private async makePayment(
+    cart: ICartInput,
+    stripeCustomerId: string,
+    stripeRestId: string | null
+  ): Promise<string> {
+    try {
+      const mealTotal = OrderMeal.getTotalMealCost(cart.cartOrder.rest.meals);
+      const taxes = mealTotal * cart.cartOrder.rest.taxRate;
+      const total = mealTotal + taxes + cart.cartOrder.rest.deliveryFee;
+      const options: Stripe.PaymentIntentCreateParams = {
+        payment_method: cart.paymentMethodId,
+        customer: stripeCustomerId,
+        confirm: true,
+        confirmation_method: 'manual',
+        statement_descriptor_suffix: cart.cartOrder.rest.restName,
+        setup_future_usage: 'off_session',
+        amount: total,
+        currency: 'usd',
+      };
+      if (stripeRestId) {
+        options.transfer_data = {
+          destination: stripeRestId
+        }
+      }
+      const paymentIntent = await this.stripe.paymentIntents.create(options);
+      if (paymentIntent.status === 'succeeded') return paymentIntent.id;
+      throw new Error(`PaymentIntent has status '${paymentIntent.status}'`);
+    } catch (e) {
+      throw new Error(`Failed to make payment. ${e.message}`);
+    }
+  }
+
   public async placeOrder(
     signedInUser: SignedInUser,
     cart: ICartInput,
     req?: IncomingMessage,
     res?: OutgoingMessage,
   ): Promise<MutationConsumerRes> {
-    console.log(this.stripe);
-    console.log(req, res);
-    /**
-     * when i get the searchArea, always save that to the consumer.
-     * but...
-     * serviceType === delivery
-     *  order.location = searcharea
-     * serviceType === pickup
-     *  order.location = restaurant addr
-     * 
-     */
     if (!signedInUser) throw getNotSignedInErr();
-    try {
-      if (!this.consumerService) throw new Error ('ConsumerService not set');
-      if (!this.restService) throw new Error ('RestService not set');
-      if (!this.planService) throw new Error('PlanService not set');
-      if (!this.geoService) throw new Error('GeoService not set');
-      const validation = await this.validateCart(cart);
-      if (validation) {
-        return {
-          res: null,
-          error: validation
-        }
-      }
+    if (!this.consumerService) throw new Error ('ConsumerService not set');
+    if (!this.restService) throw new Error ('RestService not set');
+    if (!this.planService) throw new Error('PlanService not set');
+    if (!this.geoService) throw new Error('GeoService not set');
+    const validation = await this.validateCart(cart);
+    const rest = validation.rest;
+    if (!rest || validation.msg) {
       return {
         res: null,
-        error: validation
+        error: validation.msg,
       }
-
-      // const addr = cart.destination.address;
-      // const fullAddrStr = Address.getFullAddrStr(
-      //   addr.address1,
-      //   addr.city,
-      //   addr.state,
-      //   addr.zip,
-      //   addr.address2
-      // )
-      // let iPromo: IPromo | null = null;
-      // let referralPromo: ReferralPromo | null = null;
-      // if (cart.promo) {
-      //   const promoRes = await this.redeemPromo(
-      //     cart.promo,
-      //     cart.phone,
-      //     fullAddrStr
-      //   );
-      //   if (promoRes.error) {
-      //     return {
-      //       res: null,
-      //       error: promoRes.error,
-      //     }
-      //   }
-      //   iPromo = promoRes.iPromo;
-      //   referralPromo = promoRes.referralPromo;
-      // }
-
-      // const {
-      //   tags,
-      //   schedules,
-      //   mealPlans
-      // } = cart.consumerPlan;
-
-      // let stripeCustomerId = signedInUser.stripeCustomerId;
-      // let subscription: Stripe.Subscription;
-      // if (signedInUser.stripeSubscriptionId) {
-      //   const msg = `Subscription '${signedInUser.stripeSubscriptionId}' already exists`;
-      //   console.warn('[OrderService]', msg)
-      //   return {
-      //     res: null,
-      //     error: msg
-      //   }
-      // }
-
-      // if (!stripeCustomerId) {
-      //   try {
-      //     const stripeCustomer = await this.stripe.customers.create({
-      //       payment_method: cart.paymentMethodId,
-      //       email: signedInUser.profile.email,
-      //       invoice_settings: {
-      //         default_payment_method: cart.paymentMethodId,
-      //       },
-      //     });
-      //     stripeCustomerId = stripeCustomer.id;
-      //   } catch (e) {
-      //     console.error(`Failed to create stripe customer for consumer '${signedInUser._id}'`, e.stack);
-      //     throw e;
-      //   }
-      // }
-      
-      // const geo = await this.geoService.getGeocode(
-      //   addr.address1,
-      //   addr.city,
-      //   addr.state,
-      //   addr.zip,
-      // );
-      // // - 60 seconds for extra buffer
-      // const billingStartDateSeconds = Math.floor(moment().tz(geo.timezone).endOf('d').valueOf() / 1000) - 60;
-      // const newSub: Stripe.SubscriptionCreateParams = {
-      //   proration_behavior: 'none',
-      //   // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
-      //   // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
-      //   // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
-      //   billing_cycle_anchor: billingStartDateSeconds,
-      //   customer: stripeCustomerId,
-      //   items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
-      // }
-      // if (iPromo) {
-      //   if (iPromo.duration === 'once') {
-      //     newSub.metadata = {
-      //       [oncePromoKey]: iPromo.stripeCouponId
-      //     };
-      //   } else {
-      //     newSub.coupon = iPromo.stripeCouponId;
-      //   }
-      // }
-      // try {
-      //   subscription = await this.stripe.subscriptions.create(newSub);
-      // } catch (e) {
-      //   console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
-      //                 + `with stripe customerId '${stripeCustomerId}'`, e.stack);
-      //   throw e;
-      // }
-
-      // let plans: IPlan[];
-      // try {
-      //   plans = await this.planService.getAvailablePlans();
-      // } catch (e) {
-      //   console.error(`Failed to get available plans: '${e.stack}'`);
-      //   throw e;
-      // }
-
-      // let newReferralPromo;
-      // try {
-      //   newReferralPromo = await this.stripe.coupons.create({
-      //     name: signedInUser.profile.name + ' Referral',
-      //     amount_off: referralFriendAmount,
-      //     duration: 'repeating',
-      //     duration_in_months: referralMonthDuration,
-      //     currency: 'usd',
-      //     metadata: {
-      //       userId: signedInUser._id,
-      //       amountOff: referralSelfAmount,
-      //       percentOff: null,
-      //     } as ReferralSource
-      //   });
-      // } catch (e) {
-      //   console.error(`[OrderService] failed to create referral coupon for '${signedInUser._id}'`, e.stack);
-      //   throw e;
-      // }
-  
-      // const mealPrices = MealPrice.getMealPrices(mealPlans, plans);
-      // const consumer: EConsumer = {
-      //   createdDate: Date.now(),
-      //   stripeCustomerId,
-      //   stripeSubscriptionId: subscription.id,
-      //   plan: ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
-      //     {
-      //       mealPlans,
-      //       schedules,
-      //       tags,
-      //     },
-      //     newReferralPromo.id,
-      //     [],
-      //     subscription.items.data.reduce<{ [key: string]: string }>((sum, subItem) => {
-      //       sum[subItem.plan.id] = subItem.id;
-      //       return sum;
-      //     }, {}),
-      //   ),
-      //   profile: {
-      //     name: signedInUser.profile.name,
-      //     email: signedInUser.profile.email,
-      //     phone: cart.phone,
-      //     card: cart.card,
-      //     destination: {
-      //       ...cart.destination,
-      //       geo: {
-      //         lat: geo.lat,
-      //         lon: geo.lon,
-      //       },
-      //       timezone: geo.timezone
-      //     },
-      //   }
-      // };
-      // const newOrderPromos = iPromo ? [ iPromo ] : [];
-      // const order = Order.getNewOrder(
-      //   signedInUser._id,
-      //   consumer,
-      //   cart.deliveries,
-      //   cart.donationCount,
-      //   moment(billingStartDateSeconds * 1000).add(1, 'w').valueOf(),
-      //   mealPrices,
-      //   newOrderPromos,
-      //   [],
-      //   // make updated date 5 seconds past created date to indicate
-      //   // non auto generated order. this is a hack
-      //   moment().valueOf(),
-      //   moment().add(5, 's').valueOf(),
-      // );
-      // const indexer = this.elastic.index({
-      //   index: ORDER_INDEX,
-      //   body: order
-      // }).catch(e => {
-      //   console.error(`Failed to index new order ${JSON.stringify(order)}`, e.stack)
-      //   throw e;
-      // });
-      // this.addAutomaticOrder(
-      //   signedInUser._id,
-      //   1,
-      //   consumer,
-      //   moment(billingStartDateSeconds * 1000).add(2, 'w').valueOf(),
-      //   mealPrices,
-      //   (iPromo && iPromo.duration !== 'once') ? newOrderPromos : [],
-      //   [],
-      // ).catch(e => {
-      //   console.error(`[OrderService] could not auto generate order from placeOrder by cuisines`, e.stack)
-      // });
-      // const consumerUpserter = this.consumerService.upsertConsumer(signedInUser._id, signedInUser.permissions, consumer);
-      // const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(signedInUser._id, subscription.id, stripeCustomerId);
-      // await Promise.all([consumerUpserter, indexer, consumerAuth0Updater]);
-      // if (referralPromo) {
-      //   const source = referralPromo.referralSource;
-      //   const discount: IDiscount = {
-      //     description: `Thanks for inviting ${signedInUser.profile.name.split(' ')[0]}`,
-      //     amountOff: source.amountOff,
-      //     percentOff: source.percentOff,
-      //     reason: DiscountReasons.ReferredAFriend,
-      //     referredUserId: signedInUser._id,
-      //   };
-      //   if (source.amountOff) {
-      //     const weeklyDiscounts: IWeeklyDiscount[] = [
-      //       {
-      //         discounts: [
-      //           discount,
-      //           discount,
-      //           discount,
-      //           discount,
-      //         ]
-      //       }
-      //     ];
-      //     this.addWeeklyDiscountsToUpcomingOrders(source.userId, weeklyDiscounts)
-      //       .then(remainingWeeklyOrders => {
-      //         if (!this.consumerService) {
-      //           const err = new Error ('ConsumerService not set');
-      //           console.error(err.stack);
-      //           throw err;
-      //         };
-      //         return this.consumerService.attachDiscountsToPlan(
-      //           source.userId,
-      //           remainingWeeklyOrders,
-      //           false,
-      //         );
-      //       })
-      //       .catch(e => {
-      //         console.error(`Failed to add discounts to upcoming orders and consumer plan for '${source.userId}'`, e.stack);
-      //       });
-      //   } else {
-      //     console.error(`[OrderService] referralPromo '${referralPromo.stripeCouponId}' missing amount off`);
-      //   }
-      // }
-      // // refresh access token so client can pick up new fields in token
-      // if (req && res) await refetchAccessToken(req, res);
-      // return {
-      //   res: Consumer.getIConsumerFromEConsumer(signedInUser._id, signedInUser.permissions, consumer),
-      //   error: null
-      // };
-    } catch (e) {
-      console.error(`[OrderService] could not place order for ${signedInUser._id}`, e.stack);
-      throw new Error('Internal Server Error');
     }
+    let stripeCustomerId = signedInUser.stripeCustomerId;
+    if (!stripeCustomerId) {
+      try {
+        const stripeCustomer = await this.stripe.customers.create({
+          payment_method: cart.paymentMethodId,
+          email: signedInUser.profile.email,
+          invoice_settings: {
+            default_payment_method: cart.paymentMethodId,
+          },
+        });
+        stripeCustomerId = stripeCustomer.id;
+      } catch (e) {
+        console.error(`Failed to create stripe customer for consumer '${signedInUser._id}'`, e.stack);
+        throw e;
+      }
+    }
+
+    if (signedInUser.stripeSubscriptionId) {
+      console.log(signedInUser.stripeSubscriptionId, 'exists');
+      // todo pivot: act accordingly
+    }
+
+    const geo = await this.geoService.getGeocodeByQuery(cart.searchArea);
+    if (!geo) {
+      return {
+        res: null,
+        error: `Couldn't verify address '${cart.searchArea}'`
+      }
+    }
+    const searchArea: ELocation = {
+      primaryAddr: cart.searchArea,
+      address2: cart.address2,
+      geoPoint: {
+        lat: geo.lat,
+        lon: geo.lon
+      },
+      timezone: geo.timezone,
+    };
+
+    const consumer: Omit<EConsumer, 'createdDate'> = {
+      stripeCustomerId,
+      plan: null,
+      profile: {
+        name: signedInUser.profile.name,
+        email: signedInUser.profile.email,
+        phone: cart.phone,
+        card: cart.card,
+        serviceInstructions: cart.cartOrder.serviceInstructions,
+        // serviceInstructions: cart.serviceI
+        searchArea,
+      }
+    };
+
+    // const newSub: Stripe.SubscriptionCreateParams = {
+    //   proration_behavior: 'none',
+    //   // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
+    //   // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
+    //   // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
+    //   billing_cycle_anchor: billingStartDateSeconds,
+    //   customer: stripeCustomerId,
+    //   items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
+    // }
+    // try {
+    //   subscription = await this.stripe.subscriptions.create(newSub);
+    // } catch (e) {
+    //   console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+    //                 + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+    //   throw e;
+    // }
+
+    const paymentId = await this.makePayment(cart, stripeCustomerId, rest.stripeRestId);
+    const order = Order.getEOrder(
+      signedInUser,
+      searchArea,
+      cart,
+      rest,
+      paymentId
+    );
+    const orderAdder = this.elastic.index({
+      index: ORDER_INDEX,
+      body: order
+    }).catch(e => {
+      console.error(`Failed to index new order ${JSON.stringify(order)}`, e.stack)
+      throw e;
+    });
+    const consumerUpdater = this.consumerService.updateConsumer(
+      signedInUser._id,
+      signedInUser.permissions, 
+      consumer
+    );
+    const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(
+      signedInUser._id,
+      null,
+      stripeCustomerId
+    );
+    await Promise.all([consumerUpdater, orderAdder, consumerAuth0Updater]);
+    // refresh access token so client can pick up new fields in token
+    if (req && res) await refetchAccessToken(req, res);
+    return {
+      res: Consumer.getIConsumerFromEConsumer(signedInUser._id, signedInUser.permissions, consumer),
+      error: null
+    };
   }
 
   async getUpcomingEOrders(userId?: string): Promise<{ _id: string, order: EOrder }[]> {

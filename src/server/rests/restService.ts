@@ -22,7 +22,7 @@ export interface IRestService {
     rest: ERest
   }[]>
   getNearbyRests: (zip: string, cuisines?: string[], fields?: string[]) => Promise<IRest[]>
-  getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
+  getRest: (restId: string, fields?: string[]) => Promise<ERest | null>
 }
 
 class RestService implements IRestService {
@@ -194,7 +194,7 @@ class RestService implements IRestService {
     }
   }
 
-  async getRest(restId: string, fields?: string[]): Promise<IRest | null> {
+  async getRest(restId: string, fields?: string[]): Promise<ERest | null> {
     const options: any = {
       index: REST_INDEX,
       id: restId,
@@ -204,7 +204,7 @@ class RestService implements IRestService {
       const res: ApiResponse<ERest> = await this.elastic.getSource(options);
       const rest: any = res.body;
       rest._id = restId;
-      return rest as IRest;
+      return rest as ERest;
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
       return null;

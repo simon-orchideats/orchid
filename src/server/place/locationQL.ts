@@ -2,7 +2,23 @@ import { gql } from 'apollo-server';
 
 const _LocationQL = gql`
   type Location {
-    address: Address!
+    primaryAddr: String!
+    address2: String
+  }
+
+  input LocationInput {
+    primaryAddr: String!
+    address2: String
+  }
+
+  type Geo {
+    lat: String!
+    lon: String!
+  }
+
+  input GeoInput {
+    lat: String!
+    lon: String!
   }
 `
 

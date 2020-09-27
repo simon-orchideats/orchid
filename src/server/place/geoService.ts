@@ -17,7 +17,7 @@ export interface IGeoService {
   getGeocodeByQuery: (q: string) => Promise<{
     lat: string,
     lon: string,
-    state: state,
+    timezone: string,
   } | null>
   getGeocodeByZip: (zip: string) => Promise<{
     lat: string,
@@ -110,10 +110,10 @@ class GeoService implements IGeoService{
   async getGeocodeByQuery(q: string): Promise<{
     lat: string
     lon: string,
-    state: state,
+    timezone: string,
   } | null> {
     try {
-      const query = `q=${querystring.escape(q)}&api_key=${activeConfig.server.geo.key}`;
+      const query = `q=${querystring.escape(q)}&fields=timezone&api_key=${activeConfig.server.geo.key}`;
       let jsonData;
       try {
         console.log(`https://api.geocod.io/v1.6/geocode?${query}`);
@@ -127,16 +127,16 @@ class GeoService implements IGeoService{
       if (jsonData.results && jsonData.results.length > 0) {
         console.log(jsonData.results);
         const {
-          address_components,
           accuracy,
           accuracy_type,
           location,
+          fields,
         } = jsonData.results[0];
         if (accuracy > 0.7 && (accuracy_type === 'rooftop' || accuracy_type === 'range_interpolation' || accuracy_type === 'point')) {
           return {
             lat: location.lat,
             lon: location.lng,
-            state: address_components.state,
+            timezone: fields.timezone.name as string,
           }
         }
       }

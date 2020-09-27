@@ -1,6 +1,4 @@
 import { ConsumerQueryResolvers, ConsumerMutationResolvers } from './server/consumer/consumerResolver';
-import { ConsumerPlanQL } from './server/consumer/consumerPlanQL';
-import { DestinationQL } from './server/place/destinationQL';
 import { AddressQL } from './server/place/addressQL';
 import { CardQL } from './server/card/cardQL';
 import { LocationQL } from './server/place/locationQL';
@@ -17,18 +15,28 @@ import { OrderQL } from './server/orders/orderQL';
 const query = gql`
   type Query {
     availablePlans: [Plan!]!
-    allPaidOrders: [Order!]!
-    allUpcomingOrders: [Order!]!
+    # allPaidOrders: [Order!]!
+    # allUpcomingOrders: [Order!]!
     allTags: [Tag!]! 
-    myUpcomingOrders: [Order!]!
+    # myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
-    myRewards: Rewards!
-    mySpent: Spent!
+    # myRewards: Rewards!
+    # mySpent: Spent!
     nearbyRests(addr: String): [Rest!]!
-    rest(restId: ID!): Rest!
-    order(orderId: ID!): Order!
-    consumerFromReferral(promoCode: ID!): String!
+    # rest(restId: ID!): Rest!
+    # order(orderId: ID!): Order!
+    # consumerFromReferral(promoCode: ID!): String!
     myConsumer: Consumer
+
+    # baddies
+    allPaidOrders: String
+    allUpcomingOrders: String
+    myUpcomingOrders: String
+    myRewards:String
+    mySpent: String
+    rest(restId: ID!): String
+    order(orderId: ID!): String
+    consumerFromReferral(promoCode: ID!): String!
   }
 `
 
@@ -38,16 +46,28 @@ const mutation = gql`
     error: String
   }
   type Mutation {
-    addRest(rest: RestInput!): BoolRes!
-    cancelSubscription: BoolRes!
+    # addRest(rest: RestInput!): BoolRes!
+    # cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
-    getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
+    # getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
-    skipDelivery(orderId: ID!, deliveryIndex: Int!): BoolRes!
-    updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!
-    removeDonations(orderId: ID!): BoolRes!
-    updateMyPlan(plan: ConsumerPlanInput!): ConsumerRes!
-    updateMyProfile(profile: ConsumerProfileInput!, paymentMethodId: String): ConsumerRes!
+    # skipDelivery(orderId: ID!, deliveryIndex: Int!): BoolRes!
+    # updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!
+    # removeDonations(orderId: ID!): BoolRes!
+    # updateMyPlan(plan: ConsumerPlanInput!): ConsumerRes!
+    # updateMyProfile(profile: ConsumerProfileInput!, paymentMethodId: String): ConsumerRes!
+
+
+    
+    # baddies
+    addRest(rest: RestInput!): String!
+    cancelSubscription: String!
+    getPromo(promoCode: String!, phone: String! fullAddr: String!): String!
+    skipDelivery(orderId: ID!, deliveryIndex: Int!): String!
+    updateDeliveries(orderId: ID!, updateOptions: String!): String!
+    removeDonations(orderId: ID!): String!
+    updateMyPlan(plan: String!): ConsumerRes!
+    updateMyProfile(profile: String!, paymentMethodId: String): String!
   }
 `
 
@@ -59,12 +79,10 @@ const gqlSchema = gql`
 `
 
 const typeDefs = [
-  ConsumerPlanQL,
   AddressQL,
   CardQL,
   ConsumerQL,
   OrderQL,
-  DestinationQL,
   LocationQL,
   PlanQL,
   RestQL,

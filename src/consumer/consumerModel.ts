@@ -1,4 +1,4 @@
-import { ILocation, Location, ELocation } from './../place/locationModel';
+import { IGeo, Geo, ILocation, Location, ELocation } from './../place/locationModel';
 import { ICard, Card } from './../card/cardModel';
 import { EConsumerPlan, ConsumerPlan, IConsumerPlan } from './consumerPlanModel';
 
@@ -20,17 +20,30 @@ export const Permissions: {
   createRests: 'create:rests'
 }
 
+export interface IConsumerSearchArea extends ILocation {
+  readonly geoPoint: IGeo;
+}
+
+export class ConsumerSearchArea {
+  static getICopy(c: IConsumerSearchArea): IConsumerSearchArea {
+    return {
+      ...Location.getICopy(c),
+      geoPoint: Geo.getICopy(c.geoPoint),
+    }
+  }
+}
+
 export interface IConsumerProfile {
   readonly name: string
   readonly email: string
   readonly phone: string | null
   readonly card: ICard | null
-  readonly location: ILocation | null
+  readonly searchArea: IConsumerSearchArea | null
   readonly serviceInstructions: string | null
 }
 
 export interface EConsumerProfile extends IConsumerProfile {
-  readonly location: ELocation | null
+  readonly searchArea: ELocation | null
 }
 
 export class ConsumerProfile {
@@ -41,7 +54,7 @@ export class ConsumerProfile {
       email: profile.email,
       phone: profile.phone,
       card: profile.card && Card.getICopy(profile.card),
-      location: profile.location && Location.getICopy(profile.location),
+      searchArea: profile.searchArea && ConsumerSearchArea.getICopy(profile.searchArea),
       serviceInstructions: profile.serviceInstructions
     }
   }
@@ -63,7 +76,11 @@ export interface IConsumer extends Omit<EConsumer, 'createdDate' | 'profile' | '
 
 export class Consumer {
 
-  static getIConsumerFromEConsumer(_id: string, permissions: Permission[], eConsumer: EConsumer): IConsumer {
+  static getIConsumerFromEConsumer(
+    _id: string,
+    permissions: Permission[],
+    eConsumer: Omit<EConsumer, 'createdDate'>
+  ): IConsumer {
     return {
       _id,
       plan: eConsumer.plan,
