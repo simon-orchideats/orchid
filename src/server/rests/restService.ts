@@ -5,7 +5,7 @@ import { MutationBoolRes, SignedInUser } from './../../utils/apolloUtils';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
-import { ERest, IRest, IRestInput, Rest } from './../../rest/restModel';
+import { ERest, IRest, IRestInput, Rest, ServiceDay } from './../../rest/restModel';
 
 const REST_INDEX = 'rests2';
 const TAG_INDEX = 'tags';
@@ -14,15 +14,26 @@ export interface IRestService {
   addRest: (signedInUser: SignedInUser, rest: IRestInput) => Promise<MutationBoolRes>
   getAllTags: () => Promise<ITag[]>
   getNearbyERests: (
-    zip: string,
+    addr: string,
+    serviceDay: ServiceDay,
+    from: string,
+    to: string,
     cuisines?: string[],
     fields?: string[]
   ) => Promise<{
     _id: string,
     rest: ERest
   }[]>
-  getNearbyRests: (zip: string, cuisines?: string[], fields?: string[]) => Promise<IRest[]>
-  getRest: (restId: string, fields?: string[]) => Promise<ERest | null>
+  getNearbyRests: (
+    addr: string,
+    serviceDay: ServiceDay,
+    from: string,
+    to: string,
+    cuisines?: string[],
+    fields?: string[]
+  ) => Promise<IRest[]>
+  getERest: (restId: string, fields?: string[]) => Promise<ERest | null>
+  getRest: (restId: string, fields?: string[]) => Promise<IRest | null>
 }
 
 class RestService implements IRestService {
@@ -96,6 +107,9 @@ class RestService implements IRestService {
 
   public async getNearbyERests(
     location: string,
+    serviceDay: ServiceDay,
+    from: string,
+    to: string,
     cuisines?: string[],
     fields?: string[]
   ): Promise<{
@@ -107,7 +121,6 @@ class RestService implements IRestService {
       const geo = await this.geoService.getGeocodeByQuery(location);
       if (!geo) return [];
       const { lat, lon } = geo;
-      console.log(lat, lon);
       const options: any = {
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
@@ -140,7 +153,21 @@ class RestService implements IRestService {
                     // },
                     {
                       term: {
-                        'status': 'Open',
+                        status: 'Open',
+                      }
+                    },
+                    {
+                      range: {
+                        [`hours.${serviceDay}.open`]: {
+                          lte: from
+                        }
+                      }
+                    },
+                    {
+                      range: {
+                        [`hours.${serviceDay}.close`]: {
+                          gte: to
+                        }
                       }
                     }
                   ]
@@ -180,21 +207,36 @@ class RestService implements IRestService {
     }
   }
 
-  async getNearbyRests(cityOrZip: string, cuisines?: string[], fields?: string[]): Promise<IRest[]> {
+  async getNearbyRests(
+    addr: string,
+    serviceDay: ServiceDay,
+    from: string,
+    to: string,
+    cuisines?: string[],
+    fields?: string[]
+  ): Promise<IRest[]> {
     try {
       console.log('yo im here');
-      const eRests = await this.getNearbyERests(cityOrZip, cuisines, fields);
+      const eRests = await this.getNearbyERests(
+        addr,
+        serviceDay,
+        from,
+        to,
+        cuisines, 
+        fields
+      );
+      console.log('erests', eRests);
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby rests for '${cityOrZip}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
+      console.error(`[RestService] could not get nearby rests for '${addr}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw new Error('Internal Server Error');
     }
   }
 
-  async getRest(restId: string, fields?: string[]): Promise<ERest | null> {
+  async getERest(restId: string, fields?: string[]): Promise<ERest | null> {
     const options: any = {
       index: REST_INDEX,
       id: restId,
@@ -202,9 +244,22 @@ class RestService implements IRestService {
     if (fields) options._source = fields;
     try {
       const res: ApiResponse<ERest> = await this.elastic.getSource(options);
-      const rest: any = res.body;
-      rest._id = restId;
-      return rest as ERest;
+      return res.body;
+    } catch (e) {
+      console.error(`[RestService] failed to get ERest '${restId}'`, e.stack);
+      return null;
+    }
+  }
+
+  async getRest(restId: string, fields?: string[]): Promise<IRest | null> {
+    const options: any = {
+      index: REST_INDEX,
+      id: restId,
+    };
+    if (fields) options._source = fields;
+    try {
+      const res: ApiResponse<ERest> = await this.elastic.getSource(options);
+      return Rest.getRestFromERest(res.body, restId);
     } catch (e) {
       console.error(`[RestService] failed to get rest '${restId}'`, e.stack);
       return null;

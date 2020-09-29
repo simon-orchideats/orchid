@@ -1,6 +1,6 @@
 import { ITag, Tag } from './tagModel';
 import { ApolloCache, DataProxy } from 'apollo-cache';
-import { IRest, Rest, IRestInput } from './restModel';
+import { IRest, Rest, IRestInput, ServiceDay } from './restModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { restFragment } from './restFragment';
@@ -65,22 +65,32 @@ export const useGetTags = () => {
   }
 }
 
-const useGetNearbyRests = (addr: string) => {
+const useGetNearbyRests = (
+  addr?: string,
+  serviceDay?: ServiceDay,
+  from?: string,
+  to?: string,
+) => {
   type res = {
     nearbyRests: IRest[]
   }
   const res = useQuery<res>(
     gql`
-      query nearbyRests($addr: String) {
-        nearbyRests(addr: $addr) {
+      query nearbyRests($addr: String!, $serviceDay: ServiceDay!, $from: String!, $to: String!) {
+        nearbyRests(addr: $addr, serviceDay: $serviceDay, from: $from, to: $to) {
           ...restFragment
         }
       }
       ${restFragment}
     `, 
     {
-      skip: !addr,
-      variables: { addr },
+      skip: !addr || !serviceDay || !from || !to,
+      variables: {
+        addr,
+        serviceDay,
+        from,
+        to
+      },
     }
   );
 

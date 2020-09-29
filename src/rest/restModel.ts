@@ -1,8 +1,10 @@
+import { ServiceTime, Order } from './../order/orderModel';
 import { IAddress } from './../place/addressModel';
 import { RestProfile, IRestProfile } from './restProfileModel';
 import { IMeal, Meal, IMealInput } from './mealModel';
 import { ELocation, Location, ILocation } from '../place/locationModel';
 import { nanoid } from 'nanoid'
+import { isWithinInterval } from 'date-fns';
 
 type RestStatus = 'Active' | 'Inactive'
 
@@ -21,7 +23,7 @@ export interface IDayHours {
   readonly close: string;
 }
 
-export type OpeningDay = 'Su' | 'M' | 'T' | 'W' | 'Th' | 'F' | 'Sa';
+export type ServiceDay = 'Su' | 'M' | 'T' | 'W' | 'Th' | 'F' | 'Sa';
 
 export class DayHours implements IDayHours {
   readonly open: string;
@@ -72,7 +74,11 @@ export class Hours implements IHours {
     this.Sa = hs.Sa.map(dh => new DayHours(dh));
   }
 
-  static getDay(i: OpeningDays): OpeningDay {
+  static getServiceDay(serviceDate: string): ServiceDay {
+    return Hours.getDay(new Date(Date.parse(serviceDate)).getDay() as OpeningDays)
+  }
+
+  static getDay(i: OpeningDays): ServiceDay {
     switch (i) {
       case 0:
         return 'Su'
@@ -192,5 +198,81 @@ export class Rest {
       status: RestStatuses.Inactive,
       stripeRestId: null,
     }
+  }
+
+  static getRestFromERest(rest: ERest, restId: string ): IRest {
+    return {
+      location: rest.location,
+      hours: rest.hours,
+      featured: rest.featured,
+      profile: rest.profile,
+      taxRate: rest.taxRate,
+      deliveryFee: rest.deliveryFee,
+      deliveryMinimum: rest.deliveryMinimum,
+      _id: restId
+    }
+  }
+
+  static isClosed(rest: IRest, serviceDate: string, serviceTime: ServiceTime) {
+    const serviceDay = Hours.getServiceDay(serviceDate);
+    const fromTo = Order.get24HourStr(serviceTime);
+    // arbituary year and month
+    const defaultYear = 2000;
+    const defaultMonth = 0;
+    const defaultDay = 1;
+    const fromSplit = fromTo.from.split(':');
+    const toSplit = fromTo.to.split(':');
+    const fromDate = new Date(
+      defaultYear,
+      defaultMonth,
+      defaultDay,
+      parseInt(fromSplit[0]),
+      parseInt(fromSplit[1])
+    );
+    const toDate = new Date(
+      defaultYear,
+      defaultMonth,
+      defaultDay,
+      parseInt(toSplit[0]),
+      parseInt(toSplit[1])
+    );
+    const hours = rest.hours[serviceDay];
+    return !!!hours.find(h => {
+      const openSplit = h.open.split(':');
+      const closeSplit = h.close.split(':');
+      const startDate = new Date(
+        defaultYear,
+        defaultMonth,
+        defaultDay,
+        parseInt(openSplit[0]),
+        parseInt(openSplit[1])
+      );
+      const endDate = new Date(
+        defaultYear,
+        defaultMonth,
+        defaultDay,
+        parseInt(closeSplit[0]),
+        parseInt(closeSplit[1])
+      );
+      return (
+        isWithinInterval(
+          fromDate,
+          {
+            start: startDate,
+            end: endDate
+          }
+        ) && isWithinInterval(
+          toDate,
+          {
+            start: startDate,
+            end: endDate
+          }
+        )
+      )
+    })
+  }
+
+  static isEqual(r1: IRest, r2: IRest) {
+    return r1._id === r2._id;
   }
 }

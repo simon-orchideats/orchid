@@ -187,7 +187,7 @@ class OrderService {
   }> {
     if (!this.restService) return Promise.reject('RestService not set');
     const cartRest = cart.cartOrder.rest
-    const rest: validatedRest | null = await this.restService.getRest(cartRest.restId, [
+    const rest: validatedRest | null = await this.restService.getERest(cartRest.restId, [
       'featured',
       'taxRate',
       'deliveryFee',

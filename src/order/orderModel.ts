@@ -387,6 +387,7 @@ export class Order {
       // weekday: 'numeric',
       day: 'numeric',
       month: 'numeric',
+      year: 'numeric',
     })
   }
 
@@ -1151,7 +1152,7 @@ export class Order {
       case ServiceTimes.ElevenFortyFiveAToTwelveFifteenP: return '11:45a - 12:15p'
       case ServiceTimes.TwelvePToTwelveThirtyP: return '12:00p - 12:30p'
       case ServiceTimes.TwelveFifteenPToTwelveFortyFiveP: return '12:15p - 12:45p'
-      case ServiceTimes.TwelveThirtyPToOneP: return '12:30p - 1:30p'
+      case ServiceTimes.TwelveThirtyPToOneP: return '12:30p - 1:00p'
       case ServiceTimes.TwelveFortyFivePToOneFifteenP: return '12:45p - 1:15p'
       case ServiceTimes.OnePToOneThirtyP: return '1:00p - 1:30p'
       case ServiceTimes.OneFifteenPToOneFortyFiveP: return '1:15p - 1:45p'
@@ -1182,7 +1183,7 @@ export class Order {
       case ServiceTimes.SevenThirtyPToEightP: return '7:30p - 8:00p'
       case ServiceTimes.SevenFortyFivePToEightFifteenP: return '7:45p - 8:15p'
       case ServiceTimes.EightPToEightThirtyP: return '8:00p - 8:30p'
-      case ServiceTimes.EightFifteenPToEightFortyFiveP: return '8:15p - 8:45'
+      case ServiceTimes.EightFifteenPToEightFortyFiveP: return '8:15p - 8:45p'
       case ServiceTimes.EightThirtyPToNineP: return '8:30p - 9:00p'
       case ServiceTimes.EightFortyFivePToNineFifteenP: return '8:45p - 9:15p'
       case ServiceTimes.NinePToNineThirtyP: return '9:00p - 9:30p'
@@ -1203,4 +1204,122 @@ export class Order {
         throw err;
     } 
   };
+
+  static get24HourStr(t: ServiceTime): {
+    from: string
+    to: string
+  } {
+    switch(t) {
+      case ServiceTimes.ASAP:
+        const str = new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        return {
+          from: str,
+          to: str,
+        }
+      case ServiceTimes.TwelveAToTwelveThirtyA: return { from: '00:00', to: '00:30' }
+      case ServiceTimes.TwelveFifteenAToTwelveFortyFiveA: return { from: '00:15', to: '00:45' }
+      case ServiceTimes.TwelveThirtyAToOneA: return { from: '00:30', to: '01:30' }
+      case ServiceTimes.TwelveFortyFiveAToOneFifteenA: return { from: '00:45', to: '01:15' }
+      case ServiceTimes.OneAToOneThirtyA: return  { from: '01:00', to: '01:30' }
+      case ServiceTimes.OneFifteenAToOneFortyFiveA: return { from: '01:15', to: '01:45' }
+      case ServiceTimes.OneThirtyAToTwoA: return { from: '01:30', to: '02:00' }
+      case ServiceTimes.OneFortyFiveAToTwoFifteenA: return { from: '01:45', to: '02:15' }
+      case ServiceTimes.TwoAToTwoThirtyA: return { from: '02:00', to: '02:30' }
+      case ServiceTimes.TwoFifteenAToTwoFortyFiveA: return { from: '02:15', to: '02:45' }
+      case ServiceTimes.TwoThirtyAToThreeA: return { from: '02:30', to: '03:00' }
+      case ServiceTimes.TwoFortyFiveAToThreeFifteenA: return { from: '02:45', to: '03:15' }
+      case ServiceTimes.ThreeAToThreeThirtyA: return { from: '03:00', to: '03:30' }
+      case ServiceTimes.ThreeFifteenAToThreeFortyFiveA: return { from: '03:15', to: '03:45' }
+      case ServiceTimes.ThreeThirtyAToFourA: return { from: '03:30', to: '04:00' }
+      case ServiceTimes.ThreeFortyFiveAToFourFifteenA: return { from: '03:45', to: '04:15' }
+      case ServiceTimes.FourAToFourThirtyA: return { from: '04:00', to: '04:30' }
+      case ServiceTimes.FourFifteenAToFourFortyFiveA: return { from: '04:15', to: '04:45' }
+      case ServiceTimes.FourThirtyAToFiveA: return { from: '04:30', to: '05:00' }
+      case ServiceTimes.FourFortyFiveAToFiveFifteenA: return { from: '04:45', to: '05:15' }
+      case ServiceTimes.FiveAToFiveThirtyA: return { from: '05:00', to: '05:30' }
+      case ServiceTimes.FiveFifteenAToFiveFortyFiveA: return { from: '05:15', to: '05:45' }
+      case ServiceTimes.FiveThirtyAToSixA: return { from: '05:30', to: '06:00' }
+      case ServiceTimes.FiveFortyFiveAToSixFifteenA: return { from: '05:45', to: '06:15' }
+      case ServiceTimes.SixAToSixThirtyA: return { from: '06:00', to: '06:30' }
+      case ServiceTimes.SixFifteenAToSixFortyFiveA: return { from: '06:15', to: '06:45' }
+      case ServiceTimes.SixThirtyAToSevenA: return { from: '06:30', to: '07:00' }
+      case ServiceTimes.SixFortyFiveAToSevenFifteenA: return { from: '06:45', to: '07:15' }
+      case ServiceTimes.SevenAToSevenThirtyA: return { from: '07:00', to: '07:30' }
+      case ServiceTimes.SevenFifteenAToSevenFortyFiveA: return { from: '07:15', to: '07:45' }
+      case ServiceTimes.SevenThirtyAToEightA: return { from: '07:30', to: '08:00' }
+      case ServiceTimes.SevenFortyFiveAToEightFifteenA: return { from: '07:45', to: '08:15' }
+      case ServiceTimes.EightAToEightThirtyA: return { from: '08:00', to: '08:30' }
+      case ServiceTimes.EightFifteenAToEightFortyFiveA: return { from: '08:15', to: '08:45' }
+      case ServiceTimes.EightThirtyAToNineA: return { from: '08:30', to: '09:00' }
+      case ServiceTimes.EightFortyFiveAToNineFifteenA: return { from: '08:45', to: '09:15' }
+      case ServiceTimes.NineAToNineThirtyA: return { from: '09:00', to: '09:30' }
+      case ServiceTimes.NineFifteenAToNineFortyFiveA: return { from: '09:15', to: '09:45' }
+      case ServiceTimes.NineThirtyAToTenA: return { from: '09:30', to: '10:00' }
+      case ServiceTimes.NineFortyFiveAToTenFifteenA: return { from: '09:45', to: '10:15' }
+      case ServiceTimes.TenAToTenThirtyA: return { from: '10:00', to: '10:30' }
+      case ServiceTimes.TenFifteenAToTenFortyFiveA: return { from: '10:15', to: '10:45' }
+      case ServiceTimes.TenThirtyAToElevenA: return { from: '10:30', to: '11:00' }
+      case ServiceTimes.TenFortyFiveAToElevenFifteenA: return { from: '10:45', to: '11:15' }
+      case ServiceTimes.ElevenAToElevenThirtyA: return { from: '11:00', to: '11:30' }
+      case ServiceTimes.ElevenFifteenAToElevenFortyFiveA: return { from: '11:15', to: '11:45' }
+      case ServiceTimes.ElevenThirtyAToTwelveP: return { from: '11:30', to: '12:00' }
+      case ServiceTimes.ElevenFortyFiveAToTwelveFifteenP: return { from: '11:45', to: '12:15' }
+      case ServiceTimes.TwelvePToTwelveThirtyP: return { from: '12:00', to: '12:30' }
+      case ServiceTimes.TwelveFifteenPToTwelveFortyFiveP: return { from: '12:15', to: '12:45' }
+      case ServiceTimes.TwelveThirtyPToOneP: return { from: '12:30', to: '13:00' }
+      case ServiceTimes.TwelveFortyFivePToOneFifteenP: return { from: '12:45', to: '13:15' }
+      case ServiceTimes.OnePToOneThirtyP: return { from: '13:00', to: '13:30' }
+      case ServiceTimes.OneFifteenPToOneFortyFiveP: return { from: '13:15', to: '13:45' }
+      case ServiceTimes.OneThirtyPToTwoP: return { from: '13:30', to: '14:00' }
+      case ServiceTimes.OneFortyFivePToTwoFifteenP: return { from: '13:45', to: '14:15' }
+      case ServiceTimes.TwoPToTwoThirtyP: return { from: '14:00', to: '14:30' }
+      case ServiceTimes.TwoFifteenPToTwoFortyFiveP: return { from: '14:15', to: '14:45' }
+      case ServiceTimes.TwoThirtyPToThreeP: return { from: '14:30', to: '15:00' }
+      case ServiceTimes.TwoFortyFivePToThreeFifteenP: return { from: '14:45', to: '15:15' }
+      case ServiceTimes.ThreePToThreeThirtyP: return { from: '15:00', to: '15:30' }
+      case ServiceTimes.ThreeFifteenPToThreeFortyFiveP: return { from: '15:15', to: '15:45' }
+      case ServiceTimes.ThreeThirtyPToFourP: return { from: '15:30', to: '16:00' }
+      case ServiceTimes.ThreeFortyFivePToFourFifteenP: return { from: '15:45', to: '16:15' }
+      case ServiceTimes.FourPToFourThirtyP: return { from: '16:00', to: '16:30' }
+      case ServiceTimes.FourFifteenPToFourFortyFiveP: return { from: '16:15', to: '16:45' }
+      case ServiceTimes.FourThirtyPToFiveP: return { from: '16:30', to: '17:00' }
+      case ServiceTimes.FourFortyFivePToFiveFifteenP: return  { from: '16:45', to: '17:15' }
+      case ServiceTimes.FivePToFiveThirtyP: return { from: '17:00', to: '17:30' }
+      case ServiceTimes.FiveFifteenPToFiveFortyFiveP: return { from: '17:15', to: '17:45' }
+      case ServiceTimes.FiveThirtyPToSixP: return { from: '17:30', to: '18:00' }
+      case ServiceTimes.FiveFortyFivePToSixFifteenP: return { from: '17:45', to: '18:15' }
+      case ServiceTimes.SixPToSixThirtyP: return { from: '18:00', to: '18:30' }
+      case ServiceTimes.SixFifteenPToSixFortyFiveP: return { from: '18:15', to: '18:45' }
+      case ServiceTimes.SixThirtyPToSevenP: return { from: '18:30', to: '19:00' }
+      case ServiceTimes.SixFortyFivePToSevenFifteenP: return { from: '18:45', to: '19:15' }
+      case ServiceTimes.SevenPToSevenThirtyP: return { from: '19:00', to: '19:30' }
+      case ServiceTimes.SevenFifteenPToSevenFortyFiveP: return { from: '19:15', to: '19:45' }
+      case ServiceTimes.SevenThirtyPToEightP: return { from: '19:30', to: '20:00' }
+      case ServiceTimes.SevenFortyFivePToEightFifteenP: return { from: '19:45', to: '20:15' }
+      case ServiceTimes.EightPToEightThirtyP: return { from: '20:00', to: '20:30' }
+      case ServiceTimes.EightFifteenPToEightFortyFiveP: return { from: '20:15', to: '20:45' }
+      case ServiceTimes.EightThirtyPToNineP: return { from: '20:30', to: '21:00' }
+      case ServiceTimes.EightFortyFivePToNineFifteenP: return { from: '20:45', to: '21:15' }
+      case ServiceTimes.NinePToNineThirtyP: return { from: '21:00', to: '21:30' }
+      case ServiceTimes.NineFifteenPToNineFortyFiveP: return { from: '21:15', to: '21:45' }
+      case ServiceTimes.NineThirtyPToTenP: return { from: '21:30', to: '22:00' }
+      case ServiceTimes.NineFortyFivePToTenFifteenP: return  { from: '21:45', to: '22:15' }
+      case ServiceTimes.TenPToTenThirtyP: return { from: '22:00', to: '22:30' }
+      case ServiceTimes.TenFifteenPToTenFortyFiveP: return { from: '22:15', to: '22:45' }
+      case ServiceTimes.TenThirtyPToElevenP: return { from: '22:30', to: '23:00' }
+      case ServiceTimes.TenFortyFivePToElevenFifteenP: return { from: '22:45', to: '23:15' }
+      case ServiceTimes.ElevenPToElevenThirtyP: return { from: '23:00', to: '23:30' }
+      case ServiceTimes.ElevenFifteenPToElevenFortyFiveP: return { from: '23:15', to: '23:45' }
+      case ServiceTimes.ElevenThirtyPToTwelveA: return { from: '23:30', to: '00:00' }
+      case ServiceTimes.ElevenFortyFivePToTwelveFifteenA: return { from: '23:45', to: '00:15' }
+      default:
+        const err = new Error(`Unsupported ServiceTime ${t}`);
+        console.error(err.stack);
+        throw err;
+    } 
+  }
 }

@@ -62,7 +62,6 @@ const useStyles = makeStyles(theme => ({
 
 const ZipModal: React.FC<{
   open: boolean,
-  defaultZip: string
 }> = ({
   open,
 }) => {

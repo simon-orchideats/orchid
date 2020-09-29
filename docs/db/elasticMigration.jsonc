@@ -338,6 +338,7 @@ POST _reindex
       def menu = ctx._source.menu;
       ctx._source.featured = new def[menu.length];
       ctx._source.deliveryFee = 299;
+      ctx._source.location.primaryAddr = ctx._source.location.address1 + " " + ctx._source.location.city + " " + ctx._source.location.state + " " + ctx._source.location.zip
       ctx._source.location.geoPoint = ctx._source.location.geo;
       for (int i = 0; i < menu.length; i++) {
         ctx._source.featured[i] = [:];
@@ -353,6 +354,10 @@ POST _reindex
       }
       ctx._source.remove('menu');
       ctx._source.location.remove('geo');
+      ctx._source.location.remove('address1');
+      ctx._source.location.remove('city');
+      ctx._source.location.remove('state');
+      ctx._source.location.remove('zip');
     """,
     "lang": "painless"
   }
@@ -448,6 +453,7 @@ POST rests/_update_by_query
 {
   "script" : {
     "source": """
+      ctx._source.location.primaryAddr = ctx._source.location.address.address1 + " " + ctx._source.location.address.city + " " + ctx._source.location.address.state + " " + ctx._source.location.address.zip
       ctx._source.location.geoShape = [
         "type": "Polygon",
         "coordinates": [

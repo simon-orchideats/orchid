@@ -1,5 +1,5 @@
 import { makeStyles, Typography, Button } from "@material-ui/core";
-import { useGetCart } from "../global/state/cartState";
+import { useGetCart, useGetCartSuggestions } from "../global/state/cartState";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -15,6 +15,10 @@ const useStyles = makeStyles(theme => ({
   },
   smallPaddingBottom: {
     paddingBottom: theme.spacing(1),
+  },
+  suggestion: {
+    color: theme.palette.warning.dark,
+    fontWeight: 600,
   },
   row: {
     display: 'flex',
@@ -42,13 +46,14 @@ const CheckoutCart: React.FC<props> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
+  const suggestions = [] = useGetCartSuggestions();
   if (!cart || !cart.rest) return null;
   const orderButton = (
     <Button
       variant='contained'
       color='primary'
       fullWidth
-      disabled={loading}
+      disabled={loading || suggestions.length > 0}
       onClick={onPlaceOrder}
       className={classes.button}
     >
@@ -72,6 +77,15 @@ const CheckoutCart: React.FC<props> = ({
   const total = mealTotal + taxes + cart.rest.deliveryFee;
   return (
     <>
+      {suggestions.map((suggestion, i) => (
+        <Typography
+          key={i}
+          variant='body1'
+          className={classes.suggestion}
+        >
+          {suggestion}
+        </Typography>
+      ))}
       {/* necessary div so that the rows dont reduce in height in safari */}
       <div>
         <div className={classes.row}>

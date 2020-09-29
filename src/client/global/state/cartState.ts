@@ -1,11 +1,13 @@
-import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime } from './../../../order/orderModel';
+import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime, ServiceTypes } from './../../../order/orderModel';
 import { ApolloCache } from 'apollo-cache';
 import { Cart, ICart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { IMeal } from '../../../rest/mealModel';
-import { IOrderMeal } from '../../../order/orderRestModel';
+import { IOrderMeal, OrderMeal } from '../../../order/orderRestModel';
+import { useGetRest, useGetNearbyRests } from '../../../rest/restService';
+import { Rest, Hours } from '../../../rest/restModel';
 
 type cartQueryRes = {
   cart: ICart | null
@@ -85,6 +87,38 @@ export const useGetCart = () => {
   //   "serviceTime": "ASAP",
   //   "serviceType": "Delivery"
   // } as ICart
+}
+
+export const useGetCartSuggestions = () => {
+  const suggestions: string[] = [];
+  const queryRes = useQuery<cartQueryRes>(CART_QUERY);
+  const cart = (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
+  const serviceDay = cart ? Hours.getServiceDay(cart.serviceDate) : undefined;
+  const fromTo = cart ? Order.get24HourStr(cart.serviceTime) : undefined;
+  const rest = useGetRest((cart && cart.rest) ? cart.rest.restId : null);
+  const rests = useGetNearbyRests(
+    cart?.searchArea,
+    serviceDay,
+    fromTo?.from,
+    fromTo?.to,
+  );
+
+  if (rest.data && cart && cart.rest) {
+    if (Rest.isClosed(rest.data, cart.serviceDate, cart.serviceTime)) {
+      suggestions.push(`${cart.rest.restName} is closed at ${cart.serviceDate}, ${Order.getServiceTimeStr(cart.serviceTime)}`)
+    }
+    if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals) < rest.data.deliveryMinimum) {
+      suggestions.push(`${cart.rest.restName} delivery minimum is ${rest.data.deliveryMinimum}`)
+    }
+    if (cart.serviceType === ServiceTypes.Delivery && rests.data && rests.data.find(r => {
+      if (!cart.rest) return false;
+      return r._id !== cart.rest.restId
+    })) {
+      suggestions.push(`${cart.rest.restName} is too far for delivery`);
+    }
+  }
+
+  return suggestions;
 }
 
 export const useAddMealToCart = (): (

@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox, TextField } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
 import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
@@ -77,10 +77,10 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const consumer = useGetConsumer();
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const addr2InputRef = createRef<HTMLInputElement>();
+  const instructionsInputRef = createRef<HTMLInputElement>();
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
   const receiveTextsInput = createRef<HTMLInputElement>();
-  const [serviceInstructions, setServiceInstructions] = useState<string>('')
   const validateEmailRef = useRef<() => boolean>();
   const emailInputRef = createRef<HTMLInputElement>();
   const accountNameInputRef = createRef<HTMLInputElement>();
@@ -161,7 +161,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             phoneInputRef.current!.value,
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
-            serviceInstructions,
+            instructionsInputRef.current!.value,
             null,
           )
         );
@@ -277,7 +277,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           phone,
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
-          serviceInstructions,
+          instructionsInputRef.current!.value,
           null
         ),
       );
@@ -415,6 +415,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             <Grid item xs={12}>
               <SearchInput defaultValue={'100 Gold Street, New York, NY, USA'} disableAutoFocus />
             </Grid>
+            <Grid item xs={12}>
+              <BaseInput label='Apt #' inputRef={addr2InputRef} />
+            </Grid>
             <Grid
               item
               xs={12}
@@ -432,14 +435,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               xs={12}
               md={6}
             >
-              <TextField
-                label='Requests or instructions'
-                variant='outlined'
-                size='small'
-                fullWidth
-                value={serviceInstructions}
-                onChange={e => setServiceInstructions(e.target.value)}
-              />
+              <BaseInput label='Requests or instructions' inputRef={instructionsInputRef} />
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel

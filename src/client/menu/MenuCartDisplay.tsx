@@ -1,7 +1,7 @@
 import { makeStyles, Typography, Button } from "@material-ui/core";
 import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
-import { useGetCart } from "../global/state/cartState";
+import { useGetCart, useGetCartSuggestions } from "../global/state/cartState";
 import { OrderMeal } from "../../order/orderRestModel";
 import { checkoutRoute } from "../../pages/checkout";
 import Router from 'next/router'
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 const MenuCartDisplay: React.FC = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const disabled = false;
+  const suggestions = useGetCartSuggestions();
   const onNext = () => {
     Router.push(checkoutRoute)
   };
@@ -31,10 +31,11 @@ const MenuCartDisplay: React.FC = () => {
       </Typography>
     )
   }
+  
   return (
     <>
       <Button
-        disabled={disabled}
+        disabled={suggestions.length > 0}
         variant='contained'
         color='primary'
         className={classes.button}
@@ -43,7 +44,7 @@ const MenuCartDisplay: React.FC = () => {
       >
         Checkout
       </Button>
-      {/* {suggestions.map((suggestion, i) => (
+      {suggestions.map((suggestion, i) => (
         <Typography
           key={i}
           variant='body1'
@@ -51,7 +52,7 @@ const MenuCartDisplay: React.FC = () => {
         >
           {suggestion}
         </Typography>
-      ))} */}
+      ))}
       <Typography variant='h6'>
         {cart.rest.restName}
       </Typography>

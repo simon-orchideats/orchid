@@ -12,6 +12,8 @@ import StickyDrawer from "../client/general/StickyDrawer";
 // import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
 import MenuCartDisplay from "../client/menu/MenuCartDisplay";
+import { Order } from "../order/orderModel";
+import { Hours, ServiceDay } from "../rest/restModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -41,6 +43,9 @@ const useStyles = makeStyles(theme => ({
   paddingTop: {
     paddingTop: theme.spacing(2),
   },
+  padding: {
+    padding: theme.spacing(2),
+  },
   filters: {
     [theme.breakpoints.up('md')]: {
       paddingLeft: theme.spacing(2),
@@ -68,10 +73,23 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
-  const searchArea = (cart && cart.searchArea) ? cart.searchArea : '';
   const allTags = useGetTags();
   const [cuisines, setCuisines] = useState<string[]>([]);
-  const rests = useGetNearbyRests(searchArea);
+  let serviceDay: ServiceDay | undefined;
+  let fromTo: {
+    from: string
+    to: string
+  } | undefined = undefined;
+  if (cart) {
+    serviceDay = Hours.getServiceDay(cart.serviceDate);
+    fromTo = Order.get24HourStr(cart.serviceTime);
+  }
+  const rests = useGetNearbyRests(
+    cart?.searchArea,
+    serviceDay,
+    fromTo?.from,
+    fromTo?.to,
+  );
   // const onFilterCuisines = (cuisines: string[]) => {
   //   setCuisines(cuisines);
   // };
@@ -90,7 +108,7 @@ const menu = () => {
       rest={rest}
       cuisinesFilter={allCuisines}
     />
-  )
+  );
   const hasNoRests = !rests.loading && !rests.error && allRests && allRests.length === 0;
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -100,10 +118,7 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
-      <ZipModal
-        open={!!!searchArea}
-        defaultZip={searchArea}
-      />
+      <ZipModal open={!!!cart?.searchArea} />
       <Grid container alignItems='stretch'>
         <Grid
           item
@@ -132,10 +147,18 @@ const menu = () => {
             </Typography>
           }
           {
-            hasNoRests &&
-            <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
-              Coming soon to {searchArea}. Please filter again with a different zip code or city
-            </Typography>
+            (hasNoRests && cart) &&
+            <div className={classes.padding}>
+              <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
+                Nothing available for
+              </Typography>
+              <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
+                {cart.searchArea}
+              </Typography>
+              <Typography variant='h5' className={`${classes.paddingTop} ${classes.row}`}>
+                on {Order.getServiceTimeStr(cart.serviceTime) === 'ASAP' ? 'ASAP' : `${cart.serviceDate} ${Order.getServiceTimeStr(cart.serviceTime)}`}
+              </Typography>
+            </div>
           }
           {!hasNoRests && !rests.error && RestMenus}
         </Grid>

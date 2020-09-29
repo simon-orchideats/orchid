@@ -69,6 +69,15 @@ const RestProfileQL = gql`
 `
 
 const _RestQL = gql`
+  enum ServiceDay {
+    M
+    T
+    W
+    Th
+    F
+    Sa
+    Su
+  }
 
   input DayHoursInput {
     open: String!

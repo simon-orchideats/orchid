@@ -22,8 +22,8 @@ const query = gql`
     myPaidOrders: [Order!]!
     # myRewards: Rewards!
     # mySpent: Spent!
-    nearbyRests(addr: String): [Rest!]!
-    # rest(restId: ID!): Rest!
+    nearbyRests(addr: String!, serviceDay: ServiceDay!, from: String!, to: String!): [Rest!]!
+    rest(restId: ID!): Rest!
     # order(orderId: ID!): Order!
     # consumerFromReferral(promoCode: ID!): String!
     myConsumer: Consumer
@@ -34,7 +34,6 @@ const query = gql`
     myUpcomingOrders: String
     myRewards:String
     mySpent: String
-    rest(restId: ID!): String
     order(orderId: ID!): String
     consumerFromReferral(promoCode: ID!): String!
   }

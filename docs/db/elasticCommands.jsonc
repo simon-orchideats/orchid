@@ -1072,7 +1072,6 @@ PUT /rests2/
       },
       "location": {
         "properties": {
-          
           "primaryAddr": {
             "type": "keyword"
           },
