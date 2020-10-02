@@ -1,9 +1,7 @@
-//@ts-nocheck
-
-import { makeStyles, Grid } from '@material-ui/core';
 import { useGetAvailablePlans } from '../../plan/planService';
 import withClientApollo from '../utils/withClientApollo';
 import PlanDetails from './PlanDetails';
+import { Grid, makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles(() => ({
   item: {
@@ -25,33 +23,25 @@ const PlanCards: React.FC<{
     return <div>loading</div>
   }
   return (
-    <>
-      {plans.data.filter(p => p.IsActive).map(plan => (
+    <Grid container justifyContent='center'>
+      {plans.data.map(p => (
         <Grid
-          key={plan.StripeProductId}
-          container
-          justifyContent='center'
+          key={p.stripeProductPriceId}
+          item
+          className={classes.item}
+          xs={12}
+          sm={4}
         >
-          {plan.Tiers.map(t => (
-            <Grid
-              key={t.MealPrice}
-              item
-              xs={12}
-              sm={small ? 5 : 12}
-              md={4}
-              className={classes.item}
-            >
-              <PlanDetails
-                tier={t}
-                color={color}
-                small={small}
-              />
-            </Grid>
-          ))}
+          <PlanDetails
+            key={p.stripeProductPriceId}
+            plan={p}
+            color={color}
+            small={small}
+          />
         </Grid>
       ))}
-    </>
-  );
+    </Grid>
+  )
 }
 
 export default withClientApollo(PlanCards)

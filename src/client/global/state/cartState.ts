@@ -5,9 +5,9 @@ import { ClientResolver } from './localState';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { IMeal } from '../../../rest/mealModel';
-import { IOrderMeal, OrderMeal } from '../../../order/orderRestModel';
+import { IOrderMeal, OrderMeal, ICustomization } from '../../../order/orderRestModel';
 import { useGetRest, useGetNearbyRests } from '../../../rest/restService';
-import { Rest, Hours } from '../../../rest/restModel';
+import { Rest, WeekHours } from '../../../rest/restModel';
 
 type cartQueryRes = {
   cart: ICart | null
@@ -16,10 +16,16 @@ type cartQueryRes = {
 export const cartQL = gql`
   type CartState {
     rests: OrderRest
-    searchArea: String!
+    searchArea: String
     serviceDate: String!
     serviceTime: String!
     serviceType: ServiceType!
+    stripeProductPriceId: ID
+  }
+  input CustomizationInput {
+    additionalPrice: Int
+    name: string
+    quantity: Int
   }
   extend type Query {
     cart: CartState
@@ -28,7 +34,7 @@ export const cartQL = gql`
     # clearCartMeals: CartState
     addMealToCart(
       meal: MealInput!,
-      choices: [String!]!,
+      customizations: [CustomizationInput!]!,
       deliveryFee: Int!,
       restId: ID!,
       restName: String!,
@@ -43,6 +49,7 @@ export const cartQL = gql`
     setServiceType(type: ServiceType!): CartState!
     setSearchArea(addr: String!): CartState!
     setInstruction(meal: OrderMealInput!, instruction: String): CartState!
+    setStripeProductPriceId(stripeProductPriceId: ID!): CartState!
   }
 `
 
@@ -93,18 +100,18 @@ export const useGetCartSuggestions = () => {
   const suggestions: string[] = [];
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   const cart = (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
-  const serviceDay = cart ? Hours.getServiceDay(cart.serviceDate) : undefined;
   const fromTo = cart ? Order.get24HourStr(cart.serviceTime) : undefined;
   const rest = useGetRest((cart && cart.rest) ? cart.rest.restId : null);
   const rests = useGetNearbyRests(
     cart?.searchArea,
-    serviceDay,
     fromTo?.from,
     fromTo?.to,
+    cart ? WeekHours.getServiceDay(cart.serviceDate) : undefined,
+    cart?.serviceType,
   );
 
   if (rest.data && cart && cart.rest) {
-    if (Rest.isClosed(rest.data, cart.serviceDate, cart.serviceTime)) {
+    if (Rest.isClosed(rest.data, cart.serviceDate, cart.serviceTime, cart.serviceType)) {
       suggestions.push(`${cart.rest.restName} is closed at ${cart.serviceDate}, ${Order.getServiceTimeStr(cart.serviceTime)}`)
     }
     if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals) < rest.data.deliveryMinimum) {
@@ -123,7 +130,7 @@ export const useGetCartSuggestions = () => {
 
 export const useAddMealToCart = (): (
   meal: IMeal,
-  choices: string[],
+  customizations: ICustomization[],
   deliveryFee: number,
   restId: string,
   restName: string,
@@ -131,7 +138,7 @@ export const useAddMealToCart = (): (
 ) => void => {
   type vars = {
     meal: IMeal,
-    choices: string[],
+    customizations: ICustomization[],
     deliveryFee: number,
     restId: string,
     restName: string,
@@ -140,7 +147,7 @@ export const useAddMealToCart = (): (
   const [mutate] = useMutation<any, vars>(gql`
     mutation addMealToCart(
       $meal: MealInput!,
-      $choices: [String!]!
+      $customizations: [CustomizationInput!]!
       $deliveryFee: Int!,
       $restId: ID!,
       $restName: String!,
@@ -148,7 +155,7 @@ export const useAddMealToCart = (): (
     ) {
       addMealToCart(
         meal: $meal,
-        choices: $choices,
+        customizations: $customizations,
         deliveryFee: $deliveryFee,
         restId: $restId,
         restName: $restName,
@@ -158,7 +165,7 @@ export const useAddMealToCart = (): (
   `);
   return (
     meal: IMeal,
-    choices: string[],
+    customizations: ICustomization[],
     deliveryFee: number,
     restId: string,
     restName: string,
@@ -167,7 +174,7 @@ export const useAddMealToCart = (): (
     mutate({ 
       variables: {
         meal,
-        choices,
+        customizations,
         deliveryFee,
         restId,
         restName,
@@ -310,10 +317,22 @@ export const useSetServiceType = (): (type: ServiceType) => void => {
   }
 }
 
+export const useSetStripeProductPriceId = (): (stripeProductPriceId: string) => void => {
+  type vars = { stripeProductPriceId: string };
+  const [mutate] = useMutation<any, vars>(gql`
+    mutation setStripeProductPriceId($stripeProductPriceId: String!) {
+      setStripeProductPriceId(stripeProductPriceId: $stripeProductPriceId) @client
+    }
+  `);
+  return (stripeProductPriceId: string) => {
+    mutate({ variables: { stripeProductPriceId } })
+  }
+}
+
 type cartMutationResolvers = {
   addMealToCart: ClientResolver<{
     meal: IMeal,
-    choices: string[],
+    customizations: ICustomization[],
     deliveryFee: number,
     restId: string,
     restName: string,
@@ -328,6 +347,7 @@ type cartMutationResolvers = {
   setServiceDate: ClientResolver<{ date: string }, ICart | null>
   setServiceTime: ClientResolver<{ time: ServiceTime }, ICart | null>
   setServiceType: ClientResolver<{ type: ServiceType }, ICart | null>
+  setStripeProductPriceId: ClientResolver<{ stripeProductPriceId: string }, ICart | null>
 }
 
 const updateCartCache = (cache: ApolloCache<any>, cart: ICart | null) => {
@@ -346,7 +366,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
   addMealToCart: (_,
     {
       meal,
-      choices,
+      customizations,
       deliveryFee,
       restId,
       restName,
@@ -362,7 +382,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     }
     const newCart = Cart.addMeal(
       res.cart,
-      choices,
+      customizations,
       deliveryFee,
       meal,
       restId,
@@ -423,7 +443,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
         searchArea: addr,
         serviceDate: Order.getServiceDateStr(new Date()),
         serviceTime: DEFAULT_SERVICE_TIME,
-        serviceType: DEFAULT_SERVICE_TYPE
+        serviceType: DEFAULT_SERVICE_TYPE,
+        stripeProductPriceId: null,
       });
     }
     return updateCartCache(cache, {
@@ -431,7 +452,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
       searchArea: addr,
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,
-      serviceType: res.cart.serviceType
+      serviceType: res.cart.serviceType,
+      stripeProductPriceId: res.cart.stripeProductPriceId,
     });
   },
 
@@ -448,6 +470,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: date,
       serviceTime: res.cart.serviceTime,
       serviceType: res.cart.serviceType,
+      stripeProductPriceId: res.cart.stripeProductPriceId,
     });
   },
   
@@ -464,6 +487,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: time,
       serviceType: res.cart.serviceType,
+      stripeProductPriceId: res.cart.stripeProductPriceId,
     });
   },
 
@@ -480,6 +504,29 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,
       serviceType: type,
+      stripeProductPriceId: res.cart.stripeProductPriceId,
+    });
+  },
+
+  setStripeProductPriceId: (_, { stripeProductPriceId }, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      return {
+        rest: null,
+        searchArea: (res && res.cart) ? res.cart.searchArea : null,
+        serviceDate: Order.getServiceDateStr(new Date()),
+        serviceTime: DEFAULT_SERVICE_TIME,
+        serviceType: DEFAULT_SERVICE_TYPE,
+        stripeProductPriceId,
+      }
+    }
+    return updateCartCache(cache, {
+      rest: res.cart.rest,
+      searchArea: res.cart.searchArea,
+      serviceDate: res.cart.serviceDate,
+      serviceTime: res.cart.serviceTime,
+      serviceType: res.cart.serviceType,
+      stripeProductPriceId,
     });
   }
 }

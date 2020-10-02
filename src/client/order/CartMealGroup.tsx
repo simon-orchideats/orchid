@@ -107,7 +107,7 @@ const CartMealGroup: React.FC<{
           {m.name}
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          {m.choices && m.choices.join(', ')}
+          {m.customizations.map(c => `${c.quantity ? c.quantity + ' ' : ''}${c.name}${c.additionalPrice ? ` (+$${((c.additionalPrice * (c.quantity ? c.quantity : 1)) / 100).toFixed(2)})` : ''}`).join(', ')}
         </Typography>
         <Typography variant='body1' color='textSecondary'>
           {m.instructions}

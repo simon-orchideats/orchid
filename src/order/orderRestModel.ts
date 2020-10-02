@@ -1,7 +1,28 @@
 import { IMeal, Meal } from "../rest/mealModel";
 import { Tag } from "../rest/tagModel";
-import { difference } from "lodash";
+import { differenceBy } from "lodash";
 import { ICartRest } from "./cartModel";
+
+export interface ICustomization {
+  additionalPrice: number
+  name: string
+  quantity?: number
+}
+
+export class Customization {
+  static getICopy(c: ICustomization): ICustomization {
+    return {
+      additionalPrice: c.additionalPrice,
+      name: c.name,
+      quantity: c.quantity,
+    }
+  }
+
+  static getKey(c: ICustomization): string {
+    const q = c.quantity === undefined ? '' : c.quantity
+    return c.name + q;
+  }
+}
 
 export interface IOrderMeal extends Omit<
   IMeal,
@@ -10,7 +31,7 @@ export interface IOrderMeal extends Omit<
   | 'optionGroups'
   | 'isActive'
   > {
-  readonly choices: string[]
+  readonly customizations: ICustomization[]
   readonly instructions: string | null
   readonly mealId: string
   readonly quantity: number
@@ -25,30 +46,30 @@ export class OrderMeal {
     }
   }
   
-  static getKey(meal: IOrderMeal) { return meal.mealId + meal.choices.join() + meal.instructions }
+  static getKey(meal: IOrderMeal) { return meal.mealId + meal.customizations.map(Customization.getKey).join() + meal.instructions }
 
   public static equals(m1: IOrderMeal, m2: IOrderMeal) {
     return m1.mealId === m2.mealId
-      && (difference(m1.choices, m2.choices).length === 0 || difference(m2.choices, m1.choices).length === 0)
+      && (differenceBy(m1.customizations, m2.customizations, Customization.getKey).length === 0 && differenceBy(m2.customizations, m1.customizations, Customization.getKey).length === 0)
       && m1.instructions === m2.instructions;
   }
 
   static getICopy(meal: IOrderMeal): IOrderMeal {
     return {
       ...meal,
-      choices: meal.choices.map(c => c),
+      customizations: meal.customizations.map(c => c),
       tags: meal.tags.map(t => Tag.getICopy(t))
     }
   }
 
   static getIOrderMealFromIMeal(
-    choices: string[],
+    customizations: ICustomization[],
     instructions: string | null,
     meal: IMeal,
   ): IOrderMeal {
     const m = Meal.getICopy(meal);
     return {
-      choices,
+      customizations: customizations.map(c => Customization.getICopy(c)),
       description: m.description,
       img: m.img,
       instructions,

@@ -11,7 +11,7 @@ export const PlanNames: {
 }
 
 export interface IPlan {
-  readonly stripePriceId: string;
+  readonly stripeProductPriceId: string;
   readonly name: PlanName;
   readonly numAccounts: number;
   readonly price: number
@@ -22,9 +22,9 @@ export class Plan {
     return getProductById(id, products);
   }
 
-  public static getICopy(p: IPlan) {
+  public static getICopy(p: IPlan): IPlan {
     return {
-      stripePriceId: p.stripePriceId,
+      stripeProductPriceId: p.stripeProductPriceId,
       name: p.name,
       numAccounts: p.numAccounts,
       price: p.price,
@@ -33,7 +33,7 @@ export class Plan {
 }
 
 const getProductById = (id: string, products: IPlan[]) => {
-  const plan = products.find(p => p.stripePriceId === id);
+  const plan = products.find(p => p.stripeProductPriceId === id);
   if (!plan) {
     const err = new Error(`Failed to find plan '${id}'`);
     console.error(err.stack);

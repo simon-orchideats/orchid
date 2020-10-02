@@ -13,7 +13,7 @@ import StickyDrawer from "../client/general/StickyDrawer";
 import { Tag } from "../rest/tagModel";
 import MenuCartDisplay from "../client/menu/MenuCartDisplay";
 import { Order } from "../order/orderModel";
-import { Hours, ServiceDay } from "../rest/restModel";
+import { WeekHours, ServiceDay } from "../rest/restModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -81,14 +81,15 @@ const menu = () => {
     to: string
   } | undefined = undefined;
   if (cart) {
-    serviceDay = Hours.getServiceDay(cart.serviceDate);
+    serviceDay = WeekHours.getServiceDay(cart.serviceDate);
     fromTo = Order.get24HourStr(cart.serviceTime);
   }
   const rests = useGetNearbyRests(
     cart?.searchArea,
-    serviceDay,
     fromTo?.from,
     fromTo?.to,
+    serviceDay,
+    cart?.serviceType
   );
   // const onFilterCuisines = (cuisines: string[]) => {
   //   setCuisines(cuisines);

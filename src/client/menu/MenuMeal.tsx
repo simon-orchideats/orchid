@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { IMeal } from "../../rest/mealModel";
+import { IMeal, IChoice } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Checkbox, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { ICustomization } from '../../order/orderRestModel';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -43,6 +46,19 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'flex-end',
     justifyContent: 'flex-end'
   },
+  col: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  addonGroup: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  button: {
+    padding: 0,
+  },
   title: {
     lineHeight: 1.5,
     fontWeight: 500,
@@ -61,13 +77,16 @@ const useStyles = makeStyles(theme => ({
     width: 300,
     padding: theme.spacing(2),
   },
+  icon: {
+    fontSize: '1.8rem',
+  },
   detail: {
     fontSize: '1rem',
     verticalAlign: 'text-bottom'
   },
   choiceLabel: {
     fontSize: '1.5rem',
-  }
+  },
 }));
 
 const MenuMeal: React.FC<{
@@ -94,21 +113,31 @@ const MenuMeal: React.FC<{
   const [addonGroupIndex, setAddonGroupIndex] = useState<number>(0);
   const addMealToCart = useAddMealToCart();
   type addonGroupsState = {
-    [name: string]: {
-      isChecked: boolean,
-      name: string,
-    },
+    // each key is a {addonGroupIndex}-{addonIndex}
+    [name: string]: ICustomization,
   }
   const defaultOptions = {};
-  const [options, setOptions] = useState<{ [groupIndex: number]: string }>(defaultOptions);
-  const defaultAddons = meal.addonGroups.reduce<addonGroupsState>((sum, ag, i) => ({
-    ...sum,
-    ...ag.names.reduce<addonGroupsState>((innerSum, name) => {
-      innerSum[`${i}-${name}`] = {
-        isChecked: false,
-        name,
+  const [options, setOptions] = useState<{ [groupIndex: number]: ICustomization }>(defaultOptions);
+  /**
+   * 
+   * 
+   * 
+      {
+        'ADDONSGROUP 1': {
+          
+        }
+      }
+
+   */
+  const defaultAddons = meal.addonGroups.reduce<addonGroupsState>((addonGroups, ag, groupIndex) => ({
+    ...addonGroups,
+    ...ag.addons.reduce<addonGroupsState>((addons, addon, addonIndex) => {
+      addons[`${groupIndex}-${addonIndex}`] = {
+        additionalPrice: addon.additionalPrice,
+        quantity: 0,
+        name: addon.name,
       };
-      return innerSum;
+      return addons;
     }, {})
   }), {});
   const defaultAddonCounts = {};
@@ -134,33 +163,37 @@ const MenuMeal: React.FC<{
     setDescAnchor(descAnchor ? null : event.currentTarget);
     setDesc(mealDesc || 'No description');
   };
-  const onClickAddon = (addonGroupIndex: number, name: string, isChecked: boolean) => {
+  const updateAddon = (addonGroupIndex: number, addonIndex: number, addon: IChoice, count: 1 | -1) => {
+    const currQuantity = addons[`${addonGroupIndex}-${addonIndex}`].quantity;
+    if (currQuantity === undefined) {
+      const err = new Error('Addon quantity is undefined');
+      console.error(err.stack);
+      throw err;
+    }
+    const newQuantity = currQuantity + count;
     setAddons({
       ...addons,
-      [`${addonGroupIndex}-${name}`]: {
-        isChecked,
-        name,
+      [`${addonGroupIndex}-${addonIndex}`]: {
+        additionalPrice: addon.additionalPrice,
+        name: addon.name,
+        quantity: newQuantity < 0 ? 0 : newQuantity,
       },
     });
-    const currAddonCount = addonCounts[addonGroupIndex];
-    if (isChecked) {
-      setAddonCounts({
-        ...addonCounts,
-        [addonGroupIndex]: currAddonCount ? currAddonCount + 1 : 1,
-      });
-    } else {
-      setAddonCounts({
-        ...addonCounts,
-        [addonGroupIndex]: currAddonCount - 1,
-      })
-    }
+    const newCount = addonCounts[addonGroupIndex] + count;
+    setAddonCounts({
+      ...addonCounts,
+      [addonGroupIndex]: newCount < 0 ? 0 : newCount,
+    });
   }
   const onClickNextAddon = () => {
     const nextIndex = addonGroupIndex + 1;
     if (nextIndex === meal.addonGroups.length) {
       addMealToCart(
         meal,
-        [ ...Object.values(options), ...Object.values(addons).filter(a => a.isChecked).map(a => a.name)],
+        [
+          ...Object.values(options),
+          ...Object.values(addons).filter(a => (a.quantity && a.quantity > 0)),
+        ],
         deliveryFee,
         restId,
         restName,
@@ -181,7 +214,7 @@ const MenuMeal: React.FC<{
     setAddonCounts(defaultAddonCounts);
   }
 
-  const onClickRadio = (e: React.MouseEvent<HTMLLabelElement, MouseEvent>, selectedOption: string) => {
+  const onClickRadio = (e: React.MouseEvent<HTMLLabelElement, MouseEvent>, selectedOption: IChoice) => {
     // prevenDefault so the event doesn't bubble up and trigger a second event callback
     e.preventDefault();
     const newGroupIndex = optionGroupIndex + 1;
@@ -241,20 +274,20 @@ const MenuMeal: React.FC<{
             optionGroupIndex < meal.optionGroups.length &&
             <FormControl>
               <FormLabel focused={false} className={classes.choiceLabel}>
-                Pick one
+                Pick 1 
               </FormLabel>
               {
                 meal.optionGroups.map((og, i) => (
                   i === optionGroupIndex &&
                   <RadioGroup key={`og-${i}`} value={options[optionGroupIndex] || false}>
                     {
-                      og.names.map((name, j) =>
+                      og.options.map((option, j) =>
                         <FormControlLabel
                           key={`og-names-${j}`}
-                          value={name}
+                          value={option.name}
                           control={<Radio color='primary' />}
-                          label={name}
-                          onClick={e => onClickRadio(e, name)}
+                          label={`${option.name}${option.additionalPrice ? ` +(${(option.additionalPrice / 100).toFixed(2)})` : ''}`}
+                          onClick={e => onClickRadio(e, option)}
                         />
                       )
                     }
@@ -278,21 +311,32 @@ const MenuMeal: React.FC<{
                   i === addonGroupIndex &&
                   <FormGroup key={`ag-${i}`}>
                     {
-                      ag.names.map((name, j) =>
-                        <FormControlLabel
-                          key={`ag-names-${j}`}
-                          control={
-                            <Checkbox
-                              checked={addons[`${i}-${name}`].isChecked}
-                              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                                onClickAddon(i, name, event.target.checked)
-                              }
-                              name={name}
+                      ag.addons.map((addon, j) =>
+                        <div key={`ag-names-${j}`} className={classes.addonGroup}>
+                          <div className={classes.col}>
+                            <Button
+                              className={classes.button}
+                              variant='text'
                               color='primary'
-                            />
-                          }
-                          label={name}
-                        />
+                              onClick={() => updateAddon(i, j, addon, 1)}
+                            >
+                              <AddIcon className={classes.icon} />
+                            </Button>
+                            <Typography variant='body1'>
+                              {addons[`${i}-${j}`].quantity}
+                            </Typography>
+                            <Button
+                              className={classes.button}
+                              variant='text'
+                              onClick={() => updateAddon(i, j, addon, -1)}
+                            >
+                              <RemoveIcon className={classes.icon} />
+                            </Button>
+                          </div>
+                          <Typography variant='body1'>
+                            {addon.name} {addon.additionalPrice && `+($${(addon.additionalPrice / 100).toFixed(2)})`}
+                          </Typography>
+                        </div>
                       )
                     }
                     {

@@ -8,14 +8,10 @@ import { useMemo } from 'react';
 const AVAILABLE_PLANS_QUERY = gql`
   query availablePlans {
     availablePlans {
-      isActive
-      stripePlanId
+      stripeProductPriceId
       name
-      tiers {
-        maxMeals
-        minMeals
-        mealPrice
-      }
+      numAccounts
+      price
     }
   }
 `

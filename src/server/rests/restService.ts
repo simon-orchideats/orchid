@@ -1,3 +1,4 @@
+import { ServiceType } from './../../order/orderModel';
 import { ECuisine, ITag } from './../../rest/tagModel';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { Permissions } from './../../consumer/consumerModel';
@@ -7,7 +8,7 @@ import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest, IRestInput, Rest, ServiceDay } from './../../rest/restModel';
 
-const REST_INDEX = 'rests2';
+const REST_INDEX = 'rests3';
 const TAG_INDEX = 'tags';
 
 export interface IRestService {
@@ -15,9 +16,10 @@ export interface IRestService {
   getAllTags: () => Promise<ITag[]>
   getNearbyERests: (
     addr: string,
-    serviceDay: ServiceDay,
     from: string,
     to: string,
+    serviceDay: ServiceDay,
+    serviceType: ServiceType,
     cuisines?: string[],
     fields?: string[]
   ) => Promise<{
@@ -26,9 +28,10 @@ export interface IRestService {
   }[]>
   getNearbyRests: (
     addr: string,
-    serviceDay: ServiceDay,
     from: string,
     to: string,
+    serviceDay: ServiceDay,
+    serviceType: ServiceType,
     cuisines?: string[],
     fields?: string[]
   ) => Promise<IRest[]>
@@ -107,21 +110,23 @@ class RestService implements IRestService {
 
   public async getNearbyERests(
     location: string,
-    serviceDay: ServiceDay,
     from: string,
     to: string,
+    serviceDay: ServiceDay,
+    serviceType: ServiceType,
     cuisines?: string[],
     fields?: string[]
   ): Promise<{
     _id: string,
     rest: ERest
   }[]> {
+    let options: any;
     try {
       if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getGeocodeByQuery(location);
       if (!geo) return [];
       const { lat, lon } = geo;
-      const options: any = {
+      options = {
         index: REST_INDEX,
         size: 1000, // todo handle case when results > 1000
         body: {
@@ -146,27 +151,52 @@ class RestService implements IRestService {
                         'featured.isActive': true
                       }
                     },
-                    // {
-                    //   term: {
-                    //     'location.address.state': state
-                    //   }
-                    // },
                     {
-                      term: {
-                        status: 'Open',
-                      }
-                    },
-                    {
-                      range: {
-                        [`hours.${serviceDay}.open`]: {
-                          lte: from
-                        }
-                      }
-                    },
-                    {
-                      range: {
-                        [`hours.${serviceDay}.close`]: {
-                          gte: to
+                      nested: {
+                        path: 'hours',
+                        query: {
+                          bool: {
+                            filter: {
+                              bool: {
+                                must: [
+                                  {
+                                    term: {
+                                      'hours.name': serviceType
+                                    }
+                                  },
+                                  {
+                                    nested: {
+                                      path: `hours.weekHours.${serviceDay}`,
+                                      query: {
+                                        bool: {
+                                          filter: {
+                                            bool: {
+                                              must: [
+                                                {
+                                                  range: {
+                                                    [`hours.weekHours.${serviceDay}.open`]: {
+                                                      lte: from
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  range: {
+                                                    [`hours.weekHours.${serviceDay}.close`]: {
+                                                      gte: to
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -202,26 +232,27 @@ class RestService implements IRestService {
         _id,
       }))
     } catch (e) {
-      console.error(`[RestService] could not get nearby ERests for '${location}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
+      console.error(`[RestService] could not get nearby ERests for '${location}' and options '${JSON.stringify(options)}' and cuisines '${JSON.stringify(cuisines)}'`, e.stack);
       throw e;
     }
   }
 
   async getNearbyRests(
     addr: string,
-    serviceDay: ServiceDay,
     from: string,
     to: string,
+    serviceDay: ServiceDay,
+    serviceType: ServiceType,
     cuisines?: string[],
     fields?: string[]
   ): Promise<IRest[]> {
     try {
-      console.log('yo im here');
       const eRests = await this.getNearbyERests(
         addr,
-        serviceDay,
         from,
         to,
+        serviceDay,
+        serviceType,
         cuisines, 
         fields
       );

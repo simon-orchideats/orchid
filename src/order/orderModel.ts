@@ -1214,7 +1214,8 @@ export class Order {
         const str = new Date().toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
-          hour12: false
+          // @ts-ignore
+          hourCycle: 'h23',
         });
         return {
           from: str,

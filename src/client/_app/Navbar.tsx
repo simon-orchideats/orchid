@@ -257,6 +257,9 @@ const Navbar: React.FC = () => {
         <Link href={menuRoute}>
           <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
         </Link>
+        <Link href={menuRoute}>
+          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
+        </Link>
         <div className={classes.about} onClick={onClickAbout}>
           <Typography variant='button' className={classes.link}>About</Typography>
           <ExpandMoreIcon />

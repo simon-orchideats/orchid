@@ -10,12 +10,19 @@ const MealQL = gql`
     limit: Int
   }
 
+  type Choice {
+    name: String!
+    additionalPrice: Int!
+  }
+
   type OptionGroup {
-    names: [String!]!
+    name: String!
+    options: [Choice!]!
   }
 
   type AddonGroup {
-    names: [String!]!
+    addons: [Choice!]!
+    name: String!
     limit: Int
   }
 
@@ -89,7 +96,7 @@ const _RestQL = gql`
     close: String!
   }
 
-  type Hours {
+  type WeekHours {
     Su: [DayHours!]!
     M: [DayHours!]!
     T: [DayHours!]!
@@ -99,7 +106,12 @@ const _RestQL = gql`
     Sa: [DayHours!]!
   }
 
-  input HoursInput {
+  type Hours {
+    name: ServiceType!
+    weekHours: WeekHours!
+  }
+
+  input WeekHoursInput {
     Su: [DayHoursInput!]!
     M: [DayHoursInput!]!
     T: [DayHoursInput!]!
@@ -117,7 +129,7 @@ const _RestQL = gql`
 
   type Rest {
     _id: ID!
-    hours: Hours
+    hours: [Hours!]!
     location: Location!
     featured: [Meal!]!
     profile: RestProfile!

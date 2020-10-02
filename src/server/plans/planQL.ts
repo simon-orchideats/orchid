@@ -7,7 +7,7 @@ export const PlanQL = gql`
     Community
   }
   type Plan {
-    stripePriceId: ID!
+    stripeProductPriceId: ID!
     name: PlanName!
     numAccounts: Int!
     price: Int!

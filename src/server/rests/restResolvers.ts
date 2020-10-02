@@ -1,3 +1,4 @@
+import { ServiceType } from './../../order/orderModel';
 import { ServiceDay } from './../../rest/restModel';
 import { ServerResolovers } from '../../utils/apolloUtils';
 import { getRestService } from './restService';
@@ -8,18 +9,20 @@ export const RestQueryResolvers: ServerResolovers = {
     _root: any,
     {
       addr,
-      serviceDay,
       from,
       to,
+      serviceDay,
+      serviceType,
     }: {
       addr: string,
-      serviceDay: ServiceDay,
       from: string,
       to: string,
+      serviceDay: ServiceDay,
+      serviceType: ServiceType,
     }
   ) => {
     try {
-      return await getRestService().getNearbyRests(addr, serviceDay, from, to);
+      return await getRestService().getNearbyRests(addr, from, to, serviceDay, serviceType);
     } catch (e) {
       console.error('[RestResolver] failed to get nearby rests', e.stack);
       throw new Error('Internal Server Error');

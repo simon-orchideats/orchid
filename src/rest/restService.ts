@@ -1,3 +1,4 @@
+import { ServiceType } from './../order/orderModel';
 import { ITag, Tag } from './tagModel';
 import { ApolloCache, DataProxy } from 'apollo-cache';
 import { IRest, Rest, IRestInput, ServiceDay } from './restModel';
@@ -66,30 +67,44 @@ export const useGetTags = () => {
 }
 
 const useGetNearbyRests = (
-  addr?: string,
-  serviceDay?: ServiceDay,
+  addr?: string | null,
   from?: string,
   to?: string,
+  serviceDay?: ServiceDay,
+  serviceType?: ServiceType,
 ) => {
   type res = {
     nearbyRests: IRest[]
   }
   const res = useQuery<res>(
     gql`
-      query nearbyRests($addr: String!, $serviceDay: ServiceDay!, $from: String!, $to: String!) {
-        nearbyRests(addr: $addr, serviceDay: $serviceDay, from: $from, to: $to) {
+      query nearbyRests(
+        $addr: String!,
+        $from: String!,
+        $to: String!
+        $serviceDay: ServiceDay!,
+        $serviceType: ServiceType!,
+      ) {
+        nearbyRests(
+          addr: $addr,
+          from: $from,
+          to: $to
+          serviceDay: $serviceDay,
+          serviceType: $serviceType,
+        ) {
           ...restFragment
         }
       }
       ${restFragment}
     `, 
     {
-      skip: !addr || !serviceDay || !from || !to,
+      skip: !addr || !serviceDay || !from || !to || !serviceType,
       variables: {
         addr,
-        serviceDay,
         from,
-        to
+        to,
+        serviceDay,
+        serviceType,
       },
     }
   );

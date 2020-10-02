@@ -940,16 +940,6 @@ const Plans = withClientApollo(() => {
         </Typography>
       </div>
       <PlanCards />
-      <Link href={menuRoute}>
-        <Button
-          className={`${classes.ctaButton} ${classes.centered}`}
-          variant='contained'
-          color='primary'
-          size='large'
-        >
-          SEE MENU
-        </Button>
-      </Link>
     </div>
   )
 });

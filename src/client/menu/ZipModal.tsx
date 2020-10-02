@@ -8,22 +8,22 @@ const useStyles = makeStyles(theme => ({
   modal: {
     // need to do media query to override the inline-styles that material uses
     '@media (min-width:0px)': {
-      top: `${theme.mixins.toolbar.height}px !important`,
+      top: `${theme.mixins.customToolbar.height}px !important`,
     },
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
-      top: theme.mixins.customToolbar.landscapeHeight,
+      top: `${theme.mixins.customToolbar.landscapeHeight}px !important`,
     },
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
-      top: theme.mixins.customToolbar.smallHeight,
+      top: `${theme.mixins.customToolbar.smallHeight}px !important`,
     },
   },
   img: {
     [theme.breakpoints.down('sm')]: {
-      height: '15%',
+      height: '60%',
       backgroundPosition: '50% 85%',
     },
     [theme.breakpoints.down('xs')]: {
-      height: '30%',
+      height: '60%',
       backgroundPosition: '50% 100%',
       top: 0,
       backgroundImage: `url(menu/chef.jpg)`,

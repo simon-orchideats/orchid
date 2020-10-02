@@ -162,7 +162,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             instructionsInputRef.current!.value,
-            null,
           )
         );
       }
@@ -278,7 +277,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           instructionsInputRef.current!.value,
-          null
         ),
       );
     }

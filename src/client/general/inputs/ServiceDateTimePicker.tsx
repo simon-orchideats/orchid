@@ -67,7 +67,6 @@ const ServiceDateTimePicker: React.FC = () => {
           onChange={(d: Date | null) => {
             if (d === null) return;
             if (d.getMinutes() % 15 !== 0) return;
-            console.log(d.toLocaleString());
             const serviceTime = Order.getServiceTime(d);
             setDate(d);
             setCartServiceTime(serviceTime);

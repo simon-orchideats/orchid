@@ -1,6 +1,6 @@
 import { ICard } from '../card/cardModel';
 import { ServiceType, ServiceTime } from './orderModel';
-import { IOrderRest, IOrderMeal, OrderMeal } from './orderRestModel';
+import { IOrderRest, IOrderMeal, OrderMeal, ICustomization } from './orderRestModel';
 import { IMeal } from '../rest/mealModel';
 
 export interface ICartInput {
@@ -130,25 +130,25 @@ export class CartRest {
   }
 }
 
-
 export interface ICart {
   readonly rest: ICartRest | null
-  readonly searchArea: string
+  readonly searchArea: string | null
   readonly serviceDate: string
   readonly serviceTime: ServiceTime
   readonly serviceType: ServiceType
+  readonly stripeProductPriceId: string | null 
 }
-
 
 export class Cart {
 
-  public static getICopy(c: ICart) {
+  public static getICopy(c: ICart): ICart {
     return {
       rest: c.rest && CartRest.getICopy(c.rest),
       searchArea: c.searchArea,
       serviceDate: c.serviceDate,
       serviceTime: c.serviceTime,
       serviceType: c.serviceType,
+      stripeProductPriceId: c.stripeProductPriceId,
     }
   }
 
@@ -158,14 +158,14 @@ export class Cart {
 
   public static addMeal(
     cart: ICart,
-    choices: string[],
+    customizations: ICustomization[],
     deliveryFee: number,
     newMeal: IMeal,
     restId: string,
     restName: string,
     taxRate: number,
   ): ICart {
-    const meal: IOrderMeal = OrderMeal.getIOrderMealFromIMeal(choices, null, newMeal);
+    const meal: IOrderMeal = OrderMeal.getIOrderMealFromIMeal(customizations, null, newMeal);
     return {
       rest: CartRest.addMeal(
         meal,
@@ -179,6 +179,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
+      stripeProductPriceId: cart.stripeProductPriceId,
     }
   }
 
@@ -189,10 +190,14 @@ export class Cart {
     card: ICard,
     paymentMethodId: string,
     serviceInstructions: string,
-    stripeProductPriceId: string | null,
   ): ICartInput {
     if (!cart.rest) {
       const err = new Error('Cart missing rest');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!cart.searchArea) {
+      const err = new Error('Cart missing searchArea');
       console.error(err.stack);
       throw err;
     }
@@ -200,7 +205,7 @@ export class Cart {
       address2,
       paymentMethodId,
       card,
-      stripeProductPriceId, 
+      stripeProductPriceId: cart.stripeProductPriceId, 
       phone,
       searchArea: cart.searchArea,
       cartOrder: {
@@ -218,7 +223,7 @@ export class Cart {
   static removeMeal(
     cart: ICart,
     m: IOrderMeal,
-  ) {
+  ): ICart {
     if (!cart.rest) {
       const err = new Error(`Cart rest is null`);
       console.error(err.stack);
@@ -233,13 +238,14 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
+      stripeProductPriceId: cart.stripeProductPriceId,
     }
   }
 
   public static duplicateMeal(
     cart: ICart,
     m: IOrderMeal,
-  ) {
+  ): ICart {
     if (!cart.rest) {
       const err = new Error(`Cart rest is null`);
       console.error(err.stack);
@@ -254,6 +260,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
+      stripeProductPriceId: cart.stripeProductPriceId,
     }
   }
   
@@ -261,7 +268,7 @@ export class Cart {
     cart: ICart,
     m: IOrderMeal,
     instructions: string | null
-  ) {
+  ): ICart {
     if (!cart.rest) {
       const err = new Error(`Cart rest is null`);
       console.error(err.stack);
@@ -277,6 +284,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
+      stripeProductPriceId: cart.stripeProductPriceId,
     }
   }
 }

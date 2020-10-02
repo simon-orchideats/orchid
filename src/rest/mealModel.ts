@@ -1,43 +1,45 @@
 import { ITag, Tag } from './tagModel';
 
-export interface IOptionGroup {
-  readonly names: string[]
+export interface IChoice {
+  name: string
+  additionalPrice: number
 }
 
-export class OptionGroup implements IOptionGroup {
-  readonly names: string[]
-
-  constructor(choice: IOptionGroup) {
-    this.names = [...choice.names];
-  }
-
-  public get Names() { return this.names }
-
-  public static getICopy(cg: IOptionGroup) {
+export class Choice {
+  static getICopy(o: IChoice): IChoice {
     return {
-      names: [...cg.names]
+      name: o.name,
+      additionalPrice: o.additionalPrice,
     }
   }
 }
 
-export interface IAddonGroup extends IOptionGroup {
+export interface IAddonGroup {
   readonly limit?: number
+  readonly name: string
+  readonly addons: IChoice[]
 }
 
-export class AddonGroup extends OptionGroup implements IAddonGroup {
-  readonly limit?: number
-
-  constructor(choice: IAddonGroup) {
-    super(choice);
-    this.limit = choice.limit;
-  }
-
-  public get Limit() { return this.limit }
-
-  public static getICopy(cg: IAddonGroup) {
+export class AddonGroup {
+  public static getICopy(ag: IAddonGroup) {
     return {
-      names: [...cg.names],
-      limit: cg.limit,
+      limit: ag.limit,
+      name: ag.name,
+      addons: ag.addons.map(c => Choice.getICopy(c)),
+    }
+  }
+}
+
+export interface IOptionGroup {
+  readonly name: string
+  readonly options: IChoice[]
+}
+
+export class OptionGroup {
+  static getICopy(og: IOptionGroup): IOptionGroup {
+    return {
+      name: og.name,
+      options: og.options.map(c => Choice.getICopy(c)),
     }
   }
 }

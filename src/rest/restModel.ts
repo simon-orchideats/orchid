@@ -1,4 +1,4 @@
-import { ServiceTime, Order } from './../order/orderModel';
+import { ServiceTime, Order, ServiceType } from './../order/orderModel';
 import { IAddress } from './../place/addressModel';
 import { RestProfile, IRestProfile } from './restProfileModel';
 import { IMeal, Meal, IMealInput } from './mealModel';
@@ -45,7 +45,7 @@ export class DayHours implements IDayHours {
   }
 }
 
-export interface IHours {
+export interface IWeekHours {
   readonly Su: IDayHours[]
   readonly M: IDayHours[]
   readonly T: IDayHours[]
@@ -55,27 +55,10 @@ export interface IHours {
   readonly Sa: IDayHours[]
 }
 
-export class Hours implements IHours {
-  readonly Su: DayHours[]
-  readonly M: DayHours[]
-  readonly T: DayHours[]
-  readonly W: DayHours[]
-  readonly Th: DayHours[]
-  readonly F: DayHours[]
-  readonly Sa: DayHours[]
-
-  constructor(hs: IHours) {
-    this.Su = hs.Su.map(dh => new DayHours(dh));
-    this.M = hs.M.map(dh => new DayHours(dh));
-    this.T = hs.T.map(dh => new DayHours(dh));
-    this.W = hs.W.map(dh => new DayHours(dh));
-    this.Th = hs.Th.map(dh => new DayHours(dh));
-    this.F = hs.F.map(dh => new DayHours(dh));
-    this.Sa = hs.Sa.map(dh => new DayHours(dh));
-  }
+export class WeekHours {
 
   static getServiceDay(serviceDate: string): ServiceDay {
-    return Hours.getDay(new Date(Date.parse(serviceDate)).getDay() as OpeningDays)
+    return WeekHours.getDay(new Date(Date.parse(serviceDate)).getDay() as OpeningDays)
   }
 
   static getDay(i: OpeningDays): ServiceDay {
@@ -99,7 +82,7 @@ export class Hours implements IHours {
     }
   }
 
-  static getICopy(hs: IHours): IHours {
+  static getICopy(hs: IWeekHours): IWeekHours {
     return {
       Su: hs.Su.map(dh => DayHours.getICopy(dh)),
       M: hs.M.map(dh => DayHours.getICopy(dh)),
@@ -112,11 +95,25 @@ export class Hours implements IHours {
   }
 }
 
+export interface IHours {
+  readonly weekHours: IWeekHours
+  readonly name: ServiceType
+}
+
+export class Hours {
+  static getICopy(h: IHours): IHours {
+    return {
+      weekHours: WeekHours.getICopy(h.weekHours),
+      name: h.name,
+    }
+  }
+}
+
 
 export interface ERest {
   readonly createdDate: number
   readonly location: ELocation
-  readonly hours: IHours;
+  readonly hours: IHours[];
   readonly featured: IMeal[];
   readonly profile: IRestProfile;
   readonly taxRate: number;
@@ -144,7 +141,7 @@ export class Rest {
       deliveryMinimum: rest.deliveryMinimum,
       taxRate: rest.taxRate,
       deliveryFee: rest.deliveryFee,
-      hours: Hours.getICopy(rest.hours),
+      hours: rest.hours.map(h => Hours.getICopy(h)),
       location: Location.getICopy(rest.location),
       featured: rest.featured.map(meal => Meal.getICopy(meal)),
       profile: RestProfile.getICopy(rest.profile),
@@ -181,15 +178,7 @@ export class Rest {
         ...rest.profile
       },
       // todo simon, implement this
-      hours: {
-        Su: [],
-        M: [],
-        T: [],
-        W: [],
-        Th: [],
-        F: [],
-        Sa: []
-      },
+      hours: [],
       taxRate,
       featured: rest.featured.map(m => Meal.getICopy({
         ...m,
@@ -213,8 +202,13 @@ export class Rest {
     }
   }
 
-  static isClosed(rest: IRest, serviceDate: string, serviceTime: ServiceTime) {
-    const serviceDay = Hours.getServiceDay(serviceDate);
+  static isClosed(
+    rest: IRest,
+    serviceDate: string,
+    serviceTime: ServiceTime,
+    serviceType: ServiceType,
+  ) {
+    const serviceDay = WeekHours.getServiceDay(serviceDate);
     const fromTo = Order.get24HourStr(serviceTime);
     // arbituary year and month
     const defaultYear = 2000;
@@ -236,8 +230,10 @@ export class Rest {
       parseInt(toSplit[0]),
       parseInt(toSplit[1])
     );
-    const hours = rest.hours[serviceDay];
-    return !!!hours.find(h => {
+    const hours = rest.hours.find(h => h.name === serviceType);
+    if (!hours) return false;
+    const weekHours = hours.weekHours[serviceDay];
+    return !!!weekHours.find(h => {
       const openSplit = h.open.split(':');
       const closeSplit = h.close.split(':');
       const startDate = new Date(

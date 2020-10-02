@@ -19,7 +19,7 @@ class PlanService implements IPlanService {
         active: true,
       });
       return plans.data.map(p => ({
-        stripePriceId: p.id,
+        stripeProductPriceId: p.id,
         name: p.nickname as PlanName,
         price: p.unit_amount!,
         numAccounts: parseInt(p.metadata.numAccounts)

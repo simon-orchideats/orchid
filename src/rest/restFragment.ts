@@ -8,33 +8,36 @@ const restFragment = gql`
       address2
     }
     hours {
-      Su {
-        open
-        close
-      }
-      M {
-        open
-        close
-      }
-      T {
-        open
-        close
-      }
-      W {
-        open
-        close
-      }
-      Th {
-        open
-        close
-      }
-      F {
-        open
-        close
-      }
-      Sa {
-        open
-        close
+      name
+      weekHours {
+        Su {
+          open
+          close
+        }
+        M {
+          open
+          close
+        }
+        T {
+          open
+          close
+        }
+        W {
+          open
+          close
+        }
+        Th {
+          open
+          close
+        }
+        F {
+          open
+          close
+        }
+        Sa {
+          open
+          close
+        }
       }
     }
     featured {
@@ -48,11 +51,19 @@ const restFragment = gql`
       }
       isActive
       addonGroups {
-        names
+        name
         limit
+        addons {
+          name
+          additionalPrice
+        }
       }
       optionGroups {
-        names
+        name
+        options {
+          name
+          additionalPrice
+        }
       }
       price
     }
