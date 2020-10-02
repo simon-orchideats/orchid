@@ -1,5 +1,5 @@
 import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useSetPlan } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -20,7 +20,6 @@ import PhoneInput from "../client/general/inputs/PhoneInput";
 import EmailInput from "../client/general/inputs/EmailInput";
 import GLogo from "../client/checkout/GLogo";
 import { useConsumerSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
-// import { useGetAvailablePlans } from "../plan/planService";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
@@ -30,6 +29,8 @@ import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
 import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
 import SearchInput from "../client/general/inputs/SearchInput";
 import { orderHistoryRoute } from "./consumer/order-history";
+import PlanCards from "../client/plan/PlanCards";
+import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -93,12 +94,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
-  // const plans = useGetAvailablePlans();
-  // useEffect(() => {
-  //   if (router.query.a !== undefined) {
-  //     setAmountOff(parseFloat(router.query.a as string));
-  //   }
-  // }, [router.query.a]);
 
   useEffect(() => {
     if (placeOrderRes.error) {
@@ -546,6 +541,21 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             color='primary'
             className={classes.title}
           >
+            Plan
+          </Typography>
+          <PlanCards
+            small
+            defaultColor
+            defaultSelected={cart.plan}
+          />
+          <Typography variant='body2'>
+            By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+          </Typography>
+          <Typography
+            variant='h6'
+            color='primary'
+            className={classes.title}
+          >
             Payment
           </Typography>
           <div className={classes.row}>
@@ -591,7 +601,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 
 const CheckoutContainer = withClientApollo(injectStripe(checkout));
 
-export default () => {
+const CheckoutContainerWithStripe = () => {
   if (isServer()) return null;
   const stripe = window.Stripe(activeConfig.client.stripe.key)
   return (
@@ -602,5 +612,7 @@ export default () => {
     </StripeProvider>
   )
 }
+
+export default CheckoutContainerWithStripe;
 
 export const checkoutRoute = '/checkout';

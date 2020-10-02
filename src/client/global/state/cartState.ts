@@ -8,6 +8,7 @@ import { IMeal } from '../../../rest/mealModel';
 import { IOrderMeal, OrderMeal, ICustomization } from '../../../order/orderRestModel';
 import { useGetRest, useGetNearbyRests } from '../../../rest/restService';
 import { Rest, WeekHours } from '../../../rest/restModel';
+import { IPlan } from '../../../plan/planModel';
 
 type cartQueryRes = {
   cart: ICart | null
@@ -26,6 +27,12 @@ export const cartQL = gql`
     additionalPrice: Int
     name: string
     quantity: Int
+  }
+  input PlanInput {
+    stripeProductPriceId: String!
+    name: PlanName
+    numAccounts: Int!
+    price: Int!
   }
   extend type Query {
     cart: CartState
@@ -49,7 +56,7 @@ export const cartQL = gql`
     setServiceType(type: ServiceType!): CartState!
     setSearchArea(addr: String!): CartState!
     setInstruction(meal: OrderMealInput!, instruction: String): CartState!
-    setStripeProductPriceId(stripeProductPriceId: ID!): CartState!
+    setPlan(plan: PlanInput!): CartState!
   }
 `
 
@@ -69,7 +76,7 @@ export const useGetCart = () => {
   //     "deliveryFee": 299,
   //     "meals": [
   //       {
-  //         "choices": [],
+  //         "customizations": [],
   //         "description": null,
   //         "img": "/menu/taqueria/pescado-taco.png",
   //         "instructions": null,
@@ -92,7 +99,8 @@ export const useGetCart = () => {
   //   "searchArea": '444 Washington Boulevard, Jersey City, NJ, USA',
   //   "serviceDate": "9/24",
   //   "serviceTime": "ASAP",
-  //   "serviceType": "Delivery"
+  //   "serviceType": "Delivery",
+  //   "stripeProductPriceId": null
   // } as ICart
 }
 
@@ -317,15 +325,15 @@ export const useSetServiceType = (): (type: ServiceType) => void => {
   }
 }
 
-export const useSetStripeProductPriceId = (): (stripeProductPriceId: string) => void => {
-  type vars = { stripeProductPriceId: string };
+export const useSetPlan = (): (plan: IPlan) => void => {
+  type vars = { plan: IPlan };
   const [mutate] = useMutation<any, vars>(gql`
-    mutation setStripeProductPriceId($stripeProductPriceId: String!) {
-      setStripeProductPriceId(stripeProductPriceId: $stripeProductPriceId) @client
+    mutation setPlan($plan: PlanInput!) {
+      setPlan(plan: $plan) @client
     }
   `);
-  return (stripeProductPriceId: string) => {
-    mutate({ variables: { stripeProductPriceId } })
+  return (plan: IPlan) => {
+    mutate({ variables: { plan } })
   }
 }
 
@@ -347,7 +355,7 @@ type cartMutationResolvers = {
   setServiceDate: ClientResolver<{ date: string }, ICart | null>
   setServiceTime: ClientResolver<{ time: ServiceTime }, ICart | null>
   setServiceType: ClientResolver<{ type: ServiceType }, ICart | null>
-  setStripeProductPriceId: ClientResolver<{ stripeProductPriceId: string }, ICart | null>
+  setPlan: ClientResolver<{ plan: IPlan }, ICart | null>
 }
 
 const updateCartCache = (cache: ApolloCache<any>, cart: ICart | null) => {
@@ -444,7 +452,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         serviceDate: Order.getServiceDateStr(new Date()),
         serviceTime: DEFAULT_SERVICE_TIME,
         serviceType: DEFAULT_SERVICE_TYPE,
-        stripeProductPriceId: null,
+        plan: null,
       });
     }
     return updateCartCache(cache, {
@@ -453,7 +461,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,
       serviceType: res.cart.serviceType,
-      stripeProductPriceId: res.cart.stripeProductPriceId,
+      plan: res.cart.plan,
     });
   },
 
@@ -470,7 +478,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: date,
       serviceTime: res.cart.serviceTime,
       serviceType: res.cart.serviceType,
-      stripeProductPriceId: res.cart.stripeProductPriceId,
+      plan: res.cart.plan,
     });
   },
   
@@ -487,7 +495,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: time,
       serviceType: res.cart.serviceType,
-      stripeProductPriceId: res.cart.stripeProductPriceId,
+      plan: res.cart.plan,
     });
   },
 
@@ -504,11 +512,11 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,
       serviceType: type,
-      stripeProductPriceId: res.cart.stripeProductPriceId,
+      plan: res.cart.plan,
     });
   },
 
-  setStripeProductPriceId: (_, { stripeProductPriceId }, { cache }) => {
+  setPlan: (_, { plan }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
       return {
@@ -517,7 +525,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
         serviceDate: Order.getServiceDateStr(new Date()),
         serviceTime: DEFAULT_SERVICE_TIME,
         serviceType: DEFAULT_SERVICE_TYPE,
-        stripeProductPriceId,
+        plan,
       }
     }
     return updateCartCache(cache, {
@@ -526,7 +534,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,
       serviceType: res.cart.serviceType,
-      stripeProductPriceId,
+      plan,
     });
   }
 }

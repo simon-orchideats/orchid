@@ -1,3 +1,4 @@
+import { IPlan } from './../plan/planModel';
 import { ICard } from '../card/cardModel';
 import { ServiceType, ServiceTime } from './orderModel';
 import { IOrderRest, IOrderMeal, OrderMeal, ICustomization } from './orderRestModel';
@@ -125,30 +126,29 @@ export class CartRest {
       throw err;
     }
     copyRest.meals[i] = OrderMeal.setInstructions(targetMeal, instruction);
-    console.log('CartRest setInstruction', copyRest);
     return copyRest;
   }
 }
 
 export interface ICart {
+  readonly plan: IPlan | null
   readonly rest: ICartRest | null
   readonly searchArea: string | null
   readonly serviceDate: string
   readonly serviceTime: ServiceTime
   readonly serviceType: ServiceType
-  readonly stripeProductPriceId: string | null 
 }
 
 export class Cart {
 
   public static getICopy(c: ICart): ICart {
     return {
+      plan: c.plan,
       rest: c.rest && CartRest.getICopy(c.rest),
       searchArea: c.searchArea,
       serviceDate: c.serviceDate,
       serviceTime: c.serviceTime,
       serviceType: c.serviceType,
-      stripeProductPriceId: c.stripeProductPriceId,
     }
   }
 
@@ -179,7 +179,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
-      stripeProductPriceId: cart.stripeProductPriceId,
+      plan: cart.plan,
     }
   }
 
@@ -201,11 +201,16 @@ export class Cart {
       console.error(err.stack);
       throw err;
     }
+    if (!cart.plan) {
+      const err = new Error('Cart missing plan');
+      console.error(err.stack);
+      throw err;
+    }
     return {
       address2,
       paymentMethodId,
       card,
-      stripeProductPriceId: cart.stripeProductPriceId, 
+      stripeProductPriceId: cart.plan.stripeProductPriceId, 
       phone,
       searchArea: cart.searchArea,
       cartOrder: {
@@ -238,7 +243,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
-      stripeProductPriceId: cart.stripeProductPriceId,
+      plan: cart.plan,
     }
   }
 
@@ -260,7 +265,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
-      stripeProductPriceId: cart.stripeProductPriceId,
+      plan: cart.plan,
     }
   }
   
@@ -284,7 +289,7 @@ export class Cart {
       serviceDate: cart.serviceDate,
       serviceTime: cart.serviceTime,
       serviceType: cart.serviceType,
-      stripeProductPriceId: cart.stripeProductPriceId,
+      plan: cart.plan,
     }
   }
 }

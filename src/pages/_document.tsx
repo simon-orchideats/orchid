@@ -1,6 +1,6 @@
 // from https://github.com/mui-org/material-ui/tree/master/examples/nextjs
 import React from 'react';
-import Document, { Head, Main, NextScript } from 'next/document';
+import Document, { Head, Main, NextScript, Html } from 'next/document';
 import { ServerStyleSheets } from '@material-ui/core/styles';
 import { getTheme } from '../client/global/styles/theme';
 import { activeConfig } from '../config';
@@ -12,7 +12,7 @@ const googleKey = activeConfig.client.googleApi.key;
 export default class MyDocument extends Document {
   render() {
     return (
-      <html lang="en">
+      <Html lang="en">
         <script src="https://js.stripe.com/v3/"></script>
         <script src='https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js' />
         <script src='https://cdnjs.cloudflare.com/ajax/libs/postscribe/2.0.6/postscribe.min.js' />
@@ -78,7 +78,7 @@ export default class MyDocument extends Document {
           <Main />
           <NextScript />
         </body>
-      </html>
+      </Html>
     );
   }
 }

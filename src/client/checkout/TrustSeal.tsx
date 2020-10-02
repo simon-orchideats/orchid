@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { activeConfig } from "../../config";
 
-export default () => {
+const TrustSeal = () => {
   useEffect(() => {
     //@ts-ignore
     postscribe('#trustSeal', `
@@ -12,3 +12,5 @@ export default () => {
   }, []);
   return <div id='trustSeal' />
 }
+
+export default TrustSeal;
