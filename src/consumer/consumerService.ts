@@ -10,6 +10,7 @@ import { activeConfig } from '../config';
 import { ApolloCache, DataProxy } from 'apollo-cache';
 import auth0 from 'auth0-js';
 import { popupSocialAuthCB } from "../utils/auth";
+import { IConsumerPlan, ConsumerPlan } from "./consumerPlanModel";
 
 const MY_CONSUMER_QUERY = gql`
   query myConsumer {
@@ -331,64 +332,64 @@ export const useConsumerSignUp = (): [
   }, [mutation]);
 }
 
-// export const useUpdateMyPlan = (): [
-//   (plan: IConsumerPlan, currConsumer: IConsumer) => void,
-//   {
-//     error?: ApolloError 
-//     data?: {
-//       res: IConsumer | null,
-//       error: string | null
-//     }
-//   }
-// ] => {
-  // type res = { updateMyPlan: MutationConsumerRes };
-  // const [mutate, mutation] = useMutation<res>(gql`
-  //   mutation updateMyPlan($plan: ConsumerPlanInput!) {
-  //     updateMyPlan(plan: $plan) {
-  //       res {
-  //         ...consumerFragment
-  //       }
-  //       error
-  //     }
-  //   }
-  //   ${consumerFragment}
-  // `);
-  // const updateMyPlan = (plan: IConsumerPlan, currConsumer: IConsumer) => {
-  //   if (!currConsumer.plan) {
-  //     const err = new Error('Missing consumer plan');
-  //     console.error(err.stack);
-  //     throw err;
-  //   }
-  //   if (ConsumerPlan.equals(plan, currConsumer.plan)) return;
-  //   mutate({ 
-  //     variables: {
-  //       plan: ConsumerPlan.getIConsumerPlanInputFromConsumerPlan(plan),
-  //     },
-  //     optimisticResponse: {
-  //       updateMyPlan: {
-  //         res: copyWithTypenames({
-  //           ...currConsumer,
-  //           plan
-  //         }),
-  //         error: null,
-  //         //@ts-ignore
-  //         __typename: 'ConsumerRes'
-  //       }
-  //     },
-  //     // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
-  //   })
-  // }
-  // return useMemo(() => {
-  //   const data = mutation.data && {
-  //     res: mutation.data.updateMyPlan.res && new Consumer(mutation.data.updateMyPlan.res),
-  //     error: mutation.data.updateMyPlan.error
-  //   }
-  //   return [
-  //     updateMyPlan,
-  //     {
-  //       error: mutation.error,
-  //       data,
-  //     }
-  //   ]
-  // }, [mutation]);
-// }
+export const useUpdateMyPlan = (): [
+  (plan: IConsumerPlan, currConsumer: IConsumer) => void,
+  {
+    error?: ApolloError 
+    data?: {
+      res: IConsumer | null,
+      error: string | null
+    }
+  }
+] => {
+  type res = { updateMyPlan: MutationConsumerRes };
+  const [mutate, mutation] = useMutation<res>(gql`
+    mutation updateMyPlan($plan: ConsumerPlanInput!) {
+      updateMyPlan(plan: $plan) {
+        res {
+          ...consumerFragment
+        }
+        error
+      }
+    }
+    ${consumerFragment}
+  `);
+  const updateMyPlan = (plan: IConsumerPlan, currConsumer: IConsumer) => {
+    if (!currConsumer.plan) {
+      const err = new Error('Missing consumer plan');
+      console.error(err.stack);
+      throw err;
+    }
+    if (ConsumerPlan.equals(plan, currConsumer.plan)) return;
+    mutate({ 
+      variables: {
+        plan,
+      },
+      optimisticResponse: {
+        updateMyPlan: {
+          res: copyWithTypenames({
+            ...currConsumer,
+            plan
+          }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
+        }
+      },
+      // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.updateMyPlan.res && Consumer.getICopy(mutation.data.updateMyPlan.res),
+      error: mutation.data.updateMyPlan.error
+    }
+    return [
+      updateMyPlan,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
+}

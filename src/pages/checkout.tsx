@@ -1,5 +1,5 @@
 import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useSetPlan } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -93,7 +93,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
-
+  const setPlan = useSetPlan();
   useEffect(() => {
     if (placeOrderRes.error) {
       setDidPlaceOrder(false);
@@ -549,7 +549,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <PlanCards
             small
             defaultColor
-            defaultSelected={cart.plan}
+            defaultSelected={cart.plan ? cart.plan.stripeProductPriceId : null}
+            onClickCard={p => setPlan(p)}
+            onLoad={plans => setPlan(plans[0])}
           />
           <Typography variant='body2'>
             By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.

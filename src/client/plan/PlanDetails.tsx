@@ -1,10 +1,10 @@
-import { Card, CardContent, Typography, Divider, Button, useTheme } from '@material-ui/core';
+import { Card, CardContent, Typography, Divider, useTheme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import { IPlan } from '../../plan/planModel';
 import CheckIcon from '@material-ui/icons/Check';
-import { menuRoute } from '../../pages/menu';
-import Router from 'next/router';
-import { useSetPlan } from '../global/state/cartState';
+// import { menuRoute } from '../../pages/menu';
+// import Router from 'next/router';
+// import { useSetPlan } from '../global/state/cartState';
 import withClientApollo from '../utils/withClientApollo';
 
 const useStyles = makeStyles(theme => ({
@@ -21,6 +21,14 @@ const useStyles = makeStyles(theme => ({
   }),
   marginTop: {
     marginTop: theme.spacing(2),
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%'
+  },
+  button: {
+    marginTop: 'auto',
   },
   divider: {
     marginTop: theme.spacing(2),
@@ -41,39 +49,39 @@ const PlanDetails: React.FC<{
   defaultColor?: boolean,
   small?: boolean,
   isSelected: boolean,
-  onClick?: (p: IPlan) => void
+  renderButton?: (p: IPlan) => React.ReactNode,
+  onClickCard?: (p: IPlan) => void
+  hideTrial?: boolean,
 }> = ({
   plan,
   defaultColor = false,
   small = false,
   isSelected = false,
-  onClick,
+  hideTrial = false,
+  renderButton,
+  onClickCard,
 }) => {
   const classes = useStyles({ defaultColor, small });
   const theme = useTheme();
-  const setStripeProductPriceId = useSetPlan();
-  const onClickButton = (plan: IPlan) => {
-    setStripeProductPriceId(plan);
-    Router.push(menuRoute);
-  }
-  let onClickCard;
-  if (onClick) {
-    onClickCard = () => onClick(plan)
-  }
   return (
     <Card
-      onClick={onClickCard}
+      onClick={() => {
+        if (onClickCard && !renderButton) onClickCard(plan)
+      }}
       className={classes.card}
       style={{
-        borderColor: isSelected && onClick ? theme.palette.primary.main : undefined
+        borderColor: isSelected ? theme.palette.secondary.main : undefined
       }}
     >
-      <CardContent>
-        <Typography variant='h6'>
-          <b className={classes.free}>
-            1 month free
-          </b>
-        </Typography>
+      <CardContent className={classes.content}>
+        {
+          !hideTrial &&
+          <Typography variant='h6'>
+            <b className={classes.free}>
+              1 month free
+            </b>
+          </Typography>
+        }
         <Typography
           variant='h5'
           color='primary'
@@ -97,17 +105,14 @@ const PlanDetails: React.FC<{
           &nbsp;No service charge
         </Typography>
         {
-          !!!onClick &&
-          <Button
-            className={classes.marginTop}
-            onClick={() => onClickButton(plan)}
-            variant='contained'
-            color='primary'
-            size='large'
-            fullWidth
-          >
-            GET STARTED
-          </Button>
+          renderButton &&
+          <div
+            className={classes.button}
+            onClick={() => {
+              if (onClickCard) onClickCard(plan)
+            }}>
+            {renderButton(plan)}
+          </div>
         }
       </CardContent>
     </Card>

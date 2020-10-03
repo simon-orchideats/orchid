@@ -1,24 +1,17 @@
-//@ts-nocheck
 import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
-import { useRef, useState } from 'react';
-import { ConsumerPlan, deliveryDay, deliveryTime } from '../../consumer/consumerPlanModel';
-import RenewalChooser from '../../client/general/RenewalChooser';
-import { useRequireConsumer, useCancelSubscription } from "../../consumer/consumerService";
+import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import { useNotify } from "../../client/global/state/notificationState";
 import { NotificationType } from "../../client/notification/notificationModel";
-import Counter from "../../client/menu/Counter";
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
-import PreferredSchedule from "../../client/general/PreferredSchedule";
 import { menuRoute } from "../menu";
 import Link from "next/link";
-import { debounce } from 'lodash';
 import { useGetAvailablePlans } from "../../plan/planService";
-import { useGetTags } from "../../rest/restService";
-import { Tag } from "../../rest/tagModel";
+import BaseInput from "../../client/general/inputs/BaseInput";
+import { PlanRoles } from "../../consumer/consumerPlanModel";
+import PlanCards from "../../client/plan/PlanCards";
+import { IPlan } from "../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -68,48 +61,48 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
+  shareRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
 }));
+
+const ShareList = () => {
+  const classes = useStyles();
+  return (
+    <>
+      <Typography
+        variant='h4'
+        color='primary'
+        className={classes.verticalPadding}
+      >
+        Sharing with
+      </Typography>
+      <div className={classes.shareRow}>
+        <BaseInput placeholder='New email' size='medium' />
+        <Button variant='outlined'>
+          Add account
+        </Button>
+      </div>
+    </>
+  )
+}
 
 const myPlan = () => {
   const classes = useStyles();
   const consumer = useRequireConsumer(myPlanRoute);
-  const plan = consumer.data && consumer.data.Plan;
-  const [prevPlan, setPrevPlan] = useState<ConsumerPlan | null>(null);
-  const tags = plan ? plan.Tags : [];
+  const plan = consumer.data && consumer.data.plan;
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
+  console.log(updateMyPlan)
   const plans = useGetAvailablePlans();
-  const validateCuisineRef= useRef<() => boolean>();
-  const allTags = useGetTags();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
   const notify = useNotify();
-  // useRef because we want a store this delayedFetch between renders, otherwise we always redefine the delayedFetch
-  // which means useEffect calls a different function on each run which means we never actually delay anything.
-  const debouncedSendChoosePlanMetrics = useRef(debounce(sendUpdatePlanMetrics, 4000));
   useMutationResponseHandler(cancelSubscriptionRes, () => {
     notify('Plan canceled.', NotificationType.success, false);
   });
   useMutationResponseHandler(updateMyPlanRes, () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!prevPlan) {
-      const err = new Error('No prev plan');
-      console.error(err.stack);
-      throw err;
-    }
-    let msg = '.';
-    const oldMealCount = MealPlan.getTotalCount(prevPlan.mealPlans);
-    const newMealCount = MealPlan.getTotalCount(consumer.data.Plan.MealPlans);
-    const oldTags = prevPlan.Tags;
-    const newTags = consumer.data.Plan.Tags;
-    const oldSchedule = prevPlan.Schedules;
-    const newSchedule = consumer.data.Plan.Schedules;
-    if (oldMealCount !== newMealCount) {
-      msg = `. We will pick ${newMealCount} meals for you in the future.`
-    } else if (!Tag.areTagsEqual(oldTags, newTags)) {
-      msg = `. We will pick new cuisines for you in the future.`;
-    } else if (!Schedule.equalsLists(oldSchedule, newSchedule)) {
-      msg = '. We will follow your new schedule in the future.'
-    }
-    notify(`Plan updated${msg}`, NotificationType.success, false);
+    notify(`Plan updated.`, NotificationType.success, false);
   });
   if (!consumer.data && !consumer.loading && !consumer.error) {
     return <Typography>Logging you in...</Typography>
@@ -129,142 +122,16 @@ const myPlan = () => {
     console.error(err.stack);
     return null;
   }
-  const count = plan ? plan.MealPlans[0].MealCount : 0;
-  const allowedDeliveries = Math.floor(count / MIN_MEALS);
-  const onRemoveMeal = () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!plans.data) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
-    const plan = consumer.data.Plan;
-    const mealCount = count - 1;
-    const newAllowedDeliveries = Math.floor(mealCount / MIN_MEALS);
-    if (newAllowedDeliveries < plan.Schedules.length) {
-      notify(`Too many deliveries for ${mealCount} meals. Remove 1 first`, NotificationType.error, false);
-      return;
-    }
-    if (mealCount < MIN_MEALS) return;
-    setPrevPlan(plan);
-    const newMealPlans = [
-      new MealPlan({
-        ...plan.MealPlans[0],
-        mealCount,
-      })
-    ];
-    debouncedSendChoosePlanMetrics.current(
-      newMealPlans,
-      plan.MealPlans,
-      plans.data,
-    )
-    updateMyPlan(
-      new ConsumerPlan({
-        ...plan,
-        mealPlans: newMealPlans
-      }),
-      consumer.data
-    );
+  const onClickPlan = (p: IPlan) => {
+    console.log(p)
   }
-  const onAddMeal = () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    if (!plans.data) {
-      const err = new Error('Missing plans');
-      console.error(err.stack);
-      throw err;
-    }
-    const plan = consumer.data.Plan;
-    const newMealPlans = [
-      new MealPlan({
-        ...plan.MealPlans[0],
-        mealCount: count + 1,
-      })
-    ];
-    setPrevPlan(plan);
-    debouncedSendChoosePlanMetrics.current(
-      newMealPlans,
-      plan.MealPlans,
-      plans.data,
-    );
-    updateMyPlan(
-      new ConsumerPlan({
-        ...plan,
-        mealPlans: newMealPlans
-      }),
-      consumer.data
-    );
-  }
-
-  const addSchedule = () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    const plan = consumer.data.Plan;
-    setPrevPlan(plan);
-    const schedules = plan.Schedules.map(s => new Schedule(s));
-    const newSchedule = Schedule.getDefaultSchedule();
-    schedules.push(newSchedule);
-    sendAddScheduleMetrics(newSchedule, schedules.length);
-    updateMyPlan(
-      new ConsumerPlan({
-        ...plan,
-        schedules,
-      }),
-      consumer.data
-    );
-  };
-  const removeSchedule = (i: number) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    const plan = consumer.data.Plan;
-    setPrevPlan(plan);
-    const schedules = plan.Schedules.map(s => new Schedule(s));
-    const removedSchedules = schedules.splice(i, 1);
-    sendRemoveScheduleMetrics(removedSchedules[0], schedules.length);
-    updateMyPlan(
-      new ConsumerPlan({
-        ...plan,
-        schedules,
-      }),
-      consumer.data
-    );
-  }
-  const updateSchedule = (i: number, day: deliveryDay, time: deliveryTime) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    const plan = consumer.data.Plan;
-    setPrevPlan(plan);
-    const newSchedule = new Schedule({ day, time });
-    const schedules = plan.Schedules.map(s => new Schedule(s));
-    schedules[i] = newSchedule;
-    sendUpdateScheduleMetrics(newSchedule);
-    updateMyPlan(
-      new ConsumerPlan({
-        ...plan,
-        schedules,
-      }),
-      consumer.data
-    );
-  }
-  const updateTags = (tags: Tag[]) => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
-    setPrevPlan(consumer.data.Plan);
-    sendChooseCuisineMetrics(
-      Tag.getCuisines(tags),
-      Tag.getCuisines(consumer.data.Plan.Tags),
-    );
-    updateMyPlan(
-      new ConsumerPlan({
-        ...consumer.data.Plan,
-        tags,
-      }),
-      consumer.data
-    );
-  };
   const onCancelSubscription = () => {
-    if (!consumer.data || !consumer.data.Plan) throw noConsumerPlanErr();
+    if (!consumer.data || !consumer.data.plan) throw noConsumerPlanErr();
     if (!plans.data) {
       const err = new Error('Missing plans');
       console.error(err.stack);
       throw err;
     }
-    sendCancelSubscriptionMetrics(consumer.data.Plan.MealPlans, plans.data);
     cancelSubscription();
   }
   return (
@@ -275,80 +142,39 @@ const myPlan = () => {
       </Typography>
       <Paper className={classes.paperContainer}>
       {
-        plan ? 
+        plan ?
           <>
+            {plan.role === PlanRoles.Owner && <ShareList />}
             <Typography
               variant='h4'
               color='primary'
               className={classes.verticalPadding}
             >
-              Meals enjoyed per week
+              Your Plan
             </Typography>
-            <Typography variant='subtitle2' className={classes.subtitle}>
-              Upcoming deliveries will automatically update their meals
-            </Typography>
-            <div className={classes.row}>
-              <Counter
-                subtractDisabled={count === MIN_MEALS}
-                onClickSubtract={onRemoveMeal}
-                subtractButtonProps={{
-                  variant: 'contained',
-                  className: `${classes.button} ${classes.minusButton}`
-                }}
-                subractIcon={<RemoveIcon />}
-                chipLabel={count}
-                chipDisabled={!count}
-                onClickAdd={onAddMeal}
-                addIcon={<AddIcon />}
-                addButtonProps={{
-                  variant: 'contained',
-                  color: 'primary',
-                  className: classes.button
-                }}
-              />
-              <Typography
-                variant='body1'
-                color='textSecondary'
-                className={classes.price}
-              >
-                {plans.data && `($${(Tier.getMealPrice(plan.MealPlans[0].StripePlanId, count, plans.data) / 100).toFixed(2)} ea)`}
-              </Typography>
-            </div>
-            {
-              count === MIN_MEALS &&
-              <Typography variant='body1'>
-               * Must have at least 4 meals
-              </Typography>
-            }
-            <Typography
-              variant='h4'
-              color='primary'
-              className={classes.verticalPadding}
-            >
-              Preferred repeat delivery days
-            </Typography>
-            <Typography
-              variant='subtitle2'
-              color='textSecondary'
-              className={classes.subtitle}
-            >
-              * If a restaurant is closed, we'll deliver the next day
-            </Typography>
-            <PreferredSchedule
-              addSchedule={addSchedule}
-              allowedDeliveries={allowedDeliveries}
-              removeSchedule={removeSchedule}
-              schedules={plan.Schedules}
-              updateSchedule={updateSchedule}
+            <PlanCards
+              defaultColor
+              hideTrial
+              selected={plan.stripeProductPriceId}
+              renderButton={p => plan.stripeProductPriceId === p.stripeProductPriceId ?
+                <Typography variant='h6' align='center'>
+                  Current plan
+                </Typography>
+                :
+                <Button
+                  onClick={() => onClickPlan(p)}
+                  variant='contained'
+                  color='primary'
+                  size='large'
+                  fullWidth
+                >
+                  SWITCH PLAN
+                </Button>
+              }
             />
-            <RenewalChooser
-              allTags={allTags.data || []}
-              tags={tags}
-              onTagChange={tags => updateTags(tags)}
-              validateCuisineRef={validateCuisine => {
-                validateCuisineRef.current = validateCuisine;
-              }}
-            />
+            <Typography variant='body2'>
+              By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+            </Typography>
             <Button
               variant='outlined'
               className={classes.cancel}
@@ -356,6 +182,9 @@ const myPlan = () => {
             >
               Cancel subscription
             </Button>
+            <Typography variant='body2'>
+              By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+            </Typography>
           </>
         :
         <>

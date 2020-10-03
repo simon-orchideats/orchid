@@ -9,6 +9,23 @@ const _ConsumerQL = gql`
     Member
     Owner
   }
+  input ConsumerLocationInput {
+    primaryAddr: String!
+    address2: String
+    geoPoint: GeoInput
+  }
+  input ConsumerProfileInput {
+    name: String!
+    email: String!
+    card: CardInput!
+    phone: String!
+    serviceInstructions: String!
+    searchArea: ConsumerLocationInput!
+  }
+  input ConsumerPlanInput {
+    role: PlanRole!
+    stripeProductPriceId: ID!
+  }
   type ConsumerPlan {
     role: PlanRole!
     stripeProductPriceId: ID!
@@ -17,11 +34,6 @@ const _ConsumerQL = gql`
     primaryAddr: String!
     address2: String
     geoPoint: Geo!
-  }
-  input ConsumerLocationInput {
-    primaryAddr: String!
-    address2: String
-    geoPoint: GeoInput
   }
   type Consumer {
     _id: ID!
@@ -36,14 +48,6 @@ const _ConsumerQL = gql`
     phone: String
     searchArea: ConsumerLocation
     serviceInstructions: String
-  }
-  input ConsumerProfileInput {
-    name: String!
-    email: String!
-    card: CardInput!
-    phone: String!
-    serviceInstructions: String!
-    searchArea: ConsumerLocationInput!
   }
 `
 

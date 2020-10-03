@@ -4,7 +4,6 @@ import PlanDetails from './PlanDetails';
 import { Grid, makeStyles } from '@material-ui/core';
 import { useState, useEffect } from 'react';
 import { IPlan } from '../../plan/planModel';
-import { useSetPlan } from '../global/state/cartState';
 
 const useStyles = makeStyles(() => ({
   item: {
@@ -15,28 +14,42 @@ const useStyles = makeStyles(() => ({
 
 const PlanCards: React.FC<{
   defaultColor?: boolean,
+  hideTrial?: boolean
   small?: boolean,
-  defaultSelected?: IPlan | null
+  selected?: string,
+  defaultSelected?: string | null,
+  renderButton?: (p: IPlan) => React.ReactNode,
+  onClickCard?: (p: IPlan) => void
+  onLoad?: (plans: IPlan[]) => void
 }> = ({
   defaultColor,
   small,
   defaultSelected,
+  selected,
+  renderButton,
+  onClickCard,
+  onLoad,
+  hideTrial,
 }) => {
   const classes = useStyles();
   const plans = useGetAvailablePlans();
-  const updateCartPlan = useSetPlan();
-  const [selectedPlan, setSelectedPlan] = useState<IPlan | null | undefined>(defaultSelected)
+  const [selectedPlan, setSelectedPlan] = useState<string | null | undefined>(defaultSelected)
   useEffect(() => {
-    if (plans.data && selectedPlan === null) {
-      updatePlan(plans.data[0])
+    if (plans.data) {
+      if (onLoad) {
+        onLoad(plans.data);
+      }
+      if (selectedPlan === null) {
+        setSelectedPlan(plans.data[0].stripeProductPriceId)
+      }
     }
-  }, [plans.data, selectedPlan]);
+  }, [plans.data, onLoad]);
   if (!plans.data) {
     return <div>loading</div>
   }
   const updatePlan = (plan: IPlan) => {
-    setSelectedPlan(plan);
-    updateCartPlan(plan);
+    setSelectedPlan(plan.stripeProductPriceId);
+    if (onClickCard) onClickCard(plan);
   }
   return (
     <Grid container justifyContent='center'>
@@ -51,10 +64,12 @@ const PlanCards: React.FC<{
           <PlanDetails
             key={p.stripeProductPriceId}
             plan={p}
+            hideTrial={hideTrial}
             defaultColor={defaultColor}
             small={small}
-            isSelected={selectedPlan?.stripeProductPriceId === p.stripeProductPriceId}
-            onClick={selectedPlan ? (p: IPlan) => updatePlan(p) : undefined}
+            isSelected={selected ? selected === p.stripeProductPriceId : selectedPlan === p.stripeProductPriceId}
+            onClickCard={updatePlan}
+            renderButton={renderButton}
           />
         </Grid>
       ))}

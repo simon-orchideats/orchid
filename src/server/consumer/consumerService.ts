@@ -332,11 +332,52 @@ class ConsumerService implements IConsumerService {
   }
 
   // todo pivot: change this from any
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: any): Promise<MutationConsumerRes> {
+  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
       if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
+      console.log(newPlan);
+      // const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+
+      /**
+       * two scenarios.
+       * 
+       * ???? what do we do about trials...? no trials for updates. only trial hapens when you already have a trial
+       * 
+       * 1) youre the owner and you changed the plan
+       *  - upgrade
+       *    - update my sub id
+       *    - find all customers wiht same sub-id and update those too
+       *    - 
+       *  - downgrade
+       *    - update my sub id
+       *    - find all customers wiht same sub-id and update those too
+       * 
+       * 
+       * 
+       * 2) youre the member and you leave/change plan
+       *  - upgrade
+       *    - remove myself from this sub
+       *    - update sub
+       *  - downgrade
+       *    - remove myself from this sub
+       *    - update sub
+       * 
+       * for 1 & 2, i always have to check that the num accounts is allowed
+       * 
+       * 
+       * 
+       * 3) add people to your plan (different api)
+       * 
+       */
+
+
+
+
+
+
+
       // let plan: EConsumerPlan;
       // try {
       //   const res = await this.getEConsumer(signedInUser._id);

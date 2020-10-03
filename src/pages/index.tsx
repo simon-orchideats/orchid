@@ -8,7 +8,8 @@ import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React, { useState } from 'react';
 import { Carousel } from 'react-responsive-carousel';
-import { useSetSearchArea } from '../client/global/state/cartState';
+import { useSetSearchArea, useSetPlan } from '../client/global/state/cartState';
+import { IPlan } from '../plan/planModel';
 
 const useStyles = makeStyles(theme => ({
   avatar: {
@@ -929,6 +930,11 @@ const HowItWorks = () => {
 
 const Plans = withClientApollo(() => {
   const classes = useStyles();
+  const setStripeProductPriceId = useSetPlan();
+  const onClickButton = (plan: IPlan) => {
+    setStripeProductPriceId(plan);
+    Router.push(menuRoute);
+  }
   return (
     <div className={`${classes.plans}`}>
       <div className={`${classes.plansTitle} ${classes.centered}`}>
@@ -939,7 +945,20 @@ const Plans = withClientApollo(() => {
           Change, skip, cancel anytime
         </Typography>
       </div>
-      <PlanCards />
+      <PlanCards 
+        renderButton={p => 
+          <Button
+            // className={classes.marginTop}
+            onClick={() => onClickButton(p)}
+            variant='contained'
+            color='primary'
+            size='large'
+            fullWidth
+          >
+            GET STARTED
+          </Button>
+        }
+      />
     </div>
   )
 });
