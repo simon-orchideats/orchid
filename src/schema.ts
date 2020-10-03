@@ -30,6 +30,7 @@ const query = gql`
       serviceType: ServiceType!,
     ): [Rest!]!
     rest(restId: ID!): Rest!
+    sharedAccounts: [String!]!
     # order(orderId: ID!): Order!
     # consumerFromReferral(promoCode: ID!): String!
     myConsumer: Consumer
@@ -51,10 +52,12 @@ const mutation = gql`
     error: String
   }
   type Mutation {
+    addAccountToPlan(addedEmail: String!): BoolRes!
     # addRest(rest: RestInput!): BoolRes!
     # cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
     # getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
+    removeAccountFromPlan(removedEmail: String!): BoolRes!
     signUp(email: String!, name: String!, pass: String!): ConsumerRes!
     # skipDelivery(orderId: ID!, deliveryIndex: Int!): BoolRes!
     # updateDeliveries(orderId: ID!, updateOptions: UpdateDeliveryInput!): BoolRes!

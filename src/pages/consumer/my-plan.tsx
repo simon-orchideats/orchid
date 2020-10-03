@@ -1,5 +1,5 @@
-import { makeStyles, Typography, Container, Paper, Button} from "@material-ui/core";
-import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan } from "../../consumer/consumerService";
+import { makeStyles, Typography, Container, Paper, Button, Grid } from "@material-ui/core";
+import { useRequireConsumer, useCancelSubscription, useUpdateMyPlan, useAddAccountToPlan, useGetSharedAccounts, useGetConsumer, useRemoveAccountFromPlan } from "../../consumer/consumerService";
 import withApollo from "../../client/utils/withPageApollo";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
@@ -11,7 +11,10 @@ import { useGetAvailablePlans } from "../../plan/planService";
 import BaseInput from "../../client/general/inputs/BaseInput";
 import { PlanRoles } from "../../consumer/consumerPlanModel";
 import PlanCards from "../../client/plan/PlanCards";
-import { IPlan } from "../../plan/planModel";
+import { IPlan, Plan } from "../../plan/planModel";
+import withClientApollo from "../../client/utils/withClientApollo";
+import DeleteIcon from '@material-ui/icons/Delete';
+import { createRef, useState } from "react";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -20,9 +23,6 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'left',
     background: 'none',
     paddingBottom: theme.spacing(4),
-  },
-  button: {
-    borderRadius: 10,
   },
   row: {
     maxWidth: 225,
@@ -66,10 +66,47 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'space-between'
   },
+  addCol: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  addButton: {
+    height: '100%'
+  }
 }));
 
-const ShareList = () => {
+const ShareList = withClientApollo(() => {
   const classes = useStyles();
+  const [onAdd, onAddRes] = useAddAccountToPlan();
+  const [onRemove, onRemoveRes] = useRemoveAccountFromPlan();
+  const consumer = useGetConsumer();
+  const notify = useNotify();
+  useMutationResponseHandler(onAddRes, () => {
+    if (onAddRes.error) {
+      notify(onAddRes.error.message, NotificationType.success, false);
+    }
+  });
+  useMutationResponseHandler(onRemoveRes, () => {
+    if (onAddRes.error) {
+      notify(onAddRes.error.message, NotificationType.success, false);
+    }
+  });
+  const sharedAccounts = useGetSharedAccounts();
+  const inputRef = createRef<HTMLInputElement>();
+  const [inputError, setInputError] = useState('');
+  const onClickAdd = () => {
+    if (validate()) {
+      onAdd(inputRef.current!.value)
+    }
+  }
+  const validate = () => {
+    if (!inputRef!.current!.value) {
+      setInputError("Email can't be empty");
+      return false;
+    }
+    return true;
+  }
   return (
     <>
       <Typography
@@ -77,17 +114,58 @@ const ShareList = () => {
         color='primary'
         className={classes.verticalPadding}
       >
-        Sharing with
+        Accounts on this plan
       </Typography>
-      <div className={classes.shareRow}>
-        <BaseInput placeholder='New email' size='medium' />
-        <Button variant='outlined'>
-          Add account
-        </Button>
-      </div>
+      <Grid container>
+        <Grid
+          item
+          xs={8}
+          md={6}
+        >
+          <BaseInput
+            label='New email'
+            size='medium'
+            error={!!inputError}
+            helperText={inputError}
+            inputRef={inputRef}
+            onChange={_e => {
+              if (inputError) setInputError('');
+            }}
+          />
+        </Grid>
+        <Grid item md={2}/>
+        <Grid
+          className={classes.addCol}
+          item
+          xs={4}
+          md={4}
+        >
+          <Button
+            className={classes.addButton}
+            variant='outlined'
+            size='medium'
+            onClick={onClickAdd}
+          >
+            Add account
+          </Button>
+        </Grid>
+      </Grid>
+      {
+        sharedAccounts.data.map(e => 
+          <div className={`${classes.shareRow} ${classes.verticalPadding}`} key={e}>
+            <Typography variant='subtitle1'>
+              {e} {e === consumer.data?.profile.email && '(owner)'}
+            </Typography>
+            {
+              e !== consumer.data?.profile.email &&
+              <DeleteIcon onClick={() => onRemove(e)} />
+            }
+          </div>
+        )
+      }
     </>
   )
-}
+})
 
 const myPlan = () => {
   const classes = useStyles();
@@ -144,7 +222,12 @@ const myPlan = () => {
       {
         plan ?
           <>
-            {plan.role === PlanRoles.Owner && <ShareList />}
+            {
+              plan.role === PlanRoles.Owner
+              && plans.data
+              && Plan.getPlan(plan.stripeProductPriceId, plans.data).numAccounts > 1
+              && <ShareList />
+            }
             <Typography
               variant='h4'
               color='primary'

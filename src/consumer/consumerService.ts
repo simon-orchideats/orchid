@@ -20,7 +20,15 @@ const MY_CONSUMER_QUERY = gql`
   }
   ${consumerFragment}
 `
+
+const SHARED_ACCOUNTS_QUERY = gql`
+  query sharedAccounts {
+    sharedAccounts
+  }
+`
+
 type myConsumerRes = { myConsumer: IConsumer | null }
+type sharedAccountsRes = { sharedAccounts: string[] }
 
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
@@ -47,6 +55,10 @@ export const getMyConsumer = (cache: ApolloCache<any> | DataProxy) => cache.read
   query: MY_CONSUMER_QUERY
 });
 
+export const getSharedAccounts = (cache: ApolloCache<any> | DataProxy) => cache.readQuery<sharedAccountsRes>({
+  query: SHARED_ACCOUNTS_QUERY
+});
+
 export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: IConsumer) => {
   const newConsumer = copyWithTypenames(consumer);
   cache.writeQuery<myConsumerRes>({
@@ -55,6 +67,115 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
       myConsumer: newConsumer
     }
   });
+}
+
+export const useAddAccountToPlan = (): [
+  (addedEmail: string) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { addAccountToPlan: MutationBoolRes };
+  type vars = { addedEmail: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation addAccountToPlan($addedEmail: String!) {
+      addAccountToPlan(addedEmail: $addedEmail) {
+        res
+        error
+      }
+    }
+  `);
+  const addAccountToPlan = (addedEmail: string) => {
+    mutate({
+      variables: { addedEmail },
+      update: (cache, { data }) => {
+        if (data && data.addAccountToPlan.res) {
+          const accounts = getSharedAccounts(cache);
+          if (!accounts || !accounts.sharedAccounts) {
+            const err = new Error('No shared accounts found');
+            console.error(err.stack);
+            throw err;
+          }
+          cache.writeQuery<sharedAccountsRes>({
+            query: SHARED_ACCOUNTS_QUERY,
+            data: {
+              sharedAccounts: [
+                ...accounts.sharedAccounts,
+                addedEmail,
+              ]
+            }
+          });
+        }
+      },
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.addAccountToPlan.res,
+      error: mutation.data.addAccountToPlan.error
+    }
+    return [
+      addAccountToPlan,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
+}
+
+export const useRemoveAccountFromPlan = (): [
+  (removedEmail: string) => void,
+  {
+    error?: ApolloError 
+    data?: MutationBoolRes
+  }
+] => {
+  type res = { removeAccountFromPlan: MutationBoolRes };
+  type vars = { removedEmail: string }
+  const [mutate, mutation] = useMutation<res,vars>(gql`
+    mutation removeAccountFromPlan($removedEmail: String!) {
+      removeAccountFromPlan(removedEmail: $removedEmail) {
+        res
+        error
+      }
+    }
+  `);
+  const removeAccountFromPlan = (removedEmail: string) => {
+    mutate({
+      variables: { removedEmail },
+      update: (cache, { data }) => {
+        if (data && data.removeAccountFromPlan.res) {
+          const accounts = getSharedAccounts(cache);
+          if (!accounts || !accounts.sharedAccounts) {
+            const err = new Error('No shared accounts found');
+            console.error(err.stack);
+            throw err;
+          }
+          cache.writeQuery<sharedAccountsRes>({
+            query: SHARED_ACCOUNTS_QUERY,
+            data: {
+              sharedAccounts: accounts.sharedAccounts.filter(a => a !== removedEmail)
+            }
+          });
+        }
+      },
+    })
+  }
+  return useMemo(() => {
+    const data = mutation.data && {
+      res: mutation.data.removeAccountFromPlan.res,
+      error: mutation.data.removeAccountFromPlan.error
+    }
+    return [
+      removeAccountFromPlan,
+      {
+        error: mutation.error,
+        data,
+      }
+    ]
+  }, [mutation]);
 }
 
 export const useUpdateMyProfile = (): [
@@ -226,6 +347,18 @@ export const useGetLazyConsumer = (): [
       data: consumerRes.data ? consumerRes.data.myConsumer : null
     }
   ]
+}
+
+export const useGetSharedAccounts = () => {
+  const res = useQuery<sharedAccountsRes>(SHARED_ACCOUNTS_QUERY);
+  const emails = useMemo<string[]>(() => (
+    res.data && res.data.sharedAccounts ? res.data.sharedAccounts.map(s => s) : []
+  ), [res.data]);
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: emails
+  }
 }
 
 export const useGoogleSignIn = () => () => new Promise<{ name: string, email: string }>((resolve, reject) => {

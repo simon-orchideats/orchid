@@ -18,8 +18,8 @@ export interface IPlan {
 }
 
 export class Plan {
-  public static getProduct(id: string, products: IPlan[]) {
-    return getProductById(id, products);
+  public static getPlan(id: string, products: IPlan[]) {
+    return getPlanById(id, products);
   }
 
   public static getICopy(p: IPlan): IPlan {
@@ -32,7 +32,7 @@ export class Plan {
   }
 }
 
-const getProductById = (id: string, products: IPlan[]) => {
+const getPlanById = (id: string, products: IPlan[]) => {
   const plan = products.find(p => p.stripeProductPriceId === id);
   if (!plan) {
     const err = new Error(`Failed to find plan '${id}'`);

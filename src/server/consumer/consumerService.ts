@@ -1,3 +1,4 @@
+import { Plan } from './../../plan/planModel';
 import { IGeoService, getGeoService } from './../place/geoService';
 import { getNotSignedInErr } from './../utils/error';
 import { getAuth0Header } from './../auth/auth0Management';
@@ -6,7 +7,7 @@ import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { EConsumer, IConsumer, Consumer, IConsumerProfile, Permission } from './../../consumer/consumerModel';
-import { IConsumerPlan } from './../../consumer/consumerPlanModel';
+import { IConsumerPlan, PlanRoles, EConsumerPlan } from './../../consumer/consumerPlanModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -18,8 +19,11 @@ import { OutgoingMessage, IncomingMessage } from 'http';
 const CONSUMER_INDEX = 'consumers';
 
 export interface IConsumerService {
+  addAccountToPlan: (signedInUser: SignedInUser, addedEmail: string) => Promise<MutationBoolRes>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
+  getSharedAccounts: (signedInUser: SignedInUser) => Promise<string[]>
+  removeAccountFromPlan: (signedInUser: SignedInUser, removedEmail: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
@@ -51,6 +55,39 @@ class ConsumerService implements IConsumerService {
     this.geoService = geoService;
   }
 
+  private async findConsumerByEmail(email: string): Promise<{
+    _id: string,
+    consumer: EConsumer,
+  } | null> {
+    try {
+      const res: ApiResponse<SearchResponse<EConsumer>>  = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                term: {
+                  'profile.email': email
+                }
+              }
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value > 1) {
+        throw new Error(`Found multiple users with email ${email}`)
+      }
+      if (res.body.hits.total.value === 0) return null;
+      return {
+        _id: res.body.hits.hits[0]._id,
+        consumer: res.body.hits.hits[0]._source,
+      }
+    } catch (e) {
+      console.error(`[ConsumerService] Failed to find EConsumer by email ${email}`, e.stack)
+      return null;
+    }
+  }
+
   private async getEConsumer(userId: string): Promise<{
     _id: string,
     consumer: EConsumer,
@@ -74,6 +111,71 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  private async updatePlan(consumerId: string, plan: EConsumerPlan | null) {
+    try {
+      await this.elastic.update({
+        index: CONSUMER_INDEX,
+        id: consumerId,
+        body: {
+          doc : {
+            plan,
+          }
+        }
+      });
+      return;
+    } catch (e) {
+      console.error(`[ConsumerService] failed to update plan for '${consumerId}' with plan '${JSON.stringify(plan)}'`, e.stack)
+    }
+  }
+
+  public async addAccountToPlan (signedInUser: SignedInUser, addedEmail: string) {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      if (!signedInUser.stripeSubscriptionId) throw new Error('Missing subscriptionId');
+      if (!this.planService) throw new Error('PlanService not set');
+      if (!addedEmail) throw new Error(`Email '${addedEmail}' is missing`);
+      const currUser = await this.getEConsumer(signedInUser._id);
+      if (!currUser) throw new Error(`Signed in user '${signedInUser._id}' not found in db`);
+      const currPlan = currUser.consumer.plan;
+      if (!currPlan) throw new Error(`User is missing plan`);
+      if (currPlan.role !== PlanRoles.Owner) throw new Error('User is not plan owner');
+      const plans = await this.planService.getAvailablePlans();
+      const dbPlan = Plan.getPlan(currPlan.stripeProductPriceId, plans);
+      const sharedAccounts = await this.getSharedAccounts(signedInUser);
+      if (sharedAccounts.length + 1 > dbPlan.numAccounts) {
+        return {
+          res: false,
+          error: `${dbPlan.name} only allows ${dbPlan.numAccounts} accounts.`,
+        };
+      }
+      if (sharedAccounts.includes(addedEmail)) {
+        return {
+          res: false,
+          error: `'${addedEmail}' is already in the plan`,
+        };
+      }
+      const newAcct = await this.findConsumerByEmail(addedEmail);
+      if (!newAcct) {
+        return {
+          res: false,
+          error: `Account with email ${addedEmail} doesn't exist. Make sure ${addedEmail} is signed up first through the login page.`,
+        }
+      }
+      await this.updatePlan(newAcct._id, {
+        role: PlanRoles.Member,
+        stripeProductPriceId: dbPlan.stripeProductPriceId,
+        stripeSubscriptionId: signedInUser.stripeSubscriptionId
+      });
+      return {
+        res: true,
+        error: null,
+      };
+    } catch (e) {
+      console.error(`[ConsumerService] failed to addAccountToPlan for '${signedInUser?._id}' for email '${addedEmail}'`, e.stack)
+      throw e;
+    }
+  }
+  
   public async cancelSubscription(
     signedInUser: SignedInUser,
     req?: IncomingMessage,
@@ -145,6 +247,31 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  public async getSharedAccounts(signedInUser: SignedInUser) {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      const res: ApiResponse<SearchResponse<EConsumer>>  = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                term: {
+                  'plan.stripeSubscriptionId': signedInUser.stripeSubscriptionId
+                }
+              }
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value === 0) return [];
+      return res.body.hits.hits.map(h => h._source.profile.email)
+    } catch (e) {
+      console.error(`[ConsumerService] Failed getSharedAccounts for '${signedInUser?._id}': ${e.stack}`)
+      throw e;
+    }
+  }
+
   public async insertConsumer(
     _id: string,
     name: string,
@@ -212,6 +339,31 @@ class ConsumerService implements IConsumerService {
     } catch (e) {
       console.error(`[ConsumerService] Failed to get consumer ${signedInUser?._id}: ${e.stack}`)
       return null;
+    }
+  }
+
+  public async removeAccountFromPlan (signedInUser: SignedInUser, removedEmail: string) {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      if (!signedInUser.stripeSubscriptionId) throw new Error('Missing subscriptionId');
+      if (!this.planService) throw new Error('PlanService not set');
+      if (!removedEmail) throw new Error(`Email '${removedEmail}' is missing`);
+      const currUser = await this.getEConsumer(signedInUser._id);
+      if (!currUser) throw new Error(`Signed in user '${signedInUser._id}' not found in db`);
+      if (currUser.consumer.profile.email === removedEmail) throw new Error("Can't remove self");
+      const currPlan = currUser.consumer.plan;
+      if (!currPlan) throw new Error(`User is missing plan`);
+      if (currPlan.role !== PlanRoles.Owner) throw new Error('User is not plan owner');
+      const newAcct = await this.findConsumerByEmail(removedEmail);
+      if (!newAcct) throw new Error(`Account with email ${removedEmail} doesn't exist.`);
+      await this.updatePlan(newAcct._id, null);
+      return {
+        res: true,
+        error: null,
+      };
+    } catch (e) {
+      console.error(`[ConsumerService] failed to removeAccountFromPlan for '${signedInUser?._id}' for email '${removedEmail}'`, e.stack)
+      throw e;
     }
   }
 
@@ -371,12 +523,6 @@ class ConsumerService implements IConsumerService {
        * 3) add people to your plan (different api)
        * 
        */
-
-
-
-
-
-
 
       // let plan: EConsumerPlan;
       // try {

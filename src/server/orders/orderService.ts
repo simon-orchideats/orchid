@@ -741,6 +741,7 @@ class OrderService {
         error: validation.msg,
       }
     }
+
     let stripeCustomerId = signedInUser.stripeCustomerId;
     if (!stripeCustomerId) {
       try {
@@ -757,26 +758,29 @@ class OrderService {
         throw e;
       }
     }
+
     let subscriptionId = signedInUser.stripeSubscriptionId;
     if (!subscriptionId) {
       if (!cart.stripeProductPriceId) {
-        throw new Error('Cart missing stripeProductPriceId')
-      }
-      const newSub: Stripe.SubscriptionCreateParams = {
-        proration_behavior: 'none',
-        customer: stripeCustomerId,
-        trial_period_days: 30,
-        items: [{
-          price: cart.stripeProductPriceId
-        }]
-      }
-      try {
-        const subscription = await this.stripe.subscriptions.create(newSub);
-        subscriptionId = subscription.id;
-      } catch (e) {
-        console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
-                      + `with stripe customerId '${stripeCustomerId}'`, e.stack);
-        throw e;
+        // this is possible when the consumer is newly added to another's plan
+        // todo pivot: get the subId from the db and set use it to refresh the tokens
+        subscriptionId = 'temporary';
+      } else {
+        try {
+          const subscription = await this.stripe.subscriptions.create({
+            proration_behavior: 'none',
+            customer: stripeCustomerId,
+            trial_period_days: 30,
+            items: [{
+              price: cart.stripeProductPriceId
+            }]
+          });
+          subscriptionId = subscription.id;
+        } catch (e) {
+          console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+                        + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+          throw e;
+        }
       }
     }
     const geo = await this.geoService.getGeocodeByQuery(cart.searchArea);
@@ -834,6 +838,10 @@ class OrderService {
       signedInUser.permissions, 
       consumer
     );
+    // todo pivot. this is a bad check. for new customers who were recently added to a plan, they wont have stripePRoductPriceId
+    // but they will have subscription. they also wont have stripeCustomerId.
+    // anothe rproblem is that if the newly added account's token will be old and the token
+    // wont have the proper stripeSubId in it so when added account places order, we wont see tokens
     if (cart.stripeProductPriceId) {
       await this.consumerService.updateAuth0MetaData(
         signedInUser._id,

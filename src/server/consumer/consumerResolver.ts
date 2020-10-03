@@ -7,11 +7,35 @@ export const ConsumerQueryResolvers: ServerResolovers = {
   myConsumer: async (_, _args, { signedInUser }) => {
     return signedInUser && await getConsumerService().getIConsumer(signedInUser)  
   },
+  
+  sharedAccounts: async (_, _args, { signedInUser }) => {
+    try {
+      return await getConsumerService().getSharedAccounts(signedInUser)  
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
+  },
 }
 
 export const ConsumerMutationResolvers: ServerResolovers = {
+  addAccountToPlan: async (_root, { addedEmail }, { signedInUser }) => {
+    try {
+      return await getConsumerService().addAccountToPlan(signedInUser, addedEmail);
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
+  },
+
   cancelSubscription: async (_root, _vars, { signedInUser, req, res }) => {
     return await getConsumerService().cancelSubscription(signedInUser, req, res);
+  },
+
+  removeAccountFromPlan: async (_root, { removedEmail }, { signedInUser }) => {
+    try {
+      return await getConsumerService().removeAccountFromPlan(signedInUser, removedEmail);
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
   },
 
   signUp: async (
