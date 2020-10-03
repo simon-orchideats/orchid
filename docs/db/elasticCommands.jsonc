@@ -1438,6 +1438,9 @@ PUT /orders/
                   },
                   "quantity": {
                     "type": "integer"
+                  },
+                  "additionalPrice": {
+                    "type": "integer"
                   }
                 }
               },
@@ -1682,10 +1685,7 @@ PUT /consumers/
           "role": {
             "type": "keyword"
           },
-          "stripeProductId": {
-            "type": "keyword"
-          },
-          "stripeProductName": {
+          "stripeProductPriceId": {
             "type": "keyword"
           },
         }

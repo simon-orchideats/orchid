@@ -1,5 +1,5 @@
 import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
-import { useGetCart, useSetPlan } from "../client/global/state/cartState";
+import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -30,7 +30,6 @@ import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicke
 import SearchInput from "../client/general/inputs/SearchInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
-import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -151,12 +150,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             email: signUpRes.data.res.profile.name
           },
           Cart.getCartInput(
-            addr2InputRef.current!.value || null,
+            addr2InputRef.current?.value || null,
             cart,
             phoneInputRef.current!.value,
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
-            instructionsInputRef.current!.value,
+            instructionsInputRef.current?.value || null,
           )
         );
       }
@@ -210,6 +209,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     addr2?: string,
     phone?: string,
     paymentMethod?: stripe.paymentMethod.PaymentMethod,
+    serviceInstructions?: string,
   ) => {
     if (!phone || !paymentMethod) {
       const err = new Error(`Undefined inputs ${JSON.stringify({
@@ -271,7 +271,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           phone,
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
-          instructionsInputRef.current!.value,
+          serviceInstructions || null,
         ),
       );
     }
@@ -289,6 +289,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     addr2?: string,
     phone?: string,
     canReceiveTexts?: boolean,
+    instructions?: string,
   ) => {
     if (didPlaceOrder) return;
     setDidPlaceOrder(true);
@@ -356,6 +357,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       addr2,
       phone,
       pm.current.paymentMethod,
+      instructions,
     );
   }
 
@@ -367,6 +369,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       addr2InputRef.current?.value,
       phoneInputRef.current?.value,
       receiveTextsInput.current?.checked,
+      instructionsInputRef.current?.value
     ),
     loading: didPlaceOrder,
   }
@@ -406,7 +409,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <ServiceTypePicker />
             </Grid>
             <Grid item xs={12}>
-              <SearchInput defaultValue={'100 Gold Street, New York, NY, USA'} disableAutoFocus />
+              <SearchInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
             </Grid>
             <Grid item xs={12}>
               <BaseInput label='Apt #' inputRef={addr2InputRef} />

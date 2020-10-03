@@ -28,7 +28,11 @@ const orderFragment = gql`
     }
     rest {
       meals {
-        choices
+        customizations {
+          additionalPrice
+          quantity
+          name
+        }
         description
         img
         instructions

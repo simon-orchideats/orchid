@@ -21,7 +21,7 @@ export interface IConsumerService {
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
-  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string | null, stripeCustomerId: string) =>  Promise<Response>
+  updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
   updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
   updateConsumer(_id: string, permissions: Permission[], consumer: Partial<EConsumer>): Promise<IConsumer>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
@@ -205,7 +205,6 @@ class ConsumerService implements IConsumerService {
       if (!res) return null;
       return {
         _id: signedInUser._id,
-        stripeCustomerId: res.consumer.stripeCustomerId,
         profile: res.consumer.profile,
         plan: res.consumer.plan,
         permissions: signedInUser.permissions,
@@ -242,7 +241,7 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string | null, stripeCustomerId: string): Promise<Response> {
+  public async updateAuth0MetaData(userId: string, stripeSubscriptionId: string, stripeCustomerId: string): Promise<Response> {
     return fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${userId}`, {
       headers: await getAuth0Header(),
       method: 'PATCH',
@@ -263,7 +262,7 @@ class ConsumerService implements IConsumerService {
     try {
       if (!this.geoService) return Promise.reject('GeoService not set');
       if (!signedInUser) throw getNotSignedInErr();
-      if (!profile.searchArea) throw new Error('Missing destination');
+      if (!profile.searchArea) throw new Error('Missing search area');
       if (!this.orderService) throw new Error('Order service not set');
       if (!signedInUser.stripeCustomerId) throw new Error(`Missing stripe customer id for '${signedInUser._id}'`)
       let geo;
@@ -304,8 +303,9 @@ class ConsumerService implements IConsumerService {
           }
         });
       const newConsumer = {
+        ...res.body.get._source,
         _id: signedInUser._id,
-        ...res.body.get._source
+        permissions: signedInUser.permissions,
       };
       if (paymentMethodId) {
         await this.stripe.setupIntents.create({
@@ -407,11 +407,7 @@ class ConsumerService implements IConsumerService {
           doc: consumer
         }
       });
-      return {
-        ...updatedConsumer.body.get._source,
-        _id,
-        permissions,
-      }
+      return Consumer.getIConsumerFromEConsumer(_id, permissions, updatedConsumer.body.get._source)
     } catch (e) {
       console.error(`[ConsumerService] failed to update consumer '${_id}', '${JSON.stringify(consumer)}'`, e.stack);
       throw e;

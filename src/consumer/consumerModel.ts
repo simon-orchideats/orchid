@@ -24,6 +24,10 @@ export interface IConsumerSearchArea extends ILocation {
   readonly geoPoint: IGeo;
 }
 
+export interface IConsumerSearchAreaInput extends ILocation {
+  readonly geoPoint?: IGeo;
+}
+
 export class ConsumerSearchArea {
   static getICopy(c: IConsumerSearchArea): IConsumerSearchArea {
     return {
@@ -40,6 +44,15 @@ export interface IConsumerProfile {
   readonly card: ICard | null
   readonly searchArea: IConsumerSearchArea | null
   readonly serviceInstructions: string | null
+}
+
+export interface IConsumerProfileInput {
+  readonly name: string
+  readonly email: string
+  readonly phone: string
+  readonly card: ICard
+  readonly searchArea: IConsumerSearchAreaInput
+  readonly serviceInstructions: string
 }
 
 export interface EConsumerProfile extends IConsumerProfile {
@@ -67,7 +80,7 @@ export interface EConsumer {
   readonly stripeCustomerId: string | null
 }
 
-export interface IConsumer extends Omit<EConsumer, 'createdDate' | 'profile' | 'plan'> {
+export interface IConsumer {
   readonly _id: string
   readonly profile: IConsumerProfile
   readonly plan: IConsumerPlan | null
@@ -85,7 +98,6 @@ export class Consumer {
       _id,
       plan: eConsumer.plan,
       profile: eConsumer.profile,
-      stripeCustomerId: eConsumer.stripeCustomerId,
       permissions: permissions.map(p => p),
     }
   }
@@ -93,7 +105,6 @@ export class Consumer {
   static getICopy(consumer: IConsumer): IConsumer {
     return {
       _id: consumer._id,
-      stripeCustomerId: consumer.stripeCustomerId,
       profile: ConsumerProfile.getICopy(consumer.profile),
       plan: consumer.plan && ConsumerPlan.getICopy(consumer.plan),
       permissions: consumer.permissions.map(p => p),

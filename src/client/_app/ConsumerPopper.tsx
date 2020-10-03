@@ -1,12 +1,10 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography, Popover } from '@material-ui/core';
-import EventIcon from '@material-ui/icons/Event';
 import PersonIcon from '@material-ui/icons/Person';
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
 import { profileRoute } from '../../pages/consumer/profile';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import { upcomingDeliveriesRoute } from '../../pages/consumer/upcoming-deliveries';
 import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
 import HistoryIcon from '@material-ui/icons/History';
@@ -20,10 +18,6 @@ import { Permissions } from '../../consumer/consumerModel';
 import withClientApollo from '../utils/withClientApollo';
 import { addPartnerRoute } from '../../pages/consumer/add-partner';
 import StorefrontIcon from '@material-ui/icons/Storefront';
-import { savingsRoute } from '../../pages/consumer/savings';
-import RedeemIcon from '@material-ui/icons/Redeem';
-import LocalOfferIcon from '@material-ui/icons/LocalOffer';
-import { referralPageRoute } from '../../pages/get-20';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -72,15 +66,6 @@ const ConsumerPopper: React.FC<{
     >
       <Paper className={classes.paper}>
         <div className={classes.row} onClick={() => {
-          Router.push(referralPageRoute);
-          onClose();
-        }}>
-          <LocalOfferIcon fontSize='large' className={classes.icon} />
-          <Typography variant='h6'>
-            Get $20
-          </Typography>
-        </div>
-        <div className={classes.row} onClick={() => {
           Router.push(profileRoute);
           onClose();
         }}>
@@ -96,24 +81,6 @@ const ConsumerPopper: React.FC<{
           <RestaurantMenuIcon fontSize='large' className={classes.icon} />
           <Typography variant='h6'>
             My plan
-          </Typography>
-        </div>
-        <div className={classes.row} onClick={() => {
-          Router.push(upcomingDeliveriesRoute);
-          onClose();
-        }}>          
-          <EventIcon fontSize='large' className={classes.icon} />
-          <Typography variant='h6'>
-            Upcoming deliveries
-          </Typography>
-        </div>
-        <div className={classes.row} onClick={() => {
-          Router.push(savingsRoute);
-          onClose();
-        }}>          
-          <RedeemIcon fontSize='large' className={classes.icon} />
-          <Typography variant='h6'>
-            Savings
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {

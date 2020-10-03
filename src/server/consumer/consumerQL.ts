@@ -12,7 +12,6 @@ const _ConsumerQL = gql`
   type ConsumerPlan {
     role: PlanRole!
     stripeProductPriceId: ID!
-    stripeProductName: String!
   }
   type ConsumerLocation {
     primaryAddr: String!
@@ -22,7 +21,7 @@ const _ConsumerQL = gql`
   input ConsumerLocationInput {
     primaryAddr: String!
     address2: String
-    geoPoint: GeoInput!
+    geoPoint: GeoInput
   }
   type Consumer {
     _id: ID!
@@ -36,15 +35,15 @@ const _ConsumerQL = gql`
     card: Card
     phone: String
     searchArea: ConsumerLocation
-    serviceInstruction: String
+    serviceInstructions: String
   }
-
   input ConsumerProfileInput {
     name: String!
     email: String!
-    card: CardInput
-    phone: String
-    destination: ConsumerLocationInput
+    card: CardInput!
+    phone: String!
+    serviceInstructions: String!
+    searchArea: ConsumerLocationInput!
   }
 `
 

@@ -15,7 +15,7 @@ export interface ICartInput {
     readonly rest: ICartRest,
     readonly serviceDate: string,
     // again, just always save this....
-    readonly serviceInstructions: string 
+    readonly serviceInstructions: string | null
     readonly serviceTime: ServiceTime
     readonly serviceType: ServiceType
   }
@@ -189,7 +189,7 @@ export class Cart {
     phone: string,
     card: ICard,
     paymentMethodId: string,
-    serviceInstructions: string,
+    serviceInstructions: string | null,
   ): ICartInput {
     if (!cart.rest) {
       const err = new Error('Cart missing rest');

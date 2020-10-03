@@ -6,7 +6,6 @@ export const consumerFragment = gql`
     plan {
       role
       stripeProductPriceId
-      stripeProductName
     }
     profile {
       name
@@ -25,7 +24,7 @@ export const consumerFragment = gql`
           lon
         }
       }
-      serviceInstruction
+      serviceInstructions
     }
     permissions
   }

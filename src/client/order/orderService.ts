@@ -58,38 +58,36 @@ export const usePlaceOrder = (): [
     ${consumerFragment}
   `);
   const placeOrder = (newConsumer: newConsumer, cart: ICartInput) => {
-    console.log(copyWithTypenames, newConsumer);
     mutate({
       variables: { cart },
-      // optimisticResponse: {
-      //   placeOrder: {
-      //     res: copyWithTypenames({
-      //       _id: newConsumer._id,
-      //       stripeCustomerId: null,
-      //       profile: {
-      //         name: newConsumer.name,
-      //         email: newConsumer.email,
-      //         phone: cart.phone,
-      //         card: cart.card,
-      //         searchArea: {
-      //           primaryAddr: cart.searchArea,
-      //           address2: null, // null to be replaced when it repopulates later
-      //           geo: {
-      //             // empty string with the intention that it populates later
-      //             lat: '',
-      //             lon: '',
-      //           }
-      //         },
-      //         serviceInstructions: cart.cartOrder.serviceInstructions,
-      //       },
-      //       plan: null,
-      //       permissions: [] // empty so it populates later
-      //     }),
-      //     error: null,
-      //     //@ts-ignore
-      //     __typename: 'ConsumerRes'
-      //   }
-      // },
+      optimisticResponse: {
+        placeOrder: {
+          res: copyWithTypenames({
+            _id: newConsumer._id,
+            profile: {
+              name: newConsumer.name,
+              email: newConsumer.email,
+              phone: cart.phone,
+              card: cart.card,
+              searchArea: {
+                primaryAddr: cart.searchArea,
+                address2: cart.address2,
+                geoPoint: {
+                  // empty string with the intention that it populates later
+                  lat: '',
+                  lon: '',
+                }
+              },
+              serviceInstructions: cart.cartOrder.serviceInstructions,
+            },
+            plan: null,
+            permissions: [], // empty so it populates later
+          }),
+          error: null,
+          //@ts-ignore
+          __typename: 'ConsumerRes'
+        }
+      },
       update: (cache, { data }) => {
         if (data && data.placeOrder.res) updateMyConsumer(cache, data.placeOrder.res)
       },

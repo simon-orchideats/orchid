@@ -253,11 +253,11 @@ export interface EOrder {
   // either the destination of the delivery or the pick up location
   readonly location: ELocation
   readonly serviceDate: string
-  readonly serviceInstructions: string
+  readonly serviceInstructions: string | null
   readonly serviceTime: ServiceTime
   readonly serviceType: ServiceType
   readonly rest: IOrderRest
-  readonly stripePaymentId: string | null
+  readonly stripePaymentId: string
 }
 
 export interface IOrder extends Omit<EOrder, 'location' | 'createdDate'> {
@@ -389,6 +389,11 @@ export class Order {
       month: 'numeric',
       year: 'numeric',
     })
+  }
+
+  static getServiceMonthDay(d: string): string {
+    const split = d.split('/');
+    return split[0] + '/' + split[1];
   }
 
   static getServiceTime(d: Date): ServiceTime {

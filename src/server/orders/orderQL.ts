@@ -14,6 +14,12 @@ export const _OrderQL = gql`
     taxRate: Float!
     deliveryFee: Int!
   }
+  
+  input CustomizationInput {
+    additionalPrice: Int!
+    name: String!
+    quantity: Int
+  }
 
   input CartOrderInput {
     rest: CartRestInput!
@@ -33,19 +39,8 @@ export const _OrderQL = gql`
     cartOrder: CartOrderInput!
   }
 
-  type OrderMeal {
-    choices: [String!]!
-    description: String
-    img: String
-    instructions: String
-    mealId: ID!
-    name: String!
-    price: Int!
-    quantity: Int!
-  }
-
   input OrderMealInput {
-    choices: [String!]!
+    customizations: [CustomizationInput!]!
     description: String
     img: String
     instructions: String
@@ -54,6 +49,23 @@ export const _OrderQL = gql`
     price: Int!
     quantity: Int!
     tags: [TagInput!]!
+  }
+
+  type Customization {
+    additionalPrice: Int!
+    name: String!
+    quantity: Int
+  }
+
+  type OrderMeal {
+    customizations: [Customization!]!
+    description: String
+    img: String
+    instructions: String
+    mealId: ID!
+    name: String!
+    price: Int!
+    quantity: Int!
   }
 
   type Costs {

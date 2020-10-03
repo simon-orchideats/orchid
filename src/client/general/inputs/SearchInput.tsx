@@ -82,10 +82,12 @@ const SearchInput: React.FC<{
   onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
   defaultValue?: string
   disableAutoFocus?: boolean
+  onSelect?: (s: string) => void
 }> = ({
   onBlur,
   defaultValue,
-  disableAutoFocus = false
+  disableAutoFocus = false,
+  onSelect
 }) => {
   const classes = useStyles();
   const setSearchArea = useSetSearchArea();
@@ -126,7 +128,7 @@ const SearchInput: React.FC<{
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (options.length > 0) setSearchArea(options[0].description)
+    if (options.length > 0 && !onSelect) setSearchArea(options[0].description)
   }
 
   return (
@@ -137,7 +139,6 @@ const SearchInput: React.FC<{
         includeInputInList
         filterSelectedOptions
         inputValue={inputAddr}
-        // popupIcon={null} 
         getOptionLabel={option => typeof option === 'string' ? option : option.description}
         // to disable the built-in filtering of the autocomplete component
         filterOptions={(x) => x}
@@ -148,7 +149,11 @@ const SearchInput: React.FC<{
           setSelectedAddr(newValue);
           if (newValue && typeof newValue !== 'string') {
             setOptions([newValue, ...options]);
-            setSearchArea(newValue.description)
+            if (onSelect) {
+              onSelect(newValue.description);
+            } else {
+              setSearchArea(newValue.description)
+            }
           } else {
             setOptions(options)
           }

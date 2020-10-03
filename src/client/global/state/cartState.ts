@@ -23,11 +23,6 @@ export const cartQL = gql`
     serviceType: ServiceType!
     stripeProductPriceId: ID
   }
-  input CustomizationInput {
-    additionalPrice: Int
-    name: string
-    quantity: Int
-  }
   input PlanInput {
     stripeProductPriceId: String!
     name: PlanName
@@ -73,34 +68,68 @@ export const useGetCart = () => {
   return (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
   // return {
   //   "rest": {
-  //     "deliveryFee": 299,
+  //     "deliveryFee": 200,
   //     "meals": [
   //       {
-  //         "customizations": [],
-  //         "description": null,
-  //         "img": "/menu/taqueria/pescado-taco.png",
+  //         "customizations": [
+  //           {
+  //             "additionalPrice": 0,
+  //             "name": "Medium Well"
+  //           }
+  //         ],
+  //         "description": "Grilled asparagus, fingerling potatoes, peperonata and salsa verde.",
+  //         "img": "https://s3-media0.fl.yelpcdn.com/bphoto/_9hrXbP35jrCkzrzJHhxyA/o.jpg",
   //         "instructions": null,
-  //         "mealId": "O6_4TKaCEMVBFpB3-XR0P",
-  //         "name": "Pescado (Fish) Tacos x3",
-  //         "quantity": 4,
-  //         "price": 1000,
+  //         "mealId": "-Fo8mZ0Kb1cqZAujdDbVA",
+  //         "name": "Hanger Steak",
+  //         "quantity": 1,
+  //         "price": 2100,
   //         "tags": [
+  //           {
+  //             "name": "American",
+  //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Protein",
+  //             "type": "diet"
+  //           },
   //           {
   //             "name": "Mexican",
   //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Cuban",
+  //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Keto",
+  //             "type": "diet"
+  //           },
+  //           {
+  //             "name": "Spicy",
+  //             "type": "flavor"
+  //           },
+  //           {
+  //             "name": "Steak",
+  //             "type": "form"
   //           }
   //         ]
   //       }
   //     ],
-  //     "restId": "GpnuO3EBTPi9Vy_WkUiX",
-  //     "restName": "La Taqueria Downtown",
+  //     "restId": "m0ZR5nQBkr8YmTl0u6Ql",
+  //     "restName": "Villa Borghese III",
   //     "taxRate": 0.06625
   //   },
-  //   "searchArea": '444 Washington Boulevard, Jersey City, NJ, USA',
-  //   "serviceDate": "9/24",
-  //   "serviceTime": "ASAP",
+  //   "searchArea": "444 Washington Boulevard, Jersey City, NJ, USA",
+  //   "serviceDate": "10/3/2020",
+  //   "serviceTime": "ThreeFifteenPToThreeFortyFiveP",
   //   "serviceType": "Delivery",
-  //   "stripeProductPriceId": null
+  //   "plan": {
+  //     "stripeProductPriceId": "price_1HQl8qIbp99rfpAlksG3aLxd",
+  //     "name": "Foodie",
+  //     "numAccounts": 1,
+  //     "price": 499
+  //   }
   // } as ICart
 }
 

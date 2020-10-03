@@ -1,10 +1,11 @@
+import { PlanRoles } from './../../consumer/consumerPlanModel';
 import { ELocation } from './../../place/locationModel';
 import { ERest } from './../../rest/restModel';
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
 import { EOrder, IOrder, Order } from './../../order/orderModel';
 import { getPlanService, IPlanService } from './../plans/planService';
-import { Permissions, EConsumer, Consumer } from './../../consumer/consumerModel';
+import { Permissions, EConsumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
 import { ICartInput } from './../../order/cartModel';
@@ -697,7 +698,7 @@ class OrderService {
     try {
       const mealTotal = OrderMeal.getTotalMealCost(cart.cartOrder.rest.meals);
       const taxes = mealTotal * cart.cartOrder.rest.taxRate;
-      const total = mealTotal + taxes + cart.cartOrder.rest.deliveryFee;
+      const total = Math.round(mealTotal + taxes + cart.cartOrder.rest.deliveryFee);
       const options: Stripe.PaymentIntentCreateParams = {
         payment_method: cart.paymentMethodId,
         customer: stripeCustomerId,
@@ -756,12 +757,28 @@ class OrderService {
         throw e;
       }
     }
-
-    if (signedInUser.stripeSubscriptionId) {
-      console.log(signedInUser.stripeSubscriptionId, 'exists');
-      // todo pivot: act accordingly
+    let subscriptionId = signedInUser.stripeSubscriptionId;
+    if (!subscriptionId) {
+      if (!cart.stripeProductPriceId) {
+        throw new Error('Cart missing stripeProductPriceId')
+      }
+      const newSub: Stripe.SubscriptionCreateParams = {
+        proration_behavior: 'none',
+        customer: stripeCustomerId,
+        trial_period_days: 30,
+        items: [{
+          price: cart.stripeProductPriceId
+        }]
+      }
+      try {
+        const subscription = await this.stripe.subscriptions.create(newSub);
+        subscriptionId = subscription.id;
+      } catch (e) {
+        console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+                      + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+        throw e;
+      }
     }
-
     const geo = await this.geoService.getGeocodeByQuery(cart.searchArea);
     if (!geo) {
       return {
@@ -778,38 +795,6 @@ class OrderService {
       },
       timezone: geo.timezone,
     };
-
-    const consumer: Omit<EConsumer, 'createdDate'> = {
-      stripeCustomerId,
-      plan: null,
-      profile: {
-        name: signedInUser.profile.name,
-        email: signedInUser.profile.email,
-        phone: cart.phone,
-        card: cart.card,
-        serviceInstructions: cart.cartOrder.serviceInstructions,
-        // serviceInstructions: cart.serviceI
-        searchArea,
-      }
-    };
-
-    // const newSub: Stripe.SubscriptionCreateParams = {
-    //   proration_behavior: 'none',
-    //   // start the billing cycle at the end of the day so we always guarantee that devlieres are confirmed before
-    //   // invoice creation. for example, if a customer signed up at 12am, they would have a billing cycle of 12 am so
-    //   // it's possible that stripe creates the invoice before all deliveires were confirmed for 12am.
-    //   billing_cycle_anchor: billingStartDateSeconds,
-    //   customer: stripeCustomerId,
-    //   items: mealPlans.map(mp => ({ plan: mp.stripePlanId }))
-    // }
-    // try {
-    //   subscription = await this.stripe.subscriptions.create(newSub);
-    // } catch (e) {
-    //   console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
-    //                 + `with stripe customerId '${stripeCustomerId}'`, e.stack);
-    //   throw e;
-    // }
-
     const paymentId = await this.makePayment(cart, stripeCustomerId, rest.stripeRestId);
     const order = Order.getEOrder(
       signedInUser,
@@ -825,21 +810,45 @@ class OrderService {
       console.error(`Failed to index new order ${JSON.stringify(order)}`, e.stack)
       throw e;
     });
+    const consumer: Partial<EConsumer> = {
+      stripeCustomerId: signedInUser.stripeCustomerId ? undefined : stripeCustomerId,
+      plan: cart.stripeProductPriceId ?
+        {
+          stripeSubscriptionId: subscriptionId,
+          role: PlanRoles.Owner,
+          stripeProductPriceId: cart.stripeProductPriceId,
+        }
+        :
+        undefined,
+      profile: {
+        name: signedInUser.profile.name,
+        email: signedInUser.profile.email,
+        phone: cart.phone,
+        card: cart.card,
+        serviceInstructions: cart.cartOrder.serviceInstructions,
+        searchArea,
+      }
+    };
     const consumerUpdater = this.consumerService.updateConsumer(
       signedInUser._id,
       signedInUser.permissions, 
       consumer
     );
-    const consumerAuth0Updater = this.consumerService.updateAuth0MetaData(
-      signedInUser._id,
-      null,
-      stripeCustomerId
-    );
-    await Promise.all([consumerUpdater, orderAdder, consumerAuth0Updater]);
-    // refresh access token so client can pick up new fields in token
-    if (req && res) await refetchAccessToken(req, res);
+    if (cart.stripeProductPriceId) {
+      await this.consumerService.updateAuth0MetaData(
+        signedInUser._id,
+        subscriptionId,
+        stripeCustomerId
+      );
+      // refresh access token so client can pick up new fields in token
+      if (req && res) await refetchAccessToken(req, res);
+    }
+    const [iConsumer] = await Promise.all([
+      consumerUpdater,
+      orderAdder
+    ]);
     return {
-      res: Consumer.getIConsumerFromEConsumer(signedInUser._id, signedInUser.permissions, consumer),
+      res: iConsumer,
       error: null
     };
   }

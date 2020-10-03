@@ -1,7 +1,7 @@
 import { makeStyles, Typography, Paper, Divider, Popover, Grid } from "@material-ui/core";
 import { useState } from "react";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { IOrder, ServiceTypes } from "../../order/orderModel";
+import { IOrder, ServiceTypes, Order } from "../../order/orderModel";
 import { OrderMeal } from "../../order/orderRestModel";
 import CartMealGroup from "../order/CartMealGroup";
 
@@ -156,7 +156,10 @@ const OrderOverview: React.FC<{
           md={3}
         >
           <Typography variant='subtitle1'>
-            {order.serviceDate} {order.serviceTime}
+            {Order.getServiceMonthDay(order.serviceDate)}
+          </Typography>
+          <Typography variant='subtitle1'>
+            {Order.getServiceTimeStr(order.serviceTime)}
           </Typography>
         </Grid>
         <Grid

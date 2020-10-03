@@ -1,22 +1,20 @@
-//@ts-nocheck
 import { Container, Typography, makeStyles, Button, List, ListItem, ListItemText, ListItemSecondaryAction } from "@material-ui/core";
 import { useState, useRef, createRef } from "react";
 import PhoneInput from '../../client/general/inputs/PhoneInput'
-import AddressForm from '../../client/general/inputs/AddressForm'
 import { useRequireConsumer, useUpdateMyProfile } from '../../consumer/consumerService';
 import withApollo from "../../client/utils/withPageApollo";
-import { state } from "../../place/addressModel";
 import CardForm from "../../client/checkout/CardForm";
 import { StripeProvider, Elements, ReactStripeElements, injectStripe } from "react-stripe-elements";
 import { activeConfig } from "../../config";
 import { isServer } from "../../client/utils/isServer";
-import { IConsumerProfile } from "../../consumer/consumerModel";
+import { IConsumerProfileInput } from "../../consumer/consumerModel";
 import { Card } from "../../card/cardModel";
 import { NotificationType } from "../../client/notification/notificationModel";
 import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import BaseInput from "../../client/general/inputs/BaseInput";
+import SearchInput from "../../client/general/inputs/SearchInput";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -47,7 +45,7 @@ const useStyles = makeStyles(theme => ({
 
 const Labels: React.FC<{
   primary: string,
-  secondary: string,
+  secondary: React.ReactNode,
 }> = ({
   primary,
   secondary,
@@ -72,13 +70,9 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const classes = useStyles();
   const validatePhoneRef = useRef<() => boolean>();
   const phoneInputRef = createRef<HTMLInputElement>();
-  const validateAddressRef = useRef<() => boolean>();
-  const addr1InputRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
-  const cityInputRef = createRef<HTMLInputElement>();
-  const zipInputRef = createRef<HTMLInputElement>();
   const instructionsInputRef = createRef<HTMLInputElement>();
-  const [state, setState] = useState<state | ''>('NJ');
+  const [searchArea, setSearchArea] = useState<string>('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
   const [isUpdatingInstructions, setIsUpdatingInstructions] = useState(false);
@@ -90,6 +84,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   });
   const consumer = useRequireConsumer(profileRoute);
   let consumerAddressLabel = '';
+  let consumerAddress2Label = '';
   let consumerCardLabel = '';
   let consumerPhoneLabel = '';
   let consumerNameLabel = '';
@@ -100,12 +95,13 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     return <Typography>Logging you in...</Typography>
   }
   if (consumerData) {
-    if (consumerData.Profile.Destination) consumerAddressLabel = consumerData.Profile.Destination.Address.getAddrStr();
-    if (consumerData.Profile.Card) consumerCardLabel = consumerData.Profile.Card.getHiddenCardStr();
-    if (consumerData.Profile.Phone) consumerPhoneLabel = consumerData.Profile.Phone;
-    if (consumerData.Profile.Name) consumerNameLabel = consumerData.Profile.Name;
-    if (consumerData.Profile.Email) consumerEmailLabel = consumerData.Profile.Email;
-    if (consumerData.Profile.Destination) instructionsLabel = consumerData.Profile.Destination.Instructions;
+    if (consumerData.profile.searchArea?.primaryAddr) consumerAddressLabel = consumerData.profile.searchArea.primaryAddr;
+    if (consumerData.profile.searchArea?.address2) consumerAddress2Label = consumerData.profile.searchArea.address2;
+    if (consumerData.profile.card) consumerCardLabel = Card.getHiddenCardStr(consumerData.profile.card);
+    if (consumerData.profile.phone) consumerPhoneLabel = consumerData.profile.phone;
+    if (consumerData.profile.name) consumerNameLabel = consumerData.profile.name;
+    if (consumerData.profile.email) consumerEmailLabel = consumerData.profile.email;
+    if (consumerData.profile.serviceInstructions) instructionsLabel = consumerData.profile.serviceInstructions;
   }
 
   const noConsumerErr = () => {
@@ -117,40 +113,27 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     if (!consumerData) throw noConsumerErr() 
     if (!validatePhoneRef.current!()) return;
     setIsUpdatingPhone(false);
-    const updatedProfile: IConsumerProfile = {
-      ...consumerData.profile,
+    const updatedProfile: IConsumerProfileInput = {
+      ...consumerData.profile as IConsumerProfileInput,
       phone: phoneInputRef.current!.value
     }
-    sendUpdatePhoneMetrics();
     updateMyProfile(consumerData, updatedProfile);
   }
   const onCancelPhone = () => {
     setIsUpdatingPhone(false);
   }
   const onSaveAddr = () => {
-    if (!consumerData) throw noConsumerErr() 
-    if (!validateAddressRef.current!()) return;
+    if (!consumerData) throw noConsumerErr();
+    if (!searchArea) return;
     setIsUpdatingAddr(false);
-    if (state) {
-      const updatedProfile: IConsumerProfile = {
-        ...consumerData.profile,
-        searchArea: {
-          address: {
-            address1: addr1InputRef.current!.value,
-            address2: addr2InputRef.current!.value,
-            city: cityInputRef.current!.value,
-            state,
-            zip: zipInputRef.current!.value,
-          },
-          instructions: consumerData.Profile.Destination && consumerData.Profile.Destination.Instructions,
-        },
-      }
-      sendUpdateAddressMetrics();
-      updateMyProfile(consumerData, updatedProfile);
-    } else {
-      console.error('State is empty')
-      throw new Error ('State is empty')
+    const updatedProfile: IConsumerProfileInput = {
+      ...consumerData.profile as IConsumerProfileInput,
+      searchArea: {
+        primaryAddr: searchArea,
+        address2: addr2InputRef.current!.value,
+      },
     }
+    updateMyProfile(consumerData, updatedProfile);
   }
   const onCancelAddr = () => {
     setIsUpdatingAddr(false);
@@ -178,10 +161,10 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       pm = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
-        billing_details: { name: consumerData.Profile.Name },
+        billing_details: { name: consumerData.profile.name },
       });
     } catch (e) {
-      const err =  new Error(`Failed to createPaymentMethod for accountName '${consumerData.Profile.Name}'`);
+      const err =  new Error(`Failed to createPaymentMethod for accountName '${consumerData.profile.name}'`);
       console.error(e.stack);
       throw err;
     }
@@ -190,36 +173,25 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       console.error(err.stack);
       throw err;
     };
-    const updatedProfile: IConsumerProfile = {
-      ...consumerData.profile,
+    const updatedProfile: IConsumerProfileInput = {
+      ...consumerData.profile as IConsumerProfileInput,
       card: Card.getCardFromStripe(pm.paymentMethod!.card),
     }
 
-    sendUpdateCardMetrics();
     updateMyProfile(consumerData, updatedProfile, pm.paymentMethod!.id);
     setIsUpdatingCard(false);
   };
   const onCancelCard = () => {
     setIsUpdatingCard(false);
   }
-
   
   const onSaveInstructions = () => {
     if (!consumerData) throw noConsumerErr();
-    if (!consumerData.Profile.Destination) {
-      const err = new Error('Missing consumer destination');
-      console.error(err.stack);
-      throw err;
-    }
     setIsUpdatingInstructions(false);
-    const updatedProfile: IConsumerProfile = {
-      ...consumerData.profile,
-      searchArea: {
-        address: consumerData.Profile.Destination.Address,
-        instructions: instructionsInputRef.current!.value,
-      },
+    const updatedProfile: IConsumerProfileInput = {
+      ...consumerData.profile as IConsumerProfileInput,
+      serviceInstructions: instructionsInputRef.current!.value
     }
-    sendUpdateInstructionsMetrics();
     updateMyProfile(consumerData, updatedProfile);
   }
   const onCancelInstructions = () => {
@@ -338,17 +310,12 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           isUpdatingAddr ?
           <div className={classes.stretch}>
             <div className={classes.input}>
-              <AddressForm
-                setValidator={validator => {
-                  validateAddressRef.current = validator;
-                }}
-                addr1InputRef={addr1InputRef}
-                addr2InputRef={addr2InputRef}
-                cityInputRef={cityInputRef}
-                zipInputRef={zipInputRef}
-                state={state}
-                setState={setState}
+              <SearchInput
+                onSelect={(addr: string) => setSearchArea(addr)}
               />
+            </div>
+            <div className={classes.input}>
+              <BaseInput label='Apt #' inputRef={addr2InputRef} />
             </div>
             <div className={classes.buttons}>
               <Button
@@ -372,7 +339,16 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           <>
             <Labels
               primary='Address'
-              secondary={consumerAddressLabel}
+              secondary={
+                <div>
+                  <Typography variant='body1'>
+                    {consumerAddressLabel}
+                  </Typography>
+                  <Typography variant='body1'>
+                    {consumerAddress2Label}
+                  </Typography>
+                </div>
+              }
             />
             <ListItemSecondaryAction>
               {

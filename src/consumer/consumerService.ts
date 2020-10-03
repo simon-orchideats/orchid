@@ -2,7 +2,7 @@ import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
 import { ApolloError } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
-import { Consumer, IConsumer, IConsumerProfile } from './consumerModel';
+import { Consumer, IConsumer, IConsumerProfileInput } from './consumerModel';
 import gql from 'graphql-tag';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useMemo } from 'react';
@@ -23,35 +23,22 @@ type myConsumerRes = { myConsumer: IConsumer | null }
 
 export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   const newConsumer = Consumer.getICopy(consumer);
-  // //@ts-ignore
-  // if (newConsumer.plan) {
-  //   //@ts-ignore
-  //   newConsumer.plan.__typename = 'ConsumerPlan';
-  //   newConsumer.plan.schedules.forEach(s => {
-  //     //@ts-ignore
-  //     s.__typename = 'Schedules';
-  //   });
-  //   newConsumer.plan.mealPlans.forEach(mp => {
-  //     //@ts-ignore
-  //     mp.__typename = 'MealPlan';
-  //   });
-  //   newConsumer.plan.tags.forEach(t => {
-  //     // @ts-ignore
-  //     t.__typename = 'Tag'
-  //   })
-  // }
-  // //@ts-ignore
-  // newConsumer.profile.__typename = 'ConsumerProfile';
-  // //@ts-ignore
-  // newConsumer.profile.card.__typename = 'Card';
-  // //@ts-ignore
-  // newConsumer.profile.location.address.__typename  = 'Address'
-  // //@ts-ignore
-  // newConsumer.profile.location.__typename = 'Destination'
-  // //@ts-ignore
-  // newConsumer.__typename = 'Consumer';
-  // //@ts-ignore
-  // if (!newConsumer.profile.location.address.address2) newConsumer.profile.location.address.address2 = null;
+  if (newConsumer.plan) {
+    //@ts-ignore
+    newConsumer.plan.__typename = 'ConsumerPlan';
+  }
+  //@ts-ignore
+  newConsumer.profile.__typename = 'ConsumerProfile';
+  //@ts-ignore
+  newConsumer.profile.card.__typename = 'Card';
+  //@ts-ignore
+  newConsumer.profile.searchArea.geoPoint.__typename  = 'Geo'
+  //@ts-ignore
+  newConsumer.profile.searchArea.__typename = 'ConsumerLocation'
+  //@ts-ignore
+  newConsumer.__typename = 'Consumer';
+  //@ts-ignore
+  if (!newConsumer.profile.searchArea.address2) newConsumer.profile.searchArea.address2 = null;
   return newConsumer
 }
 
@@ -70,7 +57,7 @@ export const updateMyConsumer = (cache: ApolloCache<any> | DataProxy, consumer: 
 }
 
 export const useUpdateMyProfile = (): [
-  (consumer: IConsumer, profile: IConsumerProfile, paymentMethodId?: string) => void,
+  (consumer: IConsumer, profile: IConsumerProfileInput, paymentMethodId?: string) => void,
   {
     error?: ApolloError 
     data?: {
@@ -80,7 +67,7 @@ export const useUpdateMyProfile = (): [
   }
 ] => {
   type res = { updateMyProfile: MutationConsumerRes };
-  type vars = { profile: IConsumerProfile, paymentMethodId?: string }
+  type vars = { profile: IConsumerProfileInput, paymentMethodId?: string }
   const [mutate, mutation] = useMutation<res,vars>(gql`
     mutation updateMyProfile($profile: ConsumerProfileInput!, $paymentMethodId: String) {
       updateMyProfile(profile: $profile, paymentMethodId: $paymentMethodId) {
@@ -92,12 +79,28 @@ export const useUpdateMyProfile = (): [
     }
     ${consumerFragment}
   `);
-  const updateMyProfile = (consumer: IConsumer, profile: IConsumerProfile, paymentMethodId?: string) => {
+  const updateMyProfile = (consumer: IConsumer, profile: IConsumerProfileInput, paymentMethodId?: string) => {
     mutate({
       variables: { profile, paymentMethodId },
       optimisticResponse: {
         updateMyProfile: { 
-          res: copyWithTypenames({ ...consumer, profile }),
+          res: copyWithTypenames({
+            ...consumer,
+            profile: {
+              ...profile,
+              searchArea: profile.searchArea ?
+                {
+                  ...profile.searchArea,
+                  // set to 0 temporarily
+                  geoPoint: {
+                    lat: '0',
+                    lon: '0'
+                  }
+                }
+                :
+                null
+            } 
+          }),
           error: null,
           //@ts-ignore
           __typename: 'ConsumerRes'
