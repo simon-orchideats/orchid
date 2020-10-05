@@ -762,9 +762,14 @@ class OrderService {
     let subscriptionId = signedInUser.stripeSubscriptionId;
     if (!subscriptionId) {
       if (!cart.stripeProductPriceId) {
-        // this is possible when the consumer is newly added to another's plan
-        // todo pivot: get the subId from the db and set use it to refresh the tokens
-        subscriptionId = 'temporary';
+        const res = await this.consumerService.getEConsumer(signedInUser);
+        if (!res) {
+          throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and is not in db`)
+        }
+        if (!res.consumer.plan) {
+          throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and has no plan`)
+        }
+        subscriptionId = res.consumer.plan.stripeSubscriptionId
       } else {
         try {
           const subscription = await this.stripe.subscriptions.create({
@@ -782,6 +787,15 @@ class OrderService {
           throw e;
         }
       }
+    }
+    if (!signedInUser.stripeCustomerId || !signedInUser.stripeSubscriptionId) {
+      await this.consumerService.updateAuth0MetaData(
+        signedInUser._id,
+        subscriptionId,
+        stripeCustomerId
+      );
+      // refresh access token so client can pick up new fields in token
+      if (req && res) await refetchAccessToken(req, res);
     }
     const geo = await this.geoService.getGeocodeByQuery(cart.searchArea);
     if (!geo) {
@@ -838,19 +852,6 @@ class OrderService {
       signedInUser.permissions, 
       consumer
     );
-    // todo pivot. this is a bad check. for new customers who were recently added to a plan, they wont have stripePRoductPriceId
-    // but they will have subscription. they also wont have stripeCustomerId.
-    // anothe rproblem is that if the newly added account's token will be old and the token
-    // wont have the proper stripeSubId in it so when added account places order, we wont see tokens
-    if (cart.stripeProductPriceId) {
-      await this.consumerService.updateAuth0MetaData(
-        signedInUser._id,
-        subscriptionId,
-        stripeCustomerId
-      );
-      // refresh access token so client can pick up new fields in token
-      if (req && res) await refetchAccessToken(req, res);
-    }
     const [iConsumer] = await Promise.all([
       consumerUpdater,
       orderAdder

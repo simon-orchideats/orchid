@@ -21,6 +21,10 @@ const CONSUMER_INDEX = 'consumers';
 export interface IConsumerService {
   addAccountToPlan: (signedInUser: SignedInUser, addedEmail: string) => Promise<MutationBoolRes>
   cancelSubscription: (signedInUser: SignedInUser, req?: IncomingMessage, res?: OutgoingMessage) => Promise<MutationBoolRes>
+  getEConsumer: (signedInUser: SignedInUser) => Promise<{
+    _id: string
+    consumer: EConsumer
+  } | null>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
   getSharedAccounts: (signedInUser: SignedInUser) => Promise<string[]>
   removeAccountFromPlan: (signedInUser: SignedInUser, removedEmail: string) => Promise<MutationBoolRes>
@@ -88,25 +92,26 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  private async getEConsumer(userId: string): Promise<{
+  public async getEConsumer(signedInUser: SignedInUser): Promise<{
     _id: string,
     consumer: EConsumer,
   } | null> {
     try {
+      if (!signedInUser) throw getNotSignedInErr(); 
       const consumer: ApiResponse<EConsumer> = await this.elastic.getSource(
         {
           index: CONSUMER_INDEX,
-          id: userId,
+          id: signedInUser._id,
         },
         { ignore: [404] }
       );
       if (consumer.statusCode === 404) return null;
       return {
-        _id: userId,
+        _id: signedInUser._id,
         consumer: consumer.body
       }
     } catch (e) {
-      console.error(`[ConsumerService] Failed to get EConsumer ${userId}: ${e.stack}`)
+      console.error(`[ConsumerService] Failed to get EConsumer ${signedInUser?._id}: ${e.stack}`)
       return null;
     }
   }
@@ -134,7 +139,7 @@ class ConsumerService implements IConsumerService {
       if (!signedInUser.stripeSubscriptionId) throw new Error('Missing subscriptionId');
       if (!this.planService) throw new Error('PlanService not set');
       if (!addedEmail) throw new Error(`Email '${addedEmail}' is missing`);
-      const currUser = await this.getEConsumer(signedInUser._id);
+      const currUser = await this.getEConsumer(signedInUser);
       if (!currUser) throw new Error(`Signed in user '${signedInUser._id}' not found in db`);
       const currPlan = currUser.consumer.plan;
       if (!currPlan) throw new Error(`User is missing plan`);
@@ -328,7 +333,7 @@ class ConsumerService implements IConsumerService {
   async getIConsumer(signedInUser: SignedInUser): Promise<IConsumer | null> {
     try {
       if (!signedInUser) throw 'No signed in user';
-      const res = await this.getEConsumer(signedInUser._id);
+      const res = await this.getEConsumer(signedInUser);
       if (!res) return null;
       return {
         _id: signedInUser._id,
@@ -348,7 +353,7 @@ class ConsumerService implements IConsumerService {
       if (!signedInUser.stripeSubscriptionId) throw new Error('Missing subscriptionId');
       if (!this.planService) throw new Error('PlanService not set');
       if (!removedEmail) throw new Error(`Email '${removedEmail}' is missing`);
-      const currUser = await this.getEConsumer(signedInUser._id);
+      const currUser = await this.getEConsumer(signedInUser);
       if (!currUser) throw new Error(`Signed in user '${signedInUser._id}' not found in db`);
       if (currUser.consumer.profile.email === removedEmail) throw new Error("Can't remove self");
       const currPlan = currUser.consumer.plan;
