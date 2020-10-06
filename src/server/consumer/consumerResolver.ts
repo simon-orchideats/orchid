@@ -26,7 +26,11 @@ export const ConsumerMutationResolvers: ServerResolovers = {
   },
 
   cancelSubscription: async (_root, _vars, { signedInUser, req, res }) => {
-    return await getConsumerService().cancelSubscription(signedInUser, req, res);
+    try {
+      return await getConsumerService().cancelSubscription(signedInUser, req, res);
+    } catch (e) {
+      throw new Error('Internal Server Error');
+    }
   },
 
   removeAccountFromPlan: async (_root, { removedEmail }, { signedInUser }) => {

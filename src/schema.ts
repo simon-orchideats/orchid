@@ -54,7 +54,7 @@ const mutation = gql`
   type Mutation {
     addAccountToPlan(addedEmail: String!): BoolRes!
     # addRest(rest: RestInput!): BoolRes!
-    # cancelSubscription: BoolRes!
+    cancelSubscription: BoolRes!
     placeOrder(cart: CartInput!): ConsumerRes!
     # getPromo(promoCode: String!, phone: String! fullAddr: String!): PromoRes!
     removeAccountFromPlan(removedEmail: String!): BoolRes!
@@ -69,7 +69,6 @@ const mutation = gql`
     
     # baddies
     addRest(rest: RestInput!): String!
-    cancelSubscription: String!
     getPromo(promoCode: String!, phone: String! fullAddr: String!): String!
     skipDelivery(orderId: ID!, deliveryIndex: Int!): String!
     updateDeliveries(orderId: ID!, updateOptions: String!): String!

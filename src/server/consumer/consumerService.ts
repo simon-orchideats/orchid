@@ -234,69 +234,63 @@ class ConsumerService implements IConsumerService {
     req?: IncomingMessage,
     res?: OutgoingMessage
   ) {
-    console.log(req, res);
     try {
       if (!this.orderService) throw 'Missing order service';
       if (!signedInUser) throw getNotSignedInErr()
       const subscriptionId = signedInUser.stripeSubscriptionId;
       if (!subscriptionId) throw new Error('Missing stripe subscription id');
 
-      // const p1 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
-      //   headers: await getAuth0Header(),
-      //   method: 'PATCH',
-      //   body: JSON.stringify({
-      //     app_metadata: {
-      //       stripeSubscriptionId: null,
-      //     },
-      //   })
-      // }).then(async () => {
-      //   if (req && res) await refetchAccessToken(req, res);
-      // }).catch(e => {
-      //   const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
-      //   console.error(msg)
-      //   throw e;
-      // });
+      const p1 = fetch(`https://${activeConfig.server.auth.domain}/api/v2/users/${signedInUser._id}`, {
+        headers: await getAuth0Header(),
+        method: 'PATCH',
+        body: JSON.stringify({
+          app_metadata: {
+            stripeSubscriptionId: null,
+          },
+        })
+      }).then(async () => {
+        if (req && res) await refetchAccessToken(req, res);
+      }).catch(e => {
+        const msg = `Failed to remove stripeSubscriptionId from auth0 for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
+      const sharedAccounts = await this.getSharedAccounts(signedInUser);
+      const body: ({ update: { _id: string } } | { doc: Pick<EConsumer, 'plan'> })[] = [];
+      sharedAccounts.forEach(a => {
+        body.push({
+          update: {
+            _id: a._id
+          }
+        });
+        const doc: Pick<EConsumer, 'plan'> = {
+          plan: null
+        }
+        body.push({
+          doc,
+        });
+      })
+      const p2 = this.elastic.bulk({
+        index: CONSUMER_INDEX,
+        body
+      }).catch(e => {
+        console.error(`Failed to cancel subscriptions for accounts '${sharedAccounts.map(a => a._id).join(', ')}'`, e.stack);
+        throw e;
+      });
+      const p3 = this.stripe.subscriptions.del(subscriptionId).catch(e => {
+        const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
+        console.error(msg)
+        throw e;
+      });
 
-      // const eConsumer = await this.getEConsumer(signedInUser._id);
-      // const plan = eConsumer?.consumer.plan;
-      // if (!plan) throw new Error(`Missing consumer plan for '${signedInUser._id}'`);
-
-      // const updatedConsumer: Omit<EConsumer, 'createdDate' | 'profile' | 'stripeCustomerId'> = {
-      //   stripeSubscriptionId: null,
-      //   plan: null,
-      // }
-      // const p3 = this.elastic.update({
-      //   index: CONSUMER_INDEX,
-      //   id: signedInUser._id,
-      //   body: {
-      //     doc: updatedConsumer
-      //   }
-      // }).catch(e => {
-      //   const msg = `Failed to remove stripeSubscriptionId from elastic for user '${signedInUser._id}'. ${e.stack}`;
-      //   console.error(msg)
-      //   throw e;
-      // });
-      // this.stripe.subscriptions.del(subscriptionId, { invoice_now: true }).catch(e => {
-      //   const msg = `[ConsumerService] Failed to delete subscription '${subscriptionId}' from stripe for user '${signedInUser._id}'. ${e.stack}`;
-      //   console.error(msg)
-      //   throw e;
-      // });
-      // this.orderService.removeReferredDiscounts(signedInUser).catch(e => {
-      //   console.error(`[ConsumerService] Failed to removeReferredDiscounts with userId '${signedInUser._id}'`, e.stack)
-      //   throw e;
-      // })
-      // this.removeReferredWeeklyDiscount(signedInUser._id).catch(e => {
-      //   console.error(`[ConsumerService] Failed to remove weeklyDiscounts with referredUserId '${signedInUser._id}'`, e.stack)
-      // });
-
-      // await Promise.all([p1, p2, p3]);
+      await Promise.all([p1, p2, p3]);
       return {
         res: true,
         error: null,
       };
     } catch (e) {
       console.error(`[ConsumerService] couldn't cancel subscription for user '${JSON.stringify(signedInUser)}'`, e.stack);
-      throw new Error('Internal Server Error');
+      throw e;
     }
   }
 
@@ -608,7 +602,6 @@ class ConsumerService implements IConsumerService {
           error: null,
         }
       } else if (currPlan.role === PlanRoles.Member) {
-        // left off here. test this!
         if (!signedInUser.stripeCustomerId) {
           return {
             res: null,
