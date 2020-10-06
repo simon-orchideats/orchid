@@ -9,6 +9,7 @@ import { ApolloError } from 'apollo-client';
 import { useMemo } from 'react';
 import { updateMyConsumer, copyWithTypenames } from '../../consumer/consumerService';
 import { orderFragment } from '../../order/orderFragment';
+import { PlanRoles } from '../../consumer/consumerPlanModel';
 
 const MY_UPCOMING_ORDERS_QUERY = gql`
   query myUpcomingOrders {
@@ -80,7 +81,11 @@ export const usePlaceOrder = (): [
               },
               serviceInstructions: cart.cartOrder.serviceInstructions,
             },
-            plan: null,
+            plan: {
+              // the response will be different, but we set a "dummy" plan so the UI knows there's now a plan
+              role: PlanRoles.Owner, // arbitrary
+              stripeProductPriceId: 'arbitrary filler'
+            },
             permissions: [], // empty so it populates later
           }),
           error: null,

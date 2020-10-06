@@ -70,7 +70,7 @@ const PlanDetails: React.FC<{
       }}
       className={classes.card}
       style={{
-        borderColor: isSelected ? theme.palette.secondary.main : undefined
+        borderColor: isSelected ? theme.palette.primary.dark : undefined
       }}
     >
       <CardContent className={classes.content}>

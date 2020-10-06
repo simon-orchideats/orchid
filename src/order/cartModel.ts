@@ -190,6 +190,7 @@ export class Cart {
     card: ICard,
     paymentMethodId: string,
     serviceInstructions: string | null,
+    stripeProductPriceId: string | null,
   ): ICartInput {
     if (!cart.rest) {
       const err = new Error('Cart missing rest');
@@ -201,16 +202,11 @@ export class Cart {
       console.error(err.stack);
       throw err;
     }
-    if (!cart.plan) {
-      const err = new Error('Cart missing plan');
-      console.error(err.stack);
-      throw err;
-    }
     return {
       address2,
       paymentMethodId,
       card,
-      stripeProductPriceId: cart.plan.stripeProductPriceId, 
+      stripeProductPriceId,
       phone,
       searchArea: cart.searchArea,
       cartOrder: {

@@ -7,7 +7,7 @@ import { IOrderService, getOrderService } from './../orders/orderService';
 import { manualAuthSignUp} from './../auth/authenticate';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { EConsumer, IConsumer, Consumer, IConsumerProfile, Permission } from './../../consumer/consumerModel';
-import { IConsumerPlan, PlanRoles, EConsumerPlan } from './../../consumer/consumerPlanModel';
+import { PlanRoles, EConsumerPlan } from './../../consumer/consumerPlanModel';
 import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import express from 'express';
@@ -15,6 +15,7 @@ import { SignedInUser, MutationBoolRes, MutationConsumerRes } from '../../utils/
 import { activeConfig } from '../../config';
 import Stripe from 'stripe';
 import { OutgoingMessage, IncomingMessage } from 'http';
+import { refetchAccessToken } from '../../utils/auth';
 
 const CONSUMER_INDEX = 'consumers';
 
@@ -26,11 +27,16 @@ export interface IConsumerService {
     consumer: EConsumer
   } | null>
   getIConsumer: (signedInUser: SignedInUser) => Promise<IConsumer | null>
-  getSharedAccounts: (signedInUser: SignedInUser) => Promise<string[]>
+  getSharedAccountsEmails: (signedInUser: SignedInUser) => Promise<string[]>
   removeAccountFromPlan: (signedInUser: SignedInUser, removedEmail: string) => Promise<MutationBoolRes>
   signUp: (email: string, name: string, pass: string, res: express.Response) => Promise<MutationConsumerRes>
   updateAuth0MetaData: (userId: string, stripeSubscriptionId: string, stripeCustomerId: string) =>  Promise<Response>
-  updateMyPlan: (signedInUser: SignedInUser, newPlan: IConsumerPlan) => Promise<MutationConsumerRes>
+  updateMyPlan: (
+    signedInUser: SignedInUser,
+    newPlanId: string,
+    req?: IncomingMessage,
+    res?: OutgoingMessage,
+  ) => Promise<MutationConsumerRes>
   updateConsumer(_id: string, permissions: Permission[], consumer: Partial<EConsumer>): Promise<IConsumer>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
@@ -92,6 +98,39 @@ class ConsumerService implements IConsumerService {
     }
   }
 
+  private async getSharedAccounts(signedInUser: SignedInUser): Promise<
+    {
+      _id: string,
+      consumer: EConsumer,
+    }[]
+  > {
+    try {
+      if (!signedInUser) throw getNotSignedInErr();
+      const res: ApiResponse<SearchResponse<EConsumer>> = await this.elastic.search({
+        index: CONSUMER_INDEX,
+        body: {
+          query: {
+            bool: {
+              filter: {
+                term: {
+                  'plan.stripeSubscriptionId': signedInUser.stripeSubscriptionId
+                }
+              }
+            }
+          }
+        }
+      });
+      if (res.body.hits.total.value === 0) return [];
+      return res.body.hits.hits.map(h => ({
+        _id: h._id,
+        consumer: h._source,
+      }))
+    } catch (e) {
+      console.error(`[ConsumerService] Failed getSharedAccounts for '${signedInUser?._id}': ${e.stack}`)
+      throw e;
+    }
+  }
+
   public async getEConsumer(signedInUser: SignedInUser): Promise<{
     _id: string,
     consumer: EConsumer,
@@ -146,7 +185,7 @@ class ConsumerService implements IConsumerService {
       if (currPlan.role !== PlanRoles.Owner) throw new Error('User is not plan owner');
       const plans = await this.planService.getAvailablePlans();
       const dbPlan = Plan.getPlan(currPlan.stripeProductPriceId, plans);
-      const sharedAccounts = await this.getSharedAccounts(signedInUser);
+      const sharedAccounts = await this.getSharedAccountsEmails(signedInUser);
       if (sharedAccounts.length + 1 > dbPlan.numAccounts) {
         return {
           res: false,
@@ -166,6 +205,15 @@ class ConsumerService implements IConsumerService {
           error: `Account with email ${addedEmail} doesn't exist. Make sure ${addedEmail} is signed up first through the login page.`,
         }
       }
+      if (newAcct.consumer.plan) {
+        return {
+          res: false,
+          error: `${addedEmail} is already part of a plan`
+        }
+      }
+      // since there can exist multiple consumers per subscription, but only 1 paying stripe customer per
+      // subscription, we don't need to create multiple stripe subscriptions. there only exists 1 stripe subscription
+      // per paying consumer and all "associated" accounts simply share the same subId in elastic for tracking purposes
       await this.updatePlan(newAcct._id, {
         role: PlanRoles.Member,
         stripeProductPriceId: dbPlan.stripeProductPriceId,
@@ -252,25 +300,14 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  public async getSharedAccounts(signedInUser: SignedInUser) {
+  public async getSharedAccountsEmails(signedInUser: SignedInUser) {
     try {
-      if (!signedInUser) throw getNotSignedInErr();
-      const res: ApiResponse<SearchResponse<EConsumer>>  = await this.elastic.search({
-        index: CONSUMER_INDEX,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                term: {
-                  'plan.stripeSubscriptionId': signedInUser.stripeSubscriptionId
-                }
-              }
-            }
-          }
-        }
-      });
-      if (res.body.hits.total.value === 0) return [];
-      return res.body.hits.hits.map(h => h._source.profile.email)
+      const consumer = await this.getEConsumer(signedInUser);
+      if (!consumer || !consumer.consumer.plan || consumer.consumer.plan.role === PlanRoles.Member) {
+        return [];
+      }
+      const accounts = await this.getSharedAccounts(signedInUser);
+      return accounts.map(a => a.consumer.profile.email);
     } catch (e) {
       console.error(`[ConsumerService] Failed getSharedAccounts for '${signedInUser?._id}': ${e.stack}`)
       throw e;
@@ -488,96 +525,138 @@ class ConsumerService implements IConsumerService {
     }
   }
 
-  // todo pivot: change this from any
-  async updateMyPlan(signedInUser: SignedInUser, newPlan: IConsumerPlan): Promise<MutationConsumerRes> {
+  async updateMyPlan(
+    signedInUser: SignedInUser,
+    newPlanId: string,
+    req?: IncomingMessage,
+    res?: OutgoingMessage,
+  ): Promise<MutationConsumerRes> {
     try {
       if (!signedInUser) throw getNotSignedInErr()
       if (!this.orderService) throw new Error('OrderService not set');
-      if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
-      console.log(newPlan);
-      // const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-
-      /**
-       * two scenarios.
-       * 
-       * ???? what do we do about trials...? no trials for updates. only trial hapens when you already have a trial
-       * 
-       * 1) youre the owner and you changed the plan
-       *  - upgrade
-       *    - update my sub id
-       *    - find all customers wiht same sub-id and update those too
-       *    - 
-       *  - downgrade
-       *    - update my sub id
-       *    - find all customers wiht same sub-id and update those too
-       * 
-       * 
-       * 
-       * 2) youre the member and you leave/change plan
-       *  - upgrade
-       *    - remove myself from this sub
-       *    - update sub
-       *  - downgrade
-       *    - remove myself from this sub
-       *    - update sub
-       * 
-       * for 1 & 2, i always have to check that the num accounts is allowed
-       * 
-       * 
-       * 
-       * 3) add people to your plan (different api)
-       * 
-       */
-
-      // let plan: EConsumerPlan;
-      // try {
-      //   const res = await this.getEConsumer(signedInUser._id);
-      //   if (!res) throw new Error(`Failed to get EConsumer '${signedInUser._id}'`);
-      //   const currPlan = res.consumer.plan;
-      //   if (!currPlan) throw new Error(`EConsumer '${signedInUser._id}' missing plan`);
-      //   plan = ConsumerPlan.getEConsumerPlanFromIConsumerPlanInput(
-      //     newPlan,
-      //     currPlan.referralCode,
-      //     currPlan.weeklyDiscounts,
-      //     currPlan.mealPlans.reduce<{ [key: string]: string }>((sum, mp) => {
-      //       sum[mp.stripePlanId] = mp.stripeSubscriptionItemId;
-      //       return sum;
-      //     }, {}),
-      //   );
-      // } catch (e) {
-      //   console.error(`Failed to get stripe subscription ${signedInUser.stripeSubscriptionId}`, e.stack);
-      //   throw e;
-      // }
-      // const doc: Pick<EConsumer, 'plan'> = {
-      //   plan,
-      // }
-      // const updatedConsumer = await this.elastic.update({
-      //   index: CONSUMER_INDEX,
-      //   id: signedInUser._id,
-      //   _source: 'true',
-      //   body: {
-      //     doc
-      //   }
-      // });
-
-      // const newConsumer: IConsumer = {
-      //   ...updatedConsumer.body.get._source,
-      //   _id: signedInUser._id,
-      //   permissions: signedInUser.permissions,
-      // };
-      
-      // return {
-      //   res: newConsumer,
-      //   error: null,
-      // }
-      return {
-        res: null,
-        error: null,
+      if (!this.planService) throw new Error('PlanService not set');
+      const currUser = await this.getEConsumer(signedInUser);
+      if (!currUser) throw new Error(`Signed in user '${signedInUser._id}' not found in db`);
+      const currPlan = currUser.consumer.plan;
+      if (!currPlan) throw new Error(`Consumer is missing plan`);
+      if (currPlan.stripeProductPriceId === newPlanId) throw new Error("Can't update to the same plan. Choose a new plan");
+      if (currPlan.role === PlanRoles.Owner) {
+        // new plan members who have never checkedout may not have subscriptionId in their token so we only check for
+        // plan owners
+        if (!signedInUser.stripeSubscriptionId) throw new Error('No stripeSubscriptionId');
+        const plans = await this.planService.getAvailablePlans();
+        const targetDbPlan = Plan.getPlan(newPlanId, plans);
+        const sharedAccounts = await this.getSharedAccounts(signedInUser);
+        if (sharedAccounts.length > targetDbPlan.numAccounts) {
+          return {
+            res: null,
+            error: `Only ${targetDbPlan.numAccounts} accounts allowed in ${targetDbPlan.name} plan. Must remove ${sharedAccounts.length - targetDbPlan.numAccounts} accounts first.`,
+          }
+        }
+        const subscription = await this.stripe.subscriptions.retrieve(signedInUser.stripeSubscriptionId);
+        const p1 = this.stripe.subscriptions.update(
+          signedInUser.stripeSubscriptionId,
+          {
+            items: [{
+              id: subscription.items.data[0].id,
+              price: newPlanId
+            }]
+          },
+        ).catch(e => {
+          console.error(`Failed to update subscription '${signedInUser.stripeSubscriptionId}' to plan '${newPlanId}'`, e.stack);
+          throw e;
+        });
+        const body: ({ update: { _id: string } } | { doc: Pick<EConsumer, 'plan'> })[] = [];
+        sharedAccounts.forEach(a => {
+          body.push({
+            update: {
+              _id: a._id
+            }
+          });
+          if (!a.consumer.plan) throw new Error(`Consumer ${a._id} missing plan`);
+          const doc: Pick<EConsumer, 'plan'> = {
+            plan: {
+              ...a.consumer.plan,
+              stripeProductPriceId: newPlanId
+            }
+          }
+          body.push({
+            doc,
+          });
+        })
+        const p2 = this.elastic.bulk({
+          index: CONSUMER_INDEX,
+          body
+        }).catch(e => {
+          console.error(`Failed to update plan.stripeProductPriceId to '${newPlanId}' for accounts '${sharedAccounts.map(a => a._id).join(', ')}'`, e.stack);
+          throw e;
+        });
+        await Promise.all([p1, p2])
+        return {
+          res: Consumer.getIConsumerFromEConsumer(
+            signedInUser._id,
+            signedInUser.permissions,
+            {
+              ...currUser.consumer,
+              plan: {
+                role: PlanRoles.Owner,
+                stripeProductPriceId: newPlanId,
+                stripeSubscriptionId: signedInUser.stripeSubscriptionId,
+              }
+            }
+          ),
+          error: null,
+        }
+      } else if (currPlan.role === PlanRoles.Member) {
+        // left off here. test this!
+        if (!signedInUser.stripeCustomerId) {
+          return {
+            res: null,
+            error: `You can only switch plans after you've placed your first order. If you still want to switch plans, cancel your plan and choose a new plan at checkout`
+          }
+        }
+        const subscription = await this.stripe.subscriptions.create({
+          customer: signedInUser.stripeCustomerId,
+          trial_period_days: 30,
+          items: [{
+            price: newPlanId
+          }]
+        });
+        await this.updateAuth0MetaData(
+          signedInUser._id,
+          subscription.id,
+          signedInUser.stripeCustomerId
+        );
+        let p1;
+        if (req && res) {
+          // refresh access token so client can pick up new fields in token
+          p1 = refetchAccessToken(req, res);
+        }
+        const newPlan = {
+          role: PlanRoles.Owner,
+          stripeProductPriceId: newPlanId,
+          stripeSubscriptionId: subscription.id,
+        };
+        const p2 = this.updatePlan(signedInUser._id, newPlan);
+        await Promise.all([p1, p2]);
+        return {
+          res: Consumer.getIConsumerFromEConsumer(
+            signedInUser._id,
+            signedInUser.permissions, 
+            {
+              ...currUser.consumer,
+              plan: newPlan
+            }
+          ),
+          error: null,
+        }
       }
 
+      //should never get here. throw error
+      throw new Error(`Consumer's plan role is invalid with '${currPlan.role}'`);
     } catch (e) {
       console.error(
-        `[ConsumerService] Failed to update plan for user '${signedInUser && signedInUser._id}' with plan '${JSON.stringify(newPlan)}'`,
+        `[ConsumerService] Failed to update plan for user '${signedInUser?._id}' with plan '${newPlanId}'`,
         e.stack
       );
       throw e;

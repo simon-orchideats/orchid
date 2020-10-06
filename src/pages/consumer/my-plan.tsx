@@ -169,12 +169,12 @@ const ShareList = withClientApollo(() => {
 
 const myPlan = () => {
   const classes = useStyles();
-  const consumer = useRequireConsumer(myPlanRoute);
+  const consumer = useRequireConsumer(myPlanRoute, 'network-only');
   const plan = consumer.data && consumer.data.plan;
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
-  console.log(updateMyPlan)
   const plans = useGetAvailablePlans();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
+  const currDbPlan = (plan && plans.data) ? Plan.getPlan(plan.stripeProductPriceId, plans.data) : null;
   const notify = useNotify();
   useMutationResponseHandler(cancelSubscriptionRes, () => {
     notify('Plan canceled.', NotificationType.success, false);
@@ -201,7 +201,21 @@ const myPlan = () => {
     return null;
   }
   const onClickPlan = (p: IPlan) => {
-    console.log(p)
+    if (!currDbPlan) {
+      const err = new Error('Consumer missing plan');
+      console.error(err.stack);
+      throw err;
+    }
+    if (!consumer.data) {
+      const err = new Error('Missing consumer');
+      console.error(err.stack);
+      throw err;
+    }
+    if (p.stripeProductPriceId === plan?.stripeProductPriceId) return;
+    if ((plan && plan.role === PlanRoles.Owner) && currDbPlan.numAccounts > p.numAccounts) {
+      notify(`Too many accounts for ${p.name} plan. Please remove ${currDbPlan.numAccounts - p.numAccounts} accounts`, NotificationType.error, false);
+    }
+    updateMyPlan(p.stripeProductPriceId, consumer.data);
   }
   const onCancelSubscription = () => {
     if (!consumer.data || !consumer.data.plan) throw noConsumerPlanErr();
@@ -224,8 +238,8 @@ const myPlan = () => {
           <>
             {
               plan.role === PlanRoles.Owner
-              && plans.data
-              && Plan.getPlan(plan.stripeProductPriceId, plans.data).numAccounts > 1
+              && currDbPlan
+              && currDbPlan.numAccounts > 1
               && <ShareList />
             }
             <Typography
@@ -241,7 +255,7 @@ const myPlan = () => {
               selected={plan.stripeProductPriceId}
               renderButton={p => plan.stripeProductPriceId === p.stripeProductPriceId ?
                 <Typography variant='h6' align='center'>
-                  Current plan
+                  Current {plan.role === PlanRoles.Owner ? 'plan' : 'member'}
                 </Typography>
                 :
                 <Button

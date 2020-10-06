@@ -761,8 +761,10 @@ class OrderService {
 
     let subscriptionId = signedInUser.stripeSubscriptionId;
     if (!subscriptionId) {
+      const res = await this.consumerService.getEConsumer(signedInUser);
+
       if (!cart.stripeProductPriceId) {
-        const res = await this.consumerService.getEConsumer(signedInUser);
+        // this is possible when a newly created user, who has never checkedout, is immediately added to a new plan
         if (!res) {
           throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and is not in db`)
         }
@@ -771,9 +773,15 @@ class OrderService {
         }
         subscriptionId = res.consumer.plan.stripeSubscriptionId
       } else {
+        if (res && res.consumer.plan) {
+          return {
+            res: null,
+            error: "You were recently added to another plan so we can't create a new plan for you. Please refresh the page and try again"
+          }
+        }
+        // this is a brand new consumer who isn't part of a plan that's checking out for the first time
         try {
           const subscription = await this.stripe.subscriptions.create({
-            proration_behavior: 'none',
             customer: stripeCustomerId,
             trial_period_days: 30,
             items: [{

@@ -22,10 +22,6 @@ const _ConsumerQL = gql`
     serviceInstructions: String!
     searchArea: ConsumerLocationInput!
   }
-  input ConsumerPlanInput {
-    role: PlanRole!
-    stripeProductPriceId: ID!
-  }
   type ConsumerPlan {
     role: PlanRole!
     stripeProductPriceId: ID!

@@ -1,5 +1,4 @@
 import { IConsumerProfile } from './../../consumer/consumerModel';
-import { IConsumerPlan } from './../../consumer/consumerPlanModel';
 import { ServerResolovers } from './../../utils/apolloUtils';
 import { getConsumerService } from './consumerService';
 
@@ -10,7 +9,7 @@ export const ConsumerQueryResolvers: ServerResolovers = {
   
   sharedAccounts: async (_, _args, { signedInUser }) => {
     try {
-      return await getConsumerService().getSharedAccounts(signedInUser)  
+      return await getConsumerService().getSharedAccountsEmails(signedInUser)  
     } catch (e) {
       throw new Error('Internal Server Error');
     }
@@ -46,9 +45,13 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().signUp(email, name, pass, res);
   },
 
-  updateMyPlan: async(_root, { plan }: { plan: IConsumerPlan }, { signedInUser }) => {
+  updateMyPlan: async(
+    _root,
+    { planId }: { planId: string },
+    { signedInUser, req, res },
+  ) => {
     try {
-      return await getConsumerService().updateMyPlan(signedInUser, plan);
+      return await getConsumerService().updateMyPlan(signedInUser, planId, req, res);
     } catch (e) {
       throw new Error('Internal Server Error');
     }

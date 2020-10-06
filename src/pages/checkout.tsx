@@ -19,7 +19,7 @@ import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import EmailInput from "../client/general/inputs/EmailInput";
 import GLogo from "../client/checkout/GLogo";
-import { useConsumerSignUp, useGoogleSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
+import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
@@ -30,6 +30,7 @@ import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicke
 import SearchInput from "../client/general/inputs/SearchInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
+import { IPlan } from "../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -71,10 +72,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const classes = useStyles();
   const cart = useGetCart();
   const signInGoogle = useGoogleSignIn();
+  const signInEmail = useEmailSignIn();
   const notify = useNotify();
   const allTags = useGetTags();
   const [getConsumer] = useGetLazyConsumer();
-  const consumer = useGetConsumer();
+  const consumer = useGetConsumer('network-only');
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const addr2InputRef = createRef<HTMLInputElement>();
   const instructionsInputRef = createRef<HTMLInputElement>();
@@ -88,12 +90,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [receiveTextError, setReceiveTextError] = useState<string>('');
+  const [plan, setPlan] = useState<IPlan | null>(cart ? cart.plan : null);
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
-  const setPlan = useSetPlan();
   useEffect(() => {
     if (placeOrderRes.error) {
       setDidPlaceOrder(false);
@@ -143,6 +145,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           setDidPlaceOrder(false);
           throw err;
         }
+        let stripeProductPriceId = null;
+        if (!consumer.data?.plan) {
+          if (!plan) {
+            const err = new Error('Missing plan');
+            console.error(err.stack);
+            setDidPlaceOrder(false);
+            throw err;
+          }
+          stripeProductPriceId = plan.stripeProductPriceId
+        }
         placeOrder(
           {
             _id: signUpRes.data.res._id,
@@ -156,6 +168,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             instructionsInputRef.current?.value || null,
+            stripeProductPriceId,
           )
         );
       }
@@ -198,6 +211,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with google`);
+      console.error(err.stack);
+      throw err;
+    }
+  }
+  const onClickEmail = async () => {
+    try {
+      await signInEmail();
+      getConsumer();
+    } catch (e) {
+      const err = new Error(`Failed to sign in with email`);
       console.error(err.stack);
       throw err;
     }
@@ -259,6 +282,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       }
       signUp(email, name, password);
     } else {
+      let stripeProductPriceId = null;
+      if (!consumer.data.plan) {
+        if (!plan) {
+          const err = new Error('Missing plan');
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        stripeProductPriceId = plan.stripeProductPriceId
+      }
       placeOrder(
         {
           _id: consumer.data._id,
@@ -272,6 +305,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           Card.getCardFromStripe(paymentMethod.card),
           paymentMethod.id,
           serviceInstructions || null,
+          stripeProductPriceId
         ),
       );
     }
@@ -316,12 +350,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       throw err;
     }
-    // if (!plans.data) {
-    //   const err = new Error(`No plans`);
-    //   console.error(err.stack);
-    //   setDidPlaceOrder(false);
-    //   throw err;
-    // }
     const cardElement = elements.getElement('cardNumber');
     if (!cardElement) {
       const err =  new Error('No card element');
@@ -473,7 +501,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             color='primary'
             className={classes.title}
           >
-            Account
+            {(consumer && consumer.data) ? 'Account' : 'Sign up'}
           </Typography>
           {
             consumer && consumer.data ?
@@ -528,34 +556,49 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   or
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Button
                   variant='outlined'
                   onClick={onClickGoogle}
                   startIcon={<GLogo />}
                 >
-                  Sign up with google
+                  Google sign in
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  variant='outlined'
+                  onClick={onClickEmail}
+                >
+                  Email sign in
                 </Button>
               </Grid>
             </Grid>
           }
-          <Typography
-            variant='h6'
-            color='primary'
-            className={classes.title}
-          >
-            Plan
-          </Typography>
-          <PlanCards
-            small
-            defaultColor
-            defaultSelected={cart.plan ? cart.plan.stripeProductPriceId : null}
-            onClickCard={p => setPlan(p)}
-            onLoad={plans => setPlan(plans[0])}
-          />
-          <Typography variant='body2'>
-            By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
-          </Typography>
+          {
+            !consumer.loading && !consumer.data?.plan &&
+            <>
+              <Typography
+                variant='h6'
+                color='primary'
+                className={classes.title}
+              >
+                Plan
+              </Typography>
+              <PlanCards
+                small
+                defaultColor
+                selected={plan ? plan.stripeProductPriceId : null}
+                onClickCard={p => setPlan(p)}
+                onLoad={plans => {
+                  if (!plan) setPlan(plans[0]);
+                }}
+              />
+              <Typography variant='body2'>
+                By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+              </Typography>
+            </>
+          }
           <Typography
             variant='h6'
             color='primary'

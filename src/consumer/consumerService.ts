@@ -1,5 +1,5 @@
 import { MutationBoolRes, MutationConsumerRes } from "./../utils/apolloUtils";
-import { ApolloError } from 'apollo-client';
+import { ApolloError, WatchQueryFetchPolicy } from 'apollo-client';
 import { isServer } from './../client/utils/isServer';
 import { consumerFragment } from './consumerFragment';
 import { Consumer, IConsumer, IConsumerProfileInput } from './consumerModel';
@@ -10,7 +10,7 @@ import { activeConfig } from '../config';
 import { ApolloCache, DataProxy } from 'apollo-cache';
 import auth0 from 'auth0-js';
 import { popupSocialAuthCB } from "../utils/auth";
-import { IConsumerPlan, ConsumerPlan } from "./consumerPlanModel";
+import { PlanRoles } from "./consumerPlanModel";
 
 const MY_CONSUMER_QUERY = gql`
   query myConsumer {
@@ -38,16 +38,20 @@ export const copyWithTypenames = (consumer: IConsumer): IConsumer => {
   }
   //@ts-ignore
   newConsumer.profile.__typename = 'ConsumerProfile';
-  //@ts-ignore
-  newConsumer.profile.card.__typename = 'Card';
-  //@ts-ignore
-  newConsumer.profile.searchArea.geoPoint.__typename  = 'Geo'
-  //@ts-ignore
-  newConsumer.profile.searchArea.__typename = 'ConsumerLocation'
+  if (newConsumer.profile.card) {
+    //@ts-ignore
+    newConsumer.profile.card.__typename = 'Card';
+  }
+  if (newConsumer.profile.searchArea) {
+    //@ts-ignore
+    newConsumer.profile.searchArea.geoPoint.__typename  = 'Geo'
+    //@ts-ignore
+    newConsumer.profile.searchArea.__typename = 'ConsumerLocation'
+    //@ts-ignore
+    if (!newConsumer.profile.searchArea.address2) newConsumer.profile.searchArea.address2 = null;
+  }
   //@ts-ignore
   newConsumer.__typename = 'Consumer';
-  //@ts-ignore
-  if (!newConsumer.profile.searchArea.address2) newConsumer.profile.searchArea.address2 = null;
   return newConsumer
 }
 
@@ -299,8 +303,10 @@ export const useCancelSubscription = (): [
   ], [mutation]);
 }
 
-export const useGetConsumer = () => {
-  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
+export const useGetConsumer = (fetchPolicy?: WatchQueryFetchPolicy) => {
+  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY, {
+    fetchPolicy,
+  });
   const consumer = useMemo<IConsumer | null>(() => (
     res.data && res.data.myConsumer ? Consumer.getICopy(res.data.myConsumer) : null
   ), [res.data]);
@@ -387,8 +393,37 @@ export const useGoogleSignIn = () => () => new Promise<{ name: string, email: st
   });
 })
 
-export const useRequireConsumer = (url: string) => {
-  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY);
+
+export const useEmailSignIn = () => () => new Promise<{ name: string, email: string }>((resolve, reject) => {
+  const webAuth = new auth0.WebAuth({
+    domain: activeConfig.client.auth.domain,
+    clientID: activeConfig.client.auth.clientId
+  });
+  webAuth.popup.authorize({
+    domain: activeConfig.client.auth.domain,
+    clientId: activeConfig.client.auth.clientId,
+    audience: activeConfig.client.auth.audience,
+    redirectUri: `${activeConfig.client.app.url}${popupSocialAuthCB}`,
+    connection: 'Username-Password-Authentication',
+    responseType: 'code',
+    scope: 'openid profile email offline_access',
+  }, (err: auth0.Auth0Error | null, res: any) => {
+    if (err) {
+      console.error(`Could not email auth. '${JSON.stringify(err)}'`);
+      reject(err);
+      return;
+    }
+    resolve({
+      name: res.idTokenPayload.name,
+      email: res.idTokenPayload.email,
+    });
+  });
+})
+
+export const useRequireConsumer = (url: string, fetchPolicy?: WatchQueryFetchPolicy) => {
+  const res = useQuery<myConsumerRes>(MY_CONSUMER_QUERY, {
+    fetchPolicy
+  });
   const consumer = useMemo<IConsumer | null>(() => (
     res.data && res.data.myConsumer ? Consumer.getICopy(res.data.myConsumer) : null
   ), [res.data]);
@@ -466,7 +501,7 @@ export const useConsumerSignUp = (): [
 }
 
 export const useUpdateMyPlan = (): [
-  (plan: IConsumerPlan, currConsumer: IConsumer) => void,
+  (planId: string, currConsumer: IConsumer) => void,
   {
     error?: ApolloError 
     data?: {
@@ -477,8 +512,8 @@ export const useUpdateMyPlan = (): [
 ] => {
   type res = { updateMyPlan: MutationConsumerRes };
   const [mutate, mutation] = useMutation<res>(gql`
-    mutation updateMyPlan($plan: ConsumerPlanInput!) {
-      updateMyPlan(plan: $plan) {
+    mutation updateMyPlan($planId: String!) {
+      updateMyPlan(planId: $planId) {
         res {
           ...consumerFragment
         }
@@ -487,28 +522,56 @@ export const useUpdateMyPlan = (): [
     }
     ${consumerFragment}
   `);
-  const updateMyPlan = (plan: IConsumerPlan, currConsumer: IConsumer) => {
+  const updateMyPlan = (planId: string, currConsumer: IConsumer) => {
     if (!currConsumer.plan) {
       const err = new Error('Missing consumer plan');
       console.error(err.stack);
       throw err;
     }
-    if (ConsumerPlan.equals(plan, currConsumer.plan)) return;
+    if (planId === currConsumer.plan.stripeProductPriceId) return;
     mutate({ 
       variables: {
-        plan,
+        planId,
       },
       optimisticResponse: {
         updateMyPlan: {
           res: copyWithTypenames({
             ...currConsumer,
-            plan
+            plan: {
+              stripeProductPriceId: planId,
+              role: PlanRoles.Owner
+            }
           }),
           error: null,
           //@ts-ignore
           __typename: 'ConsumerRes'
         }
       },
+      // update: (cache, { data }) => {
+      //   if (data && data.updateMyPlan.res) {
+      //     const accounts = getSharedAccounts(cache);
+      //     if (!accounts || !accounts.sharedAccounts) {
+      //       const err = new Error('No shared accounts found');
+      //       console.error(err.stack);
+      //       throw err;
+      //     }
+      //     if (!currConsumer.plan) {
+      //       const err = new Error('Consumer missing plan');
+      //       console.error(err.stack);
+      //       throw err;
+      //     }
+      //     let newSharedAccounts = accounts.sharedAccounts;
+      //     if (currConsumer.plan.role === PlanRoles.Member) {
+      //       newSharedAccounts = [];
+      //     }
+      //     cache.writeQuery<sharedAccountsRes>({
+      //       query: SHARED_ACCOUNTS_QUERY,
+      //       data: {
+      //         sharedAccounts: newSharedAccounts
+      //       }
+      //     });
+      //   }
+      // },
       // refetchQueries: () => [{ query: MY_UPCOMING_ORDERS_QUERY }],
     })
   }

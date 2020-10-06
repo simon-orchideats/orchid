@@ -256,7 +256,6 @@ class RestService implements IRestService {
         cuisines, 
         fields
       );
-      console.log('erests', eRests);
       return eRests.map(({ _id, rest }) => ({
         ...rest,
         _id,

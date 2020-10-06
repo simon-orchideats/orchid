@@ -16,15 +16,13 @@ const PlanCards: React.FC<{
   defaultColor?: boolean,
   hideTrial?: boolean
   small?: boolean,
-  selected?: string,
-  defaultSelected?: string | null,
+  selected?: string | null,
   renderButton?: (p: IPlan) => React.ReactNode,
   onClickCard?: (p: IPlan) => void
   onLoad?: (plans: IPlan[]) => void
 }> = ({
   defaultColor,
   small,
-  defaultSelected,
   selected,
   renderButton,
   onClickCard,
@@ -32,18 +30,21 @@ const PlanCards: React.FC<{
   hideTrial,
 }) => {
   const classes = useStyles();
+  const [didLoad, setDidLoad] = useState<boolean>(false);
   const plans = useGetAvailablePlans();
-  const [selectedPlan, setSelectedPlan] = useState<string | null | undefined>(defaultSelected)
+  const [selectedPlan, setSelectedPlan] = useState<string | null | undefined>(selected)
   useEffect(() => {
     if (plans.data) {
-      if (onLoad) {
+      if (onLoad && !didLoad) {
+        console.log('did load!');
         onLoad(plans.data);
+        setDidLoad(true)
       }
       if (selectedPlan === null) {
         setSelectedPlan(plans.data[0].stripeProductPriceId)
       }
     }
-  }, [plans.data, onLoad]);
+  }, [plans.data, onLoad, didLoad]);
   if (!plans.data) {
     return <div>loading</div>
   }

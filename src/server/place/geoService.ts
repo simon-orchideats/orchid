@@ -116,7 +116,6 @@ class GeoService implements IGeoService{
       const query = `q=${querystring.escape(q)}&fields=timezone&api_key=${activeConfig.server.geo.key}`;
       let jsonData;
       try {
-        console.log(`https://api.geocod.io/v1.6/geocode?${query}`);
         const res = await fetch(`https://api.geocod.io/v1.6/geocode?${query}`);
         if (res.status != 200) throw new Error('Could not fetch geocode');
         jsonData = await res.json();
@@ -125,7 +124,6 @@ class GeoService implements IGeoService{
         return null;
       }
       if (jsonData.results && jsonData.results.length > 0) {
-        console.log(jsonData.results);
         const {
           accuracy,
           accuracy_type,
