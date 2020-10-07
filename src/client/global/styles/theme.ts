@@ -107,6 +107,55 @@ const theme: ThemeOptions = {
       }
     },
     //@ts-ignore
+    MuiPickersDay: {
+      styleOverrides: {
+        root: {
+          "&disabled": {
+            color: 'rgba(0, 0, 0, 0.38)',
+          },
+          "&.Mui-selected": {
+            backgroundColor: brandSecondary,
+          },
+          '&.Mui-selected:hover': {
+            backgroundColor: `${brandSecondary} !important`,
+          },
+          '&:focus.Mui-selected': {
+            backgroundColor: brandSecondary,
+          },
+        },
+      }
+    },
+    //@ts-ignore
+    MuiPickersClockNumber: {
+      styleOverrides: {
+        clockNumberSelected: {
+          backgroundColor: brandSecondary
+        },
+      }
+    },
+    //@ts-ignore
+    MuiPickersClockPointer: {
+      styleOverrides: {
+        pointer: {
+          backgroundColor: brandSecondary,
+        },
+      }
+    },
+    //@ts-ignore
+    MuiPickersClock: {
+      styleOverrides: {
+        meridiemButtonSelected: {
+          backgroundColor: brandSecondary,
+          '&:hover': {
+            backround: brandSecondary,
+          },
+        },
+        pin: {
+          backgroundColor: brandSecondary,
+        },
+      }
+    },
+    //@ts-ignore
     MuiToggleButtonGroup: {
       styleOverrides: {
         grouped: {
@@ -377,6 +426,10 @@ const theme: ThemeOptions = {
     tooltip: 1500
   }
 }
+
+// declare module '@material-ui/core/styles/components' {
+//   export interface ComponentNameToClassKey extends MuiPickersComponentsToClassName {}
+// }
 
 declare module '@material-ui/core/styles/createMixins' {
   interface Mixins{
