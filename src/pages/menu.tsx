@@ -5,15 +5,16 @@ import { useTheme } from "@material-ui/styles";
 import { useState, useEffect, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetTags } from "../rest/restService";
-import ZipModal from "../client/menu/ZipModal";
+import SearchAreaModal from "../client/menu/SearchAreaModal";
 import RestMenu from "../client/menu/RestMenu";
-import { useGetCart } from "../client/global/state/cartState";
+import { useGetCart, useSetSearchArea } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 // import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
 import MenuCartDisplay from "../client/menu/MenuCartDisplay";
 import { Order } from "../order/orderModel";
 import { WeekHours, ServiceDay } from "../rest/restModel";
+import { useGetConsumer } from "../consumer/consumerService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -73,7 +74,9 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const setSearchArea = useSetSearchArea();
   const allTags = useGetTags();
+  const consumer = useGetConsumer();
   const [cuisines, setCuisines] = useState<string[]>([]);
   let serviceDay: ServiceDay | undefined;
   let fromTo: {
@@ -84,6 +87,11 @@ const menu = () => {
     serviceDay = WeekHours.getServiceDay(cart.serviceDate);
     fromTo = Order.get24HourStr(cart.serviceTime);
   }
+  useEffect(() => {
+    if (consumer.data && consumer.data.profile.searchArea) {
+      setSearchArea(consumer.data.profile.searchArea.primaryAddr);
+    }
+  }, [consumer.data]);
   const rests = useGetNearbyRests(
     cart?.searchArea,
     fromTo?.from,
@@ -119,7 +127,7 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
-      <ZipModal open={!!!cart?.searchArea} />
+      <SearchAreaModal open={!consumer.loading && !!!cart?.searchArea} />
       <Grid container alignItems='stretch'>
         <Grid
           item

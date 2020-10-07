@@ -14,7 +14,7 @@ import { useNotify } from "../../client/global/state/notificationState";
 import { useMutationResponseHandler } from "../../utils/apolloUtils";
 import Notifier from "../../client/notification/Notifier";
 import BaseInput from "../../client/general/inputs/BaseInput";
-import SearchInput from "../../client/general/inputs/SearchInput";
+import SearchAreaInput from "../../client/general/inputs/SearchAreaInput";
 const useStyles = makeStyles(theme => ({
   container: {
     background: 'none'
@@ -310,9 +310,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           isUpdatingAddr ?
           <div className={classes.stretch}>
             <div className={classes.input}>
-              <SearchInput
-                onSelect={(addr: string) => setSearchArea(addr)}
-              />
+              <SearchAreaInput onSelect={(addr: string) => setSearchArea(addr)} />
             </div>
             <div className={classes.input}>
               <BaseInput label='Apt #' inputRef={addr2InputRef} />

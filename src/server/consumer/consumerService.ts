@@ -38,6 +38,7 @@ export interface IConsumerService {
     res?: OutgoingMessage,
   ) => Promise<MutationConsumerRes>
   updateConsumer(_id: string, permissions: Permission[], consumer: Partial<EConsumer>): Promise<IConsumer>
+  updateDefaultStripePayment: (stripeCustomerId: string, paymentMethodId: string) => Promise<void>
   updateMyProfile: (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string) => Promise<MutationConsumerRes>
 }
 
@@ -446,6 +447,21 @@ class ConsumerService implements IConsumerService {
     });
   }
 
+  public async updateDefaultStripePayment (stripeCustomerId: string, paymentMethodId: string) {
+    await this.stripe.setupIntents.create({
+      confirm: true,
+      customer: stripeCustomerId,
+      payment_method: paymentMethodId,
+      payment_method_types: ['card']
+    });
+    await this.stripe.customers.update(stripeCustomerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+    return;
+  }
+
   async updateMyProfile (signedInUser: SignedInUser, profile: IConsumerProfile, paymentMethodId?: string): Promise<MutationConsumerRes> {
     try {
       if (!this.geoService) return Promise.reject('GeoService not set');
@@ -496,19 +512,8 @@ class ConsumerService implements IConsumerService {
         permissions: signedInUser.permissions,
       };
       if (paymentMethodId) {
-        await this.stripe.setupIntents.create({
-          confirm: true,
-          customer: signedInUser.stripeCustomerId,
-          payment_method: paymentMethodId,
-          payment_method_types: ['card']
-        });
-        await this.stripe.customers.update(signedInUser.stripeCustomerId, {
-          invoice_settings: {
-            default_payment_method: paymentMethodId,
-          },
-        });
+        await this.updateDefaultStripePayment(signedInUser.stripeCustomerId, paymentMethodId);
       }
-      // await this.orderService.updateUpcomingOrdersProfile(signedInUser, profile);
       return {
         res: newConsumer,
         error: null

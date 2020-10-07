@@ -78,7 +78,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const SearchInput: React.FC<{
+const SearchAreaInput: React.FC<{
   onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
   defaultValue?: string
   disableAutoFocus?: boolean
@@ -208,4 +208,4 @@ const SearchInput: React.FC<{
   );
 }
 
-export default withClientApollo(SearchInput);
+export default withClientApollo(SearchAreaInput);

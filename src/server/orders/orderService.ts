@@ -8,7 +8,7 @@ import { getPlanService, IPlanService } from './../plans/planService';
 import { Permissions, EConsumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
-import { ICartInput } from './../../order/cartModel';
+import { ICartInput, ICartOrder, ICartRest } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
@@ -691,20 +691,21 @@ class OrderService {
   // }
 
   private async makePayment(
-    cart: ICartInput,
+    rest: ICartRest,
+    paymentMethodId: string,
     stripeCustomerId: string,
     stripeRestId: string | null
   ): Promise<string> {
     try {
-      const mealTotal = OrderMeal.getTotalMealCost(cart.cartOrder.rest.meals);
-      const taxes = mealTotal * cart.cartOrder.rest.taxRate;
-      const total = Math.round(mealTotal + taxes + cart.cartOrder.rest.deliveryFee);
+      const mealTotal = OrderMeal.getTotalMealCost(rest.meals);
+      const taxes = mealTotal * rest.taxRate;
+      const total = Math.round(mealTotal + taxes + rest.deliveryFee);
       const options: Stripe.PaymentIntentCreateParams = {
-        payment_method: cart.paymentMethodId,
+        payment_method: paymentMethodId,
         customer: stripeCustomerId,
         confirm: true,
         confirmation_method: 'manual',
-        statement_descriptor_suffix: cart.cartOrder.rest.restName,
+        statement_descriptor_suffix: rest.restName,
         setup_future_usage: 'off_session',
         amount: total,
         currency: 'usd',
@@ -743,13 +744,17 @@ class OrderService {
     }
 
     let stripeCustomerId = signedInUser.stripeCustomerId;
+    let paymentMethodId = cart.paymentMethodId
     if (!stripeCustomerId) {
       try {
+        if (!paymentMethodId) {
+          throw new Error('Missing paymentMethodId for new customer');
+        }
         const stripeCustomer = await this.stripe.customers.create({
-          payment_method: cart.paymentMethodId,
+          payment_method: paymentMethodId,
           email: signedInUser.profile.email,
           invoice_settings: {
-            default_payment_method: cart.paymentMethodId,
+            default_payment_method: paymentMethodId,
           },
         });
         stripeCustomerId = stripeCustomer.id;
@@ -757,12 +762,24 @@ class OrderService {
         console.error(`Failed to create stripe customer for consumer '${signedInUser._id}'`, e.stack);
         throw e;
       }
+    } else {
+      if (paymentMethodId) {
+        await this.consumerService.updateDefaultStripePayment(stripeCustomerId, paymentMethodId);
+      } else {
+        const customer = await this.stripe.customers.retrieve(stripeCustomerId);
+        if (customer.deleted) {
+          throw new Error(`Customer '${stripeCustomerId}' was deleted`);
+        }
+        if (!customer.invoice_settings.default_payment_method) {
+          throw new Error(`Customer '${stripeCustomerId}' missing default payment method`)
+        }
+        paymentMethodId = customer.invoice_settings.default_payment_method as string;
+      }
     }
 
     let subscriptionId = signedInUser.stripeSubscriptionId;
     if (!subscriptionId) {
       const res = await this.consumerService.getEConsumer(signedInUser);
-
       if (!cart.stripeProductPriceId) {
         // this is possible when a newly created user, who has never checkedout, is immediately added to a new plan
         if (!res) {
@@ -812,6 +829,13 @@ class OrderService {
         error: `Couldn't verify address '${cart.searchArea}'`
       }
     }
+
+    const paymentId = await this.makePayment(
+      cart.cartOrder.rest,
+      paymentMethodId,
+      stripeCustomerId,
+      rest.stripeRestId
+    );
     const searchArea: ELocation = {
       primaryAddr: cart.searchArea,
       address2: cart.address2,
@@ -821,7 +845,6 @@ class OrderService {
       },
       timezone: geo.timezone,
     };
-    const paymentId = await this.makePayment(cart, stripeCustomerId, rest.stripeRestId);
     const order = Order.getEOrder(
       signedInUser,
       searchArea,

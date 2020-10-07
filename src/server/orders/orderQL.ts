@@ -31,7 +31,7 @@ export const _OrderQL = gql`
 
   input CartInput {
     address2: String
-    paymentMethodId: ID!
+    paymentMethodId: ID
     card: CardInput!
     stripeProductPriceId: ID
     phone: String!

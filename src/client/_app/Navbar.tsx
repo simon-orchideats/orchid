@@ -21,7 +21,7 @@ import { useGetCart } from '../global/state/cartState';
 import { ServiceTypes, Order } from '../../order/orderModel';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import { Cart } from '../../order/cartModel';
-import SearchInput from '../general/inputs/SearchInput';
+import SearchAreaInput from '../general/inputs/SearchAreaInput';
 import ServiceTimePopper from './ServiceTimePopper';
 import ServiceTypePopper from './ServiceTypePopper';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -67,8 +67,8 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     padding: 0, 
     height: theme.mixins.customToolbar.height,
-    [theme.mixins.customToolbar.toolbarWidthQuery]: theme.mixins.customToolbar.toolbarWidthQuery,
-    [theme.mixins.customToolbar.toolbarLandscapeQuery]: theme.mixins.customToolbar.toolbarLandscapeQuery
+    [theme.mixins.customToolbar.toolbarWidthQuery]: theme.mixins.customToolbar.smallHeight,
+    [theme.mixins.customToolbar.toolbarLandscapeQuery]: theme.mixins.customToolbar.landscapeHeight
   },
   center: {
     width: '100%',
@@ -199,13 +199,11 @@ const Navbar: React.FC = () => {
       const shortAddrArr = cart.searchArea.split(' ');
       const shortAddr = shortAddrArr ? `${shortAddrArr[0]} ${shortAddrArr[1]}` : null;
       const searchArea = isShowingSearchAreaInput ?
-        <SearchInput onBlur={onAddrInputBlur} />
+        <SearchAreaInput onBlur={onAddrInputBlur} />
       :
-        (
-          <div className={classes.menuServiceDropdown} onClick={onClickSearchArea}>
-            <Typography variant='body1'>{shortAddr}</Typography>
-          </div>
-        )
+        <div className={classes.menuServiceDropdown} onClick={onClickSearchArea}>
+          <Typography variant='body1'>{shortAddr}</Typography>
+        </div>
       bar = (
         <>
           <CartModal

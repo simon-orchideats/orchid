@@ -33,7 +33,7 @@ export const cartQL = gql`
     cart: CartState
   }
   extend type Mutation {
-    # clearCartMeals: CartState
+    clearCartMeals: CartState
     addMealToCart(
       meal: MealInput!,
       customizations: [CustomizationInput!]!,
@@ -245,6 +245,16 @@ export const useRemoveMealFromCart = (): (meal: IOrderMeal) => void => {
   }
 }
 
+export const useClearCartMeals = (): () => void => {
+  const [mutate] = useMutation(gql`
+    mutation clearCartMeals {
+      clearCartMeals @client
+    }
+  `);
+  return () => {
+    mutate()
+  }
+}
 // export const useSetCart = (): (order: Order) => void => {
 //   type vars = { order: Order };
 //   const [mutate] = useMutation<any, vars>(gql`
@@ -376,7 +386,7 @@ type cartMutationResolvers = {
     taxRate: number,
   }, ICart | null>
   incrementMealCount: ClientResolver<{ meal: IOrderMeal }, ICart | null>
-  // clearCartMeals: ClientResolver<undefined, ICart | null>
+  clearCartMeals: ClientResolver<undefined, ICart | null>
   removeMealFromCart: ClientResolver<{ meal: IOrderMeal }, ICart | null>
   // setCart: ClientResolver<{ order: Order, deliveryIndex: number }, ICart | null>
   setSearchArea: ClientResolver<{ addr: string }, ICart | null>
@@ -427,6 +437,23 @@ export const cartMutationResolvers: cartMutationResolvers = {
       taxRate,
     );
     return updateCartCache(cache, newCart);
+  },
+
+  clearCartMeals: (_, _args, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      const err = new Error('Missing cart');
+      console.error(err.stack);
+      throw err;
+    }
+    return updateCartCache(cache, {
+      rest: null,
+      searchArea: res.cart.searchArea,
+      serviceDate: res.cart.serviceDate,
+      serviceTime: res.cart.serviceTime,
+      serviceType: res.cart.serviceType,
+      plan: res.cart.plan,
+    });
   },
 
   incrementMealCount: (_, { meal }, { cache }) => {
@@ -485,7 +512,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       });
     }
     return updateCartCache(cache, {
-      rest: null,
+      rest: res.cart.rest,
       searchArea: addr,
       serviceDate: res.cart.serviceDate,
       serviceTime: res.cart.serviceTime,

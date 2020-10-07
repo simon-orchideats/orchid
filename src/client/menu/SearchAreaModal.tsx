@@ -2,7 +2,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import { Paper, Typography, Grid } from '@material-ui/core';
-import SearchInput from '../general/inputs/SearchInput';
+import SearchAreaInput from '../general/inputs/SearchAreaInput';
+import React from 'react';
 
 const useStyles = makeStyles(theme => ({
   modal: {
@@ -60,7 +61,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const ZipModal: React.FC<{
+const SearchAreaModal: React.FC<{
   open: boolean,
 }> = ({
   open,
@@ -81,7 +82,7 @@ const ZipModal: React.FC<{
               <Typography variant='h4' className={classes.title}>
                 Actually support resturants (CHAGNE THIS)
               </Typography>
-              <SearchInput />
+              <SearchAreaInput />
             </Grid>
           </Grid>
         </Paper>
@@ -90,4 +91,4 @@ const ZipModal: React.FC<{
   );
 }
 
-export default ZipModal;
+export default React.memo(SearchAreaModal);

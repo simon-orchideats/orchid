@@ -1,5 +1,5 @@
 import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
-import { useGetCart, useSetPlan } from "../client/global/state/cartState";
+import { useGetCart, useClearCartMeals } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -14,12 +14,12 @@ import { activeConfig } from "../config";
 import { usePlaceOrder } from "../client/order/orderService";
 import { useNotify } from "../client/global/state/notificationState";
 import { NotificationType } from "../client/notification/notificationModel";
-import { Card } from "../card/cardModel";
+import { Card, ICard } from "../card/cardModel";
 import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import EmailInput from "../client/general/inputs/EmailInput";
 import GLogo from "../client/checkout/GLogo";
-import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetLazyConsumer, useGetConsumer } from "../consumer/consumerService";
+import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetConsumer } from "../consumer/consumerService";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
@@ -27,7 +27,7 @@ import { useGetTags } from "../rest/restService";
 import { Cart } from "../order/cartModel";
 import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
 import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
-import SearchInput from "../client/general/inputs/SearchInput";
+import SearchAreaInput from "../client/general/inputs/SearchAreaInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
 import { IPlan } from "../plan/planModel";
@@ -63,7 +63,15 @@ const useStyles = makeStyles(theme => ({
     marginTop: -theme.spacing(1),
     paddingBottom: theme.spacing(2),
   },
+  link: {
+    color: theme.palette.common.link,
+  },
 }));
+
+type checkoutCard = {
+  id: string | null,
+  card: ICard,
+}
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   stripe,
@@ -71,11 +79,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
+  const clearCart = useClearCartMeals();
   const signInGoogle = useGoogleSignIn();
   const signInEmail = useEmailSignIn();
   const notify = useNotify();
   const allTags = useGetTags();
-  const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer('network-only');
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const addr2InputRef = createRef<HTMLInputElement>();
@@ -96,6 +104,19 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const theme = useTheme<Theme>();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const pm = useRef<stripe.PaymentMethodResponse>();
+  const [isUsingSavedCard, setIsUsingSavedCard] = useState<boolean>(false);
+  const [defaultPhone, setDefaultPhone] = useState<string | undefined>();
+  const [defaultApt, setDefaultApt] = useState<string | undefined>();
+  const [defaultInstructions, setDefaultInstructions] = useState<string | undefined>();
+  useEffect(() => {
+    setDefaultPhone(consumer.data?.profile.phone || undefined);
+    setDefaultApt(consumer.data?.profile.searchArea?.address2 || undefined);
+    setDefaultInstructions(consumer.data?.profile.serviceInstructions || undefined);
+    setIsUsingSavedCard(consumer.data?.profile.card ? true : false);
+  }, [
+    consumer.data?.profile,
+  ]);
+
   useEffect(() => {
     if (placeOrderRes.error) {
       setDidPlaceOrder(false);
@@ -106,6 +127,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         setDidPlaceOrder(false);
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
+        clearCart();
         Router.push({
           pathname: orderHistoryRoute,
           query: {
@@ -208,7 +230,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onClickGoogle = async () => {
     try {
       await signInGoogle();
-      getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with google`);
       console.error(err.stack);
@@ -218,7 +239,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onClickEmail = async () => {
     try {
       await signInEmail();
-      getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with email`);
       console.error(err.stack);
@@ -226,31 +246,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     }
   }
   const doPlaceOrder = async (
+    checkoutCard: checkoutCard,
     name?: string,
     password?: string,
     email?: string,
     addr2?: string,
     phone?: string,
-    paymentMethod?: stripe.paymentMethod.PaymentMethod,
     serviceInstructions?: string,
   ) => {
-    if (!phone || !paymentMethod) {
-      const err = new Error(`Undefined inputs ${JSON.stringify({
-        phone,
-        paymentMethod,
-      })}`);
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
-    // if (!plans.data) {
-    //   const err = new Error(`No plans`);
-    //   console.error(err.stack);
-    //   setDidPlaceOrder(false);
-    //   throw err;
-    // }
-    if (!pm.current) {
-      const err = new Error(`No payment method`);
+    if (!phone) {
+      const err = new Error('Undefined phone');
       console.error(err.stack);
       setDidPlaceOrder(false);
       throw err;
@@ -302,8 +307,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           addr2 || null,
           cart,
           phone,
-          Card.getCardFromStripe(paymentMethod.card),
-          paymentMethod.id,
+          checkoutCard.card,
+          checkoutCard.id,
           serviceInstructions || null,
           stripeProductPriceId
         ),
@@ -332,59 +337,85 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       setDidPlaceOrder(false);
       return
     };
-    if (!stripe) {
-      const err = new Error('Stripe not initialized');
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
     if (!cart) {
       const err =  new Error('Cart is null');
       console.error(err.stack);
       setDidPlaceOrder(false);
       throw err;
     }
-    if (!elements) {
-      const err =  new Error('No elements');
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
+
+    let card: checkoutCard;
+    if (!isUsingSavedCard) {
+      const billingName = (!consumer || !consumer.data) ? name : consumer.data.profile.name;
+      try {
+        if (!stripe) {
+          const err = new Error('Stripe not initialized');
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        if (!elements) {
+          const err =  new Error('No elements');
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        const cardElement = elements.getElement('cardNumber');
+        if (!cardElement) {
+          const err =  new Error('No card element');
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        pm.current = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: { name: billingName },
+        });
+        if (pm.current.error) {
+          const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.current.error)}`);
+          const msg = pm.current.error.message || 'Sorry something went wrong with your card. Please try another card';
+          notify(msg, NotificationType.error, false);
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        if (!pm.current.paymentMethod) {
+          const err = new Error(`Stripe missing paymentMethod`);
+          console.error(err.stack);
+          setDidPlaceOrder(false);
+          throw err;
+        }
+        card = {
+          id: pm.current.paymentMethod!.id,
+          card: Card.getCardFromStripe(pm.current.paymentMethod!.card)
+        };
+      } catch (e) {
+        const err = new Error(`Failed to createPaymentMethod for accountName '${billingName}'`);
+        console.error(err.stack);
+        setDidPlaceOrder(false);
+        throw err;
+      }
+
+    } else {
+      if (!consumer.data?.profile.card) {
+        const err = new Error('Missing card');
+        console.error(err.stack);
+        throw err;
+      }
+      card = {
+        id: null,
+        card: consumer.data.profile.card,
+      }
     }
-    const cardElement = elements.getElement('cardNumber');
-    if (!cardElement) {
-      const err =  new Error('No card element');
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
-    const billingName = (!consumer || !consumer.data) ? name : consumer.data.profile.name;
-    try {
-      pm.current = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: { name: billingName },
-      });
-    } catch (e) {
-      const err = new Error(`Failed to createPaymentMethod for accountName '${billingName}'`);
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
-    if (pm.current.error) {
-      const err = new Error(`Failed to generate stripe payment method: ${JSON.stringify(pm.current.error)}`);
-      const msg = pm.current.error.message || 'Sorry something went wrong with your card. Please try another card';
-      notify(msg, NotificationType.error, false);
-      console.error(err.stack);
-      setDidPlaceOrder(false);
-      throw err;
-    }
+
     doPlaceOrder(
+      card,
       name,
       password,
       email,
       addr2,
       phone,
-      pm.current.paymentMethod,
       instructions,
     );
   }
@@ -437,10 +468,15 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <ServiceTypePicker />
             </Grid>
             <Grid item xs={12}>
-              <SearchInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
+              <SearchAreaInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
             </Grid>
             <Grid item xs={12}>
-              <BaseInput label='Apt #' inputRef={addr2InputRef} />
+              <BaseInput
+                key={defaultApt}
+                defaultValue={defaultApt}
+                label='Apt #'
+                inputRef={addr2InputRef}
+              />
             </Grid>
             <Grid
               item
@@ -448,6 +484,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               md={6}
             >
               <PhoneInput
+                key={defaultPhone}
+                defaultValue={defaultPhone}
                 inputRef={phoneInputRef}
                 setValidator={(validator: () => boolean) => {
                   validatePhoneRef.current = validator;
@@ -459,7 +497,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               xs={12}
               md={6}
             >
-              <BaseInput label='Requests or instructions' inputRef={instructionsInputRef} />
+              <BaseInput
+                key={defaultInstructions}
+                defaultValue={defaultInstructions}
+                label='Requests or instructions'
+                inputRef={instructionsInputRef}
+              />
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel
@@ -606,16 +649,36 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           >
             Payment
           </Typography>
-          <div className={classes.row}>
-            <VerifiedUserIcon className={classes.shield} />
-            <a href='https://stripe.com/' target='_blank'>
-              <img src='/checkout/stripe.png' alt='stripe' />
-            </a>
-            <div className={classes.secureSeal}>
-              <TrustSeal />
-            </div>
-          </div>
-          <CardForm />
+          {
+            isUsingSavedCard ?
+              <>
+                <Typography variant='body1'>
+                  {Card.getHiddenCardStr(consumer.data!.profile.card!)}
+                </Typography>
+                <Button className={classes.link} onClick={() => setIsUsingSavedCard(false)}>
+                  Use new card
+                </Button>
+              </>
+            :
+              <>
+                <div className={classes.row}>
+                  <VerifiedUserIcon className={classes.shield} />
+                  <a href='https://stripe.com/' target='_blank'>
+                    <img src='/checkout/stripe.png' alt='stripe' />
+                  </a>
+                  <div className={classes.secureSeal}>
+                    <TrustSeal />
+                  </div>
+                </div>
+                <CardForm />
+                <Button
+                  className={classes.link}
+                  onClick={() => setIsUsingSavedCard(true)}
+                >
+                  Use saved card
+                </Button>
+              </>
+          }
         </Grid>
         {
           !isMdAndUp &&

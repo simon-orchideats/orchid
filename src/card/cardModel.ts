@@ -7,7 +7,7 @@ export interface ICard {
 export class Card {
   
   static getHiddenCardStr(c: ICard) {
-    return `${c.last4} ${c.expMonth}/${c.expYear}`
+    return `**** ${c.last4} ${c.expMonth}/${c.expYear}`
   }
 
   static getCardFromStripe(card?: stripe.paymentMethod.PaymentMethodCard) {

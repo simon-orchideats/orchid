@@ -6,7 +6,7 @@ import { IMeal } from '../rest/mealModel';
 
 export interface ICartInput {
   readonly address2: string | null
-  readonly paymentMethodId: string
+  readonly paymentMethodId: string | null
   readonly card: ICard
   readonly stripeProductPriceId: string | null 
   readonly phone: string
@@ -14,7 +14,6 @@ export interface ICartInput {
   readonly cartOrder: {
     readonly rest: ICartRest,
     readonly serviceDate: string,
-    // again, just always save this....
     readonly serviceInstructions: string | null
     readonly serviceTime: ServiceTime
     readonly serviceType: ServiceType
@@ -188,7 +187,7 @@ export class Cart {
     cart: ICart,
     phone: string,
     card: ICard,
-    paymentMethodId: string,
+    paymentMethodId: string | null,
     serviceInstructions: string | null,
     stripeProductPriceId: string | null,
   ): ICartInput {
