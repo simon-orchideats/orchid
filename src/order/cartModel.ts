@@ -11,6 +11,7 @@ export interface ICartInput {
   readonly stripeProductPriceId: string | null 
   readonly phone: string
   readonly searchArea: string
+  readonly tip: number
   readonly cartOrder: {
     readonly rest: ICartRest,
     readonly serviceDate: string,
@@ -190,6 +191,7 @@ export class Cart {
     paymentMethodId: string | null,
     serviceInstructions: string | null,
     stripeProductPriceId: string | null,
+    tip: number,
   ): ICartInput {
     if (!cart.rest) {
       const err = new Error('Cart missing rest');
@@ -215,7 +217,8 @@ export class Cart {
         serviceInstructions, 
         serviceTime: cart.serviceTime,
         serviceType: cart.serviceType
-      }
+      },
+      tip,
     }
   }
 

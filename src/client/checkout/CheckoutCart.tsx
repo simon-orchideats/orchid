@@ -35,6 +35,7 @@ type props = {
   hideCheckout?: boolean
   hideDeliveries?: boolean
   loading: boolean,
+  tip: number,
   onPlaceOrder: () => void
 }
 
@@ -43,6 +44,7 @@ const CheckoutCart: React.FC<props> = ({
   hideCheckout = false,
   hideDeliveries = false,
   loading,
+  tip,
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
@@ -74,7 +76,7 @@ const CheckoutCart: React.FC<props> = ({
 
   const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
   const taxes = mealTotal * cart.rest.taxRate;
-  const total = mealTotal + taxes + cart.rest.deliveryFee;
+  const total = mealTotal + taxes + cart.rest.deliveryFee + tip;
   return (
     <>
       {suggestions.map((suggestion, i) => (
@@ -94,6 +96,14 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
           <Typography variant='body1'>
             ${(mealTotal / 100).toFixed(2)}
+          </Typography>
+        </div>
+        <div className={classes.row}>
+          <Typography variant='body1'>
+            Tips
+          </Typography>
+          <Typography variant='body1'>
+            ${(tip / 100).toFixed(2)}
           </Typography>
         </div>
         <div className={classes.row}>

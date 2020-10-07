@@ -1,4 +1,4 @@
-import { ICartRest } from './cartModel';
+import { ICartInput } from './cartModel';
 
 export const ADDITIONAL_ORDER_FEE = 199;
 export const ON_DEMAND_FEE = 199;
@@ -22,14 +22,13 @@ export class Cost {
     }
   }
 
-  public static getICost(r: ICartRest) {
+  public static getICost(c: ICartInput) {
     return {
-      // todo pivot: these shoulnd't be 0s
       additionalOrderFee: 0,
       onDemandFee: 0,
-      tip: 0,
-      deliveryFee: r.deliveryFee,
-      taxRate: r.taxRate,
+      tip: c.tip,
+      deliveryFee: c.cartOrder.rest.deliveryFee,
+      taxRate: c.cartOrder.rest.taxRate,
     }
   }
   // public static getDeliveryFee(deliveries: IDeliveryInput[]) {

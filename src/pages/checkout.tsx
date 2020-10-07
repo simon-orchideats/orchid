@@ -1,4 +1,4 @@
-import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox } from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox, InputAdornment, TextField } from "@material-ui/core";
 import { useGetCart, useClearCartMeals } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
@@ -31,6 +31,9 @@ import SearchAreaInput from "../client/general/inputs/SearchAreaInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
 import { IPlan } from "../plan/planModel";
+import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
+import ToggleButton from "@material-ui/lab/ToggleButton";
+import { OrderMeal } from "../order/orderRestModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -57,6 +60,12 @@ const useStyles = makeStyles(theme => ({
     marginTop: 2,
     alignSelf: 'flex-start',
   },
+  customTip: {
+    width: 115,
+  },
+  marginTop: {
+    marginTop: theme.spacing(1),
+  },
   row: {
     display: 'flex',
     alignItems: 'center',
@@ -65,12 +74,33 @@ const useStyles = makeStyles(theme => ({
   },
   link: {
     color: theme.palette.common.link,
+    borderColor: theme.palette.common.link
+  },
+  toggleButtonGroup: {
+    width: '100%',
+  },
+  customTipSection: {
+    display: 'flex',
+    alignItems: 'flex-end',
   },
 }));
 
 type checkoutCard = {
   id: string | null,
   card: ICard,
+}
+type staticTip = 0.15 | 0.20 | 0.25 | 0.30 | null;
+const defaultTip = 0.20;
+
+const calculateTip = (mealTotal: number, staticTip: staticTip, customTip?: number) => {
+  let tip = 0;
+  if (customTip) {
+    tip = customTip * 100
+  }
+  if (staticTip) {
+    tip = mealTotal * staticTip
+  }
+  return tip;
 }
 
 const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
@@ -84,8 +114,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const signInEmail = useEmailSignIn();
   const notify = useNotify();
   const allTags = useGetTags();
+  const [tip, setTip] = useState<number>(
+    calculateTip(
+      (cart && cart.rest) ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      defaultTip,
+      0,
+    )
+  );
   const consumer = useGetConsumer('network-only');
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
+  const [staticTip, setStaticTip] = useState<staticTip>(defaultTip);
+  const customTipRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
   const instructionsInputRef = createRef<HTMLInputElement>();
   const validatePhoneRef = useRef<() => boolean>();
@@ -191,6 +230,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             pm.current.paymentMethod!.id,
             instructionsInputRef.current?.value || null,
             stripeProductPriceId,
+            tip,
           )
         );
       }
@@ -202,6 +242,26 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   } else if (!cart) {
     Router.replace(menuRoute);
     return <Typography>Redirecting...</Typography>
+  }
+  const onChooseTip = (tip: staticTip) => {
+    setStaticTip(tip);
+    setTip(calculateTip(
+      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      tip,
+      0,
+    ))
+    if (customTipRef.current) {
+      customTipRef.current.value = '';
+    }
+  }
+  const customTipChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    if (e.target.value === '') return;
+    setTip(calculateTip(
+      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      null,
+      parseInt(e.target.value),
+    ))
+    setStaticTip(null);
   }
 
   const validate = (name?: string, password?: string, canReceiveTexts?: boolean) => {
@@ -245,6 +305,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       throw err;
     }
   }
+
   const doPlaceOrder = async (
     checkoutCard: checkoutCard,
     name?: string,
@@ -310,7 +371,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           checkoutCard.card,
           checkoutCard.id,
           serviceInstructions || null,
-          stripeProductPriceId
+          stripeProductPriceId,
+          tip,
         ),
       );
     }
@@ -430,6 +492,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       receiveTextsInput.current?.checked,
       instructionsInputRef.current?.value
     ),
+    tip,
     loading: didPlaceOrder,
   }
   return (
@@ -651,14 +714,22 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Typography>
           {
             isUsingSavedCard ?
-              <>
-                <Typography variant='body1'>
-                  {Card.getHiddenCardStr(consumer.data!.profile.card!)}
-                </Typography>
-                <Button className={classes.link} onClick={() => setIsUsingSavedCard(false)}>
-                  Use new card
-                </Button>
-              </>
+              <Grid container>
+                <Grid item xs={6}>
+                  <Typography variant='body1'>
+                    {Card.getHiddenCardStr(consumer.data!.profile.card!)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    variant='outlined'
+                    className={classes.link}
+                    onClick={() => setIsUsingSavedCard(false)}
+                  >
+                    Use new card
+                  </Button>
+                </Grid>
+              </Grid>
             :
               <>
                 <div className={classes.row}>
@@ -672,13 +743,60 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 </div>
                 <CardForm />
                 <Button
-                  className={classes.link}
+                  variant='outlined'
+                  className={`${classes.link} ${classes.marginTop}`}
                   onClick={() => setIsUsingSavedCard(true)}
                 >
                   Use saved card
                 </Button>
               </>
           }
+          <Typography
+            variant='h6'
+            color='primary'
+            className={classes.title}
+          >
+            Tip
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item sm={6} xs={12}>
+              <ToggleButtonGroup
+                exclusive
+                className={classes.toggleButtonGroup}
+                value={staticTip}
+                onChange={(_e, tip) => onChooseTip(tip)}
+              >
+                <ToggleButton value={0.15}>
+                  15%
+                </ToggleButton>
+                <ToggleButton value={0.20}>
+                  20%
+                </ToggleButton>
+                <ToggleButton value={0.25}>
+                  25%
+                </ToggleButton>
+                <ToggleButton value={0.30}>
+                  30%
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
+            <Grid item sm={6} xs={12}>
+              <div className={classes.customTipSection}>
+                <Typography variant='body1' className={classes.customTip}>
+                  Custom tip
+                </Typography>
+                <TextField
+                  type='number'
+                  fullWidth
+                  inputRef={customTipRef}
+                  onChange={e => customTipChange(e)}
+                  InputProps={{
+                    startAdornment: <InputAdornment position='start'>$</InputAdornment>,
+                  }}
+                />
+              </div>
+            </Grid>
+          </Grid>
         </Grid>
         {
           !isMdAndUp &&

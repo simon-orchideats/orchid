@@ -37,6 +37,7 @@ export const _OrderQL = gql`
     phone: String!
     searchArea: String!
     cartOrder: CartOrderInput!
+    tip: Int
   }
 
   input OrderMealInput {

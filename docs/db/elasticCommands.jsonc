@@ -1279,6 +1279,9 @@ PUT /rests3/
       },
       "stripeRestId": {
         "type": "keyword" 
+      },
+      "serviceTypes": {
+        "type": "keyword"
       }
       // "url": {
       //   "type": "keyword"

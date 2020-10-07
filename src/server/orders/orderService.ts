@@ -8,7 +8,7 @@ import { getPlanService, IPlanService } from './../plans/planService';
 import { Permissions, EConsumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationConsumerRes } from '../../utils/apolloUtils';
 import { getConsumerService, IConsumerService } from './../consumer/consumerService';
-import { ICartInput, ICartOrder, ICartRest } from './../../order/cartModel';
+import { ICartInput } from './../../order/cartModel';
 import { getGeoService, IGeoService } from './../place/geoService';
 import { getRestService, IRestService } from './../rests/restService';
 import { getCannotBeEmptyError, getNotSignedInErr } from './../utils/error';
@@ -382,6 +382,12 @@ class OrderService {
         rest: null,
       }
     };
+    if (cart.tip < 0) {
+      return {
+        msg: "Tip can't be less than 0",
+        rest: null,
+      }
+    }
     // todo simon: revalidate again
     // const deliveryDateValidation = validateDeliveryDate(cart.deliveryDate);
     // if (deliveryDateValidation) return deliveryDateValidation;
@@ -691,15 +697,16 @@ class OrderService {
   // }
 
   private async makePayment(
-    rest: ICartRest,
+    cart: ICartInput,
     paymentMethodId: string,
     stripeCustomerId: string,
     stripeRestId: string | null
   ): Promise<string> {
     try {
+      const rest = cart.cartOrder.rest;
       const mealTotal = OrderMeal.getTotalMealCost(rest.meals);
       const taxes = mealTotal * rest.taxRate;
-      const total = Math.round(mealTotal + taxes + rest.deliveryFee);
+      const total = Math.round(mealTotal + taxes + cart.tip + rest.deliveryFee);
       const options: Stripe.PaymentIntentCreateParams = {
         payment_method: paymentMethodId,
         customer: stripeCustomerId,
@@ -831,7 +838,7 @@ class OrderService {
     }
 
     const paymentId = await this.makePayment(
-      cart.cartOrder.rest,
+      cart,
       paymentMethodId,
       stripeCustomerId,
       rest.stripeRestId

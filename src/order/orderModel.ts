@@ -360,7 +360,7 @@ export class Order {
     return {
       cartUpdatedDate: date,
       consumer: OrderConsumer.getIOrderConsumer(signedInUser, cart),
-      costs: Cost.getICost(cart.cartOrder.rest),
+      costs: Cost.getICost(cart),
       createdDate: date,
       location: cart.cartOrder.serviceType === ServiceTypes.Pickup ?
         rest.location
