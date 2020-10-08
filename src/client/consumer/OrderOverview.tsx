@@ -95,9 +95,21 @@ const OrderOverview: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const open = !!anchorEl;
-  const mealTotal = OrderMeal.getTotalMealCost(order.rest.meals);
+  let mealTotal = OrderMeal.getTotalMealCost(order.rest.meals);
+  const discount = order.costs.discount;
+  let discountAmount = 0;
+  if (discount) {
+    if (discount.percentOff) {
+      discountAmount = mealTotal * (discount.percentOff / 100);
+      mealTotal = mealTotal - discountAmount ;
+    }
+    if (discount.amountOff) {
+      discountAmount = discount.amountOff;
+      mealTotal = mealTotal - discount.amountOff
+    }
+  }
   const taxes = mealTotal * order.costs.taxRate;
-  const total = mealTotal + taxes + order.costs.deliveryFee;
+  const total = mealTotal + taxes + order.costs.tip + order.costs.deliveryFee;
   const serviceName = order.serviceType === ServiceTypes.Delivery ? order.consumer.profile.name : order.rest.restName;
   return (
     <Paper className={classes.marginBottom}>
@@ -124,8 +136,17 @@ const OrderOverview: React.FC<{
             <Typography variant='body1'>
               Meals
             </Typography>
+            {
+              !!discountAmount &&
+              <Typography variant='body1'>
+                Discount
+              </Typography>
+            }
             <Typography variant='body1'>
               Tax
+            </Typography>
+            <Typography variant='body1'>
+              Tip
             </Typography>
             <Typography variant='body1'>
               Delivery
@@ -138,8 +159,17 @@ const OrderOverview: React.FC<{
             <Typography variant='body1' className={classes.cost}>
               ${(mealTotal / 100).toFixed(2)}
             </Typography>
+            {
+              !!discountAmount &&
+              <Typography variant='body1' className={classes.cost}>
+                -${(discountAmount / 100).toFixed(2)}
+              </Typography>
+            }
             <Typography variant='body1' className={classes.cost}>
               ${(taxes / 100).toFixed(2)}
+            </Typography>
+            <Typography variant='body1' className={classes.cost}>
+              ${(order.costs.tip / 100).toFixed(2)}
             </Typography>
             <Typography variant='body1' className={classes.cost}>
               ${(order.costs.deliveryFee / 100).toFixed(2)}

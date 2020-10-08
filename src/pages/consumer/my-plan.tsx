@@ -269,8 +269,8 @@ const myPlan = () => {
                 </Button>
               }
             />
-            <Typography variant='body2'>
-              By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+            <Typography variant='body2' align='center'>
+              Immediately update your plan. You will be prorated upgrades and and receive credit for downgrades.
             </Typography>
             <Button
               variant='outlined'
@@ -280,7 +280,7 @@ const myPlan = () => {
               Cancel subscription
             </Button>
             <Typography variant='body2'>
-              By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+              Immediately cancel your subscription and all connected accounts
             </Typography>
           </>
         :

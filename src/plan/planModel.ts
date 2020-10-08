@@ -1,3 +1,9 @@
+export const PLAN_DISCLAIMER = `
+  By signing up, you acknowledge that you have read and agree to the Table Terms and Conditions and
+  authorize us to charge your default payment method after your 30-day free trial. Your membership 
+  continues until cancelled by visiting Your Plan.
+`
+
 export type PlanName = 'Foodie' | 'Partner' | 'Community';
 
 export const PlanNames: {

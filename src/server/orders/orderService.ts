@@ -19,6 +19,7 @@ import { activeConfig } from '../../config';
 import moment from 'moment-timezone';
 import { refetchAccessToken } from '../../utils/auth';
 import { OrderMeal } from '../../order/orderRestModel';
+import { Discount } from '../../order/discountModel';
 
 const ORDER_INDEX = 'orders';
 // const PROMO_INDEX = 'promos';
@@ -146,6 +147,7 @@ type validatedRest = Pick<
   | 'taxRate'
   | 'deliveryFee'
   | 'deliveryMinimum'
+  | 'discount'
   | 'stripeRestId'
   | 'location'
 >;
@@ -192,6 +194,7 @@ class OrderService {
       'featured',
       'taxRate',
       'deliveryFee',
+      'discount',
       'deliveryMinimum',
       'stripeRestId',
       'location',
@@ -203,6 +206,21 @@ class OrderService {
         msg,
         rest: null,
       };
+    }
+    const cartDiscount = cart.cartOrder.rest.discount;
+    if (cartDiscount && !rest.discount) {
+      if (!rest.discount) {
+        return {
+          msg: "This restaurant doesn't have a discount",
+          rest,
+        }
+      }
+      if (!Discount.equals(cartDiscount, rest.discount)) {
+        return {
+          msg: 'Discount is invalid',
+          rest,
+        }
+      }
     }
     return {
       msg: null,
@@ -704,7 +722,16 @@ class OrderService {
   ): Promise<string> {
     try {
       const rest = cart.cartOrder.rest;
-      const mealTotal = OrderMeal.getTotalMealCost(rest.meals);
+      let mealTotal = OrderMeal.getTotalMealCost(rest.meals);
+      const discount = cart.cartOrder.rest.discount;
+      if (discount) {
+        if (discount.percentOff) {
+          mealTotal = mealTotal * (1 - discount.percentOff / 100);
+        }
+        if (discount.amountOff) {
+          mealTotal = mealTotal - discount.amountOff
+        }
+      }
       const taxes = mealTotal * rest.taxRate;
       const total = Math.round(mealTotal + taxes + cart.tip + rest.deliveryFee);
       const options: Stripe.PaymentIntentCreateParams = {

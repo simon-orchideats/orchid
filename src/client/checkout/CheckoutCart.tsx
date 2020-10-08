@@ -60,22 +60,28 @@ const CheckoutCart: React.FC<props> = ({
       onClick={onPlaceOrder}
       className={classes.button}
     >
-      {loading ? <CircularProgress size={25} /> : 'Place order'}
+      {loading ? <CircularProgress size={25} color='inherit' /> : 'Place order'}
     </Button>
   );
   const disclaimer = (
-    <>
-      <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
-        Thank you for choosing local. Contact at simon@tableweekly.com or (609) 513-8166 for any issues or authentic
-        price matching requests.
-      </Typography>
-      <Typography variant='body2' className={classes.paddingBottom}>
-        Your subscription renews every month. Cancel anytime.
-      </Typography>
-    </>
+    <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
+      Thank you for choosing Table. Contact at simon@tableweekly.com or (609) 513-8166 for any issues
+    </Typography>
   );
 
-  const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
+  let mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
+  const discount = cart.rest.discount;
+  let discountAmount = 0;
+  if (discount) {
+    if (discount.percentOff) {
+      discountAmount = mealTotal * (discount.percentOff / 100);
+      mealTotal = mealTotal - discountAmount ;
+    }
+    if (discount.amountOff) {
+      discountAmount = discount.amountOff;
+      mealTotal = mealTotal - discount.amountOff
+    }
+  }
   const originalPrice = mealTotal / (1 - AVERAGE_MARKUP_PERCENTAGE / 100);
   const savings = ((originalPrice - mealTotal) / 100).toFixed(2);
   const taxes = mealTotal * cart.rest.taxRate;
@@ -101,6 +107,17 @@ const CheckoutCart: React.FC<props> = ({
             ${(mealTotal / 100).toFixed(2)}
           </Typography>
         </div>
+        {
+          discount &&
+          <div className={classes.row}>
+            <Typography variant='body1'>
+              <b>Sale</b>
+            </Typography>
+            <Typography variant='body1'>
+              <b>-${(discountAmount / 100).toFixed(2)}</b>
+            </Typography>
+          </div>
+        }
         <div className={classes.row}>
           <Typography variant='body1'>
             Tips
@@ -119,30 +136,12 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <div className={classes.row}>
           <Typography variant='body1'>
-            Delivery
+            {cart.rest.deliveryFee === 0 ? <b>Delivery</b> : 'Delivery'}
           </Typography>
           <Typography variant='body1'>
-            ${(cart.rest.deliveryFee / 100).toFixed(2)}
+            {cart.rest.deliveryFee === 0 ? <b>FREE</b> : `$${(cart.rest.deliveryFee / 100).toFixed(2)}`}
           </Typography>
-          {/* {
-            cart.resteliveries.length === 1 ?
-              <Typography variant='body1' color='primary'>
-                <b>FREE</b>
-              </Typography>
-            :
-              <Typography variant='body1'>
-                +{cart.Deliveries.length - 1} (${(deliveryFee / 100).toFixed(2)} ea)
-              </Typography>
-          } */}
         </div>
-        {/* <div className={classes.row}>
-          <Typography variant='body1' color='primary'>
-            <b>Promo {promoDuration !== 'once' && 'for 4 weeks'}</b>
-          </Typography>
-          <Typography variant='body1' color='primary'>
-            <b>-${(amountOff / 100).toFixed(2)}</b>
-          </Typography>
-        </div> */}
         <div className={`${classes.row}`} >
           <Typography variant='body1' color='primary'>
             <b>Total</b>
@@ -163,24 +162,6 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
         </div>
         <p />
-        {/* <div className={`${classes.row}`} >
-          <Typography variant='body1'>
-            Other delivery apps
-          </Typography>
-          <Typography variant='body1'>
-            <del>${competitorPrice.toFixed(2)}</del>
-          </Typography>
-        </div>
-        <div className={`${classes.row} ${classes.paddingBottom}`} >
-          <Typography variant='body1' color='primary'>
-            You save
-          </Typography>
-          <Typography variant='body1' color='primary'>
-            ${(competitorPrice - total).toFixed(2)}
-          </Typography>
-        </div> */}
-        {/* {!hideCheckout && promoInput} */}
-        {/* {!hideCheckout && applyPromoButton} */}
         {!hideCheckout && orderButton}
         {!hideCheckout && disclaimer}
       </div>

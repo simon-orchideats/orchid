@@ -420,7 +420,8 @@ const MenuMeal: React.FC<{
             clickable={false}
             label={
               <Typography variant='body1' className={classes.discount}>
-                {discount.percentOff ? `${discount.percentOff}% off` : `$${discount.amountOff} off order`}
+                {discount.percentOff && `${discount.percentOff}% off`}
+                {discount.amountOff && `$${(discount.amountOff / 100).toFixed(2)} off order`}
               </Typography>
             }
           />

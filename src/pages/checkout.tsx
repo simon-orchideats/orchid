@@ -1,5 +1,5 @@
 import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Button, FormControlLabel, Checkbox, InputAdornment, TextField } from "@material-ui/core";
-import { useGetCart, useClearCartMeals } from "../client/global/state/cartState";
+import { useGetCart } from "../client/global/state/cartState";
 import withClientApollo from "../client/utils/withClientApollo";
 import { isServer } from "../client/utils/isServer";
 import Router from 'next/router'
@@ -30,7 +30,7 @@ import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicke
 import SearchAreaInput from "../client/general/inputs/SearchAreaInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
-import { IPlan } from "../plan/planModel";
+import { IPlan, PLAN_DISCLAIMER } from "../plan/planModel";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
@@ -109,7 +109,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
 }) => {
   const classes = useStyles();
   const cart = useGetCart();
-  const clearCart = useClearCartMeals();
   const signInGoogle = useGoogleSignIn();
   const signInEmail = useEmailSignIn();
   const notify = useNotify();
@@ -166,14 +165,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         setDidPlaceOrder(false);
         notify(placeOrderRes.data.error, NotificationType.error, false);
       } else {
-        clearCart();
         Router.push({
           pathname: orderHistoryRoute,
           query: {
             confirmation: 'true',
-            clear: 'true',
           },
-        })
+        });
       }
     }
   }, [placeOrderRes]);
@@ -701,7 +698,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 }}
               />
               <Typography variant='body2'>
-                By signing up, you acknowledge that you have read and agree to the Amazon Prime Terms and Conditions and authorize us to charge your default payment method (Visa ****-4500) or another available payment method on file after your 30-day free trial. Your Amazon Prime membership continues until cancelled. If you do not wish to continue for $12.99/month plus any applicable taxes, you may cancel anytime by visiting Your Account and adjusting your membership settings. For customers in Hawaii, Puerto Rico, and Alaska please visit the Amazon Prime Shipping Benefits page to check various shipping options.
+                {PLAN_DISCLAIMER}
               </Typography>
             </>
           }

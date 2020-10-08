@@ -2,9 +2,6 @@ import { Card, CardContent, Typography, Divider, useTheme } from '@material-ui/c
 import { makeStyles } from '@material-ui/core';
 import { IPlan } from '../../plan/planModel';
 import CheckIcon from '@material-ui/icons/Check';
-// import { menuRoute } from '../../pages/menu';
-// import Router from 'next/router';
-// import { useSetPlan } from '../global/state/cartState';
 import withClientApollo from '../utils/withClientApollo';
 
 const useStyles = makeStyles(theme => ({
@@ -29,6 +26,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     marginTop: 'auto',
+    paddingTop: theme.spacing(2),
   },
   divider: {
     marginTop: theme.spacing(2),
