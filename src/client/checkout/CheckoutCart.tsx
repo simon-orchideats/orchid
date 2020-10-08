@@ -4,6 +4,7 @@ import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { OrderMeal } from "../../order/orderRestModel";
+import { AVERAGE_MARKUP_PERCENTAGE } from "../../order/cartModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -75,6 +76,8 @@ const CheckoutCart: React.FC<props> = ({
   );
 
   const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
+  const originalPrice = mealTotal / (1 - AVERAGE_MARKUP_PERCENTAGE / 100);
+  const savings = ((originalPrice - mealTotal) / 100).toFixed(2);
   const taxes = mealTotal * cart.rest.taxRate;
   const total = mealTotal + taxes + cart.rest.deliveryFee + tip;
   return (
@@ -150,10 +153,16 @@ const CheckoutCart: React.FC<props> = ({
         </div>
         <p />
         <div className={classes.row}>
-          <Typography variant='body1' color='primary'>
+          <Typography variant='body1'>
             <b>NO SERVICE FEE</b>
           </Typography>
         </div>
+        <div className={classes.row}>
+          <Typography variant='body1'>
+            Saving <b>${savings}</b> vs other apps!
+          </Typography>
+        </div>
+        <p />
         {/* <div className={`${classes.row}`} >
           <Typography variant='body1'>
             Other delivery apps

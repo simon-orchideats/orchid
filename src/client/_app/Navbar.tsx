@@ -220,7 +220,7 @@ const Navbar: React.FC = () => {
           &nbsp;
           <div className={classes.menuServiceDropdown} onClick={onClickServiceTime}>
             <Typography variant='body1'>
-              {Order.getServiceTimeStr(cart.serviceTime) === 'ASAP' ? 'ASAP' : `${cart.serviceDate} ${Order.getServiceTimeStr(cart.serviceTime)}`}
+              {Order.getServiceTimeStr(cart.serviceTime) === 'ASAP' ? 'ASAP' : `${Order.getServiceMonthDay(cart.serviceDate)} ${Order.getServiceTimeStr(cart.serviceTime)}`}
             </Typography>
           </div>
           &nbsp;
@@ -254,9 +254,6 @@ const Navbar: React.FC = () => {
       <>
         <Link href={menuRoute}>
           <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
-        </Link>
-        <Link href={menuRoute}>
-          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
         </Link>
         <div className={classes.about} onClick={onClickAbout}>
           <Typography variant='button' className={classes.link}>About</Typography>

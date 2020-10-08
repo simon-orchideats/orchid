@@ -9,12 +9,19 @@ import { IOrderMeal, OrderMeal, ICustomization } from '../../../order/orderRestM
 import { useGetRest, useGetNearbyRests } from '../../../rest/restService';
 import { Rest, WeekHours } from '../../../rest/restModel';
 import { IPlan } from '../../../plan/planModel';
+import { IDiscount } from '../../../order/discountModel';
 
 type cartQueryRes = {
   cart: ICart | null
 };
 
 export const cartQL = gql`
+  type CartRest {
+    restId: ID!
+    meals: [OrderMeal!]!,
+    restName: String!
+    discount: Discount
+  }
   type CartState {
     rests: OrderRest
     searchArea: String
@@ -37,6 +44,7 @@ export const cartQL = gql`
     addMealToCart(
       meal: MealInput!,
       customizations: [CustomizationInput!]!,
+      discount: DiscountInput,
       deliveryFee: Int!,
       restId: ID!,
       restName: String!,
@@ -169,6 +177,7 @@ export const useAddMealToCart = (): (
   meal: IMeal,
   customizations: ICustomization[],
   deliveryFee: number,
+  discount: IDiscount | null,
   restId: string,
   restName: string,
   taxRate: number
@@ -177,6 +186,7 @@ export const useAddMealToCart = (): (
     meal: IMeal,
     customizations: ICustomization[],
     deliveryFee: number,
+    discount: IDiscount | null,
     restId: string,
     restName: string,
     taxRate: number
@@ -186,6 +196,7 @@ export const useAddMealToCart = (): (
       $meal: MealInput!,
       $customizations: [CustomizationInput!]!
       $deliveryFee: Int!,
+      $discount: DiscountInput,
       $restId: ID!,
       $restName: String!,
       $taxRate: Float!
@@ -194,6 +205,7 @@ export const useAddMealToCart = (): (
         meal: $meal,
         customizations: $customizations,
         deliveryFee: $deliveryFee,
+        discount: $discount,
         restId: $restId,
         restName: $restName,
         taxRate: $taxRate
@@ -204,6 +216,7 @@ export const useAddMealToCart = (): (
     meal: IMeal,
     customizations: ICustomization[],
     deliveryFee: number,
+    discount: IDiscount | null,
     restId: string,
     restName: string,
     taxRate: number
@@ -213,6 +226,7 @@ export const useAddMealToCart = (): (
         meal,
         customizations,
         deliveryFee,
+        discount,
         restId,
         restName,
         taxRate
@@ -381,6 +395,7 @@ type cartMutationResolvers = {
     meal: IMeal,
     customizations: ICustomization[],
     deliveryFee: number,
+    discount: IDiscount | null,
     restId: string,
     restName: string,
     taxRate: number,
@@ -415,6 +430,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       meal,
       customizations,
       deliveryFee,
+      discount,
       restId,
       restName,
       taxRate,
@@ -431,6 +447,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       res.cart,
       customizations,
       deliveryFee,
+      discount,
       meal,
       restId,
       restName,

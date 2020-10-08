@@ -10,9 +10,21 @@ const MealQL = gql`
     limit: Int
   }
 
+  input DiscountInput {
+    description: String
+    amountOff: Int
+    percentOff: Int
+  }
+
   type Choice {
     name: String!
     additionalPrice: Int!
+  }
+
+  type Discount {
+    description: String
+    amountOff: Int
+    percentOff: Int
   }
 
   type OptionGroup {
@@ -135,6 +147,7 @@ const _RestQL = gql`
     profile: RestProfile!
     taxRate: Float!
     deliveryFee: Int!
+    discount: Discount
   }
 `;
 

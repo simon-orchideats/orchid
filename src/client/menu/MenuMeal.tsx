@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { IMeal, IChoice } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip } from "@material-ui/core";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { ICustomization } from '../../order/orderRestModel';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import { IDiscount } from '../../order/discountModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -77,6 +78,12 @@ const useStyles = makeStyles(theme => ({
     width: 300,
     padding: theme.spacing(2),
   },
+  chip: {
+    width: '100%'
+  },
+  discount: {
+    fontWeight: 500,
+  },
   icon: {
     fontSize: '1.8rem',
   },
@@ -91,12 +98,14 @@ const useStyles = makeStyles(theme => ({
 
 const MenuMeal: React.FC<{
   deliveryFee: number,
+  discount: IDiscount | null,
   meal: IMeal,
   restId: string,
   restName: string,
   taxRate: number,
 }> = ({
   deliveryFee,
+  discount,
   meal,
   restId,
   restName,
@@ -118,17 +127,6 @@ const MenuMeal: React.FC<{
   }
   const defaultOptions = {};
   const [options, setOptions] = useState<{ [groupIndex: number]: ICustomization }>(defaultOptions);
-  /**
-   * 
-   * 
-   * 
-      {
-        'ADDONSGROUP 1': {
-          
-        }
-      }
-
-   */
   const defaultAddons = meal.addonGroups.reduce<addonGroupsState>((addonGroups, ag, groupIndex) => ({
     ...addonGroups,
     ...ag.addons.reduce<addonGroupsState>((addons, addon, addonIndex) => {
@@ -149,6 +147,7 @@ const MenuMeal: React.FC<{
         meal,
         [],
         deliveryFee,
+        discount,
         restId,
         restName,
         taxRate,
@@ -195,6 +194,7 @@ const MenuMeal: React.FC<{
           ...Object.values(addons).filter(a => (a.quantity && a.quantity > 0)),
         ],
         deliveryFee,
+        discount,
         restId,
         restName,
         taxRate,
@@ -223,6 +223,7 @@ const MenuMeal: React.FC<{
         meal,
         [...Object.values(options), selectedOption],
         deliveryFee,
+        discount,
         restId,
         restName,
         taxRate,
@@ -411,6 +412,19 @@ const MenuMeal: React.FC<{
       <CardContent className={classes.content} onClick={e => {
         if (meal.description) onClickContent(e, meal.description)
       }}>
+        {
+          discount &&
+          <Chip
+            className={classes.chip}
+            color='secondary'
+            clickable={false}
+            label={
+              <Typography variant='body1' className={classes.discount}>
+                {discount.percentOff ? `${discount.percentOff}% off` : `$${discount.amountOff} off order`}
+              </Typography>
+            }
+          />
+        }
         <Typography
           variant='body1'
           className={classes.title}

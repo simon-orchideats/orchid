@@ -1,33 +1,29 @@
 import { ICartInput } from './cartModel';
+import { IDiscount, Discount } from './discountModel';
 
-export const ADDITIONAL_ORDER_FEE = 199;
-export const ON_DEMAND_FEE = 199;
 
 export interface ICost {
-  readonly additionalOrderFee: number
-  readonly onDemandFee: number
   readonly tip: number
   readonly deliveryFee: number
+  readonly discount: IDiscount | null;
   readonly taxRate: number
 }
 
 export class Cost {
-  public static getICopy(c: ICost) {
+  public static getICopy(c: ICost): ICost {
     return {
-      additionalOrderFee: c.additionalOrderFee,
-      onDemandFee: c.onDemandFee,
       tip: c.tip,
       deliveryFee: c.deliveryFee,
+      discount: c.discount ? Discount.getICopy(c.discount) : null,
       taxRate: c.taxRate,
     }
   }
 
-  public static getICost(c: ICartInput) {
+  public static getICost(c: ICartInput): ICost {
     return {
-      additionalOrderFee: 0,
-      onDemandFee: 0,
       tip: c.tip,
       deliveryFee: c.cartOrder.rest.deliveryFee,
+      discount: c.cartOrder.rest.discount ? Discount.getICopy(c.cartOrder.rest.discount) : null,
       taxRate: c.cartOrder.rest.taxRate,
     }
   }

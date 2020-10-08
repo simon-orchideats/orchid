@@ -9,6 +9,7 @@ export const _OrderQL = gql`
 
   input CartRestInput {
     restId: ID!
+    discount: DiscountInput
     meals: [OrderMealInput!]!,
     restName: String!
     taxRate: Float!
@@ -73,6 +74,7 @@ export const _OrderQL = gql`
     taxRate: Float!
     tip: Int!
     deliveryFee: Int!
+    discount: Discount
   }
 
   type OrderConsumerProfile {

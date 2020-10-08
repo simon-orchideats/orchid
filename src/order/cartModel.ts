@@ -3,6 +3,9 @@ import { ICard } from '../card/cardModel';
 import { ServiceType, ServiceTime } from './orderModel';
 import { IOrderRest, IOrderMeal, OrderMeal, ICustomization } from './orderRestModel';
 import { IMeal } from '../rest/mealModel';
+import { IDiscount, Discount } from './discountModel';
+
+export const AVERAGE_MARKUP_PERCENTAGE = 28;
 
 export interface ICartInput {
   readonly address2: string | null
@@ -21,9 +24,10 @@ export interface ICartInput {
   }
 };
 
-export interface ICartRest extends Omit<IOrderRest, 'stripeRestId'> {
-  taxRate: number,
-  deliveryFee: number,
+export interface ICartRest extends IOrderRest {
+  readonly discount: IDiscount | null
+  readonly taxRate: number,
+  readonly deliveryFee: number,
 }
 
 export class CartRest {
@@ -31,12 +35,14 @@ export class CartRest {
     mealToAdd: IOrderMeal,
     cartRest: ICartRest | null,
     deliveryFee: number,
+    discount: IDiscount | null,
     restId: string,
     restName: string,
     taxRate: number,
   ): ICartRest {
     if (!cartRest) {
       return {
+        discount,
         deliveryFee,
         meals: [mealToAdd],
         restId,
@@ -82,6 +88,7 @@ export class CartRest {
   static getICopy(r: ICartRest): ICartRest {
     return {
       deliveryFee: r.deliveryFee,
+      discount: r.discount ? Discount.getICopy(r.discount) : null,
       meals: r.meals.map(m => OrderMeal.getICopy(m)),
       restId: r.restId,
       restName: r.restName,
@@ -160,6 +167,7 @@ export class Cart {
     cart: ICart,
     customizations: ICustomization[],
     deliveryFee: number,
+    discount: IDiscount | null,
     newMeal: IMeal,
     restId: string,
     restName: string,
@@ -171,6 +179,7 @@ export class Cart {
         meal,
         cart.rest,
         deliveryFee,
+        discount,
         restId,
         restName,
         taxRate

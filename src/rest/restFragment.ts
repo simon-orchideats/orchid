@@ -7,6 +7,11 @@ const restFragment = gql`
       primaryAddr
       address2
     }
+    discount {
+      description
+      amountOff
+      percentOff
+    }
     hours {
       name
       weekHours {

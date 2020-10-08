@@ -1,6 +1,4 @@
-import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme,
-  // Paper
-} from "@material-ui/core";
+import { Typography, makeStyles, Grid, Container, useMediaQuery, Theme, Paper } from "@material-ui/core";
 import { useTheme } from "@material-ui/styles";
 import { useState, useEffect, useMemo } from "react";
 import withApollo from "../client/utils/withPageApollo";
@@ -9,7 +7,7 @@ import SearchAreaModal from "../client/menu/SearchAreaModal";
 import RestMenu from "../client/menu/RestMenu";
 import { useGetCart, useSetSearchArea } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
-// import Filter from "../client/menu/Filter";
+import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
 import MenuCartDisplay from "../client/menu/MenuCartDisplay";
 import { Order } from "../order/orderModel";
@@ -99,9 +97,9 @@ const menu = () => {
     serviceDay,
     cart?.serviceType
   );
-  // const onFilterCuisines = (cuisines: string[]) => {
-  //   setCuisines(cuisines);
-  // };
+  const onFilterCuisines = (cuisines: string[]) => {
+    setCuisines(cuisines);
+  };
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
 
   useEffect(() => {
@@ -136,7 +134,7 @@ const menu = () => {
           lg={8}
           className={classes.menu}
         >
-          {/* <Paper className={classes.filters}>
+          <Paper className={classes.filters}>
             {
               isMdAndUp &&
               <div className={classes.row}>
@@ -148,7 +146,7 @@ const menu = () => {
                 />
               </div>
             }
-          </Paper> */}
+          </Paper>
           {
             !!rests.loading && 
             <Typography variant='body1'>

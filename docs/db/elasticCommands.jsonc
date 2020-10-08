@@ -1248,26 +1248,26 @@ PUT /rests3/
           },
         }
       },
-      // "discounts": {
-      //   "properties": {
-      //     // "reason": {
-      //     //   "type": "keyword"
-      //     // },
-      //     "description": {
-      //       "type": "keyword",
-      //       "ignore_above": 25
-      //     },
-      //     "percentOff": {
-      //       "type": "integer"
-      //     },
-      //     "amountOff": {
-      //       "type": "integer"
-      //     },
-      //     // "referredUserId": {
-      //     //   "type": "keyword"
-      //     // }
-      //   }
-      // },
+      "discount": {
+        "properties": {
+          // "reason": {
+          //   "type": "keyword"
+          // },
+          "description": {
+            "type": "keyword",
+            "ignore_above": 25
+          },
+          "percentOff": {
+            "type": "integer"
+          },
+          "amountOff": {
+            "type": "integer"
+          },
+          // "referredUserId": {
+          //   "type": "keyword"
+          // }
+        }
+      },
       "deliveryFee": {
         "type": "integer"
       },
@@ -1338,12 +1338,6 @@ PUT /orders/
       },
       "costs": {
         "properties": {
-          "additionalOrderFee": {
-            "type": "integer"
-          },
-          "onDemandFee": {
-            "type": "integer"
-          },
           "tip": {
             "type": "integer"
           },
@@ -1352,6 +1346,23 @@ PUT /orders/
           },
           "taxRate": {
             "type": "float"
+          },
+          "discount": {
+            "properties": {
+              // "reason": {
+              //   "type": "keyword"
+              // },
+              "description": {
+                "type": "keyword",
+                "ignore_above": 25
+              },
+              "percentOff": {
+                "type": "integer"
+              },
+              "amountOff": {
+                "type": "integer"
+              }
+            }
           }
         }
         // "promos": {
@@ -1367,21 +1378,6 @@ PUT /orders/
         //     }
         //   }
         // },
-        // "discounts": {
-        //   "properties": {
-        //     // "reason": {
-        //     //   "type": "keyword"
-        //     // },
-        //     "description": {
-        //       "type": "keyword",
-        //       "ignore_above": 25
-        //     },
-        //     "percentOff": {
-        //       "type": "integer"
-        //     },
-        //     "amountOff": {
-        //       "type": "integer"
-        //     },
         // "referredUserId": {
         //   "type": "keyword"
         // }

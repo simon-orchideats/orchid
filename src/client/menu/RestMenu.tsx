@@ -78,6 +78,7 @@ const RestMenu: React.FC<{
       >
         <MenuMeal
           meal={meal}
+          discount={rest.discount}
           deliveryFee={rest.deliveryFee}
           restId={rest._id}
           restName={rest.profile.name}

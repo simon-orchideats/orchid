@@ -5,6 +5,7 @@ import { IMeal, Meal, IMealInput } from './mealModel';
 import { ELocation, Location, ILocation } from '../place/locationModel';
 import { nanoid } from 'nanoid'
 import { isWithinInterval } from 'date-fns';
+import { IDiscount, Discount } from '../order/discountModel';
 
 type RestStatus = 'Active' | 'Inactive'
 
@@ -120,6 +121,7 @@ export interface ERest {
   readonly deliveryFee: number;
   readonly status: RestStatus;
   readonly deliveryMinimum: number;
+  readonly discount: IDiscount | null;
   readonly stripeRestId: string | null;
 }
 
@@ -139,6 +141,7 @@ export class Rest {
     return {
       _id: rest._id,
       deliveryMinimum: rest.deliveryMinimum,
+      discount: rest.discount ? Discount.getICopy(rest.discount) : null,
       taxRate: rest.taxRate,
       deliveryFee: rest.deliveryFee,
       hours: rest.hours.map(h => Hours.getICopy(h)),
@@ -164,6 +167,7 @@ export class Rest {
       createdDate: Date.now(),
       deliveryFee,
       deliveryMinimum,
+      discount: null,
       location: {
         //todo pivot,
         primaryAddr: 'supsupsup',
@@ -198,6 +202,7 @@ export class Rest {
       taxRate: rest.taxRate,
       deliveryFee: rest.deliveryFee,
       deliveryMinimum: rest.deliveryMinimum,
+      discount: rest.discount ? Discount.getICopy(rest.discount) : null,
       _id: restId
     }
   }

@@ -20,6 +20,11 @@ const orderFragment = gql`
       taxRate
       tip
       deliveryFee
+      discount {
+        amountOff
+        description
+        percentOff
+      }
     }
     _id
     location {

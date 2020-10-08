@@ -210,7 +210,7 @@ const theme: ThemeOptions = {
       light: '#fceaa3',
       main: brandSecondary,
       dark: '#ed8b00',
-      contrastText: '#fff'
+      contrastText: '#000'
     },
     error: {
       light: '#e57373',
