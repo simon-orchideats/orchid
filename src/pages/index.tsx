@@ -98,13 +98,13 @@ const useStyles = makeStyles(theme => ({
       backgroundSize: 960,
     },
     [theme.breakpoints.down('xs')]: {
-      background: 'linear-gradient(rgba(255,252,241,0), rgba(255,252,241,0)), url(/home/yellow-plating-mobile.png)',
-      backgroundPosition: '0% 100%',
+      backgroundImg: 'url(/home/burg-fries.png)',
+      backgroundPosition: '100% 60%',
       backgroundSize: 'cover',
-      justifyContent: 'flex-start',
     },
-    backgroundImage: `url(/home/yellow-plating-desk.png)`,
-    backgroundPosition: '50% 60%',
+    paddingTop: theme.spacing(5),
+    backgroundImage: `url(/home/burg-fries.png)`,
+    backgroundPosition: '0% 60%',
     backgroundSize: 'cover',
     marginTop: -theme.mixins.navbar.marginBottom,
     minHeight: 475,
@@ -121,7 +121,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   welcomeTitle: {
     fontSize: '4rem',
@@ -199,151 +198,8 @@ const useStyles = makeStyles(theme => ({
       height: 1000,
     }
   },
-  testimonialsTitle: {
-    [theme.breakpoints.down(1250)]: {
-      paddingLeft: '0px !important',
-    },
-    [theme.breakpoints.down(1600)]: {
-      paddingLeft: 400,
-    },
-    paddingLeft: 100,
-  },
   why: {
     minHeight: 400,
-  },
-  testimonialsContainer: {
-    [theme.breakpoints.down(1200)]: {
-      paddingRight: theme.spacing(1),
-    },
-    [theme.breakpoints.down(1450)]: {
-      paddingRight: theme.spacing(3),
-    },
-    [theme.breakpoints.down('lg')]: {
-      backgroundImage: 'linear-gradient(rgba(255,252,241,.5), rgba(255,252,241,.5)), url(/home/yellow-peach.png)',
-      paddingRight: theme.spacing(4),
-      alignItems: 'center',
-    },
-    backgroundImage: `url(/home/yellow-peach.png)`,
-    backgroundPosition: '20% 50%',
-    backgroundSize: 'cover',
-    display: 'flex',
-    alignItems: 'flex-end',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    minHeight: 600,
-    padding: theme.spacing(4),
-  },
-  tableFood: {
-    width: '100%',
-  },
-  sample: {
-    backgroundColor: theme.palette.common.white,
-    minHeight: 400,
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-    display: 'flex',
-    alignItems: 'center',
-  },
-  sampleImg: {
-    [theme.breakpoints.down('sm')]: {
-      paddingLeft: theme.spacing(0),
-    },
-    paddingLeft: theme.spacing(2),
-    width: '100%'
-  },
-  sampleTitle: {
-    [theme.breakpoints.down('sm')]: {
-      paddingBottom: theme.spacing(1),
-    },
-  },
-  testimonial: {
-    textAlign: 'left',
-    paddingLeft: theme.spacing(4),
-    paddingRight: theme.spacing(4),
-    paddingBottom: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    maxWidth: 350,
-    borderRadius: 20,
-    borderStyle: 'solid',
-    alignItems: 'flex-start',
-    backgroundColor: theme.palette.common.white,
-    borderColor: theme.palette.text.primary,
-    [theme.breakpoints.down('md')]: {
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
-      paddingBottom: theme.spacing(2),
-      paddingTop: theme.spacing(2),
-    },
-    position: 'relative',
-  },
-  testimonials: {
-    display: 'flex',
-    [theme.breakpoints.down('md')]: {
-      alignItems: 'center',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    },
-  },
-  testimonialHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%'
-  },
-  headerAvatar: {
-    marginBottom: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    [theme.breakpoints.up('sm')]: {
-      display: 'none'
-    },
-  },
-  t0: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 200,
-    [theme.breakpoints.down('md')]: {
-      marginLeft: 0,
-      marginBottom: 0,
-    },
-  },
-  t1: {
-    display: 'flex',
-    alignItems: 'center',
-    marginTop: 200,
-    [theme.breakpoints.down('md')]: {
-      marginLeft: -55,
-      marginTop: theme.spacing(3),
-    },
-    [theme.breakpoints.down('xs')]: {
-      marginLeft: 0,
-    },
-  },
-  t2: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 210,
-    marginLeft: -200,
-    [theme.breakpoints.down('md')]: {
-      marginTop: theme.spacing(3),
-      marginLeft: 80,
-      marginBottom: 0,
-    },
-    [theme.breakpoints.down('xs')]: {
-      marginLeft: 0,
-      marginBottom: 0,
-    },
-  },
-  t3: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: -100,
-    [theme.breakpoints.down('md')]: {
-      marginTop: theme.spacing(3),
-      marginLeft: -60,
-    },
-    [theme.breakpoints.down('xs')]: {
-      marginLeft: 0,
-    },
   },
   lowWidth: {
     maxWidth: 200,
@@ -380,15 +236,6 @@ const useStyles = makeStyles(theme => ({
       fontSize: '1.50rem',
     },
   },
-  partners: {
-    backgroundColor: theme.palette.common.white,
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(2),
-  },
-  partnersContainer: {
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
   plansTitle: {
     backgroundColor: theme.palette.common.white,
     marginBottom: theme.spacing(4),
@@ -398,18 +245,6 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(3),
     borderStyle: 'solid',
     borderColor: theme.palette.common.pink,
-  },
-  promotion: {
-    backgroundColor: theme.palette.common.pink,
-    color: theme.palette.common.white,
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-  },
-  moneyBack: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
   },
   bold: {
     fontWeight: 600,
@@ -449,6 +284,8 @@ const useStyles = makeStyles(theme => ({
   },
   explainations: {
     backgroundColor: theme.palette.background.default,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
   },
   // check: {
   //   width: 32,
@@ -590,10 +427,13 @@ const Welcome = withClientApollo(() => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          The cheapest way
+          The cheapest
+        </Typography>
+        <Typography variant='h3' className={`${classes.welcomeTitle}`}>
+          way to order food
         </Typography>
         <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
-          to order food
+          frequently
         </Typography>
         <Grid container>
           <Grid item xs={6}>
@@ -619,142 +459,78 @@ const Welcome = withClientApollo(() => {
   );
 });
 
-const TextBlock: React.FC<{title: string, description: string}> = ({ title, description }) => {
-  const classes = useStyles();
-  return (
-    <>
-      <Typography variant='h4' className={`${classes.mediumBottomMargin} ${classes.subtitleShrinker}`}>
-        {title}
-      </Typography>
-      <Typography variant='h6' color='textSecondary'>
-        {description}
-      </Typography>
-    </>
-  )
-};
+// const TextBlock: React.FC<{title: string, description: string}> = ({ title, description }) => {
+//   const classes = useStyles();
+//   return (
+//     <>
+//       <Typography variant='h4' className={`${classes.mediumBottomMargin} ${classes.subtitleShrinker}`}>
+//         {title}
+//       </Typography>
+//       <Typography variant='h6' color='textSecondary'>
+//         {description}
+//       </Typography>
+//     </>
+//   )
+// };
 
-const Explanation: React.FC<{
-  title: string,
-  description: string,
-  dividerTitle: string,
-  dividerSubtitle: string,
-  img: string,
-  imgLeft: boolean
-  imgBackground?: React.ReactNode
-}> = ({
-  title,
-  description,
-  dividerTitle,
-  dividerSubtitle,
-  img,
-  imgLeft,
-  imgBackground,
-}) => {
-  const classes = useStyles();
-  let left;
-  let right;
-  const imgBlock = (
-    <>
-      <img src={img} className={classes.img} alt={img} />
-      {imgBackground}
-    </>
-  )
-  const textBlock = (
-    <TextBlock
-      title={title}
-      description={description}
-    />
-  )
-  if (imgLeft) {
-    left = imgBlock;
-    right = textBlock;
-  } else {
-    left = textBlock;
-    right = imgBlock;
-  }
-  return (
-    <>
-      <Hidden smDown>
-        <Grid item sm={5} className={classes.centered}>
-          {left}
-        </Grid>
-        <Grid item sm={2} className={`${classes.centered} ${classes.divider}`}>
-          <Typography variant='h6'>{dividerTitle}</Typography>
-          <Avatar>{dividerSubtitle}</Avatar>
-        </Grid>
-        <Grid item sm={5} className={classes.centered}>
-          {right}
-        </Grid>
-      </Hidden>
-      <Hidden mdUp>
-        <Grid item xs={12} className={classes.centered}>
-          {imgBlock}
-        </Grid>
-        <Grid item xs={12} className={`${classes.centered} ${classes.divider}`}>
-          <Typography variant='h6'>{dividerTitle}</Typography>
-          <Avatar>{dividerSubtitle}</Avatar>
-        </Grid>
-        <Grid item xs={12}className={classes.centered}>
-          {textBlock}
-        </Grid>
-      </Hidden>
-    </>
-  )
-}
+// const Explanation: React.FC<{
+//   title: string,
+//   description: string,
+//   imgBackground?: React.ReactNode
+// }> = ({
+//   title,
+//   description,
+//   imgBackground,
+// }) => {
+//   const classes = useStyles();
+//   const textBlock = (
+//     <TextBlock
+//       title={title}
+//       description={description}
+//     />
+//   )
+//   return (
+//     <Grid item xs={12}className={classes.centered}>
+//       {textBlock}
+//       {imgBackground}
+//     </Grid>
+//   )
+// }
 
-const Why = () => {
-  const classes = useStyles();
-  return (
-    <>
-      <Container maxWidth='lg' className={classes.explainations}>
-        <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
-          Why Table?
-        </Typography>
-        <Grid container>
-          <Explanation
-            title="Avoid markups"
-            description={`Other apps markup orders by an average of ${AVERAGE_MARKUP_PERCENTAGE}%`}
-            dividerTitle='Step'
-            dividerSubtitle='1'
-            img='how-it-works/mix.jpg'
-            imgLeft={true}
-          />
-          <Grid item xs={12} className={classes.largeVerticalMargin} />
-          <Explanation
-            title='Subscribe'
-            description="Bulk monthly ordering deserves bulk savings"
-            dividerTitle='Step'
-            dividerSubtitle='2'
-            img='how-it-works/schedule.jpg'
-            imgLeft={false}
-            imgBackground={<img src='how-it-works/fruits.png' className={classes.fruits} alt='fruits' />}
-          />
-          <Grid item xs={12} className={classes.largeVerticalMargin} />
-          <Explanation
-            title='Save'
-            description="Our members save an average of $8 per order!"
-            dividerTitle='Step'
-            dividerSubtitle='3'
-            img='how-it-works/deliver.jpg'
-            imgLeft={true}
-            imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
-          />
-          <Grid item xs={12} className={classes.largeVerticalMargin} />
-          <Explanation
-            title='Enjoy guilt free'
-            description='We take no commissions so we can happily pass savings to you'
-            dividerTitle='Step'
-            dividerSubtitle='4'
-            img='how-it-works/eating.jpg'
-            imgLeft={false}
-            imgBackground={<img src='how-it-works/rice.png' className={classes.rice} alt='rice' />}
-          />
-          <Grid item xs={12} className={classes.largeVerticalMargin} />
-        </Grid>
-      </Container>
-    </>
-  )
-};
+// const Why = () => {
+//   const classes = useStyles();
+//   return (
+//     <Container maxWidth='lg' className={classes.explainations}>
+//       {/* <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
+//         Why Table?
+//       </Typography> */}
+//       <Grid container>
+//         <Explanation
+//           title="Avoid markups"
+//           description={`Other apps markup orders by an average of ${AVERAGE_MARKUP_PERCENTAGE}%`}
+//           // imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
+//         />
+//         <Grid item xs={12} className={classes.largeVerticalMargin} />
+//         <Explanation
+//           title='Subscribe'
+//           description="Bulk monthly ordering deserves bulk savings"
+//         />
+//         <Grid item xs={12} className={classes.largeVerticalMargin} />
+//         <Explanation
+//           title='Save'
+//           description="Our members save an average of $8 per order!"
+//         />
+//         <Grid item xs={12} className={classes.largeVerticalMargin} />
+//         <Explanation
+//           title='Enjoy guilt free'
+//           description='We take no commissions so we can happily pass savings to you'
+//           // imgBackground={<img src='how-it-works/rice.png' className={classes.rice} alt='rice' />}
+//         />
+//         <Grid item xs={12} className={classes.largeVerticalMargin} />
+//       </Grid>
+//     </Container>
+//   )
+// };
 
 const Plans = withClientApollo(() => {
   const classes = useStyles();
@@ -791,11 +567,89 @@ const Plans = withClientApollo(() => {
   )
 });
 
+
+const HowItWorks = () => {
+  const classes = useStyles();
+  const Content: React.FC<{
+    title: string,
+    description: string,
+    img: string,
+  }> = ({
+    title,
+    description,
+    img
+  }) => (
+    <Grid
+      item
+      xs={12}
+      sm={12}
+      md={3}
+    >
+      <div className={`${classes.verticalMargin} ${classes.centered}`}>
+        <img
+          src={img}
+          alt='logo'
+          className={classes.icon}
+        />
+        <Typography variant='h5' className={classes.subtitle}>
+          {title}
+        </Typography>
+        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
+          {description}
+        </Typography>
+      </div>
+    </Grid>
+  )
+  return (
+    <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
+      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
+        How it Works
+      </Typography>
+      <Grid
+        container
+        className={classes.verticalMargin}
+      >
+        <Content
+          title="Mix n' Match"
+          description='Pick meals from different restaurants'
+          img='home/mix.png'
+        />
+        <Content
+          title='Set combined delivery'
+          description='Choose a time & day for weekly deliveries'
+          img='how-it-works/delivery-man.png'
+        />
+        <Content
+          title='Eat whenever'
+          description='Eat meals throughout the week'
+          img='home/refrigerator.png'
+        />
+        <Content
+          title="Subscribe"
+          description="Skip weeks, pick future meals, or let us pick"
+          img='home/calendar.png'
+        />
+      </Grid>
+      <Link href={menuRoute}>
+        <Button
+          className={classes.ctaButton}
+          variant='contained'
+          color='primary'
+          size='large'
+        >
+          Learn More
+        </Button>
+      </Link>
+    </div>
+  );
+};
+
 const Index = () => {
   return (
     <>
       <Welcome />
-      <Why />
+      {/* <Why /> */}
+      <HowItWorks />
       <Plans />
       <Footer />
     </>
