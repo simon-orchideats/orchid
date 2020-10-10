@@ -17,7 +17,8 @@ const query = gql`
     availablePlans: [Plan!]!
     # allPaidOrders: [Order!]!
     # allUpcomingOrders: [Order!]!
-    allTags: [Tag!]! 
+    allTags: [Tag!]!
+    doesRestDeliverToArea(addr: String!, restId: ID!): Boolean!
     # myUpcomingOrders: [Order!]!
     myPaidOrders: [Order!]!
     # myRewards: Rewards!

@@ -102,6 +102,10 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(5),
     cursor: 'pointer',
   },
+  maxWidth: {
+    width: '100%',
+    maxWidth: 400,
+  },
   spacer: {
     height: theme.mixins.navbar.marginBottom,
     backgroundColor: theme.palette.background.default,
@@ -199,7 +203,9 @@ const Navbar: React.FC = () => {
       const shortAddrArr = cart.searchArea.split(' ');
       const shortAddr = shortAddrArr ? `${shortAddrArr[0]} ${shortAddrArr[1]}` : null;
       const searchArea = isShowingSearchAreaInput ?
-        <SearchAreaInput onBlur={onAddrInputBlur} />
+        <div className={classes.maxWidth}>
+          <SearchAreaInput onBlur={onAddrInputBlur} />
+        </div>
       :
         <div className={classes.menuServiceDropdown} onClick={onClickSearchArea}>
           <Typography variant='body1'>{shortAddr}</Typography>

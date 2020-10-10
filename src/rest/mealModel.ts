@@ -16,7 +16,7 @@ export class Choice {
 
 export interface IAddonGroup {
   readonly limit?: number
-  readonly name: string
+  readonly name: string | null
   readonly addons: IChoice[]
 }
 
@@ -31,7 +31,7 @@ export class AddonGroup {
 }
 
 export interface IOptionGroup {
-  readonly name: string
+  readonly name: string | null
   readonly options: IChoice[]
 }
 

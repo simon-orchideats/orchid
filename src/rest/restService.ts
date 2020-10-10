@@ -1,4 +1,4 @@
-import { ServiceType } from './../order/orderModel';
+import { ServiceType, ServiceTypes } from './../order/orderModel';
 import { ITag, Tag } from './tagModel';
 import { ApolloCache, DataProxy } from 'apollo-cache';
 import { IRest, Rest, IRestInput, ServiceDay } from './restModel';
@@ -38,6 +38,32 @@ export const useAddRest = (): [
       data: mutation.data ? mutation.data.addRest : undefined,
     }
   ], [mutation]);
+}
+
+export const useDoesRestDeliverToArea = (
+  serviceType: ServiceType | null,
+  addr: string | null,
+  restId: string | null
+) => {
+  type res = {
+    doesRestDeliverToArea: boolean
+  }
+  const res = useQuery<res>(
+    gql`
+      query doesRestDeliverToArea($addr: String!, $restId: ID!) {
+        doesRestDeliverToArea(addr: $addr, restId: $restId)
+      }
+    `,
+    {
+      skip: !addr || !restId || serviceType !== ServiceTypes.Delivery,
+      variables: { addr, restId }
+    }
+  );
+  return {
+    loading: res.loading,
+    error: res.error,
+    data: res.data?.doesRestDeliverToArea,
+  }
 }
 
 export const useGetTags = () => {

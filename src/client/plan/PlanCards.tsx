@@ -36,7 +36,6 @@ const PlanCards: React.FC<{
   useEffect(() => {
     if (plans.data) {
       if (onLoad && !didLoad) {
-        console.log('did load!');
         onLoad(plans.data);
         setDidLoad(true)
       }

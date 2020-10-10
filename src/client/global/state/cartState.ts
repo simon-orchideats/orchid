@@ -6,7 +6,7 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { IMeal } from '../../../rest/mealModel';
 import { IOrderMeal, OrderMeal, ICustomization } from '../../../order/orderRestModel';
-import { useGetRest, useGetNearbyRests } from '../../../rest/restService';
+import { useGetRest, useGetNearbyRests, useDoesRestDeliverToArea } from '../../../rest/restService';
 import { Rest, WeekHours } from '../../../rest/restModel';
 import { IPlan } from '../../../plan/planModel';
 import { IDiscount } from '../../../order/discountModel';
@@ -145,28 +145,23 @@ export const useGetCartSuggestions = () => {
   const suggestions: string[] = [];
   const queryRes = useQuery<cartQueryRes>(CART_QUERY);
   const cart = (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
-  const fromTo = cart ? Order.get24HourStr(cart.serviceTime) : undefined;
+  const isAreaWithinDelivery = useDoesRestDeliverToArea(
+    cart?.serviceType || null,
+    cart?.searchArea || null,
+    cart?.rest?.restId || null,
+  ).data
   const rest = useGetRest((cart && cart.rest) ? cart.rest.restId : null);
-  const rests = useGetNearbyRests(
-    cart?.searchArea,
-    fromTo?.from,
-    fromTo?.to,
-    cart ? WeekHours.getServiceDay(cart.serviceDate) : undefined,
-    cart?.serviceType,
-  );
-
   if (rest.data && cart && cart.rest) {
-    if (Rest.isClosed(rest.data, cart.serviceDate, cart.serviceTime, cart.serviceType)) {
+    const isClosed = Rest.isClosed(rest.data, cart.serviceDate, cart.serviceTime, cart.serviceType);
+    if (isClosed) {
       suggestions.push(`${cart.rest.restName} is closed at ${cart.serviceDate}, ${Order.getServiceTimeStr(cart.serviceTime)}`)
     }
     if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals) < rest.data.deliveryMinimum) {
       suggestions.push(`${cart.rest.restName} delivery minimum is ${rest.data.deliveryMinimum}`)
     }
-    if (cart.serviceType === ServiceTypes.Delivery && rests.data && rests.data.find(r => {
-      if (!cart.rest) return false;
-      return r._id !== cart.rest.restId
-    })) {
-      suggestions.push(`${cart.rest.restName} is too far for delivery`);
+    // left off here. test this
+    if (isAreaWithinDelivery === false) {
+      suggestions.push(`${cart.rest.restName} is outside your delivery area`)
     }
   }
 

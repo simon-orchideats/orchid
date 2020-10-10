@@ -28,13 +28,13 @@ const MealQL = gql`
   }
 
   type OptionGroup {
-    name: String!
+    name: String
     options: [Choice!]!
   }
 
   type AddonGroup {
     addons: [Choice!]!
-    name: String!
+    name: String
     limit: Int
   }
 

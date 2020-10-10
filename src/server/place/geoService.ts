@@ -125,17 +125,13 @@ class GeoService implements IGeoService{
       }
       if (jsonData.results && jsonData.results.length > 0) {
         const {
-          accuracy,
-          accuracy_type,
           location,
           fields,
         } = jsonData.results[0];
-        if (accuracy > 0.7 && (accuracy_type === 'rooftop' || accuracy_type === 'range_interpolation' || accuracy_type === 'point')) {
-          return {
-            lat: location.lat,
-            lon: location.lng,
-            timezone: fields.timezone.name as string,
-          }
+        return {
+          lat: location.lat,
+          lon: location.lng,
+          timezone: fields.timezone.name as string,
         }
       }
       console.warn(`[GeoService] Could not find lat, lon for '${q}'`);

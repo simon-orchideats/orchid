@@ -13,6 +13,7 @@ const TAG_INDEX = 'tags';
 
 export interface IRestService {
   addRest: (signedInUser: SignedInUser, rest: IRestInput) => Promise<MutationBoolRes>
+  doesRestDeliverToArea: (addr: string, restId: string) => Promise<boolean>
   getAllTags: () => Promise<ITag[]>
   getNearbyERests: (
     addr: string,
@@ -54,6 +55,57 @@ class RestService implements IRestService {
 
   public setPlanService(planService: IPlanService) {
     this.planService = planService;
+  }
+
+  public async doesRestDeliverToArea(addr: string, restId: string) {
+    let options: any;
+    try {
+      if (!this.geoService) throw new Error('GeoService not set');
+      const geo = await this.geoService.getGeocodeByQuery(addr);
+      if (!geo) {
+        throw new Error(`Couldn't verify this address ${addr}`);
+      };
+      const { lat, lon } = geo;
+      options = {
+        index: REST_INDEX,
+        size: 1000, // todo handle case when results > 1000
+        body: {
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      geo_shape : {
+                        'location.geoShape' : {
+                          shape: {
+                            type: 'point',
+                            coordinates: [ lon, lat ]
+                          },
+                          relation: 'intersects'
+                        }
+                      }
+                    },
+                    {
+                      term: {
+                        _id: restId
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+      const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
+      if (res.body.hits.total.value > 1) throw new Error('Got multiple rests');
+      if (res.body.hits.total.value === 1) return true;
+      return false;
+    } catch (e) {
+      console.error(`[RestService] could not doesRestDeliverToArea '${addr}' and with restId '${restId}'`, e.stack);
+      throw e;
+    }
   }
 
   public async addRest(signedInUser: SignedInUser, rest: IRestInput) {
@@ -120,11 +172,20 @@ class RestService implements IRestService {
     _id: string,
     rest: ERest
   }[]> {
+    console.log(
+      from,
+      to,
+      serviceDay,
+      serviceType,
+    );
     let options: any;
     try {
       if (!this.geoService) throw new Error('GeoService not set');
       const geo = await this.geoService.getGeocodeByQuery(location);
-      if (!geo) return [];
+      if (!geo) {
+        console.warn(`Failed to get lat/lon for ${location}`);
+        return [];
+      }
       const { lat, lon } = geo;
       options = {
         index: REST_INDEX,
@@ -151,55 +212,55 @@ class RestService implements IRestService {
                         'featured.isActive': true
                       }
                     },
-                    {
-                      nested: {
-                        path: 'hours',
-                        query: {
-                          bool: {
-                            filter: {
-                              bool: {
-                                must: [
-                                  {
-                                    term: {
-                                      'hours.name': serviceType
-                                    }
-                                  },
-                                  {
-                                    nested: {
-                                      path: `hours.weekHours.${serviceDay}`,
-                                      query: {
-                                        bool: {
-                                          filter: {
-                                            bool: {
-                                              must: [
-                                                {
-                                                  range: {
-                                                    [`hours.weekHours.${serviceDay}.open`]: {
-                                                      lte: from
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  range: {
-                                                    [`hours.weekHours.${serviceDay}.close`]: {
-                                                      gte: to
-                                                    }
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    // {
+                    //   nested: {
+                    //     path: 'hours',
+                    //     query: {
+                    //       bool: {
+                    //         filter: {
+                    //           bool: {
+                    //             must: [
+                    //               {
+                    //                 term: {
+                    //                   'hours.name': serviceType
+                    //                 }
+                    //               },
+                    //               {
+                    //                 nested: {
+                    //                   path: `hours.weekHours.${serviceDay}`,
+                    //                   query: {
+                    //                     bool: {
+                    //                       filter: {
+                    //                         bool: {
+                    //                           must: [
+                    //                             {
+                    //                               range: {
+                    //                                 [`hours.weekHours.${serviceDay}.open`]: {
+                    //                                   lte: from
+                    //                                 }
+                    //                               }
+                    //                             },
+                    //                             {
+                    //                               range: {
+                    //                                 [`hours.weekHours.${serviceDay}.close`]: {
+                    //                                   gte: to
+                    //                                 }
+                    //                               }
+                    //                             }
+                    //                           ]
+                    //                         }
+                    //                       }
+                    //                     }
+                    //                   }
+                    //                 }
+                    //               }
+                    //             ]
+                    //           }
+                    //         }
+                    //       }
+                    //     }
+                    //   }
+                    // }
                   ]
                 }
               }

@@ -5,6 +5,15 @@ import { getRestService } from './restService';
 import { IRestInput } from '../../rest/restModel';
 
 export const RestQueryResolvers: ServerResolovers = {
+  doesRestDeliverToArea: async (_root: any, { addr, restId }: { addr: string, restId: string }) => {
+    try {
+      return await getRestService().doesRestDeliverToArea(addr, restId);
+    } catch (e) {
+      console.error(`[RestResolver] failed doesRestDeliverToArea for addr '${addr}' with restId '${restId}'`, e.stack);
+      throw new Error('Internal Server Error');
+    }
+  },
+
   nearbyRests: async (
     _root: any,
     {

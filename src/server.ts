@@ -43,7 +43,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * 
  * simon:
- * when removing the last item, also close the cart
+ * see full menu tracker link
+ * 
  * 
  */
 
