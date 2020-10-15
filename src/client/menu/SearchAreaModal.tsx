@@ -80,7 +80,7 @@ const SearchAreaModal: React.FC<{
             <Grid item xs={12} md={5} lg={6} className={classes.img} />
             <Grid item xs={12} md={7} lg={6}  className={classes.input}>
               <Typography variant='h4' className={classes.title}>
-                Actually support resturants (CHAGNE THIS)
+                Start saving!
               </Typography>
               <SearchAreaInput />
             </Grid>

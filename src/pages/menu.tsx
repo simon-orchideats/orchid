@@ -135,17 +135,14 @@ const menu = () => {
           className={classes.menu}
         >
           <Paper className={classes.filters}>
-            {
-              isMdAndUp &&
-              <div className={classes.row}>
-                <Filter
-                  label='Cuisines'
-                  allCuisines={allCuisines}
-                  cuisines={cuisines}
-                  onClickCuisine={onFilterCuisines}
-                />
-              </div>
-            }
+            <div className={classes.row}>
+              <Filter
+                label='Cuisines'
+                allCuisines={allCuisines}
+                cuisines={cuisines}
+                onClickCuisine={onFilterCuisines}
+              />
+            </div>
           </Paper>
           {
             !!rests.loading && 

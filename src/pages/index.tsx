@@ -1,20 +1,23 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Hidden, ImageList, ImageListItem, ImageListItemBar, Container, TextField } from '@material-ui/core';
-import PlanCards from '../client/plan/PlanCards';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Container } from '@material-ui/core';
 import Link from 'next/link';
 import { menuRoute } from './menu';
 import Router from 'next/router';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
-import React, { useState } from 'react';
-import { Carousel } from 'react-responsive-carousel';
-import { useSetSearchArea, useSetPlan } from '../client/global/state/cartState';
-import { IPlan } from '../plan/planModel';
+import React from 'react';
 import SearchAreaInput from '../client/general/inputs/SearchAreaInput';
-import { AVERAGE_MARKUP_PERCENTAGE } from '../order/cartModel';
+import { plansRoute } from './plans';
 
+const deskBody1FontSize = '1.5rem';
+const deskBody2FontSize = '1.2rem';
 
-// todo pivot: still need to clean up styles
 const useStyles = makeStyles(theme => ({
+  body1: {
+    [theme.breakpoints.down('sm')]: {
+      fontSize: deskBody2FontSize
+    },
+    fontSize: deskBody1FontSize
+  },
   avatar: {
     marginTop: -10,
     marginLeft: -50,
@@ -37,23 +40,13 @@ const useStyles = makeStyles(theme => ({
     },
   },
   check: {
-    width: 32,
     [theme.breakpoints.down('sm')]: {
-      width: 28
+      width: deskBody2FontSize
     },
-    [theme.breakpoints.down('xs')]: {
-      width: 22
-    },
+    width: deskBody1FontSize
   },
-  titleBar: {
-    background: 'rgba(255, 255, 255, 0.9)',
-    height: 60,
-    [theme.breakpoints.down('sm')]: {
-      height: 40
-    },
-    [theme.breakpoints.down('xs')]: {
-      height: 20
-    },
+  red: {
+    color: theme.palette.common.red,
   },
   title: {
     paddingBottom: theme.spacing(6),
@@ -65,16 +58,6 @@ const useStyles = makeStyles(theme => ({
       fontSize: '1.50rem',
     },
   },
-  titleWrap: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-  },
-  titleBarText: {
-    color: theme.palette.text.primary,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
-  },
   centered: {
     textAlign: 'center',
     display: 'flex',
@@ -82,29 +65,15 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+  logos: {
+    width: '30%'
   },
   welcome: {
-    [theme.breakpoints.down(1080)]: {
-      backgroundSize: 1080,
-    },
-    [theme.breakpoints.down('md')]: {
-      backgroundPosition: '36% 60%',
-    },
     [theme.breakpoints.down('sm')]: {
-      backgroundSize: 960,
+      backgroundPosition: '90%',
     },
-    [theme.breakpoints.down('xs')]: {
-      backgroundImg: 'url(/home/burg-fries.png)',
-      backgroundPosition: '100% 60%',
-      backgroundSize: 'cover',
-    },
-    paddingTop: theme.spacing(5),
-    backgroundImage: `url(/home/burg-fries.png)`,
-    backgroundPosition: '0% 60%',
+    backgroundImage: `url(/home/home-banner2.jpg)`,
+    backgroundPosition: '100%',
     backgroundSize: 'cover',
     marginTop: -theme.mixins.navbar.marginBottom,
     minHeight: 475,
@@ -117,10 +86,15 @@ const useStyles = makeStyles(theme => ({
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
       maxHeight: `calc(100vh - ${theme.mixins.customToolbar.smallHeight}px - 115.5px - 150px)`,
     },
-    textAlign: 'center',
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  welcomeSearch: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
   },
   welcomeTitle: {
     fontSize: '4rem',
@@ -129,46 +103,16 @@ const useStyles = makeStyles(theme => ({
       fontSize: '3.5rem',
     },
     [theme.breakpoints.down('xs')]: {
-      fontSize: '2.8rem',
-    },
-  },
-  welcomeSub: {
-    textAlign: 'center',
-    paddingBottom: theme.spacing(2),
-    maxWidth: 150,
-    fontWeight: 500,
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.85rem',
-      fontWeight: 500,
-    },
-    [theme.breakpoints.down('xs')]: {
-      maxWidth: 200,
-      fontSize: '1.50rem',
+      fontSize: '2.4rem',
     },
   },
   welcomeText: {
-    maxWidth: 600, // chosen by inspection
     minWidth: 320,
-    [theme.breakpoints.down('sm')]: {
-      marginTop: theme.spacing(4),
-      paddingBottom: 50,
-      justifyContent: 'flex-start',
-      maxWidth: 300,
-    },
-    [theme.breakpoints.down('xs')]: {
-      marginTop: theme.spacing(6),
-      maxWidth: 400,
-    },
-  },
-  welcomeSearch: {
-    backgroundColor: theme.palette.common.white
+    marginTop: theme.spacing(4),
   },
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
-  },
-  topMargin: {
-    marginTop: theme.spacing(1),
   },
   mediumVerticalMargin: {
     marginTop: theme.spacing(3),
@@ -177,45 +121,59 @@ const useStyles = makeStyles(theme => ({
   bottomMargin: {
     marginBottom: theme.spacing(3),
   },
-  largeVerticalMargin: {
-    marginTop: theme.spacing(5),
-    marginBottom: theme.spacing(5),
+  sushiContainer: {
+    padding: theme.spacing(4),
+    backgroundColor: theme.palette.common.white,
+  },
+  sushi: {
+    width: '100%',
+    maxWidth: 500,
+    marginLeft: theme.spacing(2),
+  },
+  underline: {
+    textDecoration: 'underline'
   },
   plans: {
+    backgroundImage: `url(/home/try.jpg)`,
+    backgroundPosition: '50% 90%',
+    backgroundSize: 'cover',
+    height: 475,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: 50,
-    backgroundImage: 'url(/home/plans.png)',
-    backgroundPosition: '50% 60%',
-    backgroundSize: 'cover',
-    height: 750,
-    paddingBottom: 32,
     alignItems: 'center',
-    [theme.breakpoints.down('md')]: {
-      paddingTop: 50, // determined by inspection
+    paddingTop: theme.spacing(4),
+    textAlign: 'center',
+  },
+  testimonialsTitle: {
+    [theme.breakpoints.down(1250)]: {
+      paddingLeft: '0px !important',
     },
-    [theme.breakpoints.down('sm')]: {
-      height: 1000,
-    }
-  },
-  why: {
-    minHeight: 400,
-  },
-  lowWidth: {
-    maxWidth: 200,
-  },
-  icon: {
-    maxWidth: 85,
-    height: 85,
-    marginBottom: theme.spacing(1),
-  },
-  shrinker: {
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '2.75rem',
+    [theme.breakpoints.down(1600)]: {
+      paddingLeft: 400,
     },
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '2.15rem',
+    paddingLeft: 100,
+  },
+  testimonialsContainer: {
+    [theme.breakpoints.down(1200)]: {
+      paddingRight: theme.spacing(1),
     },
+    [theme.breakpoints.down(1450)]: {
+      paddingRight: theme.spacing(3),
+    },
+    [theme.breakpoints.down('lg')]: {
+      paddingRight: theme.spacing(4),
+      alignItems: 'center',
+    },
+    backgroundColor: '#fffef1',
+    display: 'flex',
+    alignItems: 'flex-end',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    minHeight: 600,
+    padding: theme.spacing(4),
+  },
+  tableFood: {
+    width: '100%',
   },
   subtitle: {
     [theme.breakpoints.down('sm')]: {
@@ -223,28 +181,128 @@ const useStyles = makeStyles(theme => ({
       fontWeight: 500,
     },
   },
-  ctaButton: {
-    marginTop: theme.spacing(4),
+  sample: {
+    backgroundColor: theme.palette.common.white,
+    minHeight: 400,
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    display: 'flex',
+    alignItems: 'center',
   },
-  weeklyPlans: {
-    paddingBottom: theme.spacing(2),
+  sampleImg: {
     [theme.breakpoints.down('sm')]: {
-      fontSize: '1.85rem',
-      fontWeight: 500,
+      paddingLeft: theme.spacing(0),
+    },
+    paddingLeft: theme.spacing(2),
+    width: '100%'
+  },
+  sampleTitle: {
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: theme.spacing(1),
+    },
+  },
+  testimonial: {
+    textAlign: 'left',
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    maxWidth: 350,
+    borderRadius: 20,
+    borderStyle: 'solid',
+    alignItems: 'flex-start',
+    backgroundColor: theme.palette.common.white,
+    borderColor: theme.palette.text.primary,
+    [theme.breakpoints.down('md')]: {
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      paddingTop: theme.spacing(2),
+    },
+    position: 'relative',
+  },
+  testimonials: {
+    display: 'flex',
+    [theme.breakpoints.down('md')]: {
+      alignItems: 'center',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
+  },
+  testimonialHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%'
+  },
+  headerAvatar: {
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.up('sm')]: {
+      display: 'none'
+    },
+  },
+  t0: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 200,
+    [theme.breakpoints.down('md')]: {
+      marginLeft: 0,
+      marginBottom: 0,
+    },
+  },
+  t1: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: 200,
+    [theme.breakpoints.down('md')]: {
+      marginLeft: -55,
+      marginTop: theme.spacing(3),
     },
     [theme.breakpoints.down('xs')]: {
-      fontSize: '1.50rem',
+      marginLeft: 0,
     },
   },
-  plansTitle: {
-    backgroundColor: theme.palette.common.white,
-    marginBottom: theme.spacing(4),
+  t2: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 210,
+    marginLeft: -200,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginLeft: 80,
+      marginBottom: 0,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+      marginBottom: 0,
+    },
+  },
+  t3: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: -100,
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(3),
+      marginLeft: -60,
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: 0,
+    },
+  },
+  shrinker: {
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2.75rem',
+    },
+    [theme.breakpoints.down('xs')]: {
+    fontSize: '2.15rem',
+    },
+  },
+  ripOff: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
     paddingTop: theme.spacing(3),
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
     paddingBottom: theme.spacing(3),
-    borderStyle: 'solid',
-    borderColor: theme.palette.common.pink,
   },
   bold: {
     fontWeight: 600,
@@ -254,167 +312,10 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(3),
     minHeight: 400,
   },
-  who: {
-    [theme.breakpoints.down('xs')]: {
-      textAlign: 'center',
-    },
-    backgroundColor: theme.palette.common.white,
-  },
-  referralBottom: {
-    marginBottom: theme.mixins.navbar.marginBottom
-  },
-  stretch: {
-    width: '100%',
-    height: '100%',
-    [theme.breakpoints.down('sm')]: {
-      transform: 'none',
-      left: 'auto',
-      top: 0,
-    },
-  },
-
-
-
-  
-  img: {
-    zIndex: 1,
-    width: '100%',
-    maxWidth: 400,
-    position: 'relative',
-  },
-  explainations: {
-    backgroundColor: theme.palette.background.default,
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-  },
-  // check: {
-  //   width: 32,
-  //   [theme.breakpoints.down('sm')]: {
-  //     width: 28
-  //   },
-  //   [theme.breakpoints.down('xs')]: {
-  //     width: 22
-  //   },
-  // },
-  // centered: {
-  //   textAlign: 'center',
-  //   display: 'flex',
-  //   flexDirection: 'column',
-  //   alignItems: 'center',
-  //   justifyContent: 'center'
-  // },
-  divider: {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(4),
-  },
-  gridBox: {
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(2)
-    },
-    padding: theme.spacing(3),
+  comparisonTextContainer: {
+    paddingTop: theme.spacing(2),
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-  },
-  mediumBottomMargin: {
-    marginBottom: theme.spacing(2),
-  },
-  smallBottomMargin: {
-    marginBottom: theme.spacing(1),
-  },
-  // largeVerticalMargin: {
-  //   marginTop: theme.spacing(8),
-  //   marginBottom: theme.spacing(8),
-  // },
-  largeBottomPadding: {
-    paddingBottom: theme.spacing(8),
-  },
-  benefitsTitle: {
-    paddingTop: theme.spacing(4),
-  },
-  padding: {
-    padding: theme.spacing(4),
-  },
-  largeBottomMargin: {
-    marginBottom: theme.spacing(4),
-  },
-  footer: {
-    marginBottom: theme.spacing(8),
-  },
-  benefits: {
-    [theme.breakpoints.down('xs')]: {
-      textAlign: 'center',
-    },
-    backgroundColor: theme.palette.primary.light,    
-  },
-  // shrinker: {
-  //   [theme.breakpoints.down('xs')]: {
-  //     fontSize: '2.75rem',
-  //   },
-  // },
-  subtitleShrinker: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: '1.85rem',
-    },
-  },
-  potatoes: {
-    [theme.breakpoints.down('lg')]: {
-      width: 525,
-    },
-    [theme.breakpoints.down('md')]: {
-      width: 400,
-      paddingBottom: 150,
-    },
-    [theme.breakpoints.down('sm')]: {
-      width: 300,
-    },
-    paddingBottom: 75,
-    width: 700,
-    left: -20,
-    position: 'absolute',
-  },
-  fruits: {
-    [theme.breakpoints.down('lg')]: {
-      width: 375,
-    },
-    [theme.breakpoints.down('md')]: {
-      width: 300,
-    },
-    paddingBottom: 50,
-    width: 500,
-    right: 50,
-    position: 'absolute',
-  },
-  rice: {
-    [theme.breakpoints.down('lg')]: {
-      width: 225,
-    },
-    [theme.breakpoints.down('md')]: {
-      width: 180,
-    },
-    width: 300,
-    right: 0,
-    position: 'absolute',
-  },
-  benefitBox: {
-    maxWidth: 300,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  sandwich: {
-    [theme.breakpoints.down('lg')]: {
-      width: 375,
-    },
-    [theme.breakpoints.down('md')]: {
-      width: 300,
-    },
-    [theme.breakpoints.down('sm')]: {
-      width: 280,
-    },
-    width: 500,
-    left: 0,
-    position: 'absolute',
   },
 }));
 
@@ -427,230 +328,319 @@ const Welcome = withClientApollo(() => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          The cheapest
+          <b>Restaurants,</b>
         </Typography>
-        <Typography variant='h3' className={`${classes.welcomeTitle}`}>
-          way to order food
+        <Typography
+          variant='h3'
+          className={`${classes.welcomeTitle} ${classes.red}`}
+        >
+          <b>without the ripoffs</b>
         </Typography>
-        <Typography variant='h3' className={`${classes.welcomeTitle} ${classes.bottomMargin}`}>
-          frequently
-        </Typography>
-        <Grid container>
-          <Grid item xs={6}>
-            <div className={classes.centered}>
-              <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                😍 No markups
-              </Typography>
-            </div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className={classes.centered}>
-              <Typography variant='h4' className={`${classes.welcomeSub}`}>
-                🙏 No service charge
-              </Typography>
-            </div>
-          </Grid>
-        </Grid>
         <div className={classes.welcomeSearch}>
           <SearchAreaInput onSelect={onSelectLocation} />
         </div>
+        <Typography variant='h4'>
+          <b>Members save 30% vs</b>
+        </Typography>
+        <img src='/home/logos.png' className={classes.logos}/>
       </div>
     </div>
   );
 });
 
-// const TextBlock: React.FC<{title: string, description: string}> = ({ title, description }) => {
-//   const classes = useStyles();
-//   return (
-//     <>
-//       <Typography variant='h4' className={`${classes.mediumBottomMargin} ${classes.subtitleShrinker}`}>
-//         {title}
-//       </Typography>
-//       <Typography variant='h6' color='textSecondary'>
-//         {description}
-//       </Typography>
-//     </>
-//   )
-// };
-
-// const Explanation: React.FC<{
-//   title: string,
-//   description: string,
-//   imgBackground?: React.ReactNode
-// }> = ({
-//   title,
-//   description,
-//   imgBackground,
-// }) => {
-//   const classes = useStyles();
-//   const textBlock = (
-//     <TextBlock
-//       title={title}
-//       description={description}
-//     />
-//   )
-//   return (
-//     <Grid item xs={12}className={classes.centered}>
-//       {textBlock}
-//       {imgBackground}
-//     </Grid>
-//   )
-// }
-
-// const Why = () => {
-//   const classes = useStyles();
-//   return (
-//     <Container maxWidth='lg' className={classes.explainations}>
-//       {/* <Typography variant='h2' className={`${classes.largeBottomMargin} ${classes.centered} ${classes.shrinker}`}>
-//         Why Table?
-//       </Typography> */}
-//       <Grid container>
-//         <Explanation
-//           title="Avoid markups"
-//           description={`Other apps markup orders by an average of ${AVERAGE_MARKUP_PERCENTAGE}%`}
-//           // imgBackground={<img src='how-it-works/sandwich.png' className={classes.sandwich} alt='sandwich' />}
-//         />
-//         <Grid item xs={12} className={classes.largeVerticalMargin} />
-//         <Explanation
-//           title='Subscribe'
-//           description="Bulk monthly ordering deserves bulk savings"
-//         />
-//         <Grid item xs={12} className={classes.largeVerticalMargin} />
-//         <Explanation
-//           title='Save'
-//           description="Our members save an average of $8 per order!"
-//         />
-//         <Grid item xs={12} className={classes.largeVerticalMargin} />
-//         <Explanation
-//           title='Enjoy guilt free'
-//           description='We take no commissions so we can happily pass savings to you'
-//           // imgBackground={<img src='how-it-works/rice.png' className={classes.rice} alt='rice' />}
-//         />
-//         <Grid item xs={12} className={classes.largeVerticalMargin} />
-//       </Grid>
-//     </Container>
-//   )
-// };
-
 const Plans = withClientApollo(() => {
   const classes = useStyles();
-  const setStripeProductPriceId = useSetPlan();
-  const onClickButton = (plan: IPlan) => {
-    setStripeProductPriceId(plan);
-    Router.push(menuRoute);
-  }
   return (
-    <div className={`${classes.plans}`}>
-      <div className={`${classes.plansTitle} ${classes.centered}`}>
-        <Typography variant='h3' className={`${classes.shrinker} ${classes.weeklyPlans}`}>
-          Subscribe & Save
-        </Typography>
-        <Typography variant='h6'>
-          Change, skip, cancel anytime
-        </Typography>
-      </div>
-      <PlanCards 
-        renderButton={p => 
-          <Button
-            // className={classes.marginTop}
-            onClick={() => onClickButton(p)}
-            variant='contained'
-            color='primary'
-            size='large'
-            fullWidth
-          >
-            GET STARTED
-          </Button>
-        }
-      />
-    </div>
-  )
-});
-
-
-const HowItWorks = () => {
-  const classes = useStyles();
-  const Content: React.FC<{
-    title: string,
-    description: string,
-    img: string,
-  }> = ({
-    title,
-    description,
-    img
-  }) => (
-    <Grid
-      item
-      xs={12}
-      sm={12}
-      md={3}
-    >
-      <div className={`${classes.verticalMargin} ${classes.centered}`}>
-        <img
-          src={img}
-          alt='logo'
-          className={classes.icon}
-        />
-        <Typography variant='h5' className={classes.subtitle}>
-          {title}
-        </Typography>
-        <Typography variant='subtitle1' className={`${classes.lowWidth} ${classes.verticalMargin}`}>
-          {description}
-        </Typography>
-      </div>
-    </Grid>
-  )
-  return (
-    <div className={`${classes.largeVerticalMargin} ${classes.centered} ${classes.how}`}>
-      <Typography variant='h3' className={`${classes.title} ${classes.shrinker}`}>
-        How it Works
+    <div className={classes.plans}>
+      <Typography variant='h3'>
+        Try Table <b>FREE</b> for 30 days
       </Typography>
-      <Grid
-        container
-        className={classes.verticalMargin}
-      >
-        <Content
-          title="Mix n' Match"
-          description='Pick meals from different restaurants'
-          img='home/mix.png'
-        />
-        <Content
-          title='Set combined delivery'
-          description='Choose a time & day for weekly deliveries'
-          img='how-it-works/delivery-man.png'
-        />
-        <Content
-          title='Eat whenever'
-          description='Eat meals throughout the week'
-          img='home/refrigerator.png'
-        />
-        <Content
-          title="Subscribe"
-          description="Skip weeks, pick future meals, or let us pick"
-          img='home/calendar.png'
-        />
-      </Grid>
-      <Link href={menuRoute}>
+      <Link href={plansRoute}>
         <Button
-          className={classes.ctaButton}
+          className={classes.mediumVerticalMargin}
           variant='contained'
           color='primary'
           size='large'
         >
-          Learn More
+          Get Started
+        </Button>
+      </Link>
+      <Typography variant='caption'>
+        Then pay as low as $1.49/month. Cancel anytime. 100% satisfaction or money back guaranteed
+      </Typography>
+      <Link href={plansRoute}>
+        <Button
+          className={classes.underline}
+          color='inherit'
+          variant='text'
+        >
+          Explore memberships
         </Button>
       </Link>
     </div>
   );
+});
+
+const RipOff = () => {
+  const classes = useStyles();
+  const theme = useTheme<Theme>();
+  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
+  return (
+    <div className={`${classes.centered} ${classes.ripOff}`}>
+      <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.red}>
+        <b>STOP GETTING RIPPED OFF</b>
+      </Typography>
+    </div>
+  );
 };
+
+const Comparison = () => {
+  const classes = useStyles();
+  return (
+    <div className={classes.sample}>
+      <Container maxWidth='xl'>
+        <Grid container justifyContent='center'>
+          <Grid
+            item
+            xs={12}
+            md={6}
+            className={classes.centered}
+          >
+            <img src='/home/chart.png' className={classes.sampleImg} />
+          </Grid>
+          <Grid
+            item
+            container
+            className={classes.comparisonTextContainer}
+            xs={12}
+            md={6}
+          >
+            {/* <Grid item xs={6}>
+              <Typography
+                variant='h5'
+                align='center'
+                className={`
+                  ${classes.subtitle}
+                  ${classes.sampleTitle}
+                  ${classes.verticalMargin}
+                `}
+              >
+                <b>Other apps</b>
+              </Typography>
+              <Typography variant='body1' className={classes.body1}>
+                ❌&nbsp;Price markups
+              </Typography>
+              <Typography variant='body1' className={classes.body1}>
+                ❌&nbsp;Service fees
+              </Typography>
+              <Typography variant='body1' className={classes.body1}>
+                ❌&nbsp;30% commission from restaurants
+              </Typography>
+            </Grid> */}
+            <Grid item xs={12}>
+              <Typography variant='h5' align='center'>
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+                &nbsp;
+                No markups
+              </Typography>
+              <p />
+              <Typography variant='h5' align='center'>
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+                &nbsp;
+                No Service fees
+              </Typography>
+              <p />
+              <Typography variant='h5' align='center'>
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+                &nbsp;
+                No commissions
+              </Typography>
+              <p />
+              <Typography variant='h5' align='center'>
+                <img
+                  src='/home/check.png'
+                  alt='check'
+                  className={classes.check}
+                />
+                &nbsp;
+                Extra discounts
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Container>
+    </div>
+  )
+}
+
+const Sushi = () => {
+  const classes = useStyles();
+  return (
+    <Grid container className={classes.sushiContainer}>
+      <Grid
+        item
+        xs={5}
+        className={classes.centered}
+      >
+        <Typography
+          variant='body1'
+          color='secondary'
+          className={`${classes.body1} ${classes.red}`}
+        >
+          <del>
+            <b>$24.11</b>
+          </del>
+        </Typography>
+        <Typography variant='body1' className={classes.body1}>
+          <b>$16.84</b>
+        </Typography>
+        <Typography variant='body1' className={classes.body1}>
+          Okinawa Sushi Grill
+        </Typography>
+        <Typography variant='body1' className={classes.body1}>
+          Hoboken, NJ
+        </Typography>
+      </Grid>
+      <Grid item xs={7} className={classes.centered}>
+        <img src='/home/sushi.jpg' className={classes.sushi} />
+      </Grid>
+    </Grid>
+  )
+}
+
+const Testimonials = () => {
+  const classes = useStyles();
+  return (
+    <div className={`${classes.testimonialsContainer}`}>
+      <div>
+        <Typography
+          variant='h3'
+          className={`
+            ${classes.title}
+            ${classes.shrinker}
+            ${classes.centered}
+            ${classes.testimonialsTitle}
+        `}>
+          What People Say
+        </Typography>
+        <div className={classes.testimonials}>
+          <div className={classes.t0}>
+            <Avatar className={classes.avatar} src='/home/alma.png' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/alma.png' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Alma
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  May 15
+                </Typography>
+              </div>
+              <Typography variant='body1' className={classes.bold}>
+                "I'm so thankful for this 😭"
+              </Typography>
+              <Typography variant='body1'>
+                It's like Christmas every Tuesday
+              </Typography>
+              <img src='/home/sample.jpg' className={classes.tableFood} />
+            </div>
+          </div>
+          <div className={classes.t1}>
+            <Avatar className={classes.avatar} src='/home/josh.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/josh.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Josh
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  June 23
+                </Typography>
+              </div>
+              <Typography variant='body1' className={classes.bold}>
+                "It's honestly a no-brainer"
+              </Typography>
+              <Typography variant='body1' >
+                I do love it. We're tired of having to work, cook and do dishes, so this
+                is a great opportunity to support our restaurants plus making things more convenient for us
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t2}>
+            <Avatar className={classes.avatar} src='/home/brandon.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/brandon.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Brandon
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  March 24
+                </Typography>
+              </div>
+              <Typography variant='body1' className={classes.bold}>
+                "Other apps cost way too much"
+              </Typography>
+              <Typography variant='body1'>
+                Even small orders. The delivery and service fees add up. That's why I use Table
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.t3}>
+            <Avatar className={classes.avatar} src='/home/arv.jpg' />
+            <div className={`${classes.testimonial} ${classes.centered}`}>
+              <div className={classes.testimonialHeader}>
+                <div>
+                  <Avatar className={classes.headerAvatar} src='/home/arv.jpg' />
+                  <Typography variant='body1' className={classes.bold}>
+                    Arvinder
+                  </Typography>
+                </div>
+                <Typography variant='body1'>
+                  June 4
+                </Typography>
+              </div>
+              <Typography variant='body1' className={classes.bold}>
+                "It's so convenient"
+              </Typography>
+              <Typography variant='body1'>
+                I don't have to think about food
+              </Typography>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const Index = () => {
   return (
     <>
       <Welcome />
-      {/* <Why /> */}
-      <HowItWorks />
+      <RipOff />
+      <Comparison />
       <Plans />
+      <Sushi />
+      <Testimonials />
       <Footer />
     </>
   )

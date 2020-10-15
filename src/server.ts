@@ -44,7 +44,7 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * simon:
  * see full menu tracker link
- * 
+ * use save card for new customer donest work and shouldn't appear
  * 
  */
 

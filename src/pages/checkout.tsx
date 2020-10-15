@@ -30,7 +30,7 @@ import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicke
 import SearchAreaInput from "../client/general/inputs/SearchAreaInput";
 import { orderHistoryRoute } from "./consumer/order-history";
 import PlanCards from "../client/plan/PlanCards";
-import { IPlan, PLAN_DISCLAIMER } from "../plan/planModel";
+import { IPlan } from "../plan/planModel";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
@@ -82,6 +82,12 @@ const useStyles = makeStyles(theme => ({
   customTipSection: {
     display: 'flex',
     alignItems: 'flex-end',
+  },
+  checkbox: {
+    color: theme.palette.primary.dark
+  },
+  emailSignIn: {
+    height: '100%'
   },
 }));
 
@@ -518,7 +524,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         >
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             Instructions
@@ -566,11 +571,11 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel
-                label='I agree to receives delivery update texts'
+                label='I agree to receive delivery update texts'
                 control={
                   <Checkbox
-                    color='primary'
                     defaultChecked
+                    color='default'
                     inputRef={receiveTextsInput}
                     onChange={(_e, checked) => {
                       if (checked) {
@@ -589,7 +594,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Grid>
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             When
@@ -601,7 +605,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           </Grid>
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             {(consumer && consumer.data) ? 'Account' : 'Sign up'}
@@ -622,6 +625,31 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             </Grid>
             :
             <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Button
+                  variant='outlined'
+                  color='inherit'
+                  onClick={onClickGoogle}
+                  startIcon={<GLogo />}
+                >
+                  Google sign in
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  variant='outlined'
+                  color='inherit'
+                  className={classes.emailSignIn}
+                  onClick={onClickEmail}
+                >
+                  Email sign in
+                </Button>
+              </Grid>
+              <Grid xs={12} item>
+                <Typography color='textSecondary' align='center'>
+                  or
+                </Typography>
+              </Grid>
               <Grid item xs={12}>
                 <BaseInput
                   label='Name'
@@ -647,64 +675,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   label='Password'
                   type='password'
                   error={!!passwordError}
-                  helperText={passwordError}
+                helperText={passwordError}
                   inputRef={passwordInputRef}
                   onChange={() => {
                     if (passwordError) setPasswordError('');
                   }}
                 />
               </Grid>
-              <Grid xs={12} item>
-                <Typography color='textSecondary' align='center'>
-                  or
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Button
-                  variant='outlined'
-                  onClick={onClickGoogle}
-                  startIcon={<GLogo />}
-                >
-                  Google sign in
-                </Button>
-              </Grid>
-              <Grid item xs={6}>
-                <Button
-                  variant='outlined'
-                  onClick={onClickEmail}
-                >
-                  Email sign in
-                </Button>
-              </Grid>
             </Grid>
-          }
-          {
-            !consumer.loading && !consumer.data?.plan &&
-            <>
-              <Typography
-                variant='h6'
-                color='primary'
-                className={classes.title}
-              >
-                Plan
-              </Typography>
-              <PlanCards
-                small
-                defaultColor
-                selected={plan ? plan.stripeProductPriceId : null}
-                onClickCard={p => setPlan(p)}
-                onLoad={plans => {
-                  if (!plan) setPlan(plans[0]);
-                }}
-              />
-              <Typography variant='body2'>
-                {PLAN_DISCLAIMER}
-              </Typography>
-            </>
           }
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             Payment
@@ -750,7 +731,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           }
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             Tip
@@ -794,6 +774,32 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               </div>
             </Grid>
           </Grid>
+          {
+            !consumer.loading && !consumer.data?.plan &&
+            <>
+              <Typography
+                variant='h6'
+                className={classes.title}
+              >
+                Plan - change or cancel anytime
+              </Typography>
+              <PlanCards
+                small
+                defaultColor
+                showFirstOnly
+                selected={plan ? plan.stripeProductPriceId : null}
+                onClickCard={p => setPlan(p)}
+                onLoad={plans => {
+                  if (!plan) setPlan(plans[0]);
+                }}
+              />
+              <Typography variant='body2'>
+                By signing up, you acknowledge that you have read and agree to the Table Terms and Conditions and
+                authorize us to charge your default payment method after your 30-day free trial. Your membership 
+                continues until cancelled by visiting Your Plan.
+              </Typography>
+            </>
+          }
         </Grid>
         {
           !isMdAndUp &&

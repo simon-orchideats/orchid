@@ -4,6 +4,7 @@ import { Paper, Typography, Popover } from '@material-ui/core';
 import Router from 'next/router'
 import { howItWorksRoute } from '../../pages/how-it-works';
 import { faqsRoute } from '../../pages/faq';
+import { aboutRoute } from '../../pages/about';
 
 const useStyles = makeStyles(theme => ({
   row: {
@@ -47,11 +48,11 @@ const AboutPopper: React.FC<{
     >
       <Paper className={classes.paper}>
         <div className={classes.row} onClick={() => {
-          Router.push(howItWorksRoute);
+          Router.push(aboutRoute);
           onClose();
         }}>
           <Typography variant='button'>
-            How it works
+            ABOUT US
           </Typography>
         </div>
         <div className={classes.row} onClick={() => {

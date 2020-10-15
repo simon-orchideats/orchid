@@ -1,7 +1,6 @@
-import { Card, CardContent, Typography, Divider, useTheme } from '@material-ui/core';
+import { Card, CardContent, Typography, useTheme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import { IPlan } from '../../plan/planModel';
-import CheckIcon from '@material-ui/icons/Check';
 import withClientApollo from '../utils/withClientApollo';
 
 const useStyles = makeStyles(theme => ({
@@ -14,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(small ? 0 : 2),
     width: small ? 230 : 300,
     borderStyle: 'solid',
-    borderColor: defaultColor ? theme.palette.divider : theme.palette.common.pink,
+    borderColor: defaultColor ? theme.palette.divider : theme.palette.divider,
   }),
   marginTop: {
     marginTop: theme.spacing(2),
@@ -37,7 +36,8 @@ const useStyles = makeStyles(theme => ({
   },
   free: {
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.common.green,
     borderRadius: theme.spacing(1),
   },
 }));
@@ -68,7 +68,7 @@ const PlanDetails: React.FC<{
       }}
       className={classes.card}
       style={{
-        borderColor: isSelected ? theme.palette.primary.dark : undefined
+        borderColor: isSelected ? theme.palette.primary.main : undefined
       }}
     >
       <CardContent className={classes.content}>
@@ -82,26 +82,22 @@ const PlanDetails: React.FC<{
         }
         <Typography
           variant='h5'
-          color='primary'
           className={classes.marginTop}
         >
-          {plan.name} Plan
+          {plan.name} (Monthly)
         </Typography>
         <Typography variant='h6'>
-          ${(plan.price / 100).toFixed(2)}/month after trial
+          ${(plan.price / plan.numAccounts / 100).toFixed(2)}/account
         </Typography>
         <Typography variant='h6'>
           {plan.numAccounts} account{plan.numAccounts > 1 ? 's' : ''}
         </Typography>
-        <Divider className={classes.divider} />
-        <Typography variant='h6'>
-          <CheckIcon className={classes.check} />
-          &nbsp;Lowest pricing guarantee
-        </Typography>
-        <Typography variant='h6'>
-          <CheckIcon className={classes.check} />
-          &nbsp;No service charge
-        </Typography>
+        {
+          plan.numAccounts > 1 &&
+          <Typography variant='caption'>
+            (total of ${(plan.price / 100).toFixed(2)}/month)
+          </Typography>
+        }
         {
           renderButton &&
           <div

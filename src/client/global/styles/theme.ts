@@ -1,11 +1,13 @@
 import { NotificationType } from '../../notification/notificationModel';
 import { createMuiTheme, Theme } from "@material-ui/core";
 import { ThemeOptions } from "@material-ui/core/styles/createMuiTheme";
-const floralWhite = '#ffdd40'; //'#fceaa3' // '#F1F1DB' //'#F8DF7B' //'#FABE0E';
+const floralWhite = '#ffdd40'; //'#fceaa3' // '#F1F1DB' //'#F8DF7B' //'#FABE0E'; //'#FEBD69'
 const lightGray = '#f9f9f9'; //'#f2f7fb'//'#EEF1F6';
 const charcoal = '#3c3c3c';
+const scarletRed = '#FF5C41';
 const leafGreen = '#538401' //'#65b10c' //'#538401'; //'#6ad080' //'#538401' // '#A3B95A'//'#538401'//'#8AB661' //'#B8E6B1' //'#89C057'; //#28590c
-const blue = '#0070eb';
+const blue =  '#4062ff'; //'#0000F7';
+const navy = '#4062ff'; //'#00B2F7'
 const white = "#ffffff";
 const powerGreen = '#3d9241';
 const powerOrange = '#ff7600';
@@ -17,11 +19,12 @@ const powerRed = '#f44336'
  * #F1F1DB
  */
 const brandBase = white;
-const brandPrimary = leafGreen;
-const brandSecondary = floralWhite;
+const brandPrimary = floralWhite;
+const brandSecondary = scarletRed;
+const brandPrimaryDark = '#ffad40';
 const brandLink = blue;
-const brandPrimaryLightOpacity = (opacity: number) => `rgba(83, 132, 1 ${opacity})`
-const brandPrimaryDarkOpacity = (opacity: number) => `rgba(83, 132, 1, ${opacity})`
+const brandPrimaryLightOpacity = (opacity: number) => `rgba(255, 221, 64 ${opacity})`;
+const brandPrimaryDarkOpacity = (opacity: number) => `rgba(255, 221, 64, ${opacity})`;
 const brandText = charcoal;
 const brandCanvas = lightGray;
 const brandSuccess = powerGreen;
@@ -68,18 +71,27 @@ const theme: ThemeOptions = {
         },
       }
     },
-    MuiButton: {
-      styleOverrides: {
-        containedPrimary: {
-          color: white,
-        }
-      }
-    },
+    // MuiButton: {
+    //   styleOverrides: {
+    //     containedPrimary: {
+    //       color: white,
+    //     }
+    //   }
+    // },
     MuiContainer: {
       styleOverrides: {
         root: {
           backgroundColor: white
         },
+      }
+    },
+    MuiFormLabel: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focused': {
+            color: brandPrimaryDark
+          },
+        }
       }
     },
     MuiFilledInput: {
@@ -95,10 +107,10 @@ const theme: ThemeOptions = {
         },
         underline: {
           '&:before': {
-            borderBottom: `1px solid ${brandPrimary}`
+            borderBottom: `1px solid ${brandPrimaryDark}`
           },
           '&:after': {
-            borderBottom: `2px solid ${brandPrimary}`
+            borderBottom: `2px solid ${brandPrimaryDark}`
           },
           '&:hover:before': {
             borderBottom: `1px solid `
@@ -114,13 +126,13 @@ const theme: ThemeOptions = {
             color: 'rgba(0, 0, 0, 0.38)',
           },
           "&.Mui-selected": {
-            backgroundColor: brandSecondary,
+            backgroundColor: brandPrimaryDark,
           },
           '&.Mui-selected:hover': {
-            backgroundColor: `${brandSecondary} !important`,
+            backgroundColor: `${brandPrimaryDark} !important`,
           },
           '&:focus.Mui-selected': {
-            backgroundColor: brandSecondary,
+            backgroundColor: brandPrimaryDark,
           },
         },
       }
@@ -129,7 +141,7 @@ const theme: ThemeOptions = {
     MuiPickersClockNumber: {
       styleOverrides: {
         clockNumberSelected: {
-          backgroundColor: brandSecondary
+          backgroundColor: brandPrimaryDark
         },
       }
     },
@@ -137,7 +149,7 @@ const theme: ThemeOptions = {
     MuiPickersClockPointer: {
       styleOverrides: {
         pointer: {
-          backgroundColor: brandSecondary,
+          backgroundColor: brandPrimaryDark,
         },
       }
     },
@@ -145,13 +157,13 @@ const theme: ThemeOptions = {
     MuiPickersClock: {
       styleOverrides: {
         meridiemButtonSelected: {
-          backgroundColor: brandSecondary,
+          backgroundColor: brandPrimaryDark,
           '&:hover': {
-            backround: brandSecondary,
+            backround: brandPrimaryDark,
           },
         },
         pin: {
-          backgroundColor: brandSecondary,
+          backgroundColor: brandPrimaryDark,
         },
       }
     },
@@ -180,9 +192,9 @@ const theme: ThemeOptions = {
             backgroundColor: `#ffffff !important`,
           },
           '&.Mui-selected': {
-            border: `1px solid ${leafGreen} !important`,
+            border: `1px solid ${brandPrimaryDark} !important`,
             backgroundColor: `#ffffff !important`,
-            color: leafGreen,
+            color: brandPrimaryDark,
           },
         },
       }
@@ -192,7 +204,8 @@ const theme: ThemeOptions = {
     common: {
       black: '#000',
       white: white,
-      pink: '#ed8d81',
+      green: leafGreen,
+      red: powerRed,
       link: brandLink,
       success: brandSuccess,
       warning: brandWarning,
@@ -201,16 +214,16 @@ const theme: ThemeOptions = {
     type: 'light',
     primary: {
       // commented out so mui auto generates light + dark
-      light: '#E6F0DB',
+      // light: '#E6F0DB',
       main: brandPrimary,
-      // dark: brandPrimaryDark,
-      contrastText: brandText
+      dark: brandPrimaryDark,
+      contrastText: '#000000'
     },
     secondary: {
-      light: '#fceaa3',
+      // light: '#e57373',
       main: brandSecondary,
-      dark: '#ed8b00',
-      contrastText: '#000'
+      // dark: '#d32f2f',
+      contrastText: '#fff'
     },
     error: {
       light: '#e57373',
@@ -450,7 +463,8 @@ declare module '@material-ui/core/styles/createMixins' {
 declare module '@material-ui/core/styles/createPalette' {
   interface CommonColors {
     link: string;
-    pink: string;
+    green: string;
+    red: string;
     [NotificationType.success]: string;
     [NotificationType.warning]: string;
     [NotificationType.error]: string;

@@ -167,7 +167,8 @@ const SearchAreaInput: React.FC<{
             autoFocus={!disableAutoFocus}
             label='Enter Address'
             onBlur={onBlur}
-            variant='outlined'
+            color='primary'
+            variant='filled'
             fullWidth
           />
         )}

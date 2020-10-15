@@ -319,11 +319,10 @@ class RestService implements IRestService {
       );
       return eRests.map(({ _id, rest }) => ({
         ...rest,
-        // todo pivot: remove this
         discount: {
+          description: null,
           amountOff: null,
           percentOff: 10,
-          description: null,
         },
         _id,
       }))

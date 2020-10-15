@@ -358,6 +358,9 @@ POST _reindex
       ctx._source.location.remove('city');
       ctx._source.location.remove('state');
       ctx._source.location.remove('zip');
+
+      // DO SOMETHING WITH HOURS
+      ctx._source.hours.
     """,
     "lang": "painless"
   }

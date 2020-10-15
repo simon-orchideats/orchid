@@ -24,8 +24,8 @@ import { Cart } from '../../order/cartModel';
 import SearchAreaInput from '../general/inputs/SearchAreaInput';
 import ServiceTimePopper from './ServiceTimePopper';
 import ServiceTypePopper from './ServiceTypePopper';
-import MenuIcon from '@material-ui/icons/Menu';
 import CartModal from './CartModal';
+import { plansRoute } from '../../pages/plans';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -41,9 +41,10 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'flex-end',
     display: 'flex',
     alignItems: 'center',
+    color: theme.palette.text.primary
   },
   cart: {
-    color: theme.palette.primary.main
+    color: theme.palette.text.primary
   },
   menuServiceDropdown: {
     cursor: 'pointer',
@@ -248,8 +249,10 @@ const Navbar: React.FC = () => {
         <div className={classes.vertCenter}>
           {menuStep}
           <ChevronRightIcon className={classes.horzMargin} />
-          <Typography variant='button' color='primary'>
-            Checkout
+          <Typography variant='button'>
+            <b>
+              Checkout
+            </b>
           </Typography>
         </div>
       </div>
@@ -260,6 +263,9 @@ const Navbar: React.FC = () => {
       <>
         <Link href={menuRoute}>
           <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
+        </Link>
+        <Link href={plansRoute}>
+          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
         </Link>
         <div className={classes.about} onClick={onClickAbout}>
           <Typography variant='button' className={classes.link}>About</Typography>
@@ -277,7 +283,6 @@ const Navbar: React.FC = () => {
       >
         <Container className={classes.container} maxWidth='lg'>
           <Toolbar className={classes.toolbar}>
-            {!isMdAndUp && currRoute === menuRoute && <MenuIcon />}
             <Link href={indexRoute}>
               <img src='/logo.png' alt='logo' className={classes.logo} />
             </Link>

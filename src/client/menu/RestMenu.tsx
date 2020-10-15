@@ -1,5 +1,5 @@
-import React from 'react';
-import { makeStyles, Typography, Grid, Paper, Avatar } from "@material-ui/core";
+import React, { useState } from 'react';
+import { makeStyles, Typography, Grid, Paper, Avatar, Popover, Button } from "@material-ui/core";
 import { IRest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { IMeal } from '../../rest/mealModel';
@@ -37,6 +37,15 @@ const useStyles = makeStyles(theme => ({
       padding: theme.spacing(1, 3, 3),
     },
   },
+  signature: {
+    padding: theme.spacing(2),
+  },
+  fullMenu: {
+    paddingLeft: 4,
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: theme.spacing(4),
+    },
+  },
 }));
 
 const isMealInFilter = (meal: IMeal, cuisines: string[]) => {
@@ -64,6 +73,10 @@ const RestMenu: React.FC<{
   rest,
 }) => {
   const classes = useStyles();
+  const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
+  const onClickContent = (event: React.MouseEvent<HTMLElement>) => {
+    setDescAnchor(descAnchor ? null : event.currentTarget);
+  };
   const meals = rest.featured.map(meal => {
     const isInFilter = isMealInFilter(meal, cuisinesFilter);
     if (!isInFilter) return null;
@@ -139,9 +152,36 @@ const RestMenu: React.FC<{
           {rest.profile.story}
         </Typography>
       </div>
+      <Popover
+        open={Boolean(descAnchor)}
+        anchorEl={descAnchor}
+        onClose={() => setDescAnchor(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <Paper className={classes.signature}>
+          <Typography variant='body1'>
+            We only offer signature dishes. Full menu coming soon.
+          </Typography>
+        </Paper>
+      </Popover>
       <Grid container className={classes.meals}>
         {meals}
       </Grid>
+      <Button
+        variant='text'
+        onClick={e => onClickContent(e)}
+        className={classes.fullMenu}
+        color='inherit'
+      >
+        Full menu
+      </Button>
     </Paper>
   )
 }

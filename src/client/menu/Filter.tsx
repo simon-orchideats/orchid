@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
   },
   link: {
-    border: `1px solid ${theme.palette.common.link}`,
+    border: `1px solid ${theme.palette.common.link} !important`,
     color: theme.palette.common.link,
   },
 }));
@@ -76,7 +76,6 @@ const Filter: React.FC<{
                       key={cuisine}
                       control={
                         <Checkbox
-                          color='primary'
                           checked={isSelected}
                           onChange={() => onClickCuisine(isSelected ? withoutCuisine : [...cuisines, cuisine])}
                         />

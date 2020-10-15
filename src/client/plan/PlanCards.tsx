@@ -17,6 +17,7 @@ const PlanCards: React.FC<{
   hideTrial?: boolean
   small?: boolean,
   selected?: string | null,
+  showFirstOnly: boolean
   renderButton?: (p: IPlan) => React.ReactNode,
   onClickCard?: (p: IPlan) => void
   onLoad?: (plans: IPlan[]) => void
@@ -24,6 +25,7 @@ const PlanCards: React.FC<{
   defaultColor,
   small,
   selected,
+  showFirstOnly = false,
   renderButton,
   onClickCard,
   onLoad,
@@ -53,7 +55,7 @@ const PlanCards: React.FC<{
   }
   return (
     <Grid container justifyContent='center'>
-      {plans.data.map(p => (
+      {plans.data.map((p, i) => (
         <Grid
           key={p.stripeProductPriceId}
           item
@@ -61,16 +63,21 @@ const PlanCards: React.FC<{
           xs={12}
           sm={4}
         >
-          <PlanDetails
-            key={p.stripeProductPriceId}
-            plan={p}
-            hideTrial={hideTrial}
-            defaultColor={defaultColor}
-            small={small}
-            isSelected={selected ? selected === p.stripeProductPriceId : selectedPlan === p.stripeProductPriceId}
-            onClickCard={updatePlan}
-            renderButton={renderButton}
-          />
+          {
+            (showFirstOnly && i) > 0 ?
+              null
+            :
+            <PlanDetails
+              key={p.stripeProductPriceId}
+              plan={p}
+              hideTrial={hideTrial}
+              defaultColor={defaultColor}
+              small={small}
+              isSelected={selected ? selected === p.stripeProductPriceId : selectedPlan === p.stripeProductPriceId}
+              onClickCard={updatePlan}
+              renderButton={renderButton}
+            />
+          }
         </Grid>
       ))}
     </Grid>

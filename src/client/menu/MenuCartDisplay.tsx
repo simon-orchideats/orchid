@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(1),
   },
   savings: {
-    color: theme.palette.primary.main,
+    color: theme.palette.common.green,
   }
 }));
 

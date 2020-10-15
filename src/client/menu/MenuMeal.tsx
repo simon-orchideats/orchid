@@ -59,6 +59,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     padding: 0,
+    color: theme.palette.text.primary
   },
   title: {
     lineHeight: 1.5,
@@ -318,7 +319,6 @@ const MenuMeal: React.FC<{
                             <Button
                               className={classes.button}
                               variant='text'
-                              color='primary'
                               onClick={() => updateAddon(i, j, addon, 1)}
                             >
                               <AddIcon className={classes.icon} />
@@ -348,6 +348,7 @@ const MenuMeal: React.FC<{
                       :
                         <Button
                           variant='outlined'
+                          color='secondary'
                           onClick={onClickNextAddon}
                         >
                           Next

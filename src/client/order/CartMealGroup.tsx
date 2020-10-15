@@ -18,6 +18,7 @@ const useStyles = makeStyles(theme => ({
   },
   icon: {
     fontSize: '1.8rem',
+    color: theme.palette.text.primary
   },
   more: {
     padding: 0,
@@ -73,7 +74,6 @@ const CartMealGroup: React.FC<{
           !disableEditing &&
           <Button
             variant='text'
-            color='primary'
             onClick={() => incrementMealCount(m)}
           >
             <AddIcon className={classes.icon} />

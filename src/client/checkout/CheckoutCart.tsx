@@ -21,6 +21,9 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.warning.dark,
     fontWeight: 600,
   },
+  green: {
+    color: theme.palette.common.green,
+  },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -29,6 +32,10 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
     // so that the button doesn't shrink on safari. determined by inspection
     minHeight: 36,
+  },
+  savings: {
+    fontSize: '1.75rem',
+    color: theme.palette.common.green,
   },
 }));
 
@@ -143,22 +150,25 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
         </div>
         <div className={`${classes.row}`} >
-          <Typography variant='body1' color='primary'>
+          <Typography variant='body1'>
+            Service fee
+          </Typography>
+          <Typography variant='body1'  className={classes.green}>
+            <b>FREE</b>
+          </Typography>
+        </div>
+        <div className={`${classes.row}`} >
+          <Typography variant='body1' className={classes.green}>
             <b>Total</b>
           </Typography>
-          <Typography variant='body1' color='primary'>
+          <Typography variant='body1'  className={classes.green}>
             <b>${(total / 100).toFixed(2)}</b>
           </Typography>
         </div>
         <p />
         <div className={classes.row}>
-          <Typography variant='body1'>
-            <b>NO SERVICE FEE</b>
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography variant='body1'>
-            Saving <b>${savings}</b> vs other apps!
+          <Typography variant='body1' className={classes.savings}>
+            <b>Saving ${savings} vs other apps!</b>
           </Typography>
         </div>
         <p />
@@ -170,7 +180,6 @@ const CheckoutCart: React.FC<props> = ({
         <>
           <Typography
             variant='h6'
-            color='primary'
             className={classes.title}
           >
             Order summary
