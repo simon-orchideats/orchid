@@ -91,6 +91,7 @@ const menu = () => {
     }
   }, [consumer.data]);
   const rests = useGetNearbyRests(
+    cuisines,
     cart?.searchArea,
     fromTo?.from,
     fromTo?.to,

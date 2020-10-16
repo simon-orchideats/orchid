@@ -18,12 +18,14 @@ export const RestQueryResolvers: ServerResolovers = {
     _root: any,
     {
       addr,
+      cuisines,
       from,
       to,
       serviceDay,
       serviceType,
     }: {
       addr: string,
+      cuisines: string[]
       from: string,
       to: string,
       serviceDay: ServiceDay,
@@ -31,7 +33,7 @@ export const RestQueryResolvers: ServerResolovers = {
     }
   ) => {
     try {
-      return await getRestService().getNearbyRests(addr, from, to, serviceDay, serviceType);
+      return await getRestService().getNearbyRests(addr, cuisines, from, to, serviceDay, serviceType);
     } catch (e) {
       console.error('[RestResolver] failed to get nearby rests', e.stack);
       throw new Error('Internal Server Error');

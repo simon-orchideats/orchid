@@ -1,4 +1,4 @@
-import { ServiceType } from './../../order/orderModel';
+import { ServiceType, ServiceTypes } from './../../order/orderModel';
 import { ECuisine, ITag } from './../../rest/tagModel';
 import { IPlanService, getPlanService } from './../plans/planService';
 import { Permissions } from './../../consumer/consumerModel';
@@ -29,11 +29,11 @@ export interface IRestService {
   }[]>
   getNearbyRests: (
     addr: string,
+    cuisines: string[],
     from: string,
     to: string,
     serviceDay: ServiceDay,
     serviceType: ServiceType,
-    cuisines?: string[],
     fields?: string[]
   ) => Promise<IRest[]>
   getERest: (restId: string, fields?: string[]) => Promise<ERest | null>
@@ -197,19 +197,13 @@ class RestService implements IRestService {
                 bool: {
                   must: [
                     {
-                      geo_shape : {
-                        'location.geoShape' : {
-                          shape: {
-                            type: 'point',
-                            coordinates: [ lon, lat ]
-                          },
-                          relation: 'intersects'
-                        }
+                      term: {
+                        'featured.isActive': true
                       }
                     },
                     {
                       term: {
-                        'featured.isActive': true
+                        'status': 'Active',
                       }
                     },
                     // {
@@ -268,23 +262,38 @@ class RestService implements IRestService {
           }
         }
       }
+      // todo update this query to use nested so we only get meals that are active and follow the cuisine
       if (cuisines) {
         options.body.query.bool.filter.bool.must.push({
-          bool: {
-            must: [
-              {
-                terms: {
-                  'menu.tags.name.keyword': cuisines
-                }
-              },
-              {
-                term: {
-                  'menu.isActive': true
-                }
-              }
-            ],
-          },
+          terms: {
+            'featured.tags.name.keyword': cuisines
+          }
         });
+      }
+      if (serviceType === ServiceTypes.Pickup) {
+        options.body.query.bool.filter.bool.must.push({
+          geo_distance : {
+            distance: '5mi',
+            'location.geoPoint' : {
+              lat,
+              lon
+            }
+          }
+        })
+      } else if (serviceType === ServiceTypes.Delivery) {
+        options.body.query.bool.filter.bool.must.push({
+          geo_shape : {
+            'location.geoShape' : {
+              shape: {
+                type: 'point',
+                coordinates: [ lon, lat ]
+              },
+              relation: 'intersects'
+            }
+          }
+        })
+      } else {
+        throw new Error(`Got invalid service type '${serviceType}'`);
       }
       if (fields) options._source = fields;
       const res: ApiResponse<SearchResponse<ERest>> = await this.elastic.search(options);
@@ -300,11 +309,11 @@ class RestService implements IRestService {
 
   async getNearbyRests(
     addr: string,
+    cuisines: string[],
     from: string,
     to: string,
     serviceDay: ServiceDay,
     serviceType: ServiceType,
-    cuisines?: string[],
     fields?: string[]
   ): Promise<IRest[]> {
     try {
@@ -319,11 +328,11 @@ class RestService implements IRestService {
       );
       return eRests.map(({ _id, rest }) => ({
         ...rest,
-        discount: {
-          description: null,
-          amountOff: null,
-          percentOff: 10,
-        },
+        // discount: {
+        //   description: null,
+        //   amountOff: null,
+        //   percentOff: 10,
+        // },
         _id,
       }))
     } catch (e) {

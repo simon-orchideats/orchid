@@ -47,7 +47,10 @@ const getSuggestions = (
   }
   autocompleteService.current.getPlacePredictions(
     {
-      input: query
+      input: query,
+      componentRestrictions: {
+        country: 'us',
+      }
     },
     callback,
   );

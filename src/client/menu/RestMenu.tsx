@@ -4,6 +4,8 @@ import { IRest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { IMeal } from '../../rest/mealModel';
 import { TagTypes } from '../../rest/tagModel';
+import { useGetCart } from '../global/state/cartState';
+import { ServiceTypes } from '../../order/orderModel';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -73,6 +75,7 @@ const RestMenu: React.FC<{
   rest,
 }) => {
   const classes = useStyles();
+  const cart = useGetCart();
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
   const onClickContent = (event: React.MouseEvent<HTMLElement>) => {
     setDescAnchor(descAnchor ? null : event.currentTarget);
@@ -109,42 +112,50 @@ const RestMenu: React.FC<{
           alignItems='center'
           justifyContent='space-between'
         >
-            {
-              rest.profile.actor ?
-              <>
-                <Grid
-                  item
-                  md={8}
-                  sm={12}
-                >
-                  <Typography variant='h4'>
-                    {rest.profile.name}
-                  </Typography>
-                </Grid>
-                <Grid
-                  item
-                  md={4}
-                  sm={12}
-                >
-                  <div className={classes.profile}>
-                    <Avatar src={rest.profile.actorImg} className={classes.profilePic} />
-                    <Typography variant='body1' color='textSecondary'>
-                      by&nbsp;
-                    </Typography>
-                    <Typography variant='h6'>
-                      {rest.profile.actor}
-                    </Typography>
-                  </div>
-                </Grid>
-              </>
-            :
-              <Grid item xs={12}>
+          {
+            rest.profile.actor ?
+            <>
+              <Grid
+                item
+                md={8}
+                sm={12}
+              >
                 <Typography variant='h4'>
                   {rest.profile.name}
                 </Typography>
               </Grid>
-            }
-          </Grid>
+              <Grid
+                item
+                md={4}
+                sm={12}
+              >
+                <div className={classes.profile}>
+                  <Avatar src={rest.profile.actorImg} className={classes.profilePic} />
+                  <Typography variant='body1' color='textSecondary'>
+                    by&nbsp;
+                  </Typography>
+                  <Typography variant='h6'>
+                    {rest.profile.actor}
+                  </Typography>
+                </div>
+              </Grid>
+            </>
+          :
+            <Grid item xs={12}>
+              <Typography variant='h4'>
+                {rest.profile.name}
+              </Typography>
+            </Grid>
+          }
+          {
+            cart?.serviceType === ServiceTypes.Pickup &&
+            <Grid item xs={12}>
+              <Typography variant='body1'>
+                {rest.location.primaryAddr}
+              </Typography>
+            </Grid>
+          }
+        </Grid>
         <Typography
           variant='subtitle1'
           color='textSecondary'

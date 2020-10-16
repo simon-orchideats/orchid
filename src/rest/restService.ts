@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { MutationBoolRes } from '../utils/apolloUtils';
 import { ApolloError } from 'apollo-client';
 import { tagFragment } from './tagFragment';
+import { intersectionWith } from 'lodash';
 
 export const useAddRest = (): [
   (rest: IRestInput) => void,
@@ -93,6 +94,7 @@ export const useGetTags = () => {
 }
 
 const useGetNearbyRests = (
+  cuisines: string[],
   addr?: string | null,
   from?: string,
   to?: string,
@@ -106,6 +108,7 @@ const useGetNearbyRests = (
     gql`
       query nearbyRests(
         $addr: String!,
+        $cuisines: [String!]!
         $from: String!,
         $to: String!
         $serviceDay: ServiceDay!,
@@ -113,6 +116,7 @@ const useGetNearbyRests = (
       ) {
         nearbyRests(
           addr: $addr,
+          cuisines: $cuisines,
           from: $from,
           to: $to
           serviceDay: $serviceDay,
@@ -127,6 +131,7 @@ const useGetNearbyRests = (
       skip: !addr || !serviceDay || !from || !to || !serviceType,
       variables: {
         addr,
+        cuisines,
         from,
         to,
         serviceDay,
@@ -135,9 +140,13 @@ const useGetNearbyRests = (
     }
   );
 
-  const rests = useMemo<IRest[] | undefined>(() => (
-    res.data ? res.data.nearbyRests.map(rest => Rest.getICopy(rest)) : res.data
-  ), [res.data]);
+  const rests = useMemo<IRest[] | undefined>(() => {
+    if (!res.data) return res.data;
+    return res.data.nearbyRests.map(rest => Rest.getICopy({
+      ...rest,
+      featured: rest.featured.filter(m => intersectionWith(m.tags, cuisines, (t, c) => t.name === c).length > 0)
+    }))
+  }, [res.data]);
 
   return {
     loading: res.loading,

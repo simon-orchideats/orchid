@@ -25,6 +25,7 @@ const query = gql`
     # mySpent: Spent!
     nearbyRests(
       addr: String!,
+      cuisines: [String!]!,
       from: String!,
       to: String!
       serviceDay: ServiceDay!,

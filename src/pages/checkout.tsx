@@ -23,7 +23,7 @@ import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetConsumer } fr
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
-import { useGetTags } from "../rest/restService";
+import { useGetTags, useGetRest } from "../rest/restService";
 import { Cart } from "../order/cartModel";
 import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
 import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
@@ -34,6 +34,7 @@ import { IPlan } from "../plan/planModel";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
+import { ServiceTypes, Order } from "../order/orderModel";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -75,6 +76,9 @@ const useStyles = makeStyles(theme => ({
   link: {
     color: theme.palette.common.link,
     borderColor: theme.palette.common.link
+  },
+  edit: {
+    color: theme.palette.common.link,
   },
   toggleButtonGroup: {
     width: '100%',
@@ -129,6 +133,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const consumer = useGetConsumer('network-only');
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const [staticTip, setStaticTip] = useState<staticTip>(defaultTip);
+  const rest = useGetRest(cart?.rest?.restId || null)
   const customTipRef = createRef<HTMLInputElement>();
   const addr2InputRef = createRef<HTMLInputElement>();
   const instructionsInputRef = createRef<HTMLInputElement>();
@@ -152,6 +157,9 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [defaultPhone, setDefaultPhone] = useState<string | undefined>();
   const [defaultApt, setDefaultApt] = useState<string | undefined>();
   const [defaultInstructions, setDefaultInstructions] = useState<string | undefined>();
+  const [isUpdatingInstructions, setIsUpdatingInstructions] = useState<boolean>(false);
+  const [isUpdatingWhen, setIsUpdatingWhen] = useState<boolean>(false);
+
   useEffect(() => {
     setDefaultPhone(consumer.data?.profile.phone || undefined);
     setDefaultApt(consumer.data?.profile.searchArea?.address2 || undefined);
@@ -498,6 +506,13 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     tip,
     loading: didPlaceOrder,
   }
+
+  let deliveryLabel: string = cart.serviceType;
+  if (cart.serviceType === ServiceTypes.Pickup && rest.data) {
+    deliveryLabel = deliveryLabel + ` at ${rest.data.location.primaryAddr}`;
+  } else {
+    deliveryLabel = deliveryLabel + ` to ${cart.searchArea}`;
+  }
   return (
     <Container
       maxWidth='xl'
@@ -529,12 +544,31 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Instructions
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <ServiceTypePicker />
-            </Grid>
-            <Grid item xs={12}>
-              <SearchAreaInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
-            </Grid>
+            {
+              isUpdatingInstructions ?
+                <>
+                  <Grid item xs={12}>
+                    <ServiceTypePicker />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SearchAreaInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
+                  </Grid>
+                </>
+                :
+                <>
+                  <Grid
+                    item
+                    xs={12}
+                  >
+                    <Typography variant='body1'>
+                      {deliveryLabel}
+                      <Button className={classes.edit} onClick={() => setIsUpdatingInstructions(true)}>
+                        Edit
+                      </Button>
+                    </Typography>
+                  </Grid>
+                </>
+            }
             <Grid item xs={12}>
               <BaseInput
                 key={defaultApt}
@@ -599,9 +633,31 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             When
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <ServiceDateTimePicker />
-            </Grid>
+            {
+              isUpdatingWhen ?
+                <Grid item xs={12}>
+                  <ServiceDateTimePicker />
+                </Grid>
+              :
+              <>
+                <Grid
+                  item
+                  xs={12}
+                >
+                  <Typography variant='body1'>
+                    {
+                      Order.getServiceTimeStr(cart.serviceTime) === 'ASAP' ?
+                      'ASAP'
+                      :
+                      `${Order.getServiceMonthDay(cart.serviceDate)} ${Order.getServiceTimeStr(cart.serviceTime)}`
+                    }
+                    <Button className={classes.edit} onClick={() => setIsUpdatingWhen(true)}>
+                      Edit
+                    </Button>
+                  </Typography>
+                </Grid>
+              </>
+            }
           </Grid>
           <Typography
             variant='h6'
@@ -720,13 +776,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   </div>
                 </div>
                 <CardForm />
-                <Button
-                  variant='outlined'
-                  className={`${classes.link} ${classes.marginTop}`}
-                  onClick={() => setIsUsingSavedCard(true)}
-                >
-                  Use saved card
-                </Button>
+                {
+                  consumer.data?.profile.card &&
+                  <Button
+                    variant='outlined'
+                    className={`${classes.link} ${classes.marginTop}`}
+                    onClick={() => setIsUsingSavedCard(true)}
+                  >
+                    Use saved card
+                  </Button>
+                }
               </>
           }
           <Typography

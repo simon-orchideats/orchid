@@ -6,8 +6,8 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { IMeal } from '../../../rest/mealModel';
 import { IOrderMeal, OrderMeal, ICustomization } from '../../../order/orderRestModel';
-import { useGetRest, useGetNearbyRests, useDoesRestDeliverToArea } from '../../../rest/restService';
-import { Rest, WeekHours } from '../../../rest/restModel';
+import { useGetRest, useDoesRestDeliverToArea } from '../../../rest/restService';
+import { Rest } from '../../../rest/restModel';
 import { IPlan } from '../../../plan/planModel';
 import { IDiscount } from '../../../order/discountModel';
 
@@ -72,73 +72,73 @@ const CART_QUERY = gql`
 `
 
 export const useGetCart = () => {
-  // const queryRes = useQuery<cartQueryRes>(CART_QUERY);
-  // return (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
-  return {
-    "rest": {
-      "deliveryFee": 200,
-      "meals": [
-        {
-          "customizations": [
-            {
-              "additionalPrice": 0,
-              "name": "Medium Well"
-            }
-          ],
-          "description": "Grilled asparagus, fingerling potatoes, peperonata and salsa verde.",
-          "img": "https://s3-media0.fl.yelpcdn.com/bphoto/_9hrXbP35jrCkzrzJHhxyA/o.jpg",
-          "instructions": null,
-          "mealId": "-Fo8mZ0Kb1cqZAujdDbVA",
-          "name": "Hanger Steak",
-          "quantity": 1,
-          "price": 2100,
-          "tags": [
-            {
-              "name": "American",
-              "type": "cuisine"
-            },
-            {
-              "name": "Protein",
-              "type": "diet"
-            },
-            {
-              "name": "Mexican",
-              "type": "cuisine"
-            },
-            {
-              "name": "Cuban",
-              "type": "cuisine"
-            },
-            {
-              "name": "Keto",
-              "type": "diet"
-            },
-            {
-              "name": "Spicy",
-              "type": "flavor"
-            },
-            {
-              "name": "Steak",
-              "type": "form"
-            }
-          ]
-        }
-      ],
-      "restId": "m0ZR5nQBkr8YmTl0u6Ql",
-      "restName": "Villa Borghese III",
-      "taxRate": 0.06625
-    },
-    "searchArea": "444 Washington Boulevard, Jersey City, NJ, USA",
-    "serviceDate": "10/3/2020",
-    "serviceTime": "ThreeFifteenPToThreeFortyFiveP",
-    "serviceType": "Delivery",
-    "plan": {
-      "stripeProductPriceId": "price_1HQl8qIbp99rfpAlksG3aLxd",
-      "name": "Foodie",
-      "numAccounts": 1,
-      "price": 499
-    }
-  } as ICart
+  const queryRes = useQuery<cartQueryRes>(CART_QUERY);
+  return (queryRes.data && queryRes.data.cart) ? Cart.getICopy(queryRes.data.cart) : null
+  // return {
+  //   "rest": {
+  //     "deliveryFee": 200,
+  //     "meals": [
+  //       {
+  //         "customizations": [
+  //           {
+  //             "additionalPrice": 0,
+  //             "name": "Medium Well"
+  //           }
+  //         ],
+  //         "description": "Grilled asparagus, fingerling potatoes, peperonata and salsa verde.",
+  //         "img": "https://s3-media0.fl.yelpcdn.com/bphoto/_9hrXbP35jrCkzrzJHhxyA/o.jpg",
+  //         "instructions": null,
+  //         "mealId": "-Fo8mZ0Kb1cqZAujdDbVA",
+  //         "name": "Hanger Steak",
+  //         "quantity": 1,
+  //         "price": 2100,
+  //         "tags": [
+  //           {
+  //             "name": "American",
+  //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Protein",
+  //             "type": "diet"
+  //           },
+  //           {
+  //             "name": "Mexican",
+  //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Cuban",
+  //             "type": "cuisine"
+  //           },
+  //           {
+  //             "name": "Keto",
+  //             "type": "diet"
+  //           },
+  //           {
+  //             "name": "Spicy",
+  //             "type": "flavor"
+  //           },
+  //           {
+  //             "name": "Steak",
+  //             "type": "form"
+  //           }
+  //         ]
+  //       }
+  //     ],
+  //     "restId": "m0ZR5nQBkr8YmTl0u6Ql",
+  //     "restName": "Villa Borghese III",
+  //     "taxRate": 0.06625
+  //   },
+  //   "searchArea": "444 Washington Boulevard, Jersey City, NJ, USA",
+  //   "serviceDate": "10/3/2020",
+  //   "serviceTime": "ThreeFifteenPToThreeFortyFiveP",
+  //   "serviceType": "Delivery",
+  //   "plan": {
+  //     "stripeProductPriceId": "price_1HQl8qIbp99rfpAlksG3aLxd",
+  //     "name": "Foodie",
+  //     "numAccounts": 1,
+  //     "price": 499
+  //   }
+  // } as ICart
 }
 
 export const useGetCartSuggestions = () => {
