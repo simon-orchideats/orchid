@@ -142,10 +142,12 @@ const useGetNearbyRests = (
 
   const rests = useMemo<IRest[] | undefined>(() => {
     if (!res.data) return res.data;
-    return res.data.nearbyRests.map(rest => Rest.getICopy({
-      ...rest,
-      featured: rest.featured.filter(m => intersectionWith(m.tags, cuisines, (t, c) => t.name === c).length > 0)
-    }))
+    if (cuisines.length > 0) {
+      return res.data.nearbyRests.map(rest => Rest.getICopy({
+        ...rest,
+        featured: rest.featured.filter(m => intersectionWith(m.tags, cuisines, (t, c) => t.name === c).length > 0)
+      }))
+    }
   }, [res.data]);
 
   return {

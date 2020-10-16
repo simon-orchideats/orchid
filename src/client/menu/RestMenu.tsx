@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { makeStyles, Typography, Grid, Paper, Avatar, Popover, Button } from "@material-ui/core";
 import { IRest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
-import { IMeal } from '../../rest/mealModel';
-import { TagTypes } from '../../rest/tagModel';
 import { useGetCart } from '../global/state/cartState';
 import { ServiceTypes } from '../../order/orderModel';
 
@@ -50,28 +48,27 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const isMealInFilter = (meal: IMeal, cuisines: string[]) => {
-  let mealIsInCuisineFilter = false;
-  for (let i = 0; i < cuisines.length; i++) {
-    for (let j = 0; j < meal.tags.length; j++) {
-      const tag = meal.tags[j];
-      if (tag.type === TagTypes.Cuisine && tag.name === cuisines[i]) {
-        mealIsInCuisineFilter = true;
-        break;
-      }
-      if (mealIsInCuisineFilter) {
-        break;
-      }
-    }
-  }
-  return mealIsInCuisineFilter;
-}
+// const isMealInFilter = (meal: IMeal, cuisines: string[]) => {
+//   return intersectionWith(meal.tags, cuisines, (t, c) => t.name === c).length > 0;
+//   // let mealIsInCuisineFilter = false;
+//   // for (let i = 0; i < cuisines.length; i++) {
+//   //   for (let j = 0; j < meal.tags.length; j++) {
+//   //     const tag = meal.tags[j];
+//   //     if (tag.type === TagTypes.Cuisine && tag.name === cuisines[i]) {
+//   //       mealIsInCuisineFilter = true;
+//   //       break;
+//   //     }
+//   //     if (mealIsInCuisineFilter) {
+//   //       break;
+//   //     }
+//   //   }
+//   // }
+//   // return mealIsInCuisineFilter;
+// }
 
 const RestMenu: React.FC<{
-  cuisinesFilter: string[],
   rest: IRest,
 }> = ({
-  cuisinesFilter,
   rest,
 }) => {
   const classes = useStyles();
@@ -81,8 +78,6 @@ const RestMenu: React.FC<{
     setDescAnchor(descAnchor ? null : event.currentTarget);
   };
   const meals = rest.featured.map(meal => {
-    const isInFilter = isMealInFilter(meal, cuisinesFilter);
-    if (!isInFilter) return null;
     if (!meal.isActive) return null;
     return (
       <Grid
@@ -197,16 +192,5 @@ const RestMenu: React.FC<{
   )
 }
 
-export default React.memo(RestMenu, (prevProps, nextProps) => {
-  if (prevProps.rest._id !== nextProps.rest._id) return false;
-  const prevRestMeals = prevProps.rest.featured.map(meal => 
-    isMealInFilter(meal, prevProps.cuisinesFilter) ? meal._id : null,
-  ).sort();
-  const nextRestMeals = nextProps.rest.featured.map(meal =>
-    isMealInFilter(meal, nextProps.cuisinesFilter) ? meal._id : null,
-  ).sort();
-  const areEqual = prevRestMeals.length === nextRestMeals.length
-    && prevRestMeals.every((mealId, index) => mealId === nextRestMeals[index]);
-  if (!areEqual) return false;
-  return true;
-});
+export default RestMenu;
+

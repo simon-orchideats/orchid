@@ -15,7 +15,7 @@ import { OrderQL } from './server/orders/orderQL';
 const query = gql`
   type Query {
     availablePlans: [Plan!]!
-    # allPaidOrders: [Order!]!
+    allPaidOrders: [Order!]!
     # allUpcomingOrders: [Order!]!
     allTags: [Tag!]!
     doesRestDeliverToArea(addr: String!, restId: ID!): Boolean!
@@ -38,7 +38,6 @@ const query = gql`
     myConsumer: Consumer
 
     # baddies
-    allPaidOrders: String
     allUpcomingOrders: String
     myUpcomingOrders: String
     myRewards:String

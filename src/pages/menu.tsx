@@ -102,19 +102,11 @@ const menu = () => {
     setCuisines(cuisines);
   };
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
-
-  useEffect(() => {
-    if (cuisines.length === 0) {
-      setCuisines(allCuisines)
-    }
-  }, [allCuisines]);
-
   const allRests = rests.data;
   const RestMenus = allRests && allRests.map(rest => 
     <RestMenu
       key={rest._id}
       rest={rest}
-      cuisinesFilter={allCuisines}
     />
   );
   const hasNoRests = !rests.loading && !rests.error && allRests && allRests.length === 0;

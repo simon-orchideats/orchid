@@ -96,15 +96,6 @@ const ConsumerPopper: React.FC<{
           consumer && consumer.permissions.includes(Permissions.updateAllOrders) &&
           <>
             <div className={classes.row} onClick={() => {
-              Router.push(allUpcomingDeliveriesRoute);
-              onClose();
-            }}>
-              <EventAvailableIcon fontSize='large' className={classes.icon} />
-              <Typography variant='h6'>
-                All orders
-              </Typography>
-            </div>
-            <div className={classes.row} onClick={() => {
               Router.push(allOrderHistoryRoute);
               onClose();
             }}>

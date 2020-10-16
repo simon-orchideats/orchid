@@ -1,9 +1,6 @@
-//@ts-nocheck
-
 import { makeStyles, Typography, Container } from "@material-ui/core";
 import withApollo from "../../client/utils/withPageApollo"
 import { useRequireConsumer } from "../../consumer/consumerService";
-import ScheduleDeliveries from "../../client/general/inputs/ScheduledDelivieries";
 import OrderOverview from "../../client/consumer/OrderOverview";
 import { useGetAllPaidOrders } from "../../client/order/orderService";
 
@@ -31,8 +28,8 @@ const OrderHistory = () => {
       <OrderOverview
         key={order._id}
         order={order}
-        action={null}
-        scheduleDeliveries={<ScheduleDeliveries deliveries={order.Deliveries} />}
+        showRestDetails
+        showOrderId
       />
     )
   }

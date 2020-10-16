@@ -4,6 +4,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { IOrder, ServiceTypes, Order } from "../../order/orderModel";
 import { OrderMeal } from "../../order/orderRestModel";
 import CartMealGroup from "../order/CartMealGroup";
+import { useGetRest } from "../../rest/restService";
 
 const useStyles = makeStyles(theme => ({
   marginBottom: {
@@ -86,10 +87,15 @@ const DestinationPopper: React.FC<{
 
 const OrderOverview: React.FC<{
   order: IOrder,
+  showOrderId?: boolean
+  showRestDetails?: boolean
 }> = ({
   order,
+  showOrderId = false,
+  showRestDetails = false,
 }) => {
   const classes = useStyles();
+  const rest = useGetRest(showRestDetails ? order.rest.restId : null)
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const onClickLocation = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
@@ -210,6 +216,23 @@ const OrderOverview: React.FC<{
         </Grid>
       </Grid>
       <Divider />
+      {
+        showOrderId &&
+        <Typography variant='body1'>
+          order id: {order._id}
+        </Typography>
+      }
+      {
+        showRestDetails && rest.data &&
+        <>
+          <Typography variant='body1'>
+            {rest.data.profile.phone}
+          </Typography>
+          <Typography variant='body1'>
+            {rest.data.location.primaryAddr}
+          </Typography>
+        </>
+      }
       <div className={classes.padding}>
         <Typography variant='h6' className={classes.padding}>
           {order.rest.restName}

@@ -962,23 +962,11 @@ class OrderService {
         size: 1000,
         body: {
           query: {
-            bool: {
-              filter: {
-                bool: {
-                  must: [
-                    {
-                      exists: {
-                        field: 'stripeInvoiceId'
-                      }
-                    }
-                  ]
-                }
-              }
-            }
+            'match_all': {},
           },
           sort: [
             {
-              invoiceDate: {
+              cartUpdatedDate: {
                 order: 'desc',
               }
             }

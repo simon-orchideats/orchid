@@ -162,11 +162,10 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down('lg')]: {
       paddingRight: theme.spacing(4),
-      alignItems: 'center',
     },
     backgroundColor: '#fffef1',
     display: 'flex',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     flexDirection: 'column',
     justifyContent: 'center',
     minHeight: 600,
