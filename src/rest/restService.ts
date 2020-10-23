@@ -148,6 +148,7 @@ const useGetNearbyRests = (
         featured: rest.featured.filter(m => intersectionWith(m.tags, cuisines, (t, c) => t.name === c).length > 0)
       }))
     }
+    return res.data.nearbyRests.map(rest => Rest.getICopy(rest));
   }, [res.data]);
 
   return {

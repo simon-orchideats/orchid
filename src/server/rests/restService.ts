@@ -8,7 +8,7 @@ import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest, IRestInput, Rest, ServiceDay } from './../../rest/restModel';
 
-const REST_INDEX = 'rests3';
+const REST_INDEX = 'rests4';
 const TAG_INDEX = 'tags';
 
 export interface IRestService {

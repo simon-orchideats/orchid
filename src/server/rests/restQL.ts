@@ -59,8 +59,16 @@ const MealQL = gql`
     tags: [TagInput]
   }
 
+  type Comparison {
+    compareTo: String!
+    percentOff: Int!
+    serviceFeePercent: Int!
+    choice: String
+  }
+
   type Meal {
     addonGroups: [AddonGroup!]!
+    comparison: Comparison
     description: String
     _id: ID!
     img: String

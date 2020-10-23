@@ -43,7 +43,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * 
  * simon:
- * make sure checkout works
  *
  */
 

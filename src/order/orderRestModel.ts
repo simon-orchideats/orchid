@@ -30,6 +30,7 @@ export interface IOrderMeal extends Omit<
   | 'addonGroups'
   | 'optionGroups'
   | 'isActive'
+  | 'comparison'
   > {
   readonly customizations: ICustomization[]
   readonly instructions: string | null

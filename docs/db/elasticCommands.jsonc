@@ -622,7 +622,7 @@ POST orders/_update_by_query
               "range": {
                 "deliveryDate": {
                   "gte": 1586668138057,
-                  // moment(Date.now()).add(3, 'd').valueOf();
+                  # moment(Date.now()).add(3, 'd').valueOf();
                   "lt" : 1586928738625
                 }
               }
@@ -832,7 +832,7 @@ PUT orders/_mapping
 }
 
 
-// dont limit by addresses. has to be any address. so market as multiple accounts. but each account can only have 1 cc.
+# dont limit by addresses. has to be any address. so market as multiple accounts. but each account can only have 1 cc.
 
 
 PUT /plans/
@@ -879,13 +879,13 @@ PUT /rests3/
   "mappings": {
     "dynamic": false,
     "properties": {
-      // "banking": {
-      //   "properties": {
-      //     "stripeId": {
-      //       "type": "keyword"
-      //     }
-      //   }
-      // },
+      # "banking": {
+      #   "properties": {
+      #     "stripeId": {
+      #       "type": "keyword"
+      #     }
+      #   }
+      # },
       "hours": {
         "type": "nested",
         "properties": {
@@ -1015,19 +1015,19 @@ PUT /rests3/
       "status": {
         "type": "keyword"
       },
-      // "managers": {
-      //   "properties": {
-      //     "firstName": {
-      //       "type": "keyword"
-      //     },
-      //     "lastName": {
-      //       "type": "keyword"
-      //     },
-      //     "userId": {
-      //       "type": "keyword"
-      //     }
-      //   }
-      // },
+      # "managers": {
+      #   "properties": {
+      #     "firstName": {
+      #       "type": "keyword"
+      #     },
+      #     "lastName": {
+      #       "type": "keyword"
+      #     },
+      #     "userId": {
+      #       "type": "keyword"
+      #     }
+      #   }
+      # },
       "featured": {
         "properties": {
           "_id": {
@@ -1037,6 +1037,9 @@ PUT /rests3/
             "properties": {
               "name": {
                 "type": "keyword"
+              },
+              "canRepeat": {
+                "type": "boolean"
               },
               "limit": {
                 "type": "integer"
@@ -1050,6 +1053,26 @@ PUT /rests3/
                     "type": "integer"
                   }
                 }
+              }
+            }
+          },
+          "comparison": {
+            "properties": {
+              "compareTo": {
+                "type": "keyword"
+              },
+              "percentOff": {
+                "type": "integer"
+              },
+              "serviceFeePercent": {
+                "type": "integer"
+              },
+              "choice": {
+                "type": "keyword"
+              },
+              "comparisonDate": {
+                "type": "date",
+                "format": "epoch_millis"
               }
             }
           },
@@ -1157,24 +1180,24 @@ PUT /rests3/
           "price": {
             "type": "integer"
           },
-          // "compareToPrice": {
-          //   "type": "integer"
-          // },
+          # "compareToPrice": {
+          #   "type": "integer"
+          # },
         }
       },
-      // "owner": {
-      //   "properties": {
-      //     "firstName": {
-      //       "type": "keyword"
-      //     },
-      //     "lastName": {
-      //       "type": "keyword"
-      //     },
-      //     "userId": {
-      //       "type": "keyword"
-      //     }
-      //   }
-      // },
+      # "owner": {
+      #   "properties": {
+      #     "firstName": {
+      #       "type": "keyword"
+      #     },
+      #     "lastName": {
+      #       "type": "keyword"
+      #     },
+      #     "userId": {
+      #       "type": "keyword"
+      #     }
+      #   }
+      # },
       "profile": {
         "properties": {
           "description": {
@@ -1245,14 +1268,14 @@ PUT /rests3/
           "actorImg": {
             "type": "keyword",
             "ignore_above": 10
-          },
+          }
         }
       },
       "discount": {
         "properties": {
-          // "reason": {
-          //   "type": "keyword"
-          // },
+          # "reason": {
+          #   "type": "keyword"
+          # },
           "description": {
             "type": "keyword",
             "ignore_above": 25
@@ -1263,9 +1286,9 @@ PUT /rests3/
           "amountOff": {
             "type": "integer"
           },
-          // "referredUserId": {
-          //   "type": "keyword"
-          // }
+          # "referredUserId": {
+          #   "type": "keyword"
+          # }
         }
       },
       "deliveryFee": {
@@ -1283,9 +1306,9 @@ PUT /rests3/
       "serviceTypes": {
         "type": "keyword"
       }
-      // "url": {
-      //   "type": "keyword"
-      // }
+      # "url": {
+      #   "type": "keyword"
+      # }
     }
   }
 }
@@ -1295,10 +1318,10 @@ PUT /orders/
   "mappings": {
     "dynamic": false,
     "properties": {
-      // 
-      // "status": {
-      //   "type": "keyword"
-      // },
+      # 
+      # "status": {
+      #   "type": "keyword"
+      # },
       "cartUpdatedDate": {
         "type": "date",
         "format": "epoch_millis"
@@ -1349,9 +1372,9 @@ PUT /orders/
           },
           "discount": {
             "properties": {
-              // "reason": {
-              //   "type": "keyword"
-              // },
+              # "reason": {
+              #   "type": "keyword"
+              # },
               "description": {
                 "type": "keyword",
                 "ignore_above": 25
@@ -1365,31 +1388,31 @@ PUT /orders/
             }
           }
         }
-        // "promos": {
-        //   "properties": {
-        //     "stripeCouponId": {
-        //       "type": "keyword"
-        //     },
-        //     "percentOff": {
-        //       "type": "integer"
-        //     },
-        //     "amountOff": {
-        //       "type": "integer"
-        //     }
-        //   }
-        // },
-        // "referredUserId": {
-        //   "type": "keyword"
-        // }
-        // "discount": {
-        //   "type": "float"
-        // },
-        // "percentFee": {
-        //   "type": "float"
-        // },
-        // "flatRateFee": {
-        //   "type": "integer"
-        // }
+        # "promos": {
+        #   "properties": {
+        #     "stripeCouponId": {
+        #       "type": "keyword"
+        #     },
+        #     "percentOff": {
+        #       "type": "integer"
+        #     },
+        #     "amountOff": {
+        #       "type": "integer"
+        #     }
+        #   }
+        # },
+        # "referredUserId": {
+        #   "type": "keyword"
+        # }
+        # "discount": {
+        #   "type": "float"
+        # },
+        # "percentFee": {
+        #   "type": "float"
+        # },
+        # "flatRateFee": {
+        #   "type": "integer"
+        # }
       },
       "createdDate": {
         "type": "date",
@@ -1427,9 +1450,6 @@ PUT /orders/
         "properties": {
           "meals": {
             "properties": {
-              // "compareToPrice": {
-              //   "type": "float"
-              // },
               "customizations":  {
                 "properties": {
                   "name": {
@@ -1452,40 +1472,40 @@ PUT /orders/
               "price": {
                 "type": "integer"
               },
-              // probably add this down the line
-              // "coupon": {
-              //   "properties": {
-              //     "couponId": {
-              //       "type": "keyword"
-              //     },
-              //     "amountOff": {
-              //       "type": "integer"
-              //     },
-              //     "percentOff": {
-              //       "type": "integer"
-              //     }
-              //   }
-              // },
-              // "discounts": {
-              //   "properties": {
-              //     "reason": {
-              //       "type": "keyword"
-              //     },
-              //     "description": {
-              //       "type": "keyword",
-              //       "ignore_above": 25
-              //     },
-              //     "percentOff": {
-              //       "type": "integer"
-              //     },
-              //     "amountOff": {
-              //       "type": "integer"
-              //     },
-              //     "referredUserId": {
-              //       "type": "keyword"
-              //     }
-              //   }
-              // },
+              # probably add this down the line
+              # "coupon": {
+              #   "properties": {
+              #     "couponId": {
+              #       "type": "keyword"
+              #     },
+              #     "amountOff": {
+              #       "type": "integer"
+              #     },
+              #     "percentOff": {
+              #       "type": "integer"
+              #     }
+              #   }
+              # },
+              # "discounts": {
+              #   "properties": {
+              #     "reason": {
+              #       "type": "keyword"
+              #     },
+              #     "description": {
+              #       "type": "keyword",
+              #       "ignore_above": 25
+              #     },
+              #     "percentOff": {
+              #       "type": "integer"
+              #     },
+              #     "amountOff": {
+              #       "type": "integer"
+              #     },
+              #     "referredUserId": {
+              #       "type": "keyword"
+              #     }
+              #   }
+              # },
               "img": {
                 "type": "keyword"
               },
@@ -1505,9 +1525,9 @@ PUT /orders/
                   }
                 }
               },
-              // "restrictedToPlans": {
-              //   "type": "keyword"
-              // },
+              # "restrictedToPlans": {
+              #   "type": "keyword"
+              # },
             }
           },
           "restId": {
@@ -1516,94 +1536,94 @@ PUT /orders/
           "restName": {
             "type": "keyword"
           },
-          // "hours": {
-          //   "properties": {
-          //     "Su": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "M": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "T": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "W": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "Th": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "F": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     },
-          //     "Sa": {
-          //       "properties": {
-          //         "open": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         },
-          //         "close": {
-          //           "type": "date",
-          //           "format": "hour_minute"
-          //         }
-          //       }
-          //     }
-          //   }
-          // },
+          # "hours": {
+          #   "properties": {
+          #     "Su": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "M": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "T": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "W": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "Th": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "F": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     },
+          #     "Sa": {
+          #       "properties": {
+          #         "open": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         },
+          #         "close": {
+          #           "type": "date",
+          #           "format": "hour_minute"
+          #         }
+          #       }
+          #     }
+          #   }
+          # },
           "stripeRestId": {
             "type": "keyword"
           },
@@ -1612,9 +1632,9 @@ PUT /orders/
       "stripePaymentId": {
         "type": "keyword"
       },
-      // "stripeSubscriptionId": {
-      //   "type": "keyword"
-      // },
+      # "stripeSubscriptionId": {
+      #   "type": "keyword"
+      # },
     }
   }
 }

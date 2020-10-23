@@ -16,15 +16,17 @@ export class Choice {
 
 export interface IAddonGroup {
   readonly limit?: number
+  readonly canRepeat: boolean
   readonly name: string | null
   readonly addons: IChoice[]
 }
 
 export class AddonGroup {
-  public static getICopy(ag: IAddonGroup) {
+  public static getICopy(ag: IAddonGroup): IAddonGroup {
     return {
       limit: ag.limit,
       name: ag.name,
+      canRepeat: ag.canRepeat,
       addons: ag.addons.map(c => Choice.getICopy(c)),
     }
   }
@@ -44,8 +46,31 @@ export class OptionGroup {
   }
 }
 
+export interface IComparison {
+  readonly compareTo: string
+  readonly percentOff: number
+  readonly serviceFeePercent: number
+  readonly choice: string | null
+}
+
+export interface EComparison extends IComparison {
+  readonly comparisonDate: number
+}
+
+export class Comparison {
+  static getICopy(c: IComparison): IComparison {
+    return {
+      compareTo: c.compareTo,
+      percentOff: c.percentOff,
+      serviceFeePercent: c.serviceFeePercent,
+      choice: c.choice,
+    }
+  }
+}
+
 export interface IMeal {
   readonly addonGroups: IAddonGroup[],
+  readonly comparison: IComparison | null,
   readonly description: string | null
   readonly _id: string,
   readonly img?: string,
@@ -63,6 +88,7 @@ export class Meal {
     return {
       _id: meal._id,
       img: meal.img,
+      comparison: meal.comparison && Comparison.getICopy(meal.comparison),
       isActive: meal.isActive,
       name: meal.name,
       description: meal.description,

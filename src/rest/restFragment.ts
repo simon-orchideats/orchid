@@ -48,6 +48,12 @@ const restFragment = gql`
     featured {
       _id
       img
+      comparison {
+        compareTo
+        percentOff
+        serviceFeePercent
+        choice
+      }
       name
       description
       tags {

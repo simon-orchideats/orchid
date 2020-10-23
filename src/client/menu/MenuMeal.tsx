@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { IMeal, IChoice } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip } from "@material-ui/core";
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip, Checkbox, Breadcrumbs } from "@material-ui/core";
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { ICustomization } from '../../order/orderRestModel';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { IDiscount } from '../../order/discountModel';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -27,10 +27,12 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: 0,
     paddingBottom: `${theme.spacing(1)} !important`,
     paddingTop: 4,
-    cursor: 'pointer',
     [theme.breakpoints.up('md')]: {
       paddingTop: undefined,
     },
+  },
+  hover: {
+    cursor: 'pointer',
   },
   scaler: ({ meal }: { meal: IMeal }) => ({
     width: '100%',
@@ -69,6 +71,13 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',
+    '-webkit-line-clamp': 1,
+    '-webkit-box-orient': 'vertical',
+  },
+  descMd: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
     '-webkit-line-clamp': 2,
     '-webkit-box-orient': 'vertical',
   },
@@ -80,20 +89,37 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
   },
   chip: {
-    width: '100%'
+    backgroundColor: theme.palette.common.green,
+    color: theme.palette.common.white,
   },
   discount: {
-    fontWeight: 500,
+    fontWeight: 700,
   },
   icon: {
     fontSize: '1.8rem',
   },
   detail: {
     fontSize: '1rem',
-    verticalAlign: 'text-bottom'
+    verticalAlign: 'text-top'
   },
   choiceLabel: {
     fontSize: '1.5rem',
+  },
+  price: {
+    lineHeight: 1.5,
+    fontWeight: 500,
+    color: theme.palette.text.primary,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  newPrice: {
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: theme.palette.common.green,
+  },
+  comparisonDesc: {
+    paddingBottom: theme.spacing(1),
   },
 }));
 
@@ -118,7 +144,6 @@ const MenuMeal: React.FC<{
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
   const [choicesAnchor, setChoicesAnchor] = useState<null | HTMLElement>(null);
   const [isTooltipOpen, setIsTooltipOpen] = React.useState(false);
-  const [desc, setDesc] = useState<string>();
   const [optionGroupIndex, setOptionGroupIndex] = useState<number>(0);
   const [addonGroupIndex, setAddonGroupIndex] = useState<number>(0);
   const addMealToCart = useAddMealToCart();
@@ -159,9 +184,8 @@ const MenuMeal: React.FC<{
       setChoicesAnchor(event.currentTarget);
     }
   };
-  const onClickContent = (event: React.MouseEvent<HTMLElement>, mealDesc: string) => {
+  const onClickContent = (event: React.MouseEvent<HTMLElement>) => {
     setDescAnchor(descAnchor ? null : event.currentTarget);
-    setDesc(mealDesc || 'No description');
   };
   const updateAddon = (addonGroupIndex: number, addonIndex: number, addon: IChoice, count: 1 | -1) => {
     const currQuantity = addons[`${addonGroupIndex}-${addonIndex}`].quantity;
@@ -246,6 +270,27 @@ const MenuMeal: React.FC<{
   const closeTooltip = () => {
     setIsTooltipOpen(false);
   }
+
+  let comparisonDesc;
+  let badPrice: undefined | number;
+  if (meal.comparison) {
+    badPrice = meal.price / 100;
+    if (meal.comparison.percentOff) {
+      badPrice = badPrice / (1 - meal.comparison.percentOff / 100);
+    }
+
+    if (meal.comparison.serviceFeePercent) {
+      badPrice = badPrice * (1 + (meal.comparison.serviceFeePercent / 100));
+    }
+
+    comparisonDesc = `$${badPrice.toFixed(2)} at ${meal.comparison.compareTo} after fees`;
+  }
+  
+  let goodPrice = meal.price / 100;
+  if (discount && discount.percentOff) {
+    goodPrice = (meal.price * (1 - discount?.percentOff / 100)) / 100
+  }
+  const hasInfo = (meal.description || !!badPrice);
   return (
     <Card elevation={0} className={classes.card}>
       <Popover
@@ -275,25 +320,34 @@ const MenuMeal: React.FC<{
           {
             optionGroupIndex < meal.optionGroups.length &&
             <FormControl>
-              <FormLabel focused={false} className={classes.choiceLabel}>
-                Pick 1 
-              </FormLabel>
               {
                 meal.optionGroups.map((og, i) => (
                   i === optionGroupIndex &&
-                  <RadioGroup key={`og-${i}`} value={options[optionGroupIndex] || false}>
+                  <React.Fragment key={`og-${i}`}>
                     {
-                      og.options.map((option, j) =>
-                        <FormControlLabel
-                          key={`og-names-${j}`}
-                          value={option.name}
-                          control={<Radio color='primary' />}
-                          label={`${option.name}${option.additionalPrice ? ` +(${(option.additionalPrice / 100).toFixed(2)})` : ''}`}
-                          onClick={e => onClickRadio(e, option)}
-                        />
-                      )
+                      og.name ?
+                      <FormLabel focused={false} className={classes.choiceLabel}>
+                        {og.name} 
+                      </FormLabel>
+                      :
+                      <FormLabel focused={false} className={classes.choiceLabel}>
+                        Pick 1 
+                      </FormLabel>
                     }
-                  </RadioGroup>
+                    <RadioGroup value={options[optionGroupIndex] || false}>
+                      {
+                        og.options.map((option, j) =>
+                          <FormControlLabel
+                            key={`og-names-${j}`}
+                            value={option.name}
+                            control={<Radio color='primary' />}
+                            label={`${option.name}${option.additionalPrice ? ` +(${(option.additionalPrice / 100).toFixed(2)})` : ''}`}
+                            onClick={e => onClickRadio(e, option)}
+                          />
+                        )
+                      }
+                    </RadioGroup>
+                  </React.Fragment>
                 ))
               }
             </FormControl>
@@ -301,60 +355,92 @@ const MenuMeal: React.FC<{
           {
             optionGroupIndex >= meal.optionGroups.length && addonGroupIndex < meal.addonGroups.length &&
             <FormControl>
-              <FormLabel
-                focused={false}
-                className={classes.choiceLabel} 
-                onClick={() => setAddonGroupIndex(addonGroupIndex - 1)}
-              >
-                Pick {meal.addonGroups[addonGroupIndex].limit ? `max ${meal.addonGroups[addonGroupIndex].limit}` : 'any'}
-              </FormLabel>
               {
                 meal.addonGroups.map((ag, i) => (
                   i === addonGroupIndex &&
-                  <FormGroup key={`ag-${i}`}>
+                  <React.Fragment key={`ag-${i}`}>
                     {
-                      ag.addons.map((addon, j) =>
-                        <div key={`ag-names-${j}`} className={classes.addonGroup}>
-                          <div className={classes.col}>
-                            <Button
-                              className={classes.button}
-                              variant='text'
-                              onClick={() => updateAddon(i, j, addon, 1)}
-                            >
-                              <AddIcon className={classes.icon} />
-                            </Button>
-                            <Typography variant='body1'>
-                              {addons[`${i}-${j}`].quantity}
-                            </Typography>
-                            <Button
-                              className={classes.button}
-                              variant='text'
-                              onClick={() => updateAddon(i, j, addon, -1)}
-                            >
-                              <RemoveIcon className={classes.icon} />
-                            </Button>
-                          </div>
-                          <Typography variant='body1'>
-                            {addon.name} {addon.additionalPrice && `+($${(addon.additionalPrice / 100).toFixed(2)})`}
-                          </Typography>
-                        </div>
-                      )
-                    }
-                    {
-                      ag.limit && addonCounts[i] > ag.limit ?
-                        <Typography color='error'>
-                          Can only pick {ag.limit}
-                        </Typography>
+                      ag.name ?
+                      <FormLabel
+                        focused={false}
+                        className={classes.choiceLabel} 
+                        onClick={() => setAddonGroupIndex(addonGroupIndex - 1)}
+                      >
+                        {ag.name}
+                        {meal.addonGroups[addonGroupIndex].limit && `(${meal.addonGroups[addonGroupIndex].limit})`}
+                      </FormLabel>
                       :
-                        <Button
-                          variant='outlined'
-                          color='secondary'
-                          onClick={onClickNextAddon}
-                        >
-                          Next
-                        </Button>
+                      <FormLabel
+                        focused={false}
+                        className={classes.choiceLabel} 
+                        onClick={() => setAddonGroupIndex(addonGroupIndex - 1)}
+                      >
+                        Pick {meal.addonGroups[addonGroupIndex].limit ? `max ${meal.addonGroups[addonGroupIndex].limit}` : 'any'}
+                      </FormLabel>
                     }
-                  </FormGroup>
+                    <FormGroup>
+                      {
+                        ag.canRepeat ?
+                          ag.addons.map((addon, j) =>
+                            <div key={`ag-names-${j}`} className={classes.addonGroup}>
+                              <div className={classes.col}>
+                                <Button
+                                  className={classes.button}
+                                  variant='text'
+                                  onClick={() => updateAddon(i, j, addon, 1)}
+                                >
+                                  <AddIcon className={classes.icon} />
+                                </Button>
+                                <Typography variant='body1'>
+                                  {addons[`${i}-${j}`].quantity}
+                                </Typography>
+                                <Button
+                                  className={classes.button}
+                                  variant='text'
+                                  onClick={() => updateAddon(i, j, addon, -1)}
+                                >
+                                  <RemoveIcon className={classes.icon} />
+                                </Button>
+                              </div>
+                              <Typography variant='body1'>
+                                {addon.name} {addon.additionalPrice && `+($${(addon.additionalPrice / 100).toFixed(2)})`}
+                              </Typography>
+                            </div>
+                          )
+                        :
+                          ag.addons.map((addon, j) => 
+                            <FormControlLabel
+                              key={`ag-names-${j}`}
+                              control={
+                                <Checkbox
+                                  checked={addons[`${i}-${j}`].quantity === 1}
+                                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                    updateAddon(i, j, addon, event.target.checked ? 1 : -1)
+                                  }
+                                  name={addon.name}
+                                  color='primary'
+                                />
+                              }
+                              label={`${addon.name}${addon.additionalPrice > 0 ? ` +($${(addon.additionalPrice / 100).toFixed(2)})` : ''}`}
+                            />
+                          )
+                      }
+                      {
+                        ag.limit && addonCounts[i] > ag.limit ?
+                          <Typography color='error'>
+                            Can only pick {ag.limit}
+                          </Typography>
+                        :
+                          <Button
+                            variant='outlined'
+                            color='secondary'
+                            onClick={onClickNextAddon}
+                          >
+                            Next
+                          </Button>
+                      }
+                    </FormGroup>
+                  </React.Fragment>
                 ))
               }
             </FormControl>
@@ -375,8 +461,14 @@ const MenuMeal: React.FC<{
         }}
       >
         <Paper className={classes.popper}>
+          {
+            comparisonDesc &&
+            <Typography variant='body1' className={classes.comparisonDesc}>
+              <i>{comparisonDesc}</i>
+            </Typography>
+          }
           <Typography variant='body1'>
-            {desc}
+            {meal.description}
           </Typography>
         </Paper>
       </Popover>
@@ -410,19 +502,20 @@ const MenuMeal: React.FC<{
           </div>
         </Tooltip>
       </ClickAwayListener>
-      <CardContent className={classes.content} onClick={e => {
-        if (meal.description) onClickContent(e, meal.description)
+      <CardContent className={`${classes.content} ${hasInfo ? classes.hover : ''}`} onClick={e => {
+        if (hasInfo) onClickContent(e)
       }}>
         {
           discount &&
           <Chip
+            size='small'
             className={classes.chip}
-            color='secondary'
             clickable={false}
             label={
-              <Typography variant='body1' className={classes.discount}>
-                {discount.percentOff && `${discount.percentOff}% off`}
+              <Typography variant='body2' className={classes.discount}>
+                {discount.percentOff && `Table ${discount.percentOff}% off`}
                 {discount.amountOff && `$${(discount.amountOff / 100).toFixed(2)} off order`}
+                &nbsp;
               </Typography>
             }
           />
@@ -431,25 +524,32 @@ const MenuMeal: React.FC<{
           variant='body1'
           className={classes.title}
         >
-          {meal.name}
+          {hasInfo && <InfoOutlinedIcon className={classes.detail} />} {meal.name}
         </Typography>
         <Typography
           gutterBottom
           variant='body2'
-          className={classes.title}
+          className={classes.price}
         >
-          ${(meal.price / 100).toFixed(2)}
+          {
+            !!badPrice ?
+              <>
+                <s>${badPrice.toFixed(2)}</s>&nbsp;
+                <div className={classes.newPrice}>
+                  ${goodPrice.toFixed(2)}
+                </div>
+              </>
+            :
+              `$${goodPrice.toFixed(2)}`
+          }
         </Typography>
-        {
-          isMdAndUp &&
-          <Typography
-            variant='caption'
-            color='textSecondary'
-            className={classes.desc}
-          >
-            {meal.description && <HelpOutlineIcon className={classes.detail} />} {meal.description}
-          </Typography>
-        }
+        <Typography
+          variant='caption'
+          color='textSecondary'
+          className={isMdAndUp ? classes.descMd : classes.desc}
+        >
+          {meal.description}
+        </Typography>
       </CardContent>
     </Card>
   )
