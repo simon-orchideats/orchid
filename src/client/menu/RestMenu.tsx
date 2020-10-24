@@ -4,6 +4,7 @@ import { IRest } from "../../rest/restModel";
 import MenuMeal from "./MenuMeal";
 import { useGetCart } from '../global/state/cartState';
 import { ServiceTypes } from '../../order/orderModel';
+import { analyticsService, events } from '../utils/analyticsService';
 
 const useStyles = makeStyles(theme => ({
   summary: {
@@ -75,6 +76,7 @@ const RestMenu: React.FC<{
   const cart = useGetCart();
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
   const onClickContent = (event: React.MouseEvent<HTMLElement>) => {
+    analyticsService.trackEvent(events.OPENED_SEE_FULL_MENU);
     setDescAnchor(descAnchor ? null : event.currentTarget);
   };
   const meals = rest.featured.map(meal => {

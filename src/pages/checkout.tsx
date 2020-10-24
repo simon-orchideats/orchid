@@ -35,6 +35,7 @@ import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
 import { ServiceTypes, Order } from "../order/orderModel";
+import { analyticsService, events } from "../client/utils/analyticsService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -387,11 +388,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
         ),
       );
     }
-    // sendCheckoutMetrics(
-    //   cart,
-    //   plans.data,
-    //   allTags.data.map(t => t.Name),
-    // )
+    analyticsService.trackEvent(events.CHECKEDOUT);
   }
 
   const onClickPlaceOrder = async (

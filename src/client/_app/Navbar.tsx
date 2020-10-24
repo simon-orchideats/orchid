@@ -15,7 +15,7 @@ import ConsumerPopper from './ConsumerPopper';
 import AboutPopper from './AboutPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
-import { analyticsService } from '../utils/analyticsService';
+import { analyticsService, events } from '../utils/analyticsService';
 import LogRocket from 'logrocket';
 import { useGetCart } from '../global/state/cartState';
 import { ServiceTypes, Order } from '../../order/orderModel';
@@ -110,6 +110,10 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     height: theme.mixins.navbar.marginBottom,
     backgroundColor: theme.palette.background.default,
+  },
+  plansLink: {
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
   },
 }));
 
@@ -261,12 +265,16 @@ const Navbar: React.FC = () => {
   } else {
     bar = (
       <>
-        <Link href={menuRoute}>
-          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
-        </Link>
-        <Link href={plansRoute}>
-          <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
-        </Link>
+        <div onClick={() => analyticsService.trackEvent(events.CLICKED_MENU)}>
+          <Link href={menuRoute}>
+            <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Menu</Typography>
+          </Link>
+        </div>
+        <div className={classes.plansLink}>
+          <Link href={plansRoute}>
+            <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
+          </Link>
+        </div>
         <div className={classes.about} onClick={onClickAbout}>
           <Typography variant='button' className={classes.link}>About</Typography>
           <ExpandMoreIcon />

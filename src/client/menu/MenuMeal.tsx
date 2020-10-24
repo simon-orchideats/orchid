@@ -9,6 +9,7 @@ import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { IDiscount } from '../../order/discountModel';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { analyticsService, events } from '../utils/analyticsService';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -185,6 +186,7 @@ const MenuMeal: React.FC<{
     }
   };
   const onClickContent = (event: React.MouseEvent<HTMLElement>) => {
+    analyticsService.trackEvent(events.OPENED_DESCRIPTION);
     setDescAnchor(descAnchor ? null : event.currentTarget);
   };
   const updateAddon = (addonGroupIndex: number, addonIndex: number, addon: IChoice, count: 1 | -1) => {
@@ -527,6 +529,7 @@ const MenuMeal: React.FC<{
           {hasInfo && <InfoOutlinedIcon className={classes.detail} />} {meal.name}
         </Typography>
         <Typography
+          component='span'
           gutterBottom
           variant='body2'
           className={classes.price}
