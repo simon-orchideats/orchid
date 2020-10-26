@@ -454,9 +454,8 @@ export const cartMutationResolvers: cartMutationResolvers = {
   clearCartMeals: (_, _args, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
-      const err = new Error('Missing cart');
-      console.error(err.stack);
-      throw err;
+      // this is possible when you refresh the order-history page
+      return null;
     }
     return updateCartCache(cache, {
       rest: null,
