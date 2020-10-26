@@ -3529,10 +3529,9 @@ POST rests3/_doc/
       "price" : 469,
       "name" : "Bangkok Slice/Pie",
       "comparison": {
-        "compareTo": "DoorDash",
-        "percentOff": 17,
-        "serviceFeePercent": 13,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups": [
@@ -3594,10 +3593,9 @@ POST rests3/_doc/
       "img" : "/menu/tony-boloneys/shit.jpg",
       "price" : 469,
       "comparison": {
-        "compareTo": "Grubhub",
-        "percentOff": 12,
-        "serviceFeePercent": 0,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "name" : "S#itfaced Slice/Pie",
@@ -3646,10 +3644,9 @@ POST rests3/_doc/
       "addonGroups" : [ ],
       "img" : "/menu/tony-boloneys/winger.jpg",
       "comparison": {
-        "compareTo": "DoorDash",
-        "percentOff": 17,
-        "serviceFeePercent": 13,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups": [
@@ -3712,10 +3709,9 @@ POST rests3/_doc/
       "addonGroups" : [ ],
       "img" : "/menu/tony-boloneys/general.jpg",
       "comparison": {
-        "compareTo": "DoorDash",
-        "serviceFeePercent": 13,
-        "percentOff": 17,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "price" : 469,
@@ -3767,10 +3763,9 @@ POST rests3/_doc/
       "price" : 469,
       "name" : "Pinky Slice/Pie",
       "comparison": {
-        "compareTo": "DoorDash",
-        "serviceFeePercent": 13,
-        "percentOff": 17,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups": [
@@ -3818,10 +3813,9 @@ POST rests3/_doc/
       "addonGroups" : [ ],
       "img" : "/menu/tony-boloneys/ducktown.jpg",
       "comparison": {
-        "compareTo": "DoorDash",
-        "serviceFeePercent": 13,
-        "percentOff": 17,
-        "choice": "18\" pie",
+        "compareTo": "Uber Eats",
+        "percentOff": 6,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "price" : 500,
@@ -3873,9 +3867,9 @@ POST rests3/_doc/
       "price" : 1300,
       "name" : "Boken Boy",
       "comparison": {
-        "compareTo": "DoorDash",
-        "percentOff": 13,
-        "serviceFeePercent": 13,
+        "compareTo": "Uber Eats",
+        "percentOff": 7,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -3921,9 +3915,9 @@ POST rests3/_doc/
       "price" : 1300,
       "name" : "'Ole'",
       "comparison": {
-        "compareTo": "DoorDash",
+        "compareTo": "Uber Eats",
         "percentOff": 13,
-        "serviceFeePercent": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -3969,9 +3963,9 @@ POST rests3/_doc/
       "price" : 1500,
       "name" : "Bad Leroy",
       "comparison": {
-        "compareTo": "DoorDash",
-        "percentOff": 12,
-        "serviceFeePercent": 13,
+        "compareTo": "Uber Eats",
+        "percentOff": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -4017,9 +4011,9 @@ POST rests3/_doc/
       "price" : 1400,
       "name" : "Seoul Train",
       "comparison": {
-        "compareTo": "Grubhub",
-        "percentOff": 7,
-        "serviceFeePercent": 0,
+        "compareTo": "Uber Eats",
+        "percentOff": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -4065,9 +4059,9 @@ POST rests3/_doc/
       "price" : 1300,
       "name" : "Geppetto",
       "comparison": {
-        "compareTo": "DoorDash",
+        "compareTo": "Uber Eats",
         "percentOff": 13,
-        "serviceFeePercent": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -4160,9 +4154,9 @@ POST rests3/_doc/
       "price" : 1300,
       "name" : "Ducktown Melt",
       "comparison": {
-        "compareTo": "DoorDash",
+        "compareTo": "Uber Eats",
         "percentOff": 13,
-        "serviceFeePercent": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "optionGroups" : [
@@ -4205,10 +4199,10 @@ POST rests3/_doc/
     {
       "addonGroups" : [ ],
       "img" : "/menu/tony-boloneys/aloo-fries.jpg",
-      "price" : 1200,
+      "price" : 935,
       "comparison": {
         "compareTo": "DoorDash",
-        "percentOff": 14,
+        "percentOff": 22,
         "serviceFeePercent": 13,
         "comparisonDate": 1603019726197
       },
@@ -4227,11 +4221,11 @@ POST rests3/_doc/
     {
       "addonGroups" : [ ],
       "img" : "/menu/tony-boloneys/magic-fries.jpg",
-      "price" : 1200,
+      "price" : 1050,
       "comparison": {
-        "compareTo": "DoorDash",
-        "percentOff": 14,
-        "serviceFeePercent": 13,
+        "compareTo": "Uber Eats",
+        "percentOff": 13,
+        "serviceFeePercent": 15,
         "comparisonDate": 1603019726197
       },
       "name" : "Magic Fries",
