@@ -69,8 +69,9 @@ const useStyles = makeStyles(theme => ({
     width: '30%'
   },
   welcome: {
-    [theme.breakpoints.down('sm')]: {
-      backgroundPosition: '90%',
+    [theme.breakpoints.down('xs')]: {
+      backgroundPosition: '0%',
+      backgroundImage: `url(/home/home-m-sm.jpg)`,
     },
     backgroundImage: `url(/home/home-banner2.jpg)`,
     backgroundPosition: '100%',
@@ -79,7 +80,7 @@ const useStyles = makeStyles(theme => ({
     minHeight: 475,
     height: 700,
     // - the promo banner then the top margin of how-it-works
-    maxHeight: `calc(100vh - ${theme.mixins.toolbar.height}px - 115.5px - 150px)`,
+    maxHeight: `calc(100vh - ${theme.mixins.customToolbar.height}px - 50px)`,
     [theme.mixins.customToolbar.toolbarLandscapeQuery]: {
       maxHeight: `calc(100vh - ${theme.mixins.customToolbar.landscapeHeight}px - 115.5px - 150px)`,
     },
@@ -103,7 +104,17 @@ const useStyles = makeStyles(theme => ({
       fontSize: '3.5rem',
     },
     [theme.breakpoints.down('xs')]: {
-      fontSize: '2.4rem',
+      fontSize: '2.2rem',
+    },
+  },
+  membersSave: {
+    fontSize: '2.75rem',
+    fontWeight: 500,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2.5rem',
+    },
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '2rem',
     },
   },
   welcomeText: {
@@ -327,7 +338,7 @@ const Welcome = withClientApollo(() => {
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
         <Typography variant='h3' className={classes.welcomeTitle}>
-          <b>Restaurants,</b>
+          <b>Restaurant delivery,</b>
         </Typography>
         <Typography
           variant='h3'
@@ -338,7 +349,7 @@ const Welcome = withClientApollo(() => {
         <div className={classes.welcomeSearch}>
           <SearchAreaInput onSelect={onSelectLocation} />
         </div>
-        <Typography variant='h4'>
+        <Typography variant='h3' className={classes.membersSave}>
           <b>Members save 30% vs</b>
         </Typography>
         <img src='/home/logos.png' className={classes.logos}/>
@@ -354,7 +365,7 @@ const Plans = withClientApollo(() => {
       <Typography variant='h3'>
         Try Table <b>FREE</b> for 30 days
       </Typography>
-      <Link href={plansRoute}>
+      <Link href={menuRoute}>
         <Button
           className={classes.mediumVerticalMargin}
           variant='contained'
@@ -387,7 +398,7 @@ const RipOff = () => {
   return (
     <div className={`${classes.centered} ${classes.ripOff}`}>
       <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.red}>
-        <b>STOP GETTING RIPPED OFF</b>
+        <b>LOWEST PRICE GUARANTEED</b>
       </Typography>
     </div>
   );

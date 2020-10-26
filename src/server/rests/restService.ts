@@ -201,55 +201,55 @@ class RestService implements IRestService {
                         'status': 'Active',
                       }
                     },
-                    // {
-                    //   nested: {
-                    //     path: 'hours',
-                    //     query: {
-                    //       bool: {
-                    //         filter: {
-                    //           bool: {
-                    //             must: [
-                    //               {
-                    //                 term: {
-                    //                   'hours.name': serviceType
-                    //                 }
-                    //               },
-                    //               {
-                    //                 nested: {
-                    //                   path: `hours.weekHours.${serviceDay}`,
-                    //                   query: {
-                    //                     bool: {
-                    //                       filter: {
-                    //                         bool: {
-                    //                           must: [
-                    //                             {
-                    //                               range: {
-                    //                                 [`hours.weekHours.${serviceDay}.open`]: {
-                    //                                   lte: from
-                    //                                 }
-                    //                               }
-                    //                             },
-                    //                             {
-                    //                               range: {
-                    //                                 [`hours.weekHours.${serviceDay}.close`]: {
-                    //                                   gte: to
-                    //                                 }
-                    //                               }
-                    //                             }
-                    //                           ]
-                    //                         }
-                    //                       }
-                    //                     }
-                    //                   }
-                    //                 }
-                    //               }
-                    //             ]
-                    //           }
-                    //         }
-                    //       }
-                    //     }
-                    //   }
-                    // }
+                    {
+                      nested: {
+                        path: 'hours',
+                        query: {
+                          bool: {
+                            filter: {
+                              bool: {
+                                must: [
+                                  {
+                                    term: {
+                                      'hours.name': serviceType
+                                    }
+                                  },
+                                  {
+                                    nested: {
+                                      path: `hours.weekHours.${serviceDay}`,
+                                      query: {
+                                        bool: {
+                                          filter: {
+                                            bool: {
+                                              must: [
+                                                {
+                                                  range: {
+                                                    [`hours.weekHours.${serviceDay}.open`]: {
+                                                      lte: from
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  range: {
+                                                    [`hours.weekHours.${serviceDay}.close`]: {
+                                                      gte: to
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   ]
                 }
               }

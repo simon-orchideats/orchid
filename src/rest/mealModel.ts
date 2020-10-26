@@ -98,8 +98,8 @@ export class Meal {
     }
   }
 
-  static getRoundedBadPrice(meal: IMeal | IOrderMeal): number {
-    let badPrice = meal.price;
+  static getRoundedBadPrice(meal: IMeal | IOrderMeal, quantity: number): number {
+    let badPrice = meal.price * quantity;
 
     if (meal.comparison) {
       if (meal.comparison.percentOff) {
@@ -113,7 +113,7 @@ export class Meal {
     return Math.round(badPrice);
   }
 
-  static getTotalBadPrice(meals: (IMeal | IOrderMeal)[]): number {
-    return meals.reduce((sum, m) => sum + Meal.getRoundedBadPrice(m), 0)
+  static getTotalBadPrice(meals: IOrderMeal[]): number {
+    return meals.reduce((sum, m) => sum + Meal.getRoundedBadPrice(m, m.quantity), 0)
   }
 }

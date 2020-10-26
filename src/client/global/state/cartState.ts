@@ -159,7 +159,6 @@ export const useGetCartSuggestions = () => {
     if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff) < rest.data.deliveryMinimum) {
       suggestions.push(`${cart.rest.restName} delivery minimum is ${rest.data.deliveryMinimum}`)
     }
-    // left off here. test this
     if (isAreaWithinDelivery === false) {
       suggestions.push(`${cart.rest.restName} is outside your delivery area`)
     }

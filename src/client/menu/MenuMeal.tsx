@@ -276,7 +276,7 @@ const MenuMeal: React.FC<{
   let comparisonDesc;
   let badPrice: undefined | number;
   if (meal.comparison) {
-    badPrice = Meal.getRoundedBadPrice(meal) / 100;
+    badPrice = Meal.getRoundedBadPrice(meal, 1) / 100;
     comparisonDesc = `$${badPrice.toFixed(2)} at ${meal.comparison.compareTo} after fees`;
   }
   
