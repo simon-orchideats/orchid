@@ -1,4 +1,4 @@
-import { IMeal, Meal } from "../rest/mealModel";
+import { IMeal, Meal, Comparison } from "../rest/mealModel";
 import { Tag } from "../rest/tagModel";
 import { differenceBy } from "lodash";
 import { ICartRest } from "./cartModel";
@@ -30,7 +30,6 @@ export interface IOrderMeal extends Omit<
   | 'addonGroups'
   | 'optionGroups'
   | 'isActive'
-  | 'comparison'
   > {
   readonly customizations: ICustomization[]
   readonly instructions: string | null
@@ -39,7 +38,6 @@ export interface IOrderMeal extends Omit<
 }
 
 export class OrderMeal {
-
   static decrementQuantity(m: IOrderMeal) {
     return {
       ...OrderMeal.getICopy(m),
@@ -57,7 +55,14 @@ export class OrderMeal {
 
   static getICopy(meal: IOrderMeal): IOrderMeal {
     return {
-      ...meal,
+      comparison: meal.comparison && Comparison.getICopy(meal.comparison),
+      description: meal.description,
+      img: meal.img,
+      price: meal.price,
+      instructions: meal.instructions,
+      mealId: meal.mealId,
+      quantity: meal.quantity,
+      name: meal.name,
       customizations: meal.customizations.map(c => c),
       tags: meal.tags.map(t => Tag.getICopy(t))
     }
@@ -70,6 +75,7 @@ export class OrderMeal {
   ): IOrderMeal {
     const m = Meal.getICopy(meal);
     return {
+      comparison: m.comparison && Comparison.getICopy(m.comparison),
       customizations: customizations.map(c => Customization.getICopy(c)),
       description: m.description,
       img: m.img,
@@ -96,8 +102,11 @@ export class OrderMeal {
     }
   }
 
-  static getTotalMealCost(meals: IOrderMeal[]) {
-    return meals.reduce((sum, m) => sum + m.price * m.quantity, 0);
+  static getTotalMealCost(meals: IOrderMeal[], discountPercent?: number | null) {
+    return meals.reduce((sum, m) => {
+      const p = m.price * m.quantity;
+      return sum + Math.round((discountPercent ? p * (1 - discountPercent / 100) : p));
+    }, 0);
   }
 }
 

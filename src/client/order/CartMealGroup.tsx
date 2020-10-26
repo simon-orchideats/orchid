@@ -39,9 +39,11 @@ const useStyles = makeStyles(theme => ({
 
 const CartMealGroup: React.FC<{
   disableEditing?: boolean,
+  percentDiscount?: number,
   m: IOrderMeal
 }> = ({
   disableEditing = false,
+  percentDiscount,
   m
  }) => {
   const incrementMealCount = useIncrementMealCount();
@@ -54,6 +56,10 @@ const CartMealGroup: React.FC<{
   const onCloseInstructions = () => {
     setInstructionsAnchor(null);
     setInstruction(m, instructions ? instructions : null);
+  }
+  let price = m.price / 100;
+  if (percentDiscount) {
+    price = (m.price * (1 - percentDiscount / 100)) / 100
   }
   const [instructions, setInstructions] = useState<string | null>(m.instructions)
   const classes = useStyles({ img: m.img });
@@ -104,7 +110,7 @@ const CartMealGroup: React.FC<{
       }
       <Grid item sm={nameCol}>
         <Typography variant='subtitle1'>
-          {m.name}
+          {m.name} ({price.toFixed(2)})
         </Typography>
         <Typography variant='body1' color='textSecondary'>
           {m.customizations.map(c => `${c.quantity ? c.quantity + ' ' : ''}${c.name}${c.additionalPrice ? ` (+$${((c.additionalPrice * (c.quantity ? c.quantity : 1)) / 100).toFixed(2)})` : ''}`).join(', ')}

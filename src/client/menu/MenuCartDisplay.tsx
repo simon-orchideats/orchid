@@ -5,7 +5,7 @@ import { useGetCart, useGetCartSuggestions } from "../global/state/cartState";
 import { OrderMeal } from "../../order/orderRestModel";
 import { checkoutRoute } from "../../pages/checkout";
 import Router from 'next/router'
-import { AVERAGE_MARKUP_PERCENTAGE } from "../../order/cartModel";
+import { Meal } from "../../rest/mealModel";
 
 const useStyles = makeStyles(theme => ({
   suggestion: {
@@ -39,9 +39,9 @@ const MenuCartDisplay: React.FC = () => {
       </Typography>
     )
   }
-  const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
-  const originalPrice = mealTotal / (1 - AVERAGE_MARKUP_PERCENTAGE / 100);
-  const savings = ((originalPrice - mealTotal) / 100).toFixed(2);
+  const totalBadPrice = Meal.getTotalBadPrice(cart.rest.meals);
+  const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff);
+  const savings = ((totalBadPrice / 100 - mealTotal / 100)).toFixed(2);
   return (
     <>
       <Button
@@ -55,7 +55,7 @@ const MenuCartDisplay: React.FC = () => {
         Checkout
       </Button>
       <Typography variant='h6' className={classes.verticalPadding}>
-        Saving <b className={classes.savings}>${savings}</b> vs other apps!
+        <b className={classes.savings}>Saving ${savings}</b>
       </Typography>
       {suggestions.map((suggestion, i) => (
         <Typography
@@ -67,9 +67,15 @@ const MenuCartDisplay: React.FC = () => {
         </Typography>
       ))}
       <Typography variant='h6'>
-        {cart.rest.restName}
+        {cart.rest.restName} {cart.rest.discount?.percentOff && <b className={classes.savings}>({cart.rest.discount.percentOff}% sale)</b>}
       </Typography>
-      {cart.rest.meals.map(m => <CartMealGroup key={OrderMeal.getKey(m)} m={m} />)}
+      {cart.rest.meals.map(m => (
+        <CartMealGroup
+          key={OrderMeal.getKey(m)}
+          m={m}
+          percentDiscount={cart.rest?.discount?.percentOff || undefined}
+        />)
+      )}
     </>
   )
 }

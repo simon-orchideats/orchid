@@ -156,7 +156,7 @@ export const useGetCartSuggestions = () => {
     if (isClosed) {
       suggestions.push(`${cart.rest.restName} is closed at ${cart.serviceDate}, ${Order.getServiceTimeStr(cart.serviceTime)}`)
     }
-    if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals) < rest.data.deliveryMinimum) {
+    if (rest.data.deliveryMinimum && OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff) < rest.data.deliveryMinimum) {
       suggestions.push(`${cart.rest.restName} delivery minimum is ${rest.data.deliveryMinimum}`)
     }
     // left off here. test this

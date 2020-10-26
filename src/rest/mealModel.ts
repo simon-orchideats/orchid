@@ -1,3 +1,4 @@
+import { IOrderMeal } from './../order/orderRestModel';
 import { ITag, Tag } from './tagModel';
 
 export interface IChoice {
@@ -50,7 +51,6 @@ export interface IComparison {
   readonly compareTo: string
   readonly percentOff: number
   readonly serviceFeePercent: number
-  readonly choice: string | null
 }
 
 export interface EComparison extends IComparison {
@@ -63,7 +63,6 @@ export class Comparison {
       compareTo: c.compareTo,
       percentOff: c.percentOff,
       serviceFeePercent: c.serviceFeePercent,
-      choice: c.choice,
     }
   }
 }
@@ -97,5 +96,24 @@ export class Meal {
       addonGroups: meal.addonGroups.map(ag => AddonGroup.getICopy(ag)),
       optionGroups: meal.optionGroups.map(og => OptionGroup.getICopy(og))
     }
+  }
+
+  static getRoundedBadPrice(meal: IMeal | IOrderMeal): number {
+    let badPrice = meal.price;
+
+    if (meal.comparison) {
+      if (meal.comparison.percentOff) {
+        badPrice = badPrice / (1 - meal.comparison.percentOff / 100);
+      }
+  
+      if (meal.comparison.serviceFeePercent) {
+        badPrice = badPrice * (1 + (meal.comparison.serviceFeePercent / 100));
+      }
+    }
+    return Math.round(badPrice);
+  }
+
+  static getTotalBadPrice(meals: (IMeal | IOrderMeal)[]): number {
+    return meals.reduce((sum, m) => sum + Meal.getRoundedBadPrice(m), 0)
   }
 }

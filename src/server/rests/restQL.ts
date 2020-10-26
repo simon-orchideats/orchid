@@ -43,6 +43,12 @@ const MealQL = gql`
     name: String
   }
 
+  input ComparisonInput {
+    compareTo: String!
+    percentOff: Int!
+    serviceFeePercent: Int!
+  }
+
   type Tag {
     type: String
     name: String
@@ -63,7 +69,6 @@ const MealQL = gql`
     compareTo: String!
     percentOff: Int!
     serviceFeePercent: Int!
-    choice: String
   }
 
   type Meal {

@@ -52,7 +52,6 @@ const restFragment = gql`
         compareTo
         percentOff
         serviceFeePercent
-        choice
       }
       name
       description

@@ -33,6 +33,11 @@ const orderFragment = gql`
     }
     rest {
       meals {
+        comparison {
+          compareTo
+          percentOff
+          serviceFeePercent
+        }
         customizations {
           additionalPrice
           quantity

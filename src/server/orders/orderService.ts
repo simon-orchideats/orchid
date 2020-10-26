@@ -722,17 +722,8 @@ class OrderService {
   ): Promise<string> {
     try {
       const rest = cart.cartOrder.rest;
-      let mealTotal = OrderMeal.getTotalMealCost(rest.meals);
-      const discount = cart.cartOrder.rest.discount;
-      if (discount) {
-        if (discount.percentOff) {
-          mealTotal = mealTotal * (1 - discount.percentOff / 100);
-        }
-        if (discount.amountOff) {
-          mealTotal = mealTotal - discount.amountOff
-        }
-      }
-      const taxes = mealTotal * rest.taxRate;
+      let mealTotal = OrderMeal.getTotalMealCost(rest.meals, cart.cartOrder.rest.discount?.percentOff);
+      const taxes = Math.round(mealTotal * rest.taxRate);
       const total = Math.round(mealTotal + taxes + cart.tip + rest.deliveryFee);
       const options: Stripe.PaymentIntentCreateParams = {
         payment_method: paymentMethodId,

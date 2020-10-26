@@ -109,7 +109,7 @@ const calculateTip = (mealTotal: number, staticTip: staticTip, customTip?: numbe
     tip = customTip * 100
   }
   if (staticTip) {
-    tip = mealTotal * staticTip
+    tip = Math.round(mealTotal * staticTip)
   }
   return tip;
 }
@@ -126,7 +126,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const allTags = useGetTags();
   const [tip, setTip] = useState<number>(
     calculateTip(
-      (cart && cart.rest) ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      (cart && cart.rest) ? OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff) : 0,
       defaultTip,
       0,
     )
@@ -258,7 +258,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onChooseTip = (tip: staticTip) => {
     setStaticTip(tip);
     setTip(calculateTip(
-      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff) : 0,
       tip,
       0,
     ))
@@ -269,7 +269,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const customTipChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     if (e.target.value === '') return;
     setTip(calculateTip(
-      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals) : 0,
+      cart.rest ? OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff) : 0,
       null,
       parseInt(e.target.value),
     ))

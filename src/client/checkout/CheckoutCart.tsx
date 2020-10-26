@@ -4,7 +4,7 @@ import withClientApollo from "../utils/withClientApollo";
 import CartMealGroup from "../order/CartMealGroup";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { OrderMeal } from "../../order/orderRestModel";
-import { AVERAGE_MARKUP_PERCENTAGE } from "../../order/cartModel";
+import { Meal } from "../../rest/mealModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -34,7 +34,7 @@ const useStyles = makeStyles(theme => ({
     minHeight: 36,
   },
   savings: {
-    fontSize: '1.75rem',
+    fontSize: '1.60rem',
     color: theme.palette.common.green,
   },
 }));
@@ -76,22 +76,10 @@ const CheckoutCart: React.FC<props> = ({
     </Typography>
   );
 
-  let mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals);
-  const discount = cart.rest.discount;
-  let discountAmount = 0;
-  if (discount) {
-    if (discount.percentOff) {
-      discountAmount = mealTotal * (discount.percentOff / 100);
-      mealTotal = mealTotal - discountAmount ;
-    }
-    if (discount.amountOff) {
-      discountAmount = discount.amountOff;
-      mealTotal = mealTotal - discount.amountOff
-    }
-  }
-  const originalPrice = mealTotal / (1 - AVERAGE_MARKUP_PERCENTAGE / 100);
-  const savings = ((originalPrice - mealTotal) / 100).toFixed(2);
-  const taxes = mealTotal * cart.rest.taxRate;
+  const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff);
+  const totalBadPrice = Meal.getTotalBadPrice(cart.rest.meals);
+  const savings = ((totalBadPrice / 100 - mealTotal / 100)).toFixed(2);
+  const taxes = Math.round(mealTotal * cart.rest.taxRate);
   const total = mealTotal + taxes + cart.rest.deliveryFee + tip;
   return (
     <>
@@ -114,17 +102,14 @@ const CheckoutCart: React.FC<props> = ({
             ${(mealTotal / 100).toFixed(2)}
           </Typography>
         </div>
-        {
-          discount &&
-          <div className={classes.row}>
-            <Typography variant='body1'>
-              <b>Sale</b>
-            </Typography>
-            <Typography variant='body1'>
-              <b>-${(discountAmount / 100).toFixed(2)}</b>
-            </Typography>
-          </div>
-        }
+        <div className={classes.row}>
+          <Typography variant='body1'>
+            {cart.rest.deliveryFee === 0 ? <b>Delivery</b> : 'Delivery'}
+          </Typography>
+          <Typography variant='body1'>
+            {cart.rest.deliveryFee === 0 ? <b>FREE</b> : `$${(cart.rest.deliveryFee / 100).toFixed(2)}`}
+          </Typography>
+        </div>
         <div className={classes.row}>
           <Typography variant='body1'>
             Tips
@@ -139,14 +124,6 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
           <Typography variant='body1'>
             ${(taxes / 100).toFixed(2)}
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography variant='body1'>
-            {cart.rest.deliveryFee === 0 ? <b>Delivery</b> : 'Delivery'}
-          </Typography>
-          <Typography variant='body1'>
-            {cart.rest.deliveryFee === 0 ? <b>FREE</b> : `$${(cart.rest.deliveryFee / 100).toFixed(2)}`}
           </Typography>
         </div>
         <div className={`${classes.row}`} >
@@ -168,7 +145,7 @@ const CheckoutCart: React.FC<props> = ({
         <p />
         <div className={classes.row}>
           <Typography variant='body1' className={classes.savings}>
-            <b>Saving ${savings} vs other apps!</b>
+            <b>Saving ${savings}</b>
           </Typography>
         </div>
         <p />
@@ -185,11 +162,15 @@ const CheckoutCart: React.FC<props> = ({
             Order summary
           </Typography>
           <Typography variant='h6'>
-            {cart.rest.restName}
+            {cart.rest.restName} {cart.rest.discount?.percentOff && <b className={classes.green}>({cart.rest.discount.percentOff}% sale)</b>}
           </Typography>
           {
             cart.rest.meals.map(m => (
-              <CartMealGroup key={OrderMeal.getKey(m)} m={m} />
+              <CartMealGroup
+                key={OrderMeal.getKey(m)}
+                m={m}
+                percentDiscount={cart.rest?.discount?.percentOff || undefined}
+              />
             ))
           }
         </>

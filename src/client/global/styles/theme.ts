@@ -99,7 +99,7 @@ const theme: ThemeOptions = {
         root: {
           backgroundColor: white,
           '&:hover': {
-            backgroundColor: white,
+            backgroundColor: `${white} !important`,
           },
           '&.Mui-focused': {
             backgroundColor: white,

@@ -43,9 +43,8 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * 
  * simon:
- * add metrics fo rcheckout and see menu.
  * test the emails. prefer sengrid.
- * update tony balony's comparison data
+ * update tony balony's comparison data by removing choice and doing flat comp
  *
  */
 

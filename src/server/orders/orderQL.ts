@@ -42,6 +42,7 @@ export const _OrderQL = gql`
   }
 
   input OrderMealInput {
+    comparison: ComparisonInput
     customizations: [CustomizationInput!]!
     description: String
     img: String
@@ -60,6 +61,7 @@ export const _OrderQL = gql`
   }
 
   type OrderMeal {
+    comparison: Comparison
     customizations: [Customization!]!
     description: String
     img: String

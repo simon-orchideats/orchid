@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IMeal, IChoice } from "../../rest/mealModel";
+import { IMeal, IChoice, Meal } from "../../rest/mealModel";
 import { useAddMealToCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip, Checkbox, Breadcrumbs } from "@material-ui/core";
 import AddBoxIcon from '@material-ui/icons/AddBox';
@@ -276,21 +276,13 @@ const MenuMeal: React.FC<{
   let comparisonDesc;
   let badPrice: undefined | number;
   if (meal.comparison) {
-    badPrice = meal.price / 100;
-    if (meal.comparison.percentOff) {
-      badPrice = badPrice / (1 - meal.comparison.percentOff / 100);
-    }
-
-    if (meal.comparison.serviceFeePercent) {
-      badPrice = badPrice * (1 + (meal.comparison.serviceFeePercent / 100));
-    }
-
+    badPrice = Meal.getRoundedBadPrice(meal) / 100;
     comparisonDesc = `$${badPrice.toFixed(2)} at ${meal.comparison.compareTo} after fees`;
   }
   
   let goodPrice = meal.price / 100;
   if (discount && discount.percentOff) {
-    goodPrice = (meal.price * (1 - discount?.percentOff / 100)) / 100
+    goodPrice = (meal.price * (1 - discount.percentOff / 100)) / 100
   }
   const hasInfo = (meal.description || !!badPrice);
   return (
