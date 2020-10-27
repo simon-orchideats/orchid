@@ -242,13 +242,6 @@ const myPlan = () => {
               && currDbPlan.numAccounts > 1
               && <ShareList />
             }
-            <Typography
-              variant='h4'
-              color='primary'
-              className={classes.verticalPadding}
-            >
-              Your Plan
-            </Typography>
             <PlanCards
               defaultColor
               hideTrial
@@ -270,10 +263,11 @@ const myPlan = () => {
               }
             />
             <Typography variant='body2' align='center'>
-              Immediately update your plan. You will be prorated upgrades and and receive credit for downgrades.
+              Immediately update your plan. You will be prorated for upgrades and and receive credit for downgrades.
             </Typography>
             <Button
               variant='outlined'
+              color='inherit'
               className={classes.cancel}
               onClick={onCancelSubscription}
             >

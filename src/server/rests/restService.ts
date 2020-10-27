@@ -172,7 +172,6 @@ class RestService implements IRestService {
     _id: string,
     rest: ERest
   }[]> {
-    console.log(from, to, serviceDay);
     let options: any;
     try {
       if (!this.geoService) throw new Error('GeoService not set');
@@ -257,7 +256,6 @@ class RestService implements IRestService {
           }
         }
       }
-      console.log(cuisines);
       // todo update this query to use nested so we only get meals that are active and follow the cuisine
       if (cuisines && cuisines.length > 0) {
         options.body.query.bool.filter.bool.must.push({

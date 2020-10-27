@@ -17,7 +17,7 @@ const PlanCards: React.FC<{
   hideTrial?: boolean
   small?: boolean,
   selected?: string | null,
-  showFirstOnly: boolean
+  showFirstOnly?: boolean
   renderButton?: (p: IPlan) => React.ReactNode,
   onClickCard?: (p: IPlan) => void
   onLoad?: (plans: IPlan[]) => void

@@ -54,7 +54,7 @@ const Labels: React.FC<{
     primary={primary}
     primaryTypographyProps={{
       variant: 'h6',
-      color: 'primary'
+      color: 'inherit'
     }}
     secondary={secondary}
     secondaryTypographyProps={{
@@ -379,7 +379,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 <Button
                   onClick={onCancelInstructions}
                   variant='outlined'
-                  color='primary'
+                  color='inherit'
                 >
                   Cancel
                 </Button>

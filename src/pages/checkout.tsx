@@ -566,14 +566,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   </Grid>
                 </>
             }
-            <Grid item xs={12}>
-              <BaseInput
-                key={defaultApt}
-                defaultValue={defaultApt}
-                label='Apt #'
-                inputRef={addr2InputRef}
-              />
-            </Grid>
+            {
+              cart.serviceType === ServiceTypes.Delivery &&
+              <Grid item xs={12}>
+                <BaseInput
+                  key={defaultApt}
+                  defaultValue={defaultApt}
+                  label='Apt #'
+                  inputRef={addr2InputRef}
+                />
+              </Grid>
+            }
             <Grid
               item
               xs={12}

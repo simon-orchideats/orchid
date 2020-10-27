@@ -564,7 +564,7 @@ const Testimonials = () => {
                 "I'm so thankful for this 😭"
               </Typography>
               <Typography variant='body1'>
-                It's like Christmas every Tuesday
+                My boyfriend and I can order guilt-free
               </Typography>
               <img src='/home/sample.jpg' className={classes.tableFood} />
             </div>
@@ -629,10 +629,10 @@ const Testimonials = () => {
                 </Typography>
               </div>
               <Typography variant='body1' className={classes.bold}>
-                "It's so convenient"
+                "It's so cheap"
               </Typography>
               <Typography variant='body1'>
-                I don't have to think about food
+                I don't have to compare prices anymore
               </Typography>
             </div>
           </div>
