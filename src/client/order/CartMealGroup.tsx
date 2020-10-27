@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  popper: {
+  paper: {
     width: 300,
     padding: theme.spacing(2),
     display: 'flex',
@@ -128,6 +128,10 @@ const CartMealGroup: React.FC<{
         }
       </Grid>
       <Popover
+        style={{
+          // necessary for iOS otherwise the popover changes positions. className doesn't work
+          position: 'absolute',
+        }}
         open={Boolean(instructionsAnchor)}
         anchorEl={instructionsAnchor}
         onClose={onCloseInstructions}
@@ -140,7 +144,7 @@ const CartMealGroup: React.FC<{
           horizontal: 'center',
         }}
       >
-        <Paper className={classes.popper}>
+        <Paper className={classes.paper}>
           <TextField
             fullWidth
             label='Instructions'

@@ -76,7 +76,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const ShareList = withClientApollo(() => {
+const ShareList: React.FC<{
+  sharedAccounts: string[]
+}> = withClientApollo(({
+  sharedAccounts
+}) => {
   const classes = useStyles();
   const [onAdd, onAddRes] = useAddAccountToPlan();
   const [onRemove, onRemoveRes] = useRemoveAccountFromPlan();
@@ -92,7 +96,6 @@ const ShareList = withClientApollo(() => {
       notify(onAddRes.error.message, NotificationType.success, false);
     }
   });
-  const sharedAccounts = useGetSharedAccounts();
   const inputRef = createRef<HTMLInputElement>();
   const [inputError, setInputError] = useState('');
   const onClickAdd = () => {
@@ -111,7 +114,7 @@ const ShareList = withClientApollo(() => {
     <>
       <Typography
         variant='h4'
-        color='primary'
+        color='inherit'
         className={classes.verticalPadding}
       >
         Accounts on this plan
@@ -119,8 +122,8 @@ const ShareList = withClientApollo(() => {
       <Grid container>
         <Grid
           item
-          xs={8}
-          md={6}
+          xs={12}
+          sm={6}
         >
           <BaseInput
             label='New email'
@@ -137,13 +140,14 @@ const ShareList = withClientApollo(() => {
         <Grid
           className={classes.addCol}
           item
-          xs={4}
-          md={4}
+          xs={12}
+          sm={4}
         >
           <Button
             className={classes.addButton}
             variant='outlined'
             size='medium'
+            color='inherit'
             onClick={onClickAdd}
           >
             Add account
@@ -151,7 +155,7 @@ const ShareList = withClientApollo(() => {
         </Grid>
       </Grid>
       {
-        sharedAccounts.data.map(e => 
+        sharedAccounts.map(e => 
           <div className={`${classes.shareRow} ${classes.verticalPadding}`} key={e}>
             <Typography variant='subtitle1'>
               {e} {e === consumer.data?.profile.email && '(owner)'}
@@ -171,6 +175,7 @@ const myPlan = () => {
   const classes = useStyles();
   const consumer = useRequireConsumer(myPlanRoute, 'network-only');
   const plan = consumer.data && consumer.data.plan;
+  const sharedAccounts = useGetSharedAccounts();
   const [updateMyPlan, updateMyPlanRes] = useUpdateMyPlan();
   const plans = useGetAvailablePlans();
   const [cancelSubscription, cancelSubscriptionRes] = useCancelSubscription();
@@ -212,8 +217,9 @@ const myPlan = () => {
       throw err;
     }
     if (p.stripeProductPriceId === plan?.stripeProductPriceId) return;
-    if ((plan && plan.role === PlanRoles.Owner) && currDbPlan.numAccounts > p.numAccounts) {
-      notify(`Too many accounts for ${p.name} plan. Please remove ${currDbPlan.numAccounts - p.numAccounts} accounts`, NotificationType.error, false);
+    if ((plan && plan.role === PlanRoles.Owner) && sharedAccounts.data.length > p.numAccounts) {
+      notify(`Too many accounts for ${p.name} plan. Please remove ${sharedAccounts.data.length - p.numAccounts} accounts`, NotificationType.error, false);
+      return;
     }
     updateMyPlan(p.stripeProductPriceId, consumer.data);
   }
@@ -240,7 +246,7 @@ const myPlan = () => {
               plan.role === PlanRoles.Owner
               && currDbPlan
               && currDbPlan.numAccounts > 1
-              && <ShareList />
+              && <ShareList sharedAccounts={sharedAccounts.data} />
             }
             <PlanCards
               defaultColor

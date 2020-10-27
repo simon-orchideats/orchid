@@ -5,6 +5,7 @@ import CartMealGroup from "../order/CartMealGroup";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { OrderMeal } from "../../order/orderRestModel";
 import { Meal } from "../../rest/mealModel";
+import { ServiceTypes } from "../../order/orderModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -102,14 +103,17 @@ const CheckoutCart: React.FC<props> = ({
             ${(mealTotal / 100).toFixed(2)}
           </Typography>
         </div>
-        <div className={classes.row}>
-          <Typography variant='body1'>
-            {cart.rest.deliveryFee === 0 ? <b>Delivery</b> : 'Delivery'}
-          </Typography>
-          <Typography variant='body1'>
-            {cart.rest.deliveryFee === 0 ? <b>FREE</b> : `$${(cart.rest.deliveryFee / 100).toFixed(2)}`}
-          </Typography>
-        </div>
+        {
+          cart.serviceType === ServiceTypes.Delivery &&
+          <div className={classes.row}>
+            <Typography variant='body1'>
+              Delivery
+            </Typography>
+            <Typography variant='body1'>
+              {cart.rest.deliveryFee === 0 ? <b className={classes.green}>FREE</b> : `$${(cart.rest.deliveryFee / 100).toFixed(2)}`}
+            </Typography>
+          </div>
+        }
         <div className={classes.row}>
           <Typography variant='body1'>
             Tips

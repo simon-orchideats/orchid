@@ -60,8 +60,8 @@ const PlanCards: React.FC<{
           key={p.stripeProductPriceId}
           item
           className={classes.item}
-          xs={12}
-          sm={4}
+          sm={12}
+          md={4}
         >
           {
             (showFirstOnly && i) > 0 ?

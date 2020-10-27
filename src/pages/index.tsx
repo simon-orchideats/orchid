@@ -7,6 +7,7 @@ import Footer from '../client/general/Footer';
 import React from 'react';
 import SearchAreaInput from '../client/general/inputs/SearchAreaInput';
 import { plansRoute } from './plans';
+import { useSetSearchArea } from '../client/global/state/cartState';
 
 const deskBody1FontSize = '1.5rem';
 const deskBody2FontSize = '1.2rem';
@@ -104,7 +105,10 @@ const useStyles = makeStyles(theme => ({
       fontSize: '3.5rem',
     },
     [theme.breakpoints.down('xs')]: {
-      fontSize: '2.2rem',
+      fontSize: '2.3rem',
+    },
+    [theme.breakpoints.down(380)]: {
+      fontSize: '2rem',
     },
   },
   membersSave: {
@@ -115,6 +119,9 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down('xs')]: {
       fontSize: '2rem',
+    },
+    [theme.breakpoints.down(380)]: {
+      fontSize: '1.8rem',
     },
   },
   welcomeText: {
@@ -331,7 +338,9 @@ const useStyles = makeStyles(theme => ({
 
 const Welcome = withClientApollo(() => {
   const classes = useStyles();
-  const onSelectLocation = () => {
+  const setSearchArea = useSetSearchArea();
+  const onSelectLocation = (area: string) => {
+    setSearchArea(area)
     Router.push(menuRoute);
   }
   return (
@@ -347,7 +356,7 @@ const Welcome = withClientApollo(() => {
           <b>without the ripoffs</b>
         </Typography>
         <div className={classes.welcomeSearch}>
-          <SearchAreaInput onSelect={onSelectLocation} />
+          <SearchAreaInput onSelect={area => onSelectLocation(area)} />
         </div>
         <Typography variant='h3' className={classes.membersSave}>
           <b>Members save 30% vs</b>

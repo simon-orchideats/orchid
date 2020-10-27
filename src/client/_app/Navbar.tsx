@@ -44,7 +44,24 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.text.primary
   },
   cart: {
-    color: theme.palette.text.primary
+    color: theme.palette.text.primary,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: theme.spacing(2),
+    [theme.breakpoints.down('xs')]: {
+      paddingRight: 0,
+    },
+  },
+  cartNumber: {
+    lineHeight: 0.6,
+  },
+  cartIcon: {
+    [theme.breakpoints.down('xs')]: {
+      marginRight: 0,
+      fontSize: '.7 rem',
+    },
   },
   menuServiceDropdown: {
     cursor: 'pointer',
@@ -93,6 +110,7 @@ const useStyles = makeStyles(theme => ({
   },
   logo: {
     [theme.breakpoints.down('xs')]: {
+      paddingLeft: 0,
       marginRight: theme.spacing(1),
       height: '75%',
     },
@@ -112,6 +130,10 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.background.default,
   },
   plansLink: {
+    [theme.breakpoints.down('xs')]: {
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+    },
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
   },
@@ -242,8 +264,8 @@ const Navbar: React.FC = () => {
       );
       account = (
         <div className={`${classes.account} ${classes.cart}`} onClick={onClickCart}>
-          <ShoppingCartIcon />&nbsp;
-          <Typography variant='h6'>{Cart.getNumMeals(cart)}</Typography>
+          <Typography variant='h6' className={classes.cartNumber}>{Cart.getNumMeals(cart)}</Typography>
+          <ShoppingCartIcon className={classes.cartIcon} />
         </div>
       );
     }

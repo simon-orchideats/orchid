@@ -547,9 +547,12 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                   <Grid item xs={12}>
                     <ServiceTypePicker />
                   </Grid>
-                  <Grid item xs={12}>
-                    <SearchAreaInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
-                  </Grid>
+                  {
+                    cart.serviceType === ServiceTypes.Delivery &&
+                    <Grid item xs={12}>
+                      <SearchAreaInput defaultValue={cart.searchArea ? cart.searchArea : undefined} disableAutoFocus />
+                    </Grid>
+                  }
                 </>
                 :
                 <>

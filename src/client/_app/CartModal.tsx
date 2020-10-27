@@ -39,7 +39,6 @@ const CartModal: React.FC<{
     <Modal
       open={open}
       onClose={onClose}
-      BackdropComponent={() => null}
       disableEscapeKeyDown
     >
       <Slide in={open} direction='down'>

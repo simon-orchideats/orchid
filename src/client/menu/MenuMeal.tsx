@@ -92,6 +92,14 @@ const useStyles = makeStyles(theme => ({
   chip: {
     backgroundColor: theme.palette.common.green,
     color: theme.palette.common.white,
+    [theme.breakpoints.down(375)]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+  },
+  smallChip: {
+    paddingLeft: 4,
+    paddingRight: 4,
   },
   discount: {
     fontWeight: 700,
@@ -504,6 +512,9 @@ const MenuMeal: React.FC<{
           <Chip
             size='small'
             className={classes.chip}
+            classes={{
+              labelSmall: classes.smallChip
+            }}
             clickable={false}
             label={
               <Typography variant='body2' className={classes.discount}>
