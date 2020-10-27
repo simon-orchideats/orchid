@@ -205,10 +205,10 @@ const MenuMeal: React.FC<{
         quantity: newQuantity < 0 ? 0 : newQuantity,
       },
     });
-    const newCount = addonCounts[addonGroupIndex] + count;
+    const newCount = (addonCounts[addonGroupIndex] || 0) + count;
     setAddonCounts({
       ...addonCounts,
-      [addonGroupIndex]: newCount < 0 ? 0 : newCount,
+      [addonGroupIndex]: newCount,
     });
   }
   const onClickNextAddon = () => {

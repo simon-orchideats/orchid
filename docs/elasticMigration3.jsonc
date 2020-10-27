@@ -2823,7 +2823,7 @@ POST rests3/_doc/
               "additionalPrice": 0
             },
             {
-              "name": "24ox",
+              "name": "24oz",
               "additionalPrice": 200
             }
           ]
@@ -2859,7 +2859,7 @@ POST rests3/_doc/
               "additionalPrice": 0
             },
             {
-              "name": "24ox",
+              "name": "24oz",
               "additionalPrice": 200
             }
           ]
@@ -2961,7 +2961,7 @@ POST rests3/_doc/
               "additionalPrice": 0
             },
             {
-              "name": "24ox",
+              "name": "24oz",
               "additionalPrice": 200
             }
           ]
