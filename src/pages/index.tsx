@@ -72,9 +72,9 @@ const useStyles = makeStyles(theme => ({
   welcome: {
     [theme.breakpoints.down('xs')]: {
       backgroundPosition: '0%',
-      backgroundImage: `url(/home/home-m-sm.jpg)`,
+      backgroundImage: `url(/home/home-m-sm2.jpg)`,
     },
-    backgroundImage: `url(/home/home-banner2.jpg)`,
+    backgroundImage: `url(/home/home-banner4.jpg)`,
     backgroundPosition: '100%',
     backgroundSize: 'cover',
     marginTop: -theme.mixins.navbar.marginBottom,
