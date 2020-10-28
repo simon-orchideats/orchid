@@ -1,6 +1,6 @@
 
 // SKIPPP ALVIN ALREADY DID
-POST rests3/_doc/
+POST rests/_doc/
 {
   "serviceTypes": [
     "Delivery",
@@ -744,7 +744,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "search for item at from https://satay1.com/index.php?route=common/home. use note for spice level. use paypal to get discount. GH has no markup & no service fee. so if necessary, use GH for delivery. Other OFDs do",
   "taxRate" : 0.06625,
@@ -1428,7 +1428,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://app.upserve.com/s/margheritas-hoboken-1. that's where we based prices",
   "taxRate" : 0.06625,
@@ -2132,7 +2132,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://www.toasttab.com/shaka-bowl-washington-street/v3. all OFD is marked up. Uber Eats is actually pricer (cuz GH has no service fee) but we use compare to GH to have more GH comparisons",
   "taxRate" : 0.06625,
@@ -3373,7 +3373,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://tonyboloneys-hoboken.foodtecsolutions.com/ordering/menu/Chicken%20Subs https://tonyboloneys-jerseycity.foodtecsolutions.com/ordering/intro. paper menu is sometimes cheaper, online discount makes it cheaper. GH has markup",
   "taxRate" : 0.06625,
@@ -4547,7 +4547,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "PARTNER FAX DISCOUNT (10% off) 201-839-5039. using custom geoShape provided by their website. order at use prices from from http://gypsygrillny.com/home/OrderOnline/. no markups from OFD",
   "taxRate" : 0.06625,
@@ -5027,7 +5027,7 @@ POST rests3/_doc/
 
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "only available at grubhub https://www.grubhub.com/restaurant/ahris-kitchen-227-7th-st-jersey-city/967637. no markups or service fees!",
   "taxRate" : 0.06625,
@@ -5545,7 +5545,7 @@ POST rests3/_doc/
 
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from: https://www.toasttab.com/wurstbar-516-jersey-ave/v3/#500000002354952561.c9222533-041a-4ba4-85f4-c5a965d57056. OFD is marked up",
   "taxRate" : 0.06625,
@@ -6217,7 +6217,7 @@ POST rests3/_doc/
       "optionGroups" : [
         {
           "name": "Pick Sauce",
-          "addons": [
+          "options": [
             {
               "name": "Chipotle Mayo",
               "additionalPrice": 0
@@ -6298,7 +6298,7 @@ POST rests3/_doc/
 
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://order.qualitygreenskitchen.com/order/?address=new",
   "deliveryMinimum": 1800,
@@ -6886,7 +6886,7 @@ POST rests3/_doc/
 
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://www.grubhub.com/restaurant/okinawa-sushi--grill-400-newark-st-hoboken/301928. has to be GH cuz delivery.com wont deliver. No service fee for GH too. only Uber Eats is marked up",
   "taxRate" : 0.06625,
@@ -7625,7 +7625,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order on grubhub. we eat the service fee for now. if too many people order this, then we'll do something about it. delivery.com + GH is the same price. Uber Eats sometimes more expensive. ",
   "serviceTypes": [
@@ -8216,7 +8216,7 @@ POST rests3/_doc/
 
 
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://www.grubhub.com/restaurant/shadman-restaurant-293-12-grove-street-jersey-city/2194193. small service fee that we eat for now. no markups, except kebab roll. GH & Uber Eats are the same price",
   "taxRate" : 0.06625,

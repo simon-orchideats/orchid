@@ -45,6 +45,7 @@ const restFragment = gql`
         }
       }
     }
+    meta
     featured {
       _id
       img

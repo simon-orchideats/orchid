@@ -8,7 +8,7 @@ import { initElastic, SearchResponse } from './../elasticConnector';
 import { Client, ApiResponse } from '@elastic/elasticsearch';
 import { ERest, IRest, IRestInput, Rest, ServiceDay } from './../../rest/restModel';
 
-const REST_INDEX = 'rests4';
+const REST_INDEX = 'rests';
 const TAG_INDEX = 'tags';
 
 export interface IRestService {
@@ -322,11 +322,6 @@ class RestService implements IRestService {
       );
       return eRests.map(({ _id, rest }) => ({
         ...rest,
-        // discount: {
-        //   description: null,
-        //   amountOff: null,
-        //   percentOff: 10,
-        // },
         _id,
       }))
     } catch (e) {

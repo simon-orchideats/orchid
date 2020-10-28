@@ -44,7 +44,6 @@ import { handleLoginRoute, handleAuthCallback, handlePopupSocialAuth } from './s
  * 
  * simon:
  * test the emails. prefer sengrid.
- *
  */
 
 

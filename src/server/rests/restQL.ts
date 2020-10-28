@@ -156,6 +156,7 @@ const _RestQL = gql`
     _id: ID!
     hours: [Hours!]!
     location: Location!
+    meta: String!
     featured: [Meal!]!
     profile: RestProfile!
     taxRate: Float!

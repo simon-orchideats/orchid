@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { IMeal, IChoice, Meal } from "../../rest/mealModel";
-import { useAddMealToCart } from "../global/state/cartState";
+import { useAddMealToCart, useGetCart } from "../global/state/cartState";
 import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip, Checkbox, Breadcrumbs } from "@material-ui/core";
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -10,6 +10,8 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import { IDiscount } from '../../order/discountModel';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { analyticsService, events } from '../utils/analyticsService';
+import { useNotify } from '../global/state/notificationState';
+import { NotificationType } from '../notification/notificationModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -149,6 +151,8 @@ const MenuMeal: React.FC<{
 }) => {
   const theme = useTheme<Theme>();
   const classes = useStyles({ meal });
+  const cart = useGetCart();
+  const notify = useNotify();
   const isMdAndUp = useMediaQuery(theme.breakpoints.up('md'));
   const [descAnchor, setDescAnchor] = useState<null | HTMLElement>(null);
   const [choicesAnchor, setChoicesAnchor] = useState<null | HTMLElement>(null);
@@ -177,6 +181,12 @@ const MenuMeal: React.FC<{
   const [addonCounts, setAddonCounts] = useState<{ [groupIndex: number]: number }>(defaultAddonCounts);
   const [addons, setAddons] = useState(defaultAddons);
   const onClickAdd = (event: React.MouseEvent<HTMLElement>) => {
+    if (cart && cart.rest && cart.rest.restId !== restId) {
+      // <Notifier /> is in Menu.tsx
+      notify(`${cart.rest.restName} is already in your cart. Remove it first before adding a new restaurant`, NotificationType.success, false);
+      return;
+    }
+
     if (meal.optionGroups.length === 0 && meal.addonGroups.length === 0) {
       addMealToCart(
         meal,

@@ -13,6 +13,7 @@ import MenuCartDisplay from "../client/menu/MenuCartDisplay";
 import { Order } from "../order/orderModel";
 import { WeekHours, ServiceDay } from "../rest/restModel";
 import { useGetConsumer } from "../consumer/consumerService";
+import Notifier from "../client/notification/Notifier";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -118,6 +119,7 @@ const menu = () => {
       disableGutters
       className={classes.container}
     >
+      <Notifier />
       <SearchAreaModal open={!consumer.loading && !!!cart?.searchArea} />
       <Grid container alignItems='stretch'>
         <Grid

@@ -209,6 +209,9 @@ const OrderOverview: React.FC<{
         showRestDetails && rest.data &&
         <>
           <Typography variant='body1'>
+            {rest.data.meta}
+          </Typography>
+          <Typography variant='body1'>
             {rest.data.profile.phone}
           </Typography>
           <Typography variant='body1'>

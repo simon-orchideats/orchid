@@ -1,4 +1,4 @@
-POST rests3/_doc/  
+POST rests/_doc/  
 {
   "meta": "order from https://malibudiner.com/menu.php w/ phone. can also order on GH for convenience & more delivery range (no service fee) but it's a little marked up. ubereats is def marked up w/ service fee. i called, they do delivery but not that far, unsure where the cutoff is, but as far as the heights in jc",
   "serviceTypes": [
@@ -507,7 +507,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/ 
+POST rests/_doc/ 
 {
   "meta": "order via phone. menu at https://ibb.co/V2QDTWR & https://ibb.co/FzJfmVy. GH meals are actually cheaper, but order is more $ after service fees. so we could use GH to order if necessary since it's only a lil more expensive. to get GH non-lunch menu, you have to set time to past 11am.",
   "serviceTypes": [
@@ -1053,7 +1053,7 @@ POST rests3/_doc/
 }
 
 
-POST rests3/_doc/ 
+POST rests/_doc/ 
 {
   "meta": "call for best prices at https://taqueriadowntownjersey.com/menu/ (picture). might need delivery.com & GH for delivery, but they have markups",
   "taxRate" : 0.06625,
@@ -1486,7 +1486,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/ 
+POST rests/_doc/ 
 {
   "meta": "PARTNER FAX 201-386-1551. menu from https://www.beyondmenu.com/36677/hoboken/little-market-hoboken-07030.aspx?utm_source=satellite&utm_medium=home_order&pk_vid=0ae0628069982132160292524787f579 since OFD is marked up",
   "serviceTypes": [
@@ -2288,7 +2288,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://eat.9fold.me/index.html#/10841. OFD actually has no markups, except for the service fees. GH has no service fee too.",
   "serviceTypes": [
@@ -2833,7 +2833,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order via phone to avoid service fees. NO markup on GH so use GH as price/menu reference",
   "serviceTypes": [
@@ -4174,7 +4174,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "partner fax 201-533-9464. order at https://wingstogohoboken.ordereze.net/. can also order on GH cuz no service fee and no markups.",
   "serviceTypes": [
@@ -5060,7 +5060,7 @@ POST rests3/_doc/
   "status" : "Active"
 }
 
-POST rests3/_doc/
+POST rests/_doc/
 {
   "meta": "order from https://eat.9fold.me/index.html#/10842. OFD has no markups and GH even has no service fee",
   "serviceTypes": [

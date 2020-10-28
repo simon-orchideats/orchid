@@ -112,6 +112,7 @@ export class Hours {
 
 
 export interface ERest {
+  readonly meta: string
   readonly createdDate: number
   readonly location: ELocation
   readonly hours: IHours[];
@@ -142,6 +143,7 @@ export class Rest {
       _id: rest._id,
       deliveryMinimum: rest.deliveryMinimum,
       discount: rest.discount ? Discount.getICopy(rest.discount) : null,
+      meta: rest.meta,
       taxRate: rest.taxRate,
       deliveryFee: rest.deliveryFee,
       hours: rest.hours.map(h => Hours.getICopy(h)),
@@ -168,6 +170,7 @@ export class Rest {
       deliveryFee,
       deliveryMinimum,
       discount: null,
+      meta: 'supsupsup',
       location: {
         //todo pivot,
         primaryAddr: 'supsupsup',
@@ -195,6 +198,7 @@ export class Rest {
 
   static getRestFromERest(rest: ERest, restId: string ): IRest {
     return {
+      meta: rest.meta,
       location: rest.location,
       hours: rest.hours,
       featured: rest.featured,
