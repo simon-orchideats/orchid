@@ -6518,7 +6518,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1569200430_33b84263c6bc202db003.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1569200430_33b84263c6bc202db003.jpg",
       "price" : 999,
       "name" : "Butternut Bliss",
       "comparison": {
@@ -6616,7 +6616,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1553706071_547b33f2f22d477c5f9f.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1553706071_547b33f2f22d477c5f9f.jpg",
       "price" : 1250,
       "name" : "Tex-Mex Cobb",
       "comparison": {
@@ -6646,7 +6646,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1553562968_36ee643012ae3448850c.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1553562968_36ee643012ae3448850c.jpg",
       "price" : 1395,
       "name" : "Steakhouse Salad",
       "comparison": {
@@ -6676,7 +6676,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1557880614_e9740e9b6d6a16e7f6f1.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1557880614_e9740e9b6d6a16e7f6f1.jpg",
       "price" : 1395,
       "name" : "Mediterranean Salmon Salad",
       "comparison": {
@@ -6806,7 +6806,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1553706108_661a28b77d29dfac921c.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1553706108_661a28b77d29dfac921c.jpg",
       "price" : 1135,
       "name" : "Grilled Organic Tofu",
       "comparison": {
@@ -6836,7 +6836,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1553706119_ea3e27d8a2ad035195f5.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1553706119_ea3e27d8a2ad035195f5.jpg",
       "price" : 1395,
       "name" : "Herb Marinated Steak",
       "comparison": {
@@ -6858,7 +6858,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "http://s3.amazonaws.com/betterboh/u/img/prod/61/1553706129_1a359919dca32f612c6a.jpg",
+      "img" : "https://s3.amazonaws.com/betterboh/u/img/prod/61/1553706129_1a359919dca32f612c6a.jpg",
       "price" : 1395,
       "name" : "Sushi-Grade Salmon",
       "comparison": {

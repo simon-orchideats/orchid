@@ -190,7 +190,7 @@ POST rests/_doc/
         }
       ],
       "description": "Certified Angus beef, char-grilled and topped with Applewood smoked bacon, Provolone and egg, with a ramp aioli dressing. Served with hand-cut herb French fries.",
-      "img": "http://vb3restaurant.com/wp-content/uploads/2014/12/menu-vb3-burger-01-800x600.jpg",
+      "img": "https://vb3restaurant.com/wp-content/uploads/2014/12/menu-vb3-burger-01-800x600.jpg",
       "name": "VB3 Burger",
       "tags": [
         {
@@ -483,7 +483,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Traditional tomato sauce, ricotta, shaved parmesan, basil. Half-pound portions served al dente.",
-      "img": "http://vb3restaurant.com/wp-content/uploads/2015/03/vb3-restaurant-menu-spaghetti-con-meatballs-jersey-city-newport-best-600x400.jpg",
+      "img": "https://vb3restaurant.com/wp-content/uploads/2015/03/vb3-restaurant-menu-spaghetti-con-meatballs-jersey-city-newport-best-600x400.jpg",
       "name": "Spaghetti Pomodoro Con Nonna's Meatballs",
       "tags": [
         {
@@ -2974,7 +2974,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Falafel platter comes with large serving of hummus, served with pita bread & mediterranean salad",
-      "img": "http://alibabahoboken.com/gallery/03.jpg",
+      "img": "https://i.ibb.co/ynCytP3/03.jpg",
       "name": "Falafel Platter",
       "tags": [
         {
@@ -3008,7 +3008,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Served with pita bread & mediterranean salad",
-      "img": "http://alibabahoboken.com/gallery/04.jpg",
+      "img": "https://i.ibb.co/HNg0rJ1/04.jpg",
       "name": "Hummus Platter",
       "tags": [
         {
@@ -3046,7 +3046,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Roasted eggplant with garlic tahini, served with pita bread & mediterranean salad",
-      "img": "http://alibabahoboken.com/gallery/05.jpg",
+      "img": "https://i.ibb.co/3MKwfMG/05.jpg",
       "name": "Baba Ganoush Platter",
       "tags": [
         {
@@ -3088,7 +3088,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Served with rice and side salad",
-      "img": "http://alibabahoboken.com/gallery/08.jpg",
+      "img": "https://i.ibb.co/dWLxwrX/08.jpg",
       "name": "Chicken Tandoori - Chicken Entree",
       "tags": [
         {
@@ -5836,7 +5836,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Empanada stuffed with chicken",
-      "img": "http://elartesanorestaurant.com/wp-content/uploads/2016/02/Chicken-Empanadas-1024x682.jpg",
+      "img": "https://i.ibb.co/ypQvnkw/Chicken-Empanadas-1024x682.jpg",
       "name": "Chicken Empanada",
       "tags": [
         {
@@ -5856,7 +5856,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Corn Tamale",
-      "img": "http://elartesanorestaurant.com/wp-content/uploads/2016/02/Tamales-De-Maiz.jpg",
+      "img": "https://i.ibb.co/q5R8dpz/Tamales-De-Maiz.jpg",
       "name": "Cuban Tamale",
       "tags": [
         {
@@ -5922,7 +5922,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Sandwich with steak",
-      "img": "http://elartesanorestaurant.com/wp-content/uploads/2016/10/Pan-Con-Bistec.jpg",
+      "img": "https://i.ibb.co/K6RMxy5/Pan-Con-Bistec.jpg",
       "name": "Steak Sandwich",
       "tags": [
         {
@@ -5946,7 +5946,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "Fried Potato ball stuffed with beef",
-      "img": "http://elartesanorestaurant.com/wp-content/uploads/2016/02/Papa-Rellena.jpg",
+      "img": "https://i.ibb.co/0cpzqrx/Papa-Rellena.jpg",
       "name": "Stuffed Potato Ball",
       "tags": [
         {
@@ -5966,7 +5966,7 @@ POST rests/_doc/
       "isActive": true,
       "optionGroups": [],
       "description": "aCF5mgcXPREf7kQs61sng",
-      "img": "http://elartesanorestaurant.com/wp-content/uploads/2016/02/IMG_3555.jpg",
+      "img": "https://i.ibb.co/ZLD8Lts/IMG-3555.jpg",
       "name": "Ham & Chicken Croquette",
       "tags": [
         {
