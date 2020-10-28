@@ -9,10 +9,8 @@ import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
 import HistoryIcon from '@material-ui/icons/History';
 import { orderHistoryRoute } from '../../pages/consumer/order-history';
-import { allUpcomingDeliveriesRoute } from '../../pages/consumer/all-upcoming-deliveries';
 import { allOrderHistoryRoute } from '../../pages/consumer/all-past-orders';
 import ReceiptIcon from '@material-ui/icons/Receipt';
-import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import { useGetConsumer } from '../../consumer/consumerService';
 import { Permissions } from '../../consumer/consumerModel';
 import withClientApollo from '../utils/withClientApollo';

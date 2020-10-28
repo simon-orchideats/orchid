@@ -1,6 +1,8 @@
 
 export type PlanName = 'Foodie' | 'Partner' | 'Community';
 
+export const defaultPlanName = 'Foodie';
+
 export const PlanNames: {
   Foodie: 'Foodie',
   Partner: 'Partner',

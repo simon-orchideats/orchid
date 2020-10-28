@@ -724,7 +724,12 @@ class OrderService {
       const rest = cart.cartOrder.rest;
       let mealTotal = OrderMeal.getTotalMealCost(rest.meals, cart.cartOrder.rest.discount?.percentOff);
       const taxes = Math.round(mealTotal * rest.taxRate);
-      const total = Math.round(mealTotal + taxes + cart.tip + cart.cartOrder.serviceType === ServiceTypes.Delivery ? rest.deliveryFee : 0);
+      const total = Math.round(
+        mealTotal
+        + taxes
+        + cart.tip
+        + (cart.cartOrder.serviceType === ServiceTypes.Delivery ? rest.deliveryFee : 0)
+      );
       const options: Stripe.PaymentIntentCreateParams = {
         payment_method: paymentMethodId,
         customer: stripeCustomerId,
@@ -744,7 +749,7 @@ class OrderService {
       if (paymentIntent.status === 'succeeded') return paymentIntent.id;
       throw new Error(`PaymentIntent has status '${paymentIntent.status}'`);
     } catch (e) {
-      throw new Error(`Failed to make payment. ${e.message}`);
+      throw new Error(`Failed to make payment. ${e.stack}`);
     }
   }
 

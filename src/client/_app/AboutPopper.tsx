@@ -2,7 +2,6 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography, Popover } from '@material-ui/core';
 import Router from 'next/router'
-import { howItWorksRoute } from '../../pages/how-it-works';
 import { faqsRoute } from '../../pages/faq';
 import { aboutRoute } from '../../pages/about';
 

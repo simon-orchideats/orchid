@@ -90,7 +90,11 @@ const CheckoutCart: React.FC<props> = ({
   const totalBadPrice = Meal.getTotalBadPrice(cart.rest.meals);
   const savings = (totalBadPrice - mealTotal) / 100;
   const taxes = Math.round(mealTotal * cart.rest.taxRate);
-  const total = mealTotal + taxes + cart.serviceType === ServiceTypes.Delivery ? cart.rest.deliveryFee : 0  + tip;
+  const total = 
+    mealTotal
+    + taxes
+    + (cart.serviceType === ServiceTypes.Delivery ? cart.rest.deliveryFee : 0)
+    + tip;
   return (
     <>
       {suggestions.map((suggestion, i) => (

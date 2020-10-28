@@ -29,13 +29,13 @@ import ServiceTypePicker from "../client/general/inputs/ServiceTypePicker";
 import ServiceDateTimePicker from "../client/general/inputs/ServiceDateTimePicker";
 import SearchAreaInput from "../client/general/inputs/SearchAreaInput";
 import { orderHistoryRoute } from "./consumer/order-history";
-import PlanCards from "../client/plan/PlanCards";
-import { IPlan } from "../plan/planModel";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
 import { ServiceTypes, Order } from "../order/orderModel";
 import { analyticsService, events } from "../client/utils/analyticsService";
+import { IPlan, defaultPlanName } from "../plan/planModel";
+import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -148,6 +148,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [receiveTextError, setReceiveTextError] = useState<string>('');
+  const plans = useGetAvailablePlans();
   const [plan, setPlan] = useState<IPlan | null>(cart ? cart.plan : null);
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
@@ -160,6 +161,18 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [defaultInstructions, setDefaultInstructions] = useState<string | undefined>();
   const [isUpdatingInstructions, setIsUpdatingInstructions] = useState<boolean>(false);
   const [isUpdatingWhen, setIsUpdatingWhen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (plans.data && !plan) {
+      const defaultPlan = plans.data?.find(p => p.name === defaultPlanName);
+      if (!defaultPlan) {
+        const err = new Error(`Missing '${defaultPlanName}'`);
+        console.error(err.stack);
+        throw err;
+      }
+      setPlan(defaultPlan)
+    }
+  }, [plans.data, plan])
 
   useEffect(() => {
     setDefaultPhone(consumer.data?.profile.phone || undefined);

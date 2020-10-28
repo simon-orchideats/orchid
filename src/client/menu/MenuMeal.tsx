@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { IMeal, IChoice, Meal } from "../../rest/mealModel";
 import { useAddMealToCart, useGetCart } from "../global/state/cartState";
-import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip, Checkbox, Breadcrumbs } from "@material-ui/core";
+import { makeStyles, Card, CardMedia, CardContent, Typography, useMediaQuery, useTheme, Theme, Popover, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormGroup, Button, Tooltip, ClickAwayListener, Chip, Checkbox } from "@material-ui/core";
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { ICustomization } from '../../order/orderRestModel';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { IDiscount } from '../../order/discountModel';
@@ -12,6 +11,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { analyticsService, events } from '../utils/analyticsService';
 import { useNotify } from '../global/state/notificationState';
 import { NotificationType } from '../notification/notificationModel';
+import { ICustomization } from '../../order/orderRestModel';
 
 const useStyles = makeStyles(theme => ({
   card: {
