@@ -1444,21 +1444,22 @@ PUT /orders/
         "properties": {
           "meals": {
             "properties": {
-            "comparison": {
-              "properties": {
-                "compareTo": {
-                  "type": "keyword"
+              "comparison": {
+                "properties": {
+                  "compareTo": {
+                    "type": "keyword"
+                  },
+                  "percentOff": {
+                    "type": "integer"
+                  },
+                  "serviceFeePercent": {
+                    "type": "integer"
+                  },
+                  "comparisonDate": {
+                    "type": "date",
+                    "format": "epoch_millis"
+                  }
                 },
-                "percentOff": {
-                  "type": "integer"
-                },
-                "serviceFeePercent": {
-                  "type": "integer"
-                },
-                "comparisonDate": {
-                  "type": "date",
-                  "format": "epoch_millis"
-                }
               },
               "customizations":  {
                 "properties": {
@@ -1641,7 +1642,7 @@ PUT /orders/
       },
       "stripePaymentId": {
         "type": "keyword"
-      },
+      }
       # "stripeSubscriptionId": {
       #   "type": "keyword"
       # },
