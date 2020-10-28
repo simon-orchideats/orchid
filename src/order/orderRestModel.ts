@@ -83,7 +83,7 @@ export class OrderMeal {
       mealId: m._id,
       name: m.name,
       quantity: 1,
-      price: m.price,
+      price: m.price + customizations.reduce((sum, c) => sum + c.additionalPrice, 0),
       tags: m.tags,
     }
   }

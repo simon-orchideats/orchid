@@ -6,7 +6,7 @@ import { termsRoute } from '../../pages/terms';
 import FacebookIcon from '@material-ui/icons/Facebook';
 import InstagramIcon from '@material-ui/icons/Instagram';
 import { menuRoute } from '../../pages/menu';
-import { howItWorksRoute } from '../../pages/how-it-works';
+import { plansRoute } from '../../pages/plans';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -74,12 +74,12 @@ const Footer = () => {
                 Menu
               </Typography>
             </Link>
-            <Link href={howItWorksRoute}>
+            <Link href={plansRoute}>
               <Typography
                 variant='button'
                 className={classes.link}
               >
-                How it works
+                Plans
               </Typography>
             </Link>
             <Link href={faqsRoute}>

@@ -5,6 +5,8 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import withClientApollo from '../../utils/withClientApollo';
 import { useGetCart, useSetServiceType } from '../../global/state/cartState';
+import { useRouter } from 'next/router';
+import { menuRoute } from '../../../pages/menu';
 
 const useStyles = makeStyles(() => ({
   toggleButtonGroup: {
@@ -15,6 +17,8 @@ const useStyles = makeStyles(() => ({
 const ServiceTypePicker: React.FC = () => {
   const cart = useGetCart();
   const setCartServiceType = useSetServiceType();
+  const router = useRouter();
+  const currRoute = router.pathname;
   const classes = useStyles();
   return (
     <ToggleButtonGroup
@@ -24,6 +28,11 @@ const ServiceTypePicker: React.FC = () => {
       onChange={(_, t: ServiceType) => {
         // d === null when selecting same day
         if (t === null) return;
+        if (currRoute === menuRoute) {
+          window.scrollTo({
+            top: 0,
+          })
+        }
         setCartServiceType(t);
       }}
     >

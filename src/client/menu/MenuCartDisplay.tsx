@@ -41,7 +41,7 @@ const MenuCartDisplay: React.FC = () => {
   }
   const totalBadPrice = Meal.getTotalBadPrice(cart.rest.meals);
   const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff);
-  const savings = ((totalBadPrice / 100 - mealTotal / 100)).toFixed(2);
+  const savings = (totalBadPrice - mealTotal) / 100
   return (
     <>
       <Button
@@ -54,9 +54,12 @@ const MenuCartDisplay: React.FC = () => {
       >
         Checkout
       </Button>
-      <Typography variant='h6' className={classes.verticalPadding}>
-        <b className={classes.savings}>Saving ${savings}</b>
-      </Typography>
+      {
+        savings > 0 &&
+        <Typography variant='h6' className={classes.verticalPadding}>
+          <b className={classes.savings}>Saving ${savings.toFixed(2)}</b>
+        </Typography>
+      }
       {suggestions.map((suggestion, i) => (
         <Typography
           key={i}

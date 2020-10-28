@@ -8,6 +8,8 @@ import { useSetServiceTime, useSetServiceDate, useGetCart } from '../../global/s
 import addDays from 'date-fns/addDays'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
+import { useRouter } from 'next/router';
+import { menuRoute } from '../../../pages/menu';
 
 const useStyles = makeStyles(theme => ({
   or: {
@@ -29,6 +31,8 @@ const ServiceDateTimePicker: React.FC = () => {
   const cart = useGetCart();
   const setCartServiceTime = useSetServiceTime();
   const setCartServiceDate = useSetServiceDate();
+  const router = useRouter();
+  const currRoute = router.pathname;
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | null>(null);
   const isAsap = cart && cart.serviceTime === ServiceTimes.ASAP
@@ -39,6 +43,11 @@ const ServiceDateTimePicker: React.FC = () => {
         exclusive
         value={isAsap ? ServiceTimes.ASAP : null}
         onChange={() => {
+          if (currRoute === menuRoute) {
+            window.scrollTo({
+              top: 0,
+            });
+          }
           if (!isAsap) {
             setDate(null);
             setCartServiceTime(ServiceTimes.ASAP);
@@ -67,6 +76,11 @@ const ServiceDateTimePicker: React.FC = () => {
           onChange={(d: Date | null) => {
             if (d === null) return;
             if (d.getMinutes() % 15 !== 0) return;
+            if (currRoute === menuRoute) {
+              window.scrollTo({
+                top: 0,
+              });
+            }
             const serviceTime = Order.getServiceTime(d);
             setDate(d);
             setCartServiceTime(serviceTime);

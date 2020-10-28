@@ -502,6 +502,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     ),
     tip,
     loading: didPlaceOrder,
+    showPlan: !consumer.loading && !consumer.data?.plan
   }
 
   let deliveryLabel: string = cart.serviceType;
@@ -836,32 +837,6 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               </div>
             </Grid>
           </Grid>
-          {
-            !consumer.loading && !consumer.data?.plan &&
-            <>
-              <Typography
-                variant='h6'
-                className={classes.title}
-              >
-                Plan - change or cancel anytime
-              </Typography>
-              <PlanCards
-                small
-                defaultColor
-                showFirstOnly
-                selected={plan ? plan.stripeProductPriceId : null}
-                onClickCard={p => setPlan(p)}
-                onLoad={plans => {
-                  if (!plan) setPlan(plans[0]);
-                }}
-              />
-              <Typography variant='body2'>
-                By signing up, you acknowledge that you have read and agree to the Table Terms and Conditions and
-                authorize us to charge your default payment method after your 30-day free trial. Your membership 
-                continues until cancelled by visiting Your Plan.
-              </Typography>
-            </>
-          }
         </Grid>
         {
           !isMdAndUp &&

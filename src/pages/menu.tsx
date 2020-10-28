@@ -101,6 +101,9 @@ const menu = () => {
   );
   const onFilterCuisines = (cuisines: string[]) => {
     setCuisines(cuisines);
+    window.scroll({
+      top: 0,
+    })
   };
   const allCuisines = useMemo(() => allTags.data ? Tag.getCuisines(allTags.data) : [], [allTags.data]);
   const allRests = rests.data;

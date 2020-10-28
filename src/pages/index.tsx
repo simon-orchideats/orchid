@@ -384,7 +384,7 @@ const Plans = withClientApollo(() => {
           Get Started
         </Button>
       </Link>
-      <Typography variant='caption'>
+      <Typography variant='body2'>
         Then pay as low as $1.49/month. Cancel anytime. 100% satisfaction or money back guaranteed
       </Typography>
       <Link href={plansRoute}>

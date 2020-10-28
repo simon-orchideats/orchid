@@ -43,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 type props = {
   hideCheckout?: boolean
   hideDeliveries?: boolean
+  showPlan?: boolean
   loading: boolean,
   tip: number,
   onPlaceOrder: () => void
@@ -52,6 +53,7 @@ const CheckoutCart: React.FC<props> = ({
   onPlaceOrder,
   hideCheckout = false,
   hideDeliveries = false,
+  showPlan = false,
   loading,
   tip,
 }) => {
@@ -72,16 +74,23 @@ const CheckoutCart: React.FC<props> = ({
     </Button>
   );
   const disclaimer = (
-    <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
-      Thank you for choosing Table. Contact at simon@tableweekly.com or (609) 513-8166 for any issues
-    </Typography>
+    <>
+      <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
+        Contact simon@tableweekly.com for any issues.
+      </Typography>
+      <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
+        By ordering, you acknowledge that you have read and agree to the Table Terms and Conditions and
+        authorize us to charge your default payment method after your 30-day free trial. Your membership 
+        continues until cancelled by visiting Your Plan.
+      </Typography>
+    </>
   );
 
   const mealTotal = OrderMeal.getTotalMealCost(cart.rest.meals, cart.rest.discount?.percentOff);
   const totalBadPrice = Meal.getTotalBadPrice(cart.rest.meals);
-  const savings = ((totalBadPrice / 100 - mealTotal / 100)).toFixed(2);
+  const savings = (totalBadPrice - mealTotal) / 100;
   const taxes = Math.round(mealTotal * cart.rest.taxRate);
-  const total = mealTotal + taxes + cart.rest.deliveryFee + tip;
+  const total = mealTotal + taxes + cart.serviceType === ServiceTypes.Delivery ? cart.rest.deliveryFee : 0  + tip;
   return (
     <>
       {suggestions.map((suggestion, i) => (
@@ -138,7 +147,7 @@ const CheckoutCart: React.FC<props> = ({
             <b>FREE</b>
           </Typography>
         </div>
-        <div className={`${classes.row}`} >
+        <div className={`${classes.row} ${classes.smallPaddingBottom}`} >
           <Typography variant='body1' className={classes.green}>
             <b>Total</b>
           </Typography>
@@ -146,13 +155,24 @@ const CheckoutCart: React.FC<props> = ({
             <b>${(total / 100).toFixed(2)}</b>
           </Typography>
         </div>
-        <p />
-        <div className={classes.row}>
-          <Typography variant='body1' className={classes.savings}>
-            <b>Saving ${savings}</b>
+        {
+          showPlan &&
+          <Typography variant='body1' gutterBottom>
+            Foodie Plan - FREE 30 day trial then $4.99/month (change/cancel anytime)
           </Typography>
-        </div>
+          }
         <p />
+        {
+          savings > 0 &&
+          <>
+            <div className={classes.row}>
+              <Typography variant='body1' className={classes.savings}>
+                <b>Saving ${savings.toFixed(2)}</b>
+              </Typography>
+            </div>
+            <p />
+          </>
+        }
         {!hideCheckout && orderButton}
         {!hideCheckout && disclaimer}
       </div>

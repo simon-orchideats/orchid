@@ -30,6 +30,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   otherAppsAlignment: {
+    textAlign: 'left',
     [theme.breakpoints.down('md')]: {
       textAlign: 'right'
     },
@@ -71,7 +72,8 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
   },
   img: {
-    width: '25vw'
+    width: '25vw',
+    maxWidth: 250,
   },
 }))
 

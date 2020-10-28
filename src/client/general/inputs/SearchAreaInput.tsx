@@ -11,6 +11,8 @@ import { Paper } from '@material-ui/core';
 import { useSetSearchArea } from '../../global/state/cartState';
 import withClientApollo from '../../utils/withClientApollo';
 import { debounce } from 'lodash';
+import { useRouter } from 'next/router';
+import { menuRoute } from '../../../pages/menu';
 
 interface MainTextMatchedSubstrings {
   offset: number;
@@ -94,6 +96,8 @@ const SearchAreaInput: React.FC<{
 }) => {
   const classes = useStyles();
   const setSearchArea = useSetSearchArea();
+  const router = useRouter();
+  const currRoute = router.pathname;
   const [selectedAddr, setSelectedAddr] = React.useState<PlaceType | null | string>(defaultValue || null);
   const [inputAddr, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<PlaceType[]>([]);
@@ -131,7 +135,14 @@ const SearchAreaInput: React.FC<{
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (options.length > 0 && !onSelect) setSearchArea(options[0].description)
+    if (options.length > 0 && !onSelect) {
+      if (currRoute === menuRoute) {
+        window.scrollTo({
+          top: 0,
+        });
+      }
+      setSearchArea(options[0].description);
+    }
   }
 
   return (

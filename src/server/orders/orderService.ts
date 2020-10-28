@@ -3,7 +3,7 @@ import { ELocation } from './../../place/locationModel';
 import { ERest } from './../../rest/restModel';
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { IAddress } from './../../place/addressModel';
-import { EOrder, IOrder, Order } from './../../order/orderModel';
+import { EOrder, IOrder, Order, ServiceTypes } from './../../order/orderModel';
 import { getPlanService, IPlanService } from './../plans/planService';
 import { Permissions, EConsumer } from './../../consumer/consumerModel';
 import { SignedInUser, MutationConsumerRes } from '../../utils/apolloUtils';
@@ -724,7 +724,7 @@ class OrderService {
       const rest = cart.cartOrder.rest;
       let mealTotal = OrderMeal.getTotalMealCost(rest.meals, cart.cartOrder.rest.discount?.percentOff);
       const taxes = Math.round(mealTotal * rest.taxRate);
-      const total = Math.round(mealTotal + taxes + cart.tip + rest.deliveryFee);
+      const total = Math.round(mealTotal + taxes + cart.tip + cart.cartOrder.serviceType === ServiceTypes.Delivery ? rest.deliveryFee : 0);
       const options: Stripe.PaymentIntentCreateParams = {
         payment_method: paymentMethodId,
         customer: stripeCustomerId,
