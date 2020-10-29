@@ -163,7 +163,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingWhen, setIsUpdatingWhen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (plans.data && !plan) {
+    if (plans.data && !plan && !consumer.data?.plan) {
       const defaultPlan = plans.data?.find(p => p.name === defaultPlanName);
       if (!defaultPlan) {
         const err = new Error(`Missing '${defaultPlanName}'`);
@@ -172,7 +172,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       }
       setPlan(defaultPlan)
     }
-  }, [plans.data, plan])
+  }, [plans.data, plan, consumer.data?.plan])
 
   useEffect(() => {
     setDefaultPhone(consumer.data?.profile.phone || undefined);
@@ -515,7 +515,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     ),
     tip,
     loading: didPlaceOrder,
-    showPlan: !consumer.loading && !consumer.data?.plan
+    plan: plan || undefined 
   }
 
   let deliveryLabel: string = cart.serviceType;

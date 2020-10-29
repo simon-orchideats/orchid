@@ -585,14 +585,14 @@ export const cartMutationResolvers: cartMutationResolvers = {
   setPlan: (_, { plan }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
-      return {
+      return updateCartCache(cache, {
         rest: null,
-        searchArea: (res && res.cart) ? res.cart.searchArea : null,
+        searchArea: null,
         serviceDate: Order.getServiceDateStr(new Date()),
         serviceTime: DEFAULT_SERVICE_TIME,
         serviceType: DEFAULT_SERVICE_TYPE,
         plan,
-      }
+      });
     }
     return updateCartCache(cache, {
       rest: res.cart.rest,

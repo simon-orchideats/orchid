@@ -5916,7 +5916,7 @@ POST rests/_doc/
     },
     {
       "addonGroups" : [ ],
-      "img" : "/menu/wurst/haus-brat.jpg",
+      "img" : "/menu/wurstbar/haus-brat.jpg",
       "comparison": {
         "compareTo": "Grubhub",
         "percentOff": 11,

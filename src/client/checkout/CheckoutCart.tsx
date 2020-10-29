@@ -6,6 +6,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { OrderMeal } from "../../order/orderRestModel";
 import { Meal } from "../../rest/mealModel";
 import { ServiceTypes } from "../../order/orderModel";
+import { IPlan } from "../../plan/planModel";
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -43,7 +44,7 @@ const useStyles = makeStyles(theme => ({
 type props = {
   hideCheckout?: boolean
   hideDeliveries?: boolean
-  showPlan?: boolean
+  plan?: IPlan
   loading: boolean,
   tip: number,
   onPlaceOrder: () => void
@@ -53,7 +54,7 @@ const CheckoutCart: React.FC<props> = ({
   onPlaceOrder,
   hideCheckout = false,
   hideDeliveries = false,
-  showPlan = false,
+  plan,
   loading,
   tip,
 }) => {
@@ -160,9 +161,9 @@ const CheckoutCart: React.FC<props> = ({
           </Typography>
         </div>
         {
-          showPlan &&
+          plan &&
           <Typography variant='body1' gutterBottom>
-            Foodie Plan - FREE 30 day trial then $4.99/month (change/cancel anytime)
+            {plan.name} Plan - FREE 30 day trial then ${plan.price.toFixed(2)}/month (change/cancel anytime)
           </Typography>
           }
         <p />

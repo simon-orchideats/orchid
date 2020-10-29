@@ -26,6 +26,7 @@ import ServiceTimePopper from './ServiceTimePopper';
 import ServiceTypePopper from './ServiceTypePopper';
 import CartModal from './CartModal';
 import { plansRoute } from '../../pages/plans';
+import { myPlanRoute } from '../../pages/consumer/my-plan';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -293,7 +294,7 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
         <div className={classes.plansLink}>
-          <Link href={plansRoute}>
+          <Link href={consumer.data?.plan ? myPlanRoute : plansRoute}>
             <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
           </Link>
         </div>
