@@ -19,7 +19,7 @@ import Notifier from "../client/notification/Notifier";
 import PhoneInput from "../client/general/inputs/PhoneInput";
 import EmailInput from "../client/general/inputs/EmailInput";
 import GLogo from "../client/checkout/GLogo";
-import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetConsumer } from "../consumer/consumerService";
+import { useConsumerSignUp, useGoogleSignIn, useEmailSignIn, useGetConsumer, useGetLazyConsumer } from "../consumer/consumerService";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import TrustSeal from "../client/checkout/TrustSeal";
 import BaseInput from "../client/general/inputs/BaseInput";
@@ -131,6 +131,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       0,
     )
   );
+  const [getConsumer] = useGetLazyConsumer();
   const consumer = useGetConsumer('network-only');
   const [didPlaceOrder, setDidPlaceOrder] = useState<boolean>(false);
   const [staticTip, setStaticTip] = useState<staticTip>(defaultTip);
@@ -315,6 +316,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onClickGoogle = async () => {
     try {
       await signInGoogle();
+      getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with google`);
       console.error(err.stack);
@@ -324,6 +326,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const onClickEmail = async () => {
     try {
       await signInEmail();
+      getConsumer();
     } catch (e) {
       const err = new Error(`Failed to sign in with email`);
       console.error(err.stack);

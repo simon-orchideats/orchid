@@ -735,7 +735,7 @@ class OrderService {
         customer: stripeCustomerId,
         confirm: true,
         confirmation_method: 'manual',
-        statement_descriptor_suffix: rest.restName,
+        statement_descriptor_suffix: 'Table',
         setup_future_usage: 'off_session',
         amount: total,
         currency: 'usd',
