@@ -1,6 +1,17 @@
+# Preview
+
+## Tableweekly.com
+- **Use a 77 Park Ave, Hoboken, NJ 07030** as a valid address
+
+![home](https://i.ibb.co/L0dbwdZ/ss1.png)
+
+![menu](https://i.ibb.co/ts3D4qd/ss2.png)
+
+![checkout](https://i.ibb.co/hWwJzrp/ss3.png)
+
 # Getting started
 
-## Downlaods
+## Downloads
 
 Newer versions should be fine too
 
