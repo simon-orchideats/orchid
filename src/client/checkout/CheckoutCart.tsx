@@ -163,7 +163,7 @@ const CheckoutCart: React.FC<props> = ({
         {
           plan &&
           <Typography variant='body1' gutterBottom>
-            {plan.name} Plan - FREE 30 day trial then ${plan.price.toFixed(2)}/month (change/cancel anytime)
+            {plan.name} Plan - FREE 30 day trial then ${(plan.price / 100).toFixed(2)}/month (change/cancel anytime)
           </Typography>
           }
         <p />
