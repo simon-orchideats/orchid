@@ -28,8 +28,7 @@ export const notificationQL = gql`
   }
 `
 
-export const notificationInitialState: Notification | null = null;
-
+export const notificationInitialState = null;
 export const NOTIFICATION_QUERY = gql`
   query notification {
     notification @client

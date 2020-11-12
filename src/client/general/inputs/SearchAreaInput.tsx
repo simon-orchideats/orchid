@@ -179,7 +179,7 @@ const SearchAreaInput: React.FC<{
           <TextField
             {...params}
             autoFocus={!disableAutoFocus}
-            label='Enter Address'
+            label='Where to?'
             onBlur={onBlur}
             color='primary'
             variant='filled'

@@ -1,4 +1,4 @@
-import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime } from './../../../order/orderModel';
+import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime, ServiceTypes } from './../../../order/orderModel';
 import { ApolloCache } from 'apollo-cache';
 import { Cart, ICart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
@@ -23,12 +23,12 @@ export const cartQL = gql`
     discount: Discount
   }
   type CartState {
-    rests: OrderRest
+    rest: OrderRest
     searchArea: String
     serviceDate: String!
     serviceTime: String!
     serviceType: ServiceType!
-    stripeProductPriceId: ID
+    plan: Plan
   }
   input PlanInput {
     stripeProductPriceId: String!
@@ -63,11 +63,54 @@ export const cartQL = gql`
   }
 `
 
-export const cartInitialState: ICart | null = null;
+export const cartInitialState: ICart = {
+  rest: null,
+  searchArea: 'Jersey City, NJ, USA',
+  serviceDate: Order.getServiceDateStr(new Date()),
+  serviceTime: DEFAULT_SERVICE_TIME,
+  serviceType: ServiceTypes.Pickup,
+  plan: null,
+  //@ts-ignore
+  __typename: 'CartState'
+}
 
 const CART_QUERY = gql`
   query cart {
-    cart @client
+    cart @client {
+      plan {
+        stripeProductPriceId
+        name
+        numAccounts
+        price
+      }
+      rest {
+        meals {
+          comparison {
+            compareTo
+            percentOff
+            serviceFeePercent
+          }
+          customizations {
+            additionalPrice
+            name
+            quantity
+          }
+          description
+          img
+          instructions
+          mealId
+          name
+          price
+          quantity
+        }
+        restId
+        restName
+      }
+      searchArea
+      serviceDate
+      serviceTime
+      serviceType
+    }
   }
 `
 
@@ -215,7 +258,7 @@ export const useAddMealToCart = (): (
     restName: string,
     taxRate: number
   ) => {
-    mutate({ 
+    mutate({
       variables: {
         meal,
         customizations,
@@ -263,53 +306,6 @@ export const useClearCartMeals = (): () => void => {
     mutate()
   }
 }
-// export const useSetCart = (): (order: Order) => void => {
-//   type vars = { order: Order };
-//   const [mutate] = useMutation<any, vars>(gql`
-//     mutation setCart($order: Order!) {
-//       setCart(order: $order) @client
-//     }
-//   `);
-//   return (order: Order) => {
-//     mutate({ variables: { order } })
-//   }
-// }
-
-// export const useUpdateCartEmail = (): (email: string) => void => {
-//   type vars = { email: string };
-//   const [mutate] = useMutation<any, vars>(gql`
-//     mutation updateCartEmail($email: ID!) {
-//       updateCartEmail(email: $email) @client
-//     }
-//   `);
-//   return (email: string) => {
-//     mutate({ variables: { email } })
-//   }
-// }
-
-// export const useUpdateDeliveryDay = (): (day: deliveryDay) => void => {
-//   type vars = { day: deliveryDay };
-//   const [mutate] = useMutation<any, vars>(gql`
-//     mutation updateDeliveryDay($day: Int!) {
-//       updateDeliveryDay(day: $day) @client
-//     }
-//   `);
-//   return (day: deliveryDay) => {
-//     mutate({ variables: { day } })
-//   }
-// }
-
-// export const useUpdateDeliveryTime = (): (time: deliveryTime) => void => {
-//   type vars = { time: deliveryTime };
-//   const [mutate] = useMutation<any, vars>(gql`
-//     mutation updateDeliveryTime($time: Int!) {
-//       updateDeliveryTime(time: $time) @client
-//     }
-//   `);
-//   return (time: deliveryTime) => {
-//     mutate({ variables: { time } })
-//   }
-// }
 
 export const useSetInstruction = (): (meal: IOrderMeal, instruction: string | null) => void => {
   type vars = { meal: IOrderMeal, instruction: string | null };
@@ -409,7 +405,12 @@ type cartMutationResolvers = {
 const updateCartCache = (cache: ApolloCache<any>, cart: ICart | null) => {
   cache.writeQuery({
     query: CART_QUERY,
-    data: { cart }
+    data: {
+      cart: {
+        ...cart,
+        __typename: 'CartState'
+      }
+    }
   });
   return cart;
 }
@@ -493,7 +494,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     );
     return updateCartCache(cache, newCart);
   },
-  
+
   setInstruction: (_, { meal, instruction }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
@@ -547,7 +548,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       plan: res.cart.plan,
     });
   },
-  
+
   setServiceTime: (_, { time }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {

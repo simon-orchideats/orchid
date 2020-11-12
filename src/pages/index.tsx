@@ -5,7 +5,6 @@ import Router from 'next/router';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React from 'react';
-import SearchAreaInput from '../client/general/inputs/SearchAreaInput';
 import { plansRoute } from './plans';
 import { useSetSearchArea } from '../client/global/state/cartState';
 
@@ -124,6 +123,9 @@ const useStyles = makeStyles(theme => ({
       fontSize: '1.8rem',
     },
   },
+  green: {
+    color: theme.palette.common.green
+  },
   welcomeText: {
     minWidth: 320,
     marginTop: theme.spacing(4),
@@ -131,6 +133,12 @@ const useStyles = makeStyles(theme => ({
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
+  },
+  browse: {
+    borderColor: theme.palette.common.black,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    backgroundColor: theme.palette.common.white,
   },
   mediumVerticalMargin: {
     marginTop: theme.spacing(3),
@@ -338,11 +346,6 @@ const useStyles = makeStyles(theme => ({
 
 const Welcome = withClientApollo(() => {
   const classes = useStyles();
-  const setSearchArea = useSetSearchArea();
-  const onSelectLocation = (area: string) => {
-    setSearchArea(area)
-    Router.push(menuRoute);
-  }
   return (
     <div className={classes.welcome}>
       <div className={classes.welcomeText}>
@@ -356,7 +359,16 @@ const Welcome = withClientApollo(() => {
           <b>without the ripoffs</b>
         </Typography>
         <div className={classes.welcomeSearch}>
-          <SearchAreaInput onSelect={area => onSelectLocation(area)} />
+          <Link href={menuRoute}>
+            <Button
+              variant='contained'
+              className={classes.browse}
+              color='primary'
+              size='large'
+            >
+              Browse restaurants
+            </Button>
+          </Link>
         </div>
         <Typography variant='h3' className={classes.membersSave}>
           <b>Members save 30% vs</b>
@@ -495,6 +507,16 @@ const Comparison = () => {
                 />
                 &nbsp;
                 Extra discounts
+              </Typography>
+              <p />
+              <Typography
+                variant='h4'
+                align='center'
+                className={classes.green}
+              >
+                <b>
+                  = 30% lower prices
+                </b>
               </Typography>
             </Grid>
           </Grid>

@@ -47,10 +47,18 @@ const plans = () => {
     <>
       <Container maxWidth='lg' className={classes.container}>
         <Typography variant='h3' className={`${classes.shrinker} ${classes.weeklyPlans}`}>
-          Subscribe & Save
+          Monthly Memberships
         </Typography>
-        <Typography variant='h4'>
-          Cancel anytime
+        <Typography
+          variant='h6'
+          align='center'
+          gutterBottom
+        >
+          Change/Cancel anytime. 100% satisfaction guaranteed or money back.
+        </Typography>
+        <Typography variant='body1' gutterBottom>
+          Memberships allow our team to operate our service of offering you the best discounts possible. Thank you for
+          your support!
         </Typography>
         <PlanCards
           renderButton={p => 
@@ -61,7 +69,7 @@ const plans = () => {
               size='large'
               fullWidth
             >
-              GET STARTED
+              BROWSE
             </Button>
           }
         />

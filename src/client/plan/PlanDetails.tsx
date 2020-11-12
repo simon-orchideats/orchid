@@ -82,7 +82,7 @@ const PlanDetails: React.FC<{
           variant='h5'
           className={classes.marginTop}
         >
-          {plan.name} (Monthly)
+          {plan.name}
         </Typography>
         <Typography variant='h6'>
           ${(plan.price / plan.numAccounts / 100).toFixed(2)}/account
