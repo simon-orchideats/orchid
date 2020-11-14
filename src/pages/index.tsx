@@ -1,12 +1,10 @@
 import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Container } from '@material-ui/core';
 import Link from 'next/link';
 import { menuRoute } from './menu';
-import Router from 'next/router';
 import withClientApollo from '../client/utils/withClientApollo';
 import Footer from '../client/general/Footer';
 import React from 'react';
 import { plansRoute } from './plans';
-import { useSetSearchArea } from '../client/global/state/cartState';
 
 const deskBody1FontSize = '1.5rem';
 const deskBody2FontSize = '1.2rem';
