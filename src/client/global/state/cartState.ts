@@ -1,4 +1,4 @@
-import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime, ServiceTypes, ServiceTimes } from './../../../order/orderModel';
+import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime } from './../../../order/orderModel';
 import { ApolloCache } from 'apollo-cache';
 import { Cart, ICart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
