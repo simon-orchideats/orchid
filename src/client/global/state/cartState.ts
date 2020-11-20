@@ -474,14 +474,9 @@ export const cartMutationResolvers: cartMutationResolvers = {
   removeMealFromCart: (_, { meal }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
-      return updateCartCache(cache, {
-        rest: null,
-        searchArea: addr,
-        serviceDate: Order.getServiceDateStr(new Date()),
-        serviceTime: ServiceTimes.ASAP,
-        serviceType: ServiceTypes.Pickup,
-        plan: null,
-      });
+      const err = new Error('Missing cart');
+      console.error(err.stack);
+      throw err;
     }
     const newCart = Cart.removeMeal(
       res.cart,
