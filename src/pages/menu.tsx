@@ -5,7 +5,7 @@ import withApollo from "../client/utils/withPageApollo";
 import { useGetNearbyRests, useGetTags } from "../rest/restService";
 import SearchAreaModal from "../client/menu/SearchAreaModal";
 import RestMenu from "../client/menu/RestMenu";
-import { useGetCart, useSetSearchArea } from "../client/global/state/cartState";
+import { useGetCart, useSetSearchArea, useInitCart } from "../client/global/state/cartState";
 import StickyDrawer from "../client/general/StickyDrawer";
 import Filter from "../client/menu/Filter";
 import { Tag } from "../rest/tagModel";
@@ -73,6 +73,7 @@ const useStyles = makeStyles(theme => ({
 const menu = () => {
   const classes = useStyles();
   const cart = useGetCart();
+  const initCart = useInitCart();
   const setSearchArea = useSetSearchArea();
   const allTags = useGetTags();
   const consumer = useGetConsumer();
@@ -89,6 +90,8 @@ const menu = () => {
   useEffect(() => {
     if (consumer.data && consumer.data.profile.searchArea) {
       setSearchArea(consumer.data.profile.searchArea.primaryAddr);
+    } else {
+      initCart()
     }
   }, [consumer.data]);
   const rests = useGetNearbyRests(

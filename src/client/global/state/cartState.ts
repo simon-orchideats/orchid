@@ -1,4 +1,4 @@
-import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime, ServiceTypes } from './../../../order/orderModel';
+import { DEFAULT_SERVICE_TYPE, DEFAULT_SERVICE_TIME, ServiceType, Order, ServiceTime, ServiceTypes, ServiceTimes } from './../../../order/orderModel';
 import { ApolloCache } from 'apollo-cache';
 import { Cart, ICart } from '../../../order/cartModel';
 import { ClientResolver } from './localState';
@@ -23,12 +23,12 @@ export const cartQL = gql`
     discount: Discount
   }
   type CartState {
-    rest: OrderRest
+    rests: OrderRest
     searchArea: String
     serviceDate: String!
     serviceTime: String!
     serviceType: ServiceType!
-    plan: Plan
+    stripeProductPriceId: ID
   }
   input PlanInput {
     stripeProductPriceId: String!
@@ -63,54 +63,22 @@ export const cartQL = gql`
   }
 `
 
-export const cartInitialState: ICart = {
-  rest: null,
-  searchArea: 'Jersey City, NJ, USA',
-  serviceDate: Order.getServiceDateStr(new Date()),
-  serviceTime: DEFAULT_SERVICE_TIME,
-  serviceType: ServiceTypes.Pickup,
-  plan: null,
-  //@ts-ignore
-  __typename: 'CartState'
-}
+export const cartInitialState: ICart | null = null;
+
+// export const cartInitialState: ICart = {
+//   rest: null,
+//   searchArea: 'Jersey City, NJ, USA',
+//   serviceDate: Order.getServiceDateStr(new Date()),
+//   serviceTime: DEFAULT_SERVICE_TIME,
+//   serviceType: ServiceTypes.Pickup,
+//   plan: null,
+//   //@ts-ignore
+//   __typename: 'CartState'
+// }
 
 const CART_QUERY = gql`
   query cart {
-    cart @client {
-      plan {
-        stripeProductPriceId
-        name
-        numAccounts
-        price
-      }
-      rest {
-        meals {
-          comparison {
-            compareTo
-            percentOff
-            serviceFeePercent
-          }
-          customizations {
-            additionalPrice
-            name
-            quantity
-          }
-          description
-          img
-          instructions
-          mealId
-          name
-          price
-          quantity
-        }
-        restId
-        restName
-      }
-      searchArea
-      serviceDate
-      serviceTime
-      serviceType
-    }
+    cart @client
   }
 `
 
@@ -258,7 +226,7 @@ export const useAddMealToCart = (): (
     restName: string,
     taxRate: number
   ) => {
-    mutate({
+    mutate({ 
       variables: {
         meal,
         customizations,
@@ -269,6 +237,17 @@ export const useAddMealToCart = (): (
         taxRate
       }
     })
+  }
+}
+
+export const useInitCart = (): () => void => {
+  const [mutate] = useMutation<any>(gql`
+    mutation initCart {
+      initCart @client
+    }
+  `);
+  return () => {
+    mutate()
   }
 }
 
@@ -390,6 +369,7 @@ type cartMutationResolvers = {
     restName: string,
     taxRate: number,
   }, ICart | null>
+  initCart: ClientResolver<undefined, ICart | null>
   incrementMealCount: ClientResolver<{ meal: IOrderMeal }, ICart | null>
   clearCartMeals: ClientResolver<undefined, ICart | null>
   removeMealFromCart: ClientResolver<{ meal: IOrderMeal }, ICart | null>
@@ -405,12 +385,7 @@ type cartMutationResolvers = {
 const updateCartCache = (cache: ApolloCache<any>, cart: ICart | null) => {
   cache.writeQuery({
     query: CART_QUERY,
-    data: {
-      cart: {
-        ...cart,
-        __typename: 'CartState'
-      }
-    }
+    data: { cart }
   });
   return cart;
 }
@@ -467,6 +442,21 @@ export const cartMutationResolvers: cartMutationResolvers = {
     });
   },
 
+  initCart: (_, _args, { cache }) => {
+    const res = getCart(cache);
+    if (!res || !res.cart) {
+      return updateCartCache(cache, {
+        rest: null,
+        searchArea: 'Jersey City, NJ, USA',
+        serviceDate: Order.getServiceDateStr(new Date()),
+        serviceTime: DEFAULT_SERVICE_TIME,
+        serviceType: DEFAULT_SERVICE_TYPE,
+        plan: null,
+      });
+    }
+    return res.cart;
+  },
+
   incrementMealCount: (_, { meal }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
@@ -484,9 +474,14 @@ export const cartMutationResolvers: cartMutationResolvers = {
   removeMealFromCart: (_, { meal }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
-      const err = new Error('Missing cart');
-      console.error(err.stack);
-      throw err;
+      return updateCartCache(cache, {
+        rest: null,
+        searchArea: addr,
+        serviceDate: Order.getServiceDateStr(new Date()),
+        serviceTime: ServiceTimes.ASAP,
+        serviceType: ServiceTypes.Pickup,
+        plan: null,
+      });
     }
     const newCart = Cart.removeMeal(
       res.cart,
@@ -494,7 +489,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     );
     return updateCartCache(cache, newCart);
   },
-
+  
   setInstruction: (_, { meal, instruction }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
@@ -548,7 +543,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
       plan: res.cart.plan,
     });
   },
-
+  
   setServiceTime: (_, { time }, { cache }) => {
     const res = getCart(cache);
     if (!res || !res.cart) {
@@ -588,7 +583,7 @@ export const cartMutationResolvers: cartMutationResolvers = {
     if (!res || !res.cart) {
       return updateCartCache(cache, {
         rest: null,
-        searchArea: null,
+        searchArea: 'Jersey City, NJ, USA',
         serviceDate: Order.getServiceDateStr(new Date()),
         serviceTime: DEFAULT_SERVICE_TIME,
         serviceType: DEFAULT_SERVICE_TYPE,

@@ -243,7 +243,7 @@ export const ServiceTypes: {
   Delivery: 'Delivery',
 }
 
-export const DEFAULT_SERVICE_TYPE = ServiceTypes.Delivery;
+export const DEFAULT_SERVICE_TYPE = ServiceTypes.Pickup;
 
 export interface EOrder {
   readonly cartUpdatedDate: number
