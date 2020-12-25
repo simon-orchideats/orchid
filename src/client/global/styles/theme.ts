@@ -20,7 +20,7 @@ const powerRed = '#f44336'
  */
 const brandBase = white;
 const brandPrimary = floralWhite;
-const brandSecondary = scarletRed;
+const brandSecondary = '#EBF8C0';
 const brandPrimaryDark = '#ffad40';
 const brandLink = blue;
 const brandPrimaryLightOpacity = (opacity: number) => `rgba(255, 221, 64 ${opacity})`;

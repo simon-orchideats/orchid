@@ -1,4 +1,4 @@
-import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Container } from '@material-ui/core';
+import { makeStyles, Typography, Button, Grid, useMediaQuery, Theme, useTheme, Avatar, Container, Card, CardContent, CardMedia, Hidden } from '@material-ui/core';
 import Link from 'next/link';
 import { menuRoute } from './menu';
 import withClientApollo from '../client/utils/withClientApollo';
@@ -15,6 +15,75 @@ const useStyles = makeStyles(theme => ({
       fontSize: deskBody2FontSize
     },
     fontSize: deskBody1FontSize
+  },
+  welcomeContainer: {
+    background: 'none',
+    position: 'relative',
+    height: '100%'
+  },
+  indexContainer: {
+    background: theme.palette.background.paper
+  },
+  howContainer: {
+    background: theme.palette.background.paper,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  plansContainer: {
+    background: 'none',
+  },
+  card: {
+    maxWidth: 225,
+    background: 'none',
+    textAlign: 'center',
+    marginLeft: 2,
+    marginRight: 2,
+    [theme.breakpoints.up('md')]: {
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+    },
+  },
+  cardTitle: {
+    lineHeight: 1.5,
+    fontWeight: 500,
+  },
+  cardContent: {
+    paddingRight: 0,
+    paddingLeft: 0,
+    paddingBottom: `${theme.spacing(1)} !important`,
+    paddingTop: 4,
+    [theme.breakpoints.up('md')]: {
+      paddingTop: undefined,
+    },
+  },
+  cardPrice: {
+    lineHeight: 1.5,
+    fontWeight: 500,
+    color: theme.palette.text.primary,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardNewPrice: {
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: theme.palette.common.green,
+  },
+  cardScaler: {
+    width: '100%',
+    paddingBottom: '100%',
+    paddingTop: undefined,
+    position: 'relative',
+    cursor: 'pointer',
+  },
+  cardImg: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end'
   },
   avatar: {
     marginTop: -10,
@@ -46,8 +115,13 @@ const useStyles = makeStyles(theme => ({
   red: {
     color: theme.palette.common.red,
   },
+  howText: {
+    [theme.breakpoints.down('sm')]: {
+      textAlign: 'center',
+    },
+  },
   title: {
-    paddingBottom: theme.spacing(6),
+    paddingBottom: theme.spacing(2),
     [theme.breakpoints.down('sm')]: {
       fontSize: '1.85rem',
       fontWeight: 500,
@@ -64,7 +138,8 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center'
   },
   logos: {
-    width: '30%'
+    width: '30%',
+    marginLeft: theme.spacing(3),
   },
   welcome: {
     [theme.breakpoints.down('xs')]: {
@@ -85,19 +160,18 @@ const useStyles = makeStyles(theme => ({
     [theme.mixins.customToolbar.toolbarWidthQuery]: {
       maxHeight: `calc(100vh - ${theme.mixins.customToolbar.smallHeight}px - 115.5px - 150px)`,
     },
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   welcomeSearch: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3),
+    // marginTop: theme.spacing(3),
+    // marginBottom: theme.spacing(3),
   },
   welcomeTitle: {
     fontSize: '4rem',
     fontWeight: 500,
+    paddingBottom: theme.spacing(1),
     [theme.breakpoints.down('sm')]: {
       fontSize: '3.5rem',
     },
@@ -106,6 +180,15 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.down(380)]: {
       fontSize: '2rem',
+    },
+  },
+  content: {
+    paddingRight: 0,
+    paddingLeft: 0,
+    paddingBottom: `${theme.spacing(1)} !important`,
+    paddingTop: 4,
+    [theme.breakpoints.up('md')]: {
+      paddingTop: undefined,
     },
   },
   membersSave: {
@@ -121,21 +204,32 @@ const useStyles = makeStyles(theme => ({
       fontSize: '1.8rem',
     },
   },
+  plansImg: {
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: theme.spacing(2),
+    },
+  },
   green: {
     color: theme.palette.common.green
   },
   welcomeText: {
-    minWidth: 320,
-    marginTop: theme.spacing(4),
+    // minWidth: 320,
+    marginTop: theme.spacing(10),
   },
   verticalMargin: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
   browse: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
     borderColor: theme.palette.common.black,
+    color: theme.palette.text.primary,
     borderStyle: 'solid',
     borderWidth: 1,
+  },
+  white: {
     backgroundColor: theme.palette.common.white,
   },
   mediumVerticalMargin: {
@@ -158,25 +252,28 @@ const useStyles = makeStyles(theme => ({
     textDecoration: 'underline'
   },
   plans: {
-    backgroundImage: `url(/home/try.jpg)`,
-    backgroundPosition: '50% 90%',
-    backgroundSize: 'cover',
-    height: 475,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
+    backgroundColor: theme.palette.secondary.main,
+    // height: 475,
     paddingTop: theme.spacing(4),
-    textAlign: 'center',
+    paddingBottom: theme.spacing(4),
   },
-  testimonialsTitle: {
-    [theme.breakpoints.down(1250)]: {
-      paddingLeft: '0px !important',
-    },
-    [theme.breakpoints.down(1600)]: {
-      paddingLeft: 400,
-    },
-    paddingLeft: 100,
+  welcomeSave: {
+    display: 'flex',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: theme.spacing(4),
   },
+  // testimonialsTitle: {
+  //   [theme.breakpoints.down(1250)]: {
+  //     paddingLeft: '0px !important',
+  //   },
+  //   [theme.breakpoints.down(1600)]: {
+  //     paddingLeft: 400,
+  //   },
+  //   paddingLeft: 100,
+  // },
   testimonialsContainer: {
     [theme.breakpoints.down(1200)]: {
       paddingRight: theme.spacing(1),
@@ -187,7 +284,7 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('lg')]: {
       paddingRight: theme.spacing(4),
     },
-    backgroundColor: '#fffef1',
+    // backgroundColor: '#fffef1',
     display: 'flex',
     alignItems: 'center',
     flexDirection: 'column',
@@ -335,6 +432,19 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(3),
     minHeight: 400,
   },
+  howImg: {
+    width: '90%'
+  },
+  spacer: {
+    marginTop: theme.spacing(5),
+  },
+  centerRow: {
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   comparisonTextContainer: {
     paddingTop: theme.spacing(2),
     display: 'flex',
@@ -345,35 +455,39 @@ const useStyles = makeStyles(theme => ({
 const Welcome = withClientApollo(() => {
   const classes = useStyles();
   return (
-    <div className={classes.welcome}>
-      <div className={classes.welcomeText}>
-        <Typography variant='h3' className={classes.welcomeTitle}>
-          <b>Restaurant delivery,</b>
-        </Typography>
-        <Typography
-          variant='h3'
-          className={`${classes.welcomeTitle} ${classes.red}`}
-        >
-          <b>without the ripoffs</b>
-        </Typography>
-        <div className={classes.welcomeSearch}>
-          <Link href={menuRoute}>
-            <Button
-              variant='contained'
-              className={classes.browse}
-              color='primary'
-              size='large'
+      <div className={classes.welcome}>
+        <Container maxWidth='lg' className={classes.welcomeContainer}>
+          <div className={classes.welcomeText}>
+            <Typography variant='h3' className={classes.welcomeTitle}>
+              <b>Always the best deal in town</b>
+            </Typography>
+            <Typography
+              variant='body1'
+              className={classes.body1}
             >
-              Browse restaurants
-            </Button>
-          </Link>
-        </div>
-        <Typography variant='h3' className={classes.membersSave}>
-          <b>Members save 30% vs</b>
-        </Typography>
-        <img src='/home/logos.png' className={classes.logos}/>
+              <b>The best price guaranteed for your favorite eats, delivered</b>
+            </Typography>
+            <div className={classes.welcomeSearch}>
+              <Link href={menuRoute}>
+                <Button
+                  variant='contained'
+                  className={`${classes.browse} ${classes.white}`}
+                  color='primary'
+                  size='large'
+                >
+                  Browse restaurant offers
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className={classes.welcomeSave}>
+            <Typography variant='h3' className={classes.membersSave}>
+              <b>Save 30% vs</b>
+            </Typography>
+            <img src='/home/ofd.jpg' className={classes.logos}/>
+          </div>
+        </Container>
       </div>
-    </div>
   );
 });
 
@@ -381,47 +495,100 @@ const Plans = withClientApollo(() => {
   const classes = useStyles();
   return (
     <div className={classes.plans}>
-      <Typography variant='h3'>
-        Try Table <b>FREE</b> for 30 days
-      </Typography>
-      <Link href={menuRoute}>
-        <Button
-          className={classes.mediumVerticalMargin}
-          variant='contained'
-          color='primary'
-          size='large'
-        >
-          Get Started
-        </Button>
-      </Link>
-      <Typography variant='body2'>
-        Then pay as low as $1.49/month. Cancel anytime. 100% satisfaction or money back guaranteed
-      </Typography>
-      <Link href={plansRoute}>
-        <Button
-          className={classes.underline}
-          color='inherit'
-          variant='text'
-        >
-          Explore memberships
-        </Button>
-      </Link>
+      <Container maxWidth='xl' className={classes.plansContainer}>
+        <Grid container>
+          <Grid
+            item
+            md={6}
+            sm={12}
+            className={classes.centerRow}
+          >
+            <Typography variant='h3' className={classes.title}>
+              Get even more for less with Table+
+            </Typography>
+            <Typography variant='body1' className={classes.body1}>
+              Get an additional 10% off, expedited orders, and exclusive weekly deals. Pay as low as $1.49/month, cancel anytime.
+            </Typography>
+            <Link href={menuRoute}>
+              <Button
+                className={`${classes.browse} ${classes.white}`}
+                variant='contained'
+                size='large'
+              >
+                Try Table+ free for 30 days
+              </Button>
+            </Link>
+          </Grid>
+          <Grid
+            item
+            md={6}
+            sm={12}
+            className={classes.centerRow}
+          >
+            <img src='/home/c2.jpg' className={classes.plansImg} />
+          </Grid>
+        </Grid>
+      </Container>
     </div>
   );
 });
 
-const RipOff = () => {
+// const RipOff = () => {
+//   const classes = useStyles();
+//   const theme = useTheme<Theme>();
+//   const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
+//   return (
+//     <div className={`${classes.centered} ${classes.ripOff}`}>
+//       <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.red}>
+//         <b>LOWEST PRICE GUARANTEED</b>
+//       </Typography>
+//     </div>
+//   );
+// };
+
+const FoodCard: React.FC<{
+  img: string,
+  title: string,
+  badPrice: number
+  goodPrice: number,
+}> = ({
+  img,
+  title,
+  badPrice,
+  goodPrice
+}) => {
   const classes = useStyles();
-  const theme = useTheme<Theme>();
-  const isSmAndDown = useMediaQuery(theme.breakpoints.down('sm'));
   return (
-    <div className={`${classes.centered} ${classes.ripOff}`}>
-      <Typography variant={isSmAndDown ? 'h3' : 'h2'} className={classes.red}>
-        <b>LOWEST PRICE GUARANTEED</b>
-      </Typography>
-    </div>
-  );
-};
+    <Card elevation={0} className={classes.card}>
+      <div className={classes.cardScaler}>
+        <CardMedia
+          className={classes.cardImg}
+          image={img}
+          title={img}
+        />
+      </div>
+      <CardContent className={classes.cardContent}>
+        <Typography
+          variant='body1'
+          className={classes.cardTitle}
+        >
+          {title}
+        </Typography>
+        <Typography
+          component='span'
+          gutterBottom
+          variant='body2'
+          className={classes.cardPrice}
+        >
+          <s>${badPrice.toFixed(2)}</s>&nbsp;
+          <div className={classes.cardNewPrice}>
+            ${goodPrice.toFixed(2)}
+          </div>
+        </Typography>
+      </CardContent>
+    </Card>
+  )
+}
 
 const Comparison = () => {
   const classes = useStyles();
@@ -431,131 +598,146 @@ const Comparison = () => {
         <Grid container justifyContent='center'>
           <Grid
             item
-            xs={12}
-            md={6}
-            className={classes.centered}
+            xs={4}
+            md={3}
           >
-            <img src='/home/chart.png' className={classes.sampleImg} />
+            <FoodCard
+              img='/menu/little-market/buffalo-blue-burger.jpg'
+              title='Buffalo Blue Burger'
+              badPrice={8.43}
+              goodPrice={6.49}
+            />
           </Grid>
           <Grid
             item
-            container
-            className={classes.comparisonTextContainer}
-            xs={12}
-            md={6}
+            xs={4}
+            md={3}
           >
-            {/* <Grid item xs={6}>
-              <Typography
-                variant='h5'
-                align='center'
-                className={`
-                  ${classes.subtitle}
-                  ${classes.sampleTitle}
-                  ${classes.verticalMargin}
-                `}
-              >
-                <b>Other apps</b>
-              </Typography>
-              <Typography variant='body1' className={classes.body1}>
-                ❌&nbsp;Price markups
-              </Typography>
-              <Typography variant='body1' className={classes.body1}>
-                ❌&nbsp;Service fees
-              </Typography>
-              <Typography variant='body1' className={classes.body1}>
-                ❌&nbsp;30% commission from restaurants
-              </Typography>
-            </Grid> */}
-            <Grid item xs={12}>
-              <Typography variant='h5' align='center'>
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-                &nbsp;
-                No markups
-              </Typography>
-              <p />
-              <Typography variant='h5' align='center'>
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-                &nbsp;
-                No Service fees
-              </Typography>
-              <p />
-              <Typography variant='h5' align='center'>
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-                &nbsp;
-                No commissions
-              </Typography>
-              <p />
-              <Typography variant='h5' align='center'>
-                <img
-                  src='/home/check.png'
-                  alt='check'
-                  className={classes.check}
-                />
-                &nbsp;
-                Extra discounts
-              </Typography>
-              <p />
-              <Typography
-                variant='h4'
-                align='center'
-                className={classes.green}
-              >
-                <b>
-                  = 30% lower prices
-                </b>
-              </Typography>
-            </Grid>
+            <FoodCard
+              img='/menu/tony-boloneys/winger.jpg'
+              title='Winger Slice'
+              badPrice={5.74}
+              goodPrice={4.22}
+            />
           </Grid>
+          <Grid
+            item
+            xs={4}
+            md={3}
+          >
+            <FoodCard
+              img='https://s3.amazonaws.com/betterboh/u/img/prod/61/1553706119_ea3e27d8a2ad035195f5.jpg'
+              title='Herb Marinated Steak'
+              badPrice={19.33}
+              goodPrice={13.95}
+            />
+          </Grid>
+          <Hidden smDown>
+            <Grid
+              item
+              xs={4}
+              md={3}
+            >
+              <FoodCard
+                img='/menu/tacos-victoria/burrito.jpg'
+                title='Victoria Burrito'
+                badPrice={11.8}
+                goodPrice={10}
+              />
+            </Grid>
+          </Hidden>
         </Grid>
       </Container>
     </div>
   )
 }
 
-const Sushi = () => {
+const How = () => {
   const classes = useStyles();
   return (
-    <Grid container className={classes.sushiContainer}>
-      <Grid
-        item
-        xs={5}
-        className={classes.centered}
-      >
-        <Typography
-          variant='body1'
-          color='secondary'
-          className={`${classes.body1} ${classes.red}`}
+    <Container maxWidth='xl' className={classes.howContainer}>
+      <Grid container>
+        <Hidden mdUp>
+          <Grid
+            item
+            md={6}
+            className={classes.centered}
+          >
+            <img src='/home/c3.jpg' className={classes.howImg} />
+          </Grid>
+        </Hidden>
+        <Grid
+          item
+          md={6}
+          className={`${classes.howText} ${classes.centerRow}`}
         >
-          <del>
-            <b>$24.11</b>
-          </del>
-        </Typography>
-        <Typography variant='body1' className={classes.body1}>
-          <b>$16.84</b>
-        </Typography>
-        <Typography variant='body1' className={classes.body1}>
-          Okinawa Sushi Grill
-        </Typography>
-        <Typography variant='body1' className={classes.body1}>
-          Hoboken, NJ
-        </Typography>
+          <Typography variant='h3' className={classes.title}>
+            How can Table offer the best price?
+          </Typography>
+          <Typography variant='body1' className={classes.body1}>
+            Orders are filled, sold, and delivered directly by restaurants. Other apps are the expensive "middle men".&nbsp;
+            <Link href={menuRoute}>
+              Learn More
+            </Link>
+          </Typography>
+        </Grid>
+        <Hidden smDown>
+          <Grid
+            item
+            md={6}
+            className={classes.centered}
+          >
+            <img src='/home/c3.jpg' className={classes.howImg} />
+          </Grid>
+        </Hidden>
+        <Grid
+          item
+          xs={12}
+          className={classes.spacer}
+        />
+        <Grid
+          item
+          md={6}
+          className={classes.centered}
+        >
+          <img src='/home/c1.jpg' className={classes.howImg} />
+        </Grid>
+        <Grid
+          item
+          md={6}
+          className={`${classes.howText} ${classes.centerRow}`}
+        >
+          <Typography variant='h3' className={classes.title}>
+            How can restaurants offer better discounts?
+          </Typography>
+          <Typography variant='body1' className={classes.body1}>
+            Table takes zero commission from restaurants, allowing them to offer discounted
+            prices compared to other apps that take 24-30% commission from restaurants.&nbsp;
+            <Link href={menuRoute}>
+              Learn More
+            </Link>
+          </Typography>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          className={classes.spacer}
+        />
       </Grid>
-      <Grid item xs={7} className={classes.centered}>
-        <img src='/home/sushi.jpg' className={classes.sushi} />
-      </Grid>
-    </Grid>
+      <Typography variant='h5' align='center'>
+        Support restaurants directly and get the best deals
+      </Typography>
+      <Link href={menuRoute}>
+        <Button
+          variant='contained'
+          className={classes.browse}
+          color='secondary'
+          size='large'
+        >
+          Browse restaurant offers
+        </Button>
+      </Link>
+    </Container>
   )
 }
 
@@ -570,7 +752,6 @@ const Testimonials = () => {
             ${classes.title}
             ${classes.shrinker}
             ${classes.centered}
-            ${classes.testimonialsTitle}
         `}>
           What People Say
         </Typography>
@@ -672,16 +853,16 @@ const Testimonials = () => {
 }
 
 const Index = () => {
+  const classes = useStyles();
   return (
-    <>
+    <div className={classes.indexContainer}>
       <Welcome />
-      <RipOff />
       <Comparison />
+      <How />
       <Plans />
-      <Sushi />
       <Testimonials />
       <Footer />
-    </>
+    </div>
   )
 }
 
