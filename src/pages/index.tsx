@@ -284,6 +284,7 @@ const useStyles = makeStyles(theme => ({
       paddingRight: theme.spacing(4),
     },
     // backgroundColor: '#fffef1',
+    backgroundColor: theme.palette.secondary.main,
     display: 'flex',
     alignItems: 'center',
     flexDirection: 'column',
@@ -490,47 +491,47 @@ const Welcome = withClientApollo(() => {
   );
 });
 
-const Plans = withClientApollo(() => {
-  const classes = useStyles();
-  return (
-    <div className={classes.plans}>
-      <Container maxWidth='xl' className={classes.plansContainer}>
-        <Grid container>
-          <Grid
-            item
-            md={6}
-            sm={12}
-            className={classes.centerRow}
-          >
-            <Typography variant='h3' className={classes.title}>
-              Get even more for less with Table+
-            </Typography>
-            <Typography variant='body1' className={classes.body1}>
-              Get an additional 10% off, expedited orders, and exclusive weekly deals. Pay as low as $1.49/month, cancel anytime.
-            </Typography>
-            <Link href={menuRoute}>
-              <Button
-                className={`${classes.browse} ${classes.white}`}
-                variant='contained'
-                size='large'
-              >
-                Try Table+ free for 30 days
-              </Button>
-            </Link>
-          </Grid>
-          <Grid
-            item
-            md={6}
-            sm={12}
-            className={classes.centerRow}
-          >
-            <img src='/home/c2.jpg' className={classes.plansImg} />
-          </Grid>
-        </Grid>
-      </Container>
-    </div>
-  );
-});
+// const Plans = withClientApollo(() => {
+//   const classes = useStyles();
+//   return (
+//     <div className={classes.plans}>
+//       <Container maxWidth='xl' className={classes.plansContainer}>
+//         <Grid container>
+//           <Grid
+//             item
+//             md={6}
+//             sm={12}
+//             className={classes.centerRow}
+//           >
+//             <Typography variant='h3' className={classes.title}>
+//               Get even more for less with Table+
+//             </Typography>
+//             <Typography variant='body1' className={classes.body1}>
+//               Get an additional 10% off, expedited orders, and exclusive weekly deals. Pay as low as $1.49/month, cancel anytime.
+//             </Typography>
+//             <Link href={menuRoute}>
+//               <Button
+//                 className={`${classes.browse} ${classes.white}`}
+//                 variant='contained'
+//                 size='large'
+//               >
+//                 Try Table+ free for 30 days
+//               </Button>
+//             </Link>
+//           </Grid>
+//           <Grid
+//             item
+//             md={6}
+//             sm={12}
+//             className={classes.centerRow}
+//           >
+//             <img src='/home/c2.jpg' className={classes.plansImg} />
+//           </Grid>
+//         </Grid>
+//       </Container>
+//     </div>
+//   );
+// });
 
 // const RipOff = () => {
 //   const classes = useStyles();
@@ -858,7 +859,7 @@ const Index = () => {
       <Welcome />
       <Comparison />
       <How />
-      <Plans />
+      {/* <Plans /> */}
       <Testimonials />
       <Footer />
     </div>
