@@ -132,7 +132,7 @@ const useStyles = makeStyles(theme => ({
   comparisonDesc: {
     paddingBottom: theme.spacing(1),
   },
-  button: {
+  nextButton: {
     borderColor: theme.palette.common.black,
     color: theme.palette.text.primary,
     borderStyle: 'solid',
@@ -451,7 +451,7 @@ const MenuMeal: React.FC<{
                         :
                           <Button
                             variant='contained'
-                            className={classes.button}
+                            className={classes.nextButton}
                             color='secondary'
                             onClick={onClickNextAddon}
                           >
