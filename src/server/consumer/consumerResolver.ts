@@ -7,9 +7,9 @@ export const ConsumerQueryResolvers: ServerResolovers = {
     return signedInUser && await getConsumerService().getIConsumer(signedInUser)  
   },
   
-  sharedAccounts: async (_, _args, { signedInUser }) => {
+  sharedAccounts: async (_, _args, _context) => {
     try {
-      return await getConsumerService().getSharedAccountsEmails(signedInUser)  
+      // return await getConsumerService().getSharedAccountsEmails(signedInUser)  
     } catch (e) {
       throw new Error('Internal Server Error');
     }
@@ -17,25 +17,25 @@ export const ConsumerQueryResolvers: ServerResolovers = {
 }
 
 export const ConsumerMutationResolvers: ServerResolovers = {
-  addAccountToPlan: async (_root, { addedEmail }, { signedInUser }) => {
+  addAccountToPlan: async (_, _args, _context) => {
     try {
-      return await getConsumerService().addAccountToPlan(signedInUser, addedEmail);
+      // return await getConsumerService().addAccountToPlan(signedInUser, addedEmail);
     } catch (e) {
       throw new Error('Internal Server Error');
     }
   },
 
-  cancelSubscription: async (_root, _vars, { signedInUser, req, res }) => {
+  cancelSubscription: async (_, _args, _context) => {
     try {
-      return await getConsumerService().cancelSubscription(signedInUser, req, res);
+      // return await getConsumerService().cancelSubscription(signedInUser, req, res);
     } catch (e) {
       throw new Error('Internal Server Error');
     }
   },
 
-  removeAccountFromPlan: async (_root, { removedEmail }, { signedInUser }) => {
+  removeAccountFromPlan: async (_, _args, _context) => {
     try {
-      return await getConsumerService().removeAccountFromPlan(signedInUser, removedEmail);
+      // return await getConsumerService().removeAccountFromPlan(signedInUser, removedEmail);
     } catch (e) {
       throw new Error('Internal Server Error');
     }
@@ -49,13 +49,9 @@ export const ConsumerMutationResolvers: ServerResolovers = {
     return await getConsumerService().signUp(email, name, pass, res);
   },
 
-  updateMyPlan: async(
-    _root,
-    { planId }: { planId: string },
-    { signedInUser, req, res },
-  ) => {
+  updateMyPlan: async (_, _args, _context) => {
     try {
-      return await getConsumerService().updateMyPlan(signedInUser, planId, req, res);
+      // return await getConsumerService().updateMyPlan(signedInUser, planId, req, res);
     } catch (e) {
       throw new Error('Internal Server Error');
     }

@@ -76,6 +76,7 @@ const Filter: React.FC<{
                       key={cuisine}
                       control={
                         <Checkbox
+                          color='primary'
                           checked={isSelected}
                           onChange={() => onClickCuisine(isSelected ? withoutCuisine : [...cuisines, cuisine])}
                         />

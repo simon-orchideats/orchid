@@ -2,10 +2,10 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography, Popover } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person';
-import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
+// import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
 import { profileRoute } from '../../pages/consumer/profile';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import { myPlanRoute } from '../../pages/consumer/my-plan';
+// import { myPlanRoute } from '../../pages/consumer/my-plan';
 import Router from 'next/router'
 import HistoryIcon from '@material-ui/icons/History';
 import { orderHistoryRoute } from '../../pages/consumer/order-history';
@@ -72,7 +72,7 @@ const ConsumerPopper: React.FC<{
             Profile
           </Typography>
         </div>
-        <div className={classes.row} onClick={() => {
+        {/* <div className={classes.row} onClick={() => {
           Router.push(myPlanRoute);
           onClose();
         }}>
@@ -80,7 +80,7 @@ const ConsumerPopper: React.FC<{
           <Typography variant='h6'>
             My plan
           </Typography>
-        </div>
+        </div> */}
         <div className={classes.row} onClick={() => {
           Router.push(orderHistoryRoute);
           onClose();

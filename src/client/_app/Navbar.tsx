@@ -12,7 +12,6 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { checkoutRoute } from '../../pages/checkout';
 import ConsumerPopper from './ConsumerPopper';
-import AboutPopper from './AboutPopper';
 import withClientApollo from '../utils/withClientApollo';
 import { useGetConsumer, useSignIn } from '../../consumer/consumerService';
 import { analyticsService, events } from '../utils/analyticsService';
@@ -25,8 +24,8 @@ import SearchAreaInput from '../general/inputs/SearchAreaInput';
 import ServiceTimePopper from './ServiceTimePopper';
 import ServiceTypePopper from './ServiceTypePopper';
 import CartModal from './CartModal';
-import { plansRoute } from '../../pages/plans';
-import { myPlanRoute } from '../../pages/consumer/my-plan';
+import { howRoute } from '../../pages/how';
+import { aboutRoute } from '../../pages/about';
 
 const useStyles = makeStyles(theme => ({
   link: {
@@ -150,14 +149,10 @@ const Navbar: React.FC = () => {
   const [isShowingSearchAreaInput, setShowSearchAreaInput] = useState(false);
   const signIn = useSignIn();
   const [accountAnchor, setAccountAnchor] = useState<HTMLDivElement | null>(null);
-  const [aboutAnchor, setAboutAnchor] = useState<HTMLDivElement | null>(null);
   const [serviceTypeAnchor, setServiceTypeAnchor] = useState<HTMLDivElement | null>(null);
   const [serviceTimeAnchor, setServiceTimeAnchor] = useState<HTMLDivElement | null>(null);
   const onClickUser = (event: React.MouseEvent<HTMLDivElement>) => {
     setAccountAnchor(event.currentTarget);
-  };
-  const onClickAbout = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAboutAnchor(event.currentTarget);
   };
   const onClickServiceType = (event: React.MouseEvent<HTMLDivElement>) => {
     setServiceTypeAnchor(event.currentTarget);
@@ -176,7 +171,6 @@ const Navbar: React.FC = () => {
     }
   }, [consumer.data && consumer.data._id]);
   const accountOpen = !!accountAnchor;
-  const aboutOpen = !!aboutAnchor;
   const serviceTypeOpen = !!serviceTypeAnchor;
   const serviceTimeOpen = !!serviceTimeAnchor;
   const router = useRouter();
@@ -294,13 +288,14 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
         <div className={classes.plansLink}>
-          <Link href={consumer.data?.plan ? myPlanRoute : plansRoute}>
-            <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>Plans</Typography>
+          <Link href={howRoute}>
+            <Typography variant='button' className={`${classes.link} ${classes.menuLink}`}>How</Typography>
           </Link>
         </div>
-        <div className={classes.about} onClick={onClickAbout}>
-          <Typography variant='button' className={classes.link}>About</Typography>
-          <ExpandMoreIcon />
+        <div className={classes.about}>
+          <Link href={aboutRoute}>
+            <Typography variant='button' className={classes.link}>About</Typography>
+          </Link>
         </div>
       </>
     )
@@ -324,11 +319,6 @@ const Navbar: React.FC = () => {
             open={accountOpen}
             onClose={() => setAccountAnchor(null)}
             anchorEl={accountAnchor}
-          />
-          <AboutPopper
-            open={aboutOpen}
-            onClose={() => setAboutAnchor(null)}
-            anchorEl={aboutAnchor}
           />
           <ServiceTimePopper
             open={serviceTimeOpen}

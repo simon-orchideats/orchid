@@ -1,4 +1,4 @@
-import { PlanRoles } from './../../consumer/consumerPlanModel';
+// import { PlanRoles } from './../../consumer/consumerPlanModel';
 import { ELocation } from './../../place/locationModel';
 import { ERest } from './../../rest/restModel';
 import { IncomingMessage, OutgoingMessage } from 'http';
@@ -503,17 +503,17 @@ class OrderService {
   private async validateOrderUpdate (orderId: string, signedInUser: SignedInUser) {
     if (!signedInUser) throw getNotSignedInErr()
     const stripeCustomerId = signedInUser.stripeCustomerId;
-    const subscriptionId = signedInUser.stripeSubscriptionId
+    // const subscriptionId = signedInUser.stripeSubscriptionId
     if (!stripeCustomerId) {
       const msg = 'Missing stripe customer id';
       console.error('[OrderService]', msg)
       throw new Error(`[OrderService]: ${msg}`)
     }
-    if (!subscriptionId) {
-      const msg = 'Missing subscription id';
-      console.error('[OrderService]', msg)
-      throw new Error(`[OrderService]: ${msg}`)
-    } 
+    // if (!subscriptionId) {
+    //   const msg = 'Missing subscription id';
+    //   console.error('[OrderService]', msg)
+    //   throw new Error(`[OrderService]: ${msg}`)
+    // } 
     const targetOrder = await this.getEOrder(orderId);
     if (!targetOrder) throw new Error(`Couldn't get order '${orderId}'`);
     if (targetOrder.consumer.userId !== signedInUser._id) {
@@ -807,46 +807,45 @@ class OrderService {
       }
     }
 
-    let subscriptionId = signedInUser.stripeSubscriptionId;
-    if (!subscriptionId) {
-      const res = await this.consumerService.getEConsumer(signedInUser);
-      if (!cart.stripeProductPriceId) {
-        // this is possible when a newly created user, who has never checkedout, is immediately added to a new plan
-        if (!res) {
-          throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and is not in db`)
-        }
-        if (!res.consumer.plan) {
-          throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and has no plan`)
-        }
-        subscriptionId = res.consumer.plan.stripeSubscriptionId
-      } else {
-        if (res && res.consumer.plan) {
-          return {
-            res: null,
-            error: "You were recently added to another plan so we can't create a new plan for you. Please refresh the page and try again"
-          }
-        }
-        // this is a brand new consumer who isn't part of a plan that's checking out for the first time
-        try {
-          const subscription = await this.stripe.subscriptions.create({
-            customer: stripeCustomerId,
-            trial_period_days: 30,
-            items: [{
-              price: cart.stripeProductPriceId
-            }]
-          });
-          subscriptionId = subscription.id;
-        } catch (e) {
-          console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
-                        + `with stripe customerId '${stripeCustomerId}'`, e.stack);
-          throw e;
-        }
-      }
-    }
-    if (!signedInUser.stripeCustomerId || !signedInUser.stripeSubscriptionId) {
+    // let subscriptionId = signedInUser.stripeSubscriptionId;
+    // if (!subscriptionId) {
+    //   const res = await this.consumerService.getEConsumer(signedInUser);
+    //   if (!cart.stripeProductPriceId) {
+    //     // this is possible when a newly created user, who has never checkedout, is immediately added to a new plan
+    //     if (!res) {
+    //       throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and is not in db`)
+    //     }
+    //     if (!res.consumer.plan) {
+    //       throw new Error(`${signedInUser._id} missing cart.stripeProductPriceId and has no plan`)
+    //     }
+    //     subscriptionId = res.consumer.plan.stripeSubscriptionId
+    //   } else {
+    //     if (res && res.consumer.plan) {
+    //       return {
+    //         res: null,
+    //         error: "You were recently added to another plan so we can't create a new plan for you. Please refresh the page and try again"
+    //       }
+    //     }
+    //     // this is a brand new consumer who isn't part of a plan that's checking out for the first time
+    //     try {
+    //       const subscription = await this.stripe.subscriptions.create({
+    //         customer: stripeCustomerId,
+    //         trial_period_days: 30,
+    //         items: [{
+    //           price: cart.stripeProductPriceId
+    //         }]
+    //       });
+    //       subscriptionId = subscription.id;
+    //     } catch (e) {
+    //       console.error(`Failed to create stripe subscription for consumer '${signedInUser._id}'`
+    //                     + `with stripe customerId '${stripeCustomerId}'`, e.stack);
+    //       throw e;
+    //     }
+    //   }
+    // }
+    if (!signedInUser.stripeCustomerId) {
       await this.consumerService.updateAuth0MetaData(
         signedInUser._id,
-        subscriptionId,
         stripeCustomerId
       );
       // refresh access token so client can pick up new fields in token
@@ -891,14 +890,7 @@ class OrderService {
     });
     const consumer: Partial<EConsumer> = {
       stripeCustomerId: signedInUser.stripeCustomerId ? undefined : stripeCustomerId,
-      plan: cart.stripeProductPriceId ?
-        {
-          stripeSubscriptionId: subscriptionId,
-          role: PlanRoles.Owner,
-          stripeProductPriceId: cart.stripeProductPriceId,
-        }
-        :
-        undefined,
+      plan: undefined,
       profile: {
         name: signedInUser.profile.name,
         email: signedInUser.profile.email,

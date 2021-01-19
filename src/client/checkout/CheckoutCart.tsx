@@ -54,7 +54,6 @@ const CheckoutCart: React.FC<props> = ({
   onPlaceOrder,
   hideCheckout = false,
   hideDeliveries = false,
-  plan,
   loading,
   tip,
 }) => {
@@ -78,11 +77,6 @@ const CheckoutCart: React.FC<props> = ({
     <>
       <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
         Contact simon@tableweekly.com for any issues.
-      </Typography>
-      <Typography variant='subtitle2' className={classes.smallPaddingBottom}>
-        By ordering, you acknowledge that you have read and agree to the Table Terms and Conditions and
-        authorize us to charge your default payment method after your 30-day free trial. Your membership 
-        continues until cancelled by visiting Your Plan.
       </Typography>
     </>
   );
@@ -160,12 +154,6 @@ const CheckoutCart: React.FC<props> = ({
             <b>${(total / 100).toFixed(2)}</b>
           </Typography>
         </div>
-        {
-          plan &&
-          <Typography variant='body1' gutterBottom>
-            {plan.name} Plan - FREE 30 day trial then ${(plan.price / 100).toFixed(2)}/month (change/cancel anytime)
-          </Typography>
-          }
         <p />
         {
           savings > 0 &&

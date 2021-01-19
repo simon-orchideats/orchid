@@ -38,7 +38,7 @@ export type ServerResolovers = {
 export type SignedInUser = {
   _id: string
   stripeCustomerId?: string
-  stripeSubscriptionId?: string
+  // stripeSubscriptionId?: string
   profile: {
     name: string
     email: string
@@ -52,7 +52,7 @@ export const decodeToSignedInUser = (access: string): SignedInUser => {
     return {
       _id: decoded.sub,
       stripeCustomerId: decoded[`${activeConfig.server.auth.audience}/stripeCustomerId`],
-      stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubscriptionId`],
+      // stripeSubscriptionId: decoded[`${activeConfig.server.auth.audience}/stripeSubscriptionId`],
       profile: {
         name: decoded[`${activeConfig.server.auth.audience}/name`],
         email: decoded[`${activeConfig.server.auth.audience}/email`]

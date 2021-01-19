@@ -34,8 +34,8 @@ import ToggleButton from "@material-ui/lab/ToggleButton";
 import { OrderMeal } from "../order/orderRestModel";
 import { ServiceTypes, Order } from "../order/orderModel";
 import { analyticsService, events } from "../client/utils/analyticsService";
-import { IPlan, defaultPlanName } from "../plan/planModel";
-import { useGetAvailablePlans } from "../plan/planService";
+// import { IPlan, defaultPlanName } from "../plan/planModel";
+// import { useGetAvailablePlans } from "../plan/planService";
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -149,8 +149,8 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [accountNameError, setAccountNameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [receiveTextError, setReceiveTextError] = useState<string>('');
-  const plans = useGetAvailablePlans();
-  const [plan, setPlan] = useState<IPlan | null>(cart ? cart.plan : null);
+  // const plans = useGetAvailablePlans();
+  // const [plan, setPlan] = useState<IPlan | null>(cart ? cart.plan : null);
   const [placeOrder, placeOrderRes] = usePlaceOrder();
   const [signUp, signUpRes] = useConsumerSignUp();
   const theme = useTheme<Theme>();
@@ -163,17 +163,17 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
   const [isUpdatingInstructions, setIsUpdatingInstructions] = useState<boolean>(false);
   const [isUpdatingWhen, setIsUpdatingWhen] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (plans.data && !plan && !consumer.data?.plan) {
-      const defaultPlan = plans.data?.find(p => p.name === defaultPlanName);
-      if (!defaultPlan) {
-        const err = new Error(`Missing '${defaultPlanName}'`);
-        console.error(err.stack);
-        throw err;
-      }
-      setPlan(defaultPlan)
-    }
-  }, [plans.data, plan, consumer.data?.plan])
+  // useEffect(() => {
+  //   if (plans.data && !plan && !consumer.data?.plan) {
+  //     const defaultPlan = plans.data?.find(p => p.name === defaultPlanName);
+  //     if (!defaultPlan) {
+  //       const err = new Error(`Missing '${defaultPlanName}'`);
+  //       console.error(err.stack);
+  //       throw err;
+  //     }
+  //     setPlan(defaultPlan)
+  //   }
+  // }, [plans.data, plan, consumer.data?.plan])
 
   useEffect(() => {
     setDefaultPhone(consumer.data?.profile.phone || undefined);
@@ -232,16 +232,16 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
           setDidPlaceOrder(false);
           throw err;
         }
-        let stripeProductPriceId = null;
-        if (!consumer.data?.plan) {
-          if (!plan) {
-            const err = new Error('Missing plan');
-            console.error(err.stack);
-            setDidPlaceOrder(false);
-            throw err;
-          }
-          stripeProductPriceId = plan.stripeProductPriceId
-        }
+        // let stripeProductPriceId = null;
+        // if (!consumer.data?.plan) {
+        //   if (!plan) {
+        //     const err = new Error('Missing plan');
+        //     console.error(err.stack);
+        //     setDidPlaceOrder(false);
+        //     throw err;
+        //   }
+        //   stripeProductPriceId = plan.stripeProductPriceId
+        // }
         placeOrder(
           {
             _id: signUpRes.data.res._id,
@@ -255,7 +255,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
             Card.getCardFromStripe(pm.current.paymentMethod!.card),
             pm.current.paymentMethod!.id,
             instructionsInputRef.current?.value || null,
-            stripeProductPriceId,
+            null,
             tip,
           )
         );
@@ -377,15 +377,15 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
       signUp(email, name, password);
     } else {
       let stripeProductPriceId = null;
-      if (!consumer.data.plan) {
-        if (!plan) {
-          const err = new Error('Missing plan');
-          console.error(err.stack);
-          setDidPlaceOrder(false);
-          throw err;
-        }
-        stripeProductPriceId = plan.stripeProductPriceId
-      }
+      // if (!consumer.data.plan) {
+      //   if (!plan) {
+      //     const err = new Error('Missing plan');
+      //     console.error(err.stack);
+      //     setDidPlaceOrder(false);
+      //     throw err;
+      //   }
+      //   stripeProductPriceId = plan.stripeProductPriceId
+      // }
       placeOrder(
         {
           _id: consumer.data._id,
@@ -518,7 +518,7 @@ const checkout: React.FC<ReactStripeElements.InjectedStripeProps> = ({
     ),
     tip,
     loading: didPlaceOrder,
-    plan: plan || undefined 
+    // plan: plan || undefined,
   }
 
   let deliveryLabel: string = cart.serviceType;

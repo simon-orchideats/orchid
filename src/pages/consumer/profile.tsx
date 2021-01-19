@@ -240,7 +240,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 <Button
                   onClick={onCancelPhone}
                   variant='outlined'
-                  color='primary'
+                  color='inherit'
                 >
                   Cancel
                 </Button>
@@ -282,7 +282,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
                 <Button
                   onClick={onCancelCard}
                   variant='outlined'
-                  color='primary'
+                  color='inherit'
                 >
                   Cancel
                 </Button>
@@ -327,7 +327,7 @@ const profile: React.FC<ReactStripeElements.InjectedStripeProps> = ({
               <Button
                 onClick={onCancelAddr}
                 variant='outlined'
-                color='primary'
+                color='inherit'
               >
                 Cancel
               </Button>
