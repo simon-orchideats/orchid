@@ -4,7 +4,7 @@ import { ThemeOptions } from "@material-ui/core/styles/createMuiTheme";
 const floralWhite = '#ffdd40'; //'#fceaa3' // '#F1F1DB' //'#F8DF7B' //'#FABE0E'; //'#FEBD69'
 const lightGray = '#f9f9f9'; //'#f2f7fb'//'#EEF1F6';
 const charcoal = '#3c3c3c';
-const scarletRed = '#FF5C41';
+// const scarletRed = '#FF5C41';
 const leafGreen = '#538401' //'#65b10c' //'#538401'; //'#6ad080' //'#538401' // '#A3B95A'//'#538401'//'#8AB661' //'#B8E6B1' //'#89C057'; //#28590c
 const blue =  '#4062ff'; //'#0000F7';
 // const navy = '#4062ff'; //'#00B2F7'
