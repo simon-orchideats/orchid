@@ -1,6 +1,5 @@
 import { makeStyles, Container, Typography, Grid } from '@material-ui/core';
 import Footer from '../client/general/Footer';
-import ForwardIcon from '@material-ui/icons/Forward';
 
 const useStyles = makeStyles(theme => ({
   container: {

@@ -1,4 +1,4 @@
-import { makeStyles, Container, Typography, Grid } from '@material-ui/core';
+import { makeStyles, Container, Typography } from '@material-ui/core';
 import Footer from '../client/general/Footer';
 
 const useStyles = makeStyles(theme => ({
